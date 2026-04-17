@@ -1,0 +1,24 @@
+pre-commit:
+  parallel: false
+  commands:
+    format:
+      run: |
+        if command -v fvm >/dev/null 2>&1 && [ -f .fvmrc ]; then
+          fvm dart format --output=none --set-exit-if-changed .
+        else
+          dart format --output=none --set-exit-if-changed .
+        fi
+    analyze:
+      run: |
+        if command -v fvm >/dev/null 2>&1 && [ -f .fvmrc ]; then
+          fvm flutter analyze
+        else
+          flutter analyze
+        fi
+    test:
+      run: |
+        if command -v fvm >/dev/null 2>&1 && [ -f .fvmrc ]; then
+          fvm flutter test
+        else
+          flutter test
+        fi
