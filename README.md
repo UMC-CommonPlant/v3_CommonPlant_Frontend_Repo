@@ -113,6 +113,13 @@ lib/
 - 팀 공통 기준은 도구 통일이 아니라 Flutter 버전 통일입니다.
 - README의 명령어는 `flutter` 기준으로 유지하고, FVM 사용자는 필요한 경우 `fvm`만 앞에 붙입니다.
 
+## 프로젝트 문서
+
+| 문서 | 설명 |
+| --- | --- |
+| [디자인 토큰 규칙](docs/design-token-rules.md) | 색상, 폰트, 여백, radius, size 토큰 사용 기준 |
+| [공용 위젯 사용 가이드](docs/shared-widget-guide.md) | `shared/widgets` 컴포넌트 사용법과 추가 기준 |
+
 ## 품질 게이트
 
 ### Analyzer
@@ -150,8 +157,6 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 
 ## 이후 작성 예정
 
-- [ ] 디자인 토큰 규칙 문서
-- [ ] 공용 위젯 사용 가이드
 - [ ] 라우팅 구조 설명
 - [ ] feature 작업 가이드
 - [ ] 화면 퍼블리싱 작업 규칙
