@@ -37,39 +37,38 @@
 - 지원 플랫폼: Android, iOS
 - 공통 기준 Flutter 버전: `3.35.7`
 - 공통 기준 Dart 버전: `3.9.2`
-- 기본 명령어 표기: `flutter`
-- 선택 사용 도구: FVM (`fvm flutter ...` 형태로 동일 버전에 맞춰 실행 가능)
+- 기본 명령어 표기: `fvm flutter`
+- Flutter 실행 기준: FVM (`.fvmrc`의 `3.35.7` 사용)
 
 ## 시작하기
 
 ### 1. 의존성 설치
 
 ```bash
-flutter pub get
+fvm flutter pub get
 ```
 
 ### 2. 앱 실행
 
 ```bash
-flutter run -d android
-flutter run -d ios
+fvm flutter run -d android
+fvm flutter run -d ios
 ```
 
 ### 3. 품질 검사
 
 ```bash
-flutter analyze
-flutter test
+fvm flutter analyze
+fvm flutter test
 ```
 
-### 4. FVM 사용자 안내
+### 4. FVM 버전 설정
 
-FVM 사용자는 아래처럼 동일한 버전으로 실행하면 됩니다.
+처음 환경을 구성한다면 아래처럼 저장소 기준 Flutter 버전을 맞춥니다.
 
 ```bash
 fvm use 3.35.7
 fvm flutter pub get
-fvm flutter run -d android
 ```
 
 ## 사용 라이브러리
@@ -81,6 +80,7 @@ fvm flutter run -d android
 | `cupertino_icons` | `^1.0.8` | iOS 스타일 아이콘 지원 |
 | `go_router` | `^17.2.0` | 앱 라우팅 및 라우트 구조 관리 |
 | `flutter_riverpod` | `^3.3.1` | 상태관리 및 의존성 주입 |
+| `flutter_svg` | `^2.2.0` | SVG 아이콘 렌더링 |
 
 ### Development
 
@@ -98,6 +98,7 @@ lib/
     common_plant_app.dart
     router/
   core/
+    assets/
     theme/
   shared/
     widgets/
@@ -110,15 +111,33 @@ lib/
 
 - 화면에서 raw color, raw spacing, raw radius 값을 직접 찍지 않고 `core/theme` 토큰을 사용합니다.
 - 공용 UI는 우선 `shared/widgets`를 통해 재사용하고, 기능별 화면은 `features` 아래에서 조합합니다.
-- 팀 공통 기준은 도구 통일이 아니라 Flutter 버전 통일입니다.
-- README의 명령어는 `flutter` 기준으로 유지하고, FVM 사용자는 필요한 경우 `fvm`만 앞에 붙입니다.
+- 팀 공통 기준은 `.fvmrc`의 Flutter 버전과 FVM 실행 흐름을 따르는 것입니다.
+- 로컬 Flutter 명령은 `fvm flutter ...` 또는 `fvm dart ...` 형태로 실행합니다.
+
+## 확정된 협업 및 기술 기준
+
+- 브랜치는 `develop`을 통합 기준으로 사용하고, 각 feature 브랜치는 `develop`에서 생성합니다.
+- HTTP 클라이언트는 API 연동 시점에 `dio`를 기준으로 도입합니다.
+- API 모델은 `freezed`와 `json_serializable` 기반 생성을 기본 방향으로 삼되, 실제 패키지 추가는 첫 API 연동 PR에서 함께 진행합니다.
+- 인증 토큰은 `flutter_secure_storage` 기반 보관을 기본 방향으로 합니다.
+- 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
+- Golden test와 integration test 도입 범위는 아직 미정입니다.
 
 ## 프로젝트 문서
 
 | 문서 | 설명 |
 | --- | --- |
+| [에이전트 작업 지침](AGENTS.md) | 작업 유형별 필수 참고 문서와 에이전트 작업 기준 |
 | [디자인 토큰 규칙](docs/design-token-rules.md) | 색상, 폰트, 여백, radius, size 토큰 사용 기준 |
 | [공용 위젯 사용 가이드](docs/shared-widget-guide.md) | `shared/widgets` 컴포넌트 사용법과 추가 기준 |
+| [라우팅 구조 설명](docs/routing-guide.md) | `go_router` 기반 라우팅 구조, route 추가 기준, 인증 라우팅 확장 방향 |
+| [Feature 작업 가이드](docs/feature-development-guide.md) | feature-first 구조, 계층 책임, API 모델 및 작업 순서 |
+| [화면 퍼블리싱 작업 규칙](docs/screen-publishing-rules.md) | Figma 화면 구현 시 공용 컴포넌트, 상태 UI, 반응형 기준 |
+| [Assets 및 Icons 규칙](docs/asset-icon-rules.md) | 아이콘/이미지 네이밍, 등록, 사용 기준 |
+| [상태관리 Provider 작성 기준](docs/state-management-guide.md) | Riverpod Provider 선택, 파일 배치, async 상태 처리 기준 |
+| [폼 검증 및 에러 메시지 작성 기준](docs/form-validation-error-guide.md) | 입력 검증 위치, helper/error 메시지, 서버 에러 처리 기준 |
+| [테스트 작성 기준](docs/testing-guide.md) | unit/widget test 작성 기준, 실행 명령, CI/pre-commit 연계 |
+| [Git 브랜치 및 커밋 전략](docs/git-workflow.md) | 브랜치 전략, 커밋 메시지, PR 체크리스트 |
 
 ## 품질 게이트
 
@@ -136,9 +155,11 @@ lib/
 
 `lefthook.yml` 기준으로 아래 검사를 실행합니다.
 
-- `dart format --output=none --set-exit-if-changed .`
-- `flutter analyze`
-- `flutter test`
+- `fvm dart format --output=none --set-exit-if-changed .`
+- `fvm flutter analyze`
+- `fvm flutter test`
+
+FVM이 없거나 `.fvmrc`가 없는 환경에서는 lefthook 설정에 따라 일반 `dart`/`flutter` 명령으로 fallback 됩니다.
 
 macOS 환경에서는 아래 순서로 설치하면 됩니다.
 
@@ -155,13 +176,7 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 - `flutter analyze`
 - `flutter test`
 
-## 이후 작성 예정
+## 추가 결정 필요
 
-- [ ] 라우팅 구조 설명
-- [ ] feature 작업 가이드
-- [ ] 화면 퍼블리싱 작업 규칙
-- [ ] assets/icons 네이밍 및 추가 규칙
-- [ ] 상태관리 Provider 작성 기준
-- [ ] 폼 검증 및 에러 메시지 작성 기준
-- [ ] 테스트 작성 기준
-- [ ] Git 브랜치 및 커밋 전략
+- [ ] 백엔드 에러 코드와 사용자 메시지 매핑표
+- [ ] Golden test 및 integration test 도입 범위
