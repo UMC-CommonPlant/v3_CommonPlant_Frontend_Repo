@@ -6,7 +6,9 @@
 
 - Flutter 명령은 `fvm flutter ...` 또는 `fvm dart ...` 형태로 실행한다.
 - `main`과 `develop`에는 직접 작업하지 않는다.
-- 새 feature 브랜치는 `develop`에서 생성한다.
+- 모든 일반 작업 브랜치는 `develop`에서 생성한다.
+- `main`은 publish/production 브랜치로만 사용한다.
+- 운영 긴급 수정이 아닌 경우 `main`에서 브랜치를 파생하지 않는다.
 - 화면 구현 전 공통 위젯과 디자인 토큰 재사용 가능 여부를 먼저 확인한다.
 - API 응답 파싱, 비즈니스 로직, 비동기 상태 처리를 화면 위젯에 직접 넣지 않는다.
 - 결정되지 않은 정책은 임의로 확정하지 않고 사용자에게 질문한다.
@@ -27,6 +29,7 @@
 | form validation, helper/error message | `docs/form-validation-error-guide.md` |
 | unit/widget test 추가 또는 수정 | `docs/testing-guide.md` |
 | 브랜치, 커밋, PR | `docs/git-workflow.md` |
+| 배포, 릴리즈, 스토어 자동화 | `docs/release-workflow.md` |
 
 작업 시작 시 참고한 문서를 짧게 언급한다.
 

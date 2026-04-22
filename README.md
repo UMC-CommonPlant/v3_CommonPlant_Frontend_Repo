@@ -116,7 +116,10 @@ lib/
 
 ## 확정된 협업 및 기술 기준
 
-- 브랜치는 `develop`을 통합 기준으로 사용하고, 각 feature 브랜치는 `develop`에서 생성합니다.
+- 브랜치는 `develop`을 통합 기준으로 사용하고, 각 작업 브랜치는 `develop`에서 생성합니다.
+- `main`은 실제 publish/production 브랜치로 사용하고 직접 작업하지 않습니다.
+- 배포 후보는 `develop`에서 `release/*` 브랜치를 생성해 안정화한 뒤 `main`으로 PR을 보냅니다.
+- 운영 긴급 수정만 예외적으로 `main`에서 `hotfix/*` 브랜치를 생성하고, 배포 후 `develop`에 되돌려 반영합니다.
 - HTTP 클라이언트는 API 연동 시점에 `dio`를 기준으로 도입합니다.
 - API 모델은 `freezed`와 `json_serializable` 기반 생성을 기본 방향으로 삼되, 실제 패키지 추가는 첫 API 연동 PR에서 함께 진행합니다.
 - 인증 토큰은 `flutter_secure_storage` 기반 보관을 기본 방향으로 합니다.
@@ -138,6 +141,7 @@ lib/
 | [폼 검증 및 에러 메시지 작성 기준](docs/form-validation-error-guide.md) | 입력 검증 위치, helper/error 메시지, 서버 에러 처리 기준 |
 | [테스트 작성 기준](docs/testing-guide.md) | unit/widget test 작성 기준, 실행 명령, CI/pre-commit 연계 |
 | [Git 브랜치 및 커밋 전략](docs/git-workflow.md) | 브랜치 전략, 커밋 메시지, PR 체크리스트 |
+| [배포 및 릴리즈 자동화 전략](docs/release-workflow.md) | `main` publish 전략, release 브랜치, Android/iOS 자동화 단계 |
 
 ## 품질 게이트
 
@@ -180,3 +184,4 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 
 - [ ] 백엔드 에러 코드와 사용자 메시지 매핑표
 - [ ] Golden test 및 integration test 도입 범위
+- [ ] Android/iOS 스토어 계정, signing secret, 배포 대상
