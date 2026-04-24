@@ -35,6 +35,6 @@ abstract final class AppIconAssets {
   static const String plus = 'assets/icons/plus.svg';
   static const String plusGreen = 'assets/icons/plus_green.svg';
   static const String plusGray = 'assets/icons/plus_gray.svg';
-  static const String delete = 'assets/icons/Delete.svg';
+  static const String delete = 'assets/icons/delete.svg';
   static const String trashBin = 'assets/icons/trash_bin.svg';
 }
