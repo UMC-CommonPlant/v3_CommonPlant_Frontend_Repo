@@ -12,6 +12,7 @@ assets/
 
 lib/core/assets/
   app_icon_assets.dart
+  app_image_assets.dart
 ```
 
 `pubspec.yaml`에는 `assets/icons/`, `assets/images/`가 폴더 단위로 등록되어 있습니다.
@@ -29,14 +30,16 @@ lib/core/assets/
 | 일반 이미지 | lowercase snake_case | `place_default.png` |
 | 해상도 variant | Flutter asset variant 규칙 또는 명확한 suffix | `place_default@3x.png` |
 
-새 파일에는 대문자, 공백, 한글 파일명을 사용하지 않습니다. 현재 `Delete.svg`처럼 기존에 들어온 예외 파일은 레거시로 보고 새 파일에서는 반복하지 않습니다.
+새 파일에는 대문자, 공백, 한글 파일명을 사용하지 않습니다. 기존에 들어온 예외 파일도 발견되면 별도 cleanup 작업으로 lowercase snake_case에 맞게 정리합니다.
 
 ## 아이콘 등록
 
-SVG 아이콘을 추가하면 `lib/core/assets/app_icon_assets.dart`에 상수를 추가합니다.
+SVG 아이콘을 추가하면 `lib/core/assets/app_icon_assets.dart`에 상수를 추가합니다. 이미지 asset을 추가하면 `lib/core/assets/app_image_assets.dart`에 상수를 추가합니다.
 
 ```dart
 static const String addPlace = 'assets/icons/add_place.svg';
+static const String placeDefaultIllustration =
+    'assets/images/place_default_illustration.png';
 ```
 
 상수명은 camelCase를 사용하고, 파일명은 snake_case를 사용합니다.
