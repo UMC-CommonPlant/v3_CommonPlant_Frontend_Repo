@@ -8,20 +8,20 @@
 | --- | --- |
 | `lib/app/common_plant_app.dart` | `MaterialApp.router` 구성 |
 | `lib/app/router/app_router.dart` | 앱 전역 `GoRouter` Provider 정의 |
+| `lib/app/router/app_routes.dart` | Figma 기준 route tree와 route metadata 정의 |
+| `lib/app/router/route_paths.dart` | route name, path, location helper 상수 |
+| `lib/app/router/route_placeholder_page.dart` | 아직 실제 화면이 없는 route의 임시 진입 화면 |
 | `lib/features/home/presentation/home_screen.dart` | 현재 초기 화면 및 공용 컴포넌트 샘플 |
 
-현재 등록된 라우트는 `/` 하나입니다.
+현재 등록된 라우트는 Figma `phase 0` 페이지를 기준으로 route-level screen 17개입니다.
 
 ```dart
 final appRouterProvider = Provider<GoRouter>(
-  (ref) => GoRouter(
-    initialLocation: '/',
-    routes: [
-      GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-    ],
-  ),
+  (ref) => createAppRouter(),
 );
 ```
+
+`/` 홈은 기존 `HomeScreen`에 연결되어 있고, 아직 실제 화면이 구현되지 않은 route는 `RoutePlaceholderPage`로 연결합니다. 기능 화면이 구현되면 같은 route spec을 유지한 채 builder만 실제 page로 교체합니다.
 
 ## 기본 원칙
 
@@ -32,23 +32,49 @@ final appRouterProvider = Provider<GoRouter>(
 - MVP 단계에서는 복잡한 nested route보다 읽기 쉬운 단일 route tree를 우선합니다.
 - Place, Plant, Memo 상세 플로우는 URL path에 도메인 관계가 드러나도록 설계합니다.
 
-## 권장 라우트 설계
+## Figma 기준 라우트 설계
 
-아직 화면이 구현되지 않았기 때문에 아래는 다음 기능 개발 시 기준으로 사용할 권장안입니다.
+Figma 파일 `Common Plant 복제`의 `phase 0` 페이지를 기준으로 프레임 이름, 내부 대표 텍스트, 플로우 위치를 함께 확인했습니다. alert, bottom sheet, 검색 결과, 버튼 처리 결과는 별도 route가 아니라 화면 상태로 처리합니다.
 
-| 도메인 | Path 예시 | 화면 역할 |
+| 도메인 | Route name | Path | Figma 근거 | 화면 역할 |
+| --- | --- | --- | --- | --- |
+| Home | `home` | `/` | `#2 Main`, `#2 Main/D` | 인증 후 홈, My place/My plant 요약 |
+| Onboarding | `onboarding` | `/onboarding` | `#1-1` | 시작/온보딩 |
+| Login | `profileSetup` | `/profile/setup` | `#1-2-2 Log in` | 닉네임, 프로필 이미지 설정 |
+| Terms | `terms` | `/terms/privacy` | `#1-2-3 Sign up / 2D` | 개인정보 이용약관 |
+| Place | `placeInvitations` | `/places/invitations` | `#2-2 Main / 장소 친구 요청` | 장소 초대 요청 목록 |
+| Place | `placeCreate` | `/places/new` | `#2-2-2 장소 등록` | 장소 등록 |
+| Place | `addressSearch` | `/places/new/address-search` | `#2-2-2-2 장소 등록 / 주소 검색` | 장소 등록 중 주소 검색 |
+| Place | `placeFriendAdd` | `/places/new/friends` | `#2-2-2-2 장소 등록-친구 추가` | 장소 등록 중 친구 추가 |
+| Place | `placeEdit` | `/places/:placeId/edit` | `#2-2-2 장소 수정` | 장소 수정 |
+| Place | `placeDetail` | `/places/:placeId` | `#2-3 My place 리더화면`, `팀원화면` | 장소 상세 |
+| Place | `friendManagement` | `/places/:placeId/friends` | `#2-3-2 친구 관리` | 장소 친구 관리 |
+| Plant | `plantSearch` | `/plants/new/search` | `#2-2-3 식물 등록` | 식물 등록 1단계, 식물 검색 |
+| Plant | `plantCreateDetails` | `/plants/new/details` | `#2-2-3-2 식물 등록` | 식물 등록 2단계, 상세 정보 입력 |
+| Plant | `plantEdit` | `/plants/:plantId/edit` | `#2-2-3-3 식물 수정` | 식물 수정 |
+| Plant | `plantDetail` | `/plants/:plantId` | `#2-4 My plants` | 식물 상세 |
+| Memo | `memoWrite` | `/plants/:plantId/memos/new` | `#2-4-2 메모 작성` | 식물 메모 작성 |
+| Memo | `memoList` | `/plants/:plantId/memos` | `#2-4-3 메모` | 식물 메모 목록 |
+
+Place 상세/수정/친구 관리는 `placeId`를 path에 포함합니다. Plant 상세/수정/Memo 플로우는 `plantId` 중심으로 둡니다. 식물 등록은 Figma상 먼저 식물을 검색하고 다음 단계에서 장소를 고르는 흐름이므로 `/plants/new/*` 아래에 둡니다.
+
+## Route가 아닌 상태
+
+아래 Figma 프레임은 별도 route로 만들지 않고 해당 화면의 상태, dialog, bottom sheet로 처리합니다.
+
+| 상태 | 소속 화면 | 처리 기준 |
 | --- | --- | --- |
-| Home | `/` | 인증 후 진입하는 홈 또는 임시 컴포넌트 샘플 |
-| Login | `/login` | 로그인 및 회원가입 진입 |
-| Place 목록 | `/places` | 사용자가 속한 장소 목록 |
-| Place 생성 | `/places/new` | 장소 생성 |
-| Place 상세 | `/places/:placeId` | 장소 상세 및 장소 내 식물 목록 |
-| Plant 생성 | `/places/:placeId/plants/new` | 특정 장소에 식물 등록 |
-| Plant 상세 | `/plants/:plantId` | 식물 상세 정보 |
-| Memo 목록 | `/plants/:plantId/memos` | 특정 식물의 메모 목록 |
-| Memo 작성 | `/plants/:plantId/memos/new` | 특정 식물의 메모 작성 |
-
-Place와 Plant 관계가 필요한 화면은 `placeId`를 path에 포함하고, 식물 자체의 독립 상세 화면은 `plantId` 중심으로 둡니다.
+| 로그인 필요 안내 | Home | 홈의 비인증 상태 |
+| 프로필 사진 선택 | Profile setup | bottom sheet 또는 dialog |
+| 장소 요청 버튼 결과 | Place invitations | 요청 목록 item 상태 |
+| 주소 검색 결과 | Address search | 검색 결과/empty 상태 |
+| 친구 검색 과정 | Place friend add, Friend management | 검색 결과/선택 상태 |
+| 친구 삭제 alert | Friend management | dialog |
+| 장소 나가기 alert | Place detail | dialog |
+| 식물 검색 결과 | Plant search | 검색 결과 상태 |
+| 장소/날짜 선택 | Plant create details | picker 또는 bottom sheet 상태 |
+| 메모 수정/삭제 메뉴 | Memo list | popup/action sheet |
+| 메모 삭제 alert | Memo list | dialog |
 
 ## 파일 배치 기준
 
@@ -56,20 +82,24 @@ Place와 Plant 관계가 필요한 화면은 `placeId`를 path에 포함하고, 
 
 ```text
 lib/app/router/
+  app_route_spec.dart
   app_router.dart
   app_routes.dart
   route_paths.dart
+  route_placeholder_page.dart
   redirect_notifier.dart
 ```
 
 | 파일 | 역할 |
 | --- | --- |
+| `app_route_spec.dart` | route metadata 모델 |
 | `app_router.dart` | `GoRouter` 생성과 route tree 조립 |
 | `app_routes.dart` | route name, route builder, shell route 정의 |
 | `route_paths.dart` | path 문자열 상수 |
+| `route_placeholder_page.dart` | 미구현 route의 임시 화면 |
 | `redirect_notifier.dart` | 인증 상태 변경 시 router refresh 연결 |
 
-작은 MVP 화면에서는 `app_router.dart` 안에 유지해도 됩니다. 같은 path 문자열이 두 곳 이상 반복되기 시작하면 상수 분리를 진행합니다.
+작은 MVP 화면에서도 Figma 기준 라우트가 이미 17개로 확정되었기 때문에 route spec과 path 상수는 분리해서 관리합니다.
 
 ## 인증 라우팅 기준
 
