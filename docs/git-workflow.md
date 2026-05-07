@@ -174,11 +174,32 @@ Feat: Place 화면 퍼블리싱 및 상태관리 적용 #21
 Docs: 프로젝트 작업 가이드 추가
 ```
 
+## GitHub Project 연결
+
+일반 작업 PR을 생성한 뒤에는 CommonPlant GitHub Project 10에 PR을 함께 연결합니다.
+
+- Project URL: https://github.com/orgs/UMC-CommonPlant/projects/10/views/1
+- 이슈가 이미 Project에 있어도 PR은 별도 항목으로 추가합니다.
+- `gh` CLI를 사용할 수 있으면 아래 명령으로 추가합니다.
+
+```bash
+gh project item-add 10 --owner UMC-CommonPlant --url <PR_URL>
+```
+
+예시:
+
+```bash
+gh project item-add 10 --owner UMC-CommonPlant --url https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/21
+```
+
+CLI 권한이 부족하면 GitHub UI의 PR 우측 `Projects` 영역에서 위 Project를 직접 연결합니다.
+
 ## PR 체크리스트
 
 - [ ] 기준 브랜치가 올바른가?
 - [ ] 일반 작업 PR의 base가 `develop`인가?
 - [ ] 배포 PR의 base가 `main`이고 head가 `release/*`인가?
+- [ ] PR이 CommonPlant GitHub Project 10에 연결되었는가?
 - [ ] 커밋이 논리적 단위로 정리되었는가?
 - [ ] `fvm dart format --output=none --set-exit-if-changed .`를 통과했는가?
 - [ ] `fvm flutter analyze`를 통과했는가?
