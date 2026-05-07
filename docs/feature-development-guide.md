@@ -15,11 +15,32 @@ lib/
   shared/
     widgets/
   features/
+    common/
+      presentation/
+        widgets/
     home/
       presentation/
+    login/
+      presentation/
+        pages/
+    memo/
+      presentation/
+        pages/
+    onboarding/
+      presentation/
+        pages/
+    place/
+      presentation/
+        pages/
+    plant/
+      presentation/
+        pages/
+    terms/
+      presentation/
+        pages/
 ```
 
-현재 `home`은 실제 도메인 홈이라기보다 공용 컴포넌트 샘플 화면에 가깝습니다. Login, Place, Plant, Memo 기능이 추가되면 각 도메인을 `features` 하위에 독립적으로 배치합니다.
+현재 `phase 0` 화면 퍼블리싱은 feature별 `presentation/pages`에 배치되어 있습니다. API 연동 전까지 화면 상태는 page 내부의 임시 상태로만 유지하고, 여러 feature에서 공유되는 퍼블리싱 보조 위젯은 `features/common/presentation/widgets`에 둡니다.
 
 ## 기본 원칙
 
