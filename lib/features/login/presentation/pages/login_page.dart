@@ -20,7 +20,7 @@ const double _logoPlantWidth = 71.255;
 const double _logoPlantHeight = 24.377;
 const double _heroTop = 204.377;
 const double _heroSize = 186;
-const double _buttonTop = 637.72;
+const double _buttonTop = 582;
 const double _buttonHeight = 44;
 
 class LoginPage extends StatelessWidget {
@@ -83,6 +83,20 @@ class LoginPage extends StatelessWidget {
                       logoAssetPath: AppImageAssets.loginKakaoLogo,
                       logoWidth: 18,
                       logoHeight: 18,
+                      logoTop: 11,
+                      onPressed: () => _goNext(context),
+                    ),
+                    const SizedBox(height: AppSpacing.x12),
+                    _LoginSocialButton(
+                      key: const ValueKey('loginGoogleButton'),
+                      label: '구글로 로그인',
+                      backgroundColor: AppColors.white,
+                      foregroundColor: AppColors.textStrong,
+                      borderColor: AppColors.borderDefault,
+                      logoAssetPath: AppImageAssets.loginGoogleLogo,
+                      logoWidth: 18,
+                      logoHeight: 18,
+                      logoTop: 10,
                       onPressed: () => _goNext(context),
                     ),
                     const SizedBox(height: AppSpacing.x12),
@@ -94,6 +108,7 @@ class LoginPage extends StatelessWidget {
                       logoAssetPath: AppImageAssets.loginAppleLogo,
                       logoWidth: 16.26,
                       logoHeight: 20,
+                      logoTop: 12,
                       onPressed: () => _goNext(context),
                     ),
                   ],
@@ -143,18 +158,22 @@ class _LoginSocialButton extends StatelessWidget {
     required this.label,
     required this.backgroundColor,
     required this.foregroundColor,
+    this.borderColor,
     required this.logoAssetPath,
     required this.logoWidth,
     required this.logoHeight,
+    required this.logoTop,
     required this.onPressed,
   });
 
   final String label;
   final Color backgroundColor;
   final Color foregroundColor;
+  final Color? borderColor;
   final String logoAssetPath;
   final double logoWidth;
   final double logoHeight;
+  final double logoTop;
   final VoidCallback onPressed;
 
   @override
@@ -164,7 +183,12 @@ class _LoginSocialButton extends StatelessWidget {
       label: label,
       child: Material(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppRadius.small),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.small),
+          side: borderColor == null
+              ? BorderSide.none
+              : BorderSide(color: borderColor!),
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onPressed,
@@ -176,6 +200,7 @@ class _LoginSocialButton extends StatelessWidget {
               children: [
                 Positioned(
                   left: AppSpacing.x16,
+                  top: logoTop,
                   child: Image.asset(
                     logoAssetPath,
                     width: logoWidth,

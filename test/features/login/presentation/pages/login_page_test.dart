@@ -16,6 +16,7 @@ void main() {
     expect(find.bySemanticsLabel('Plant'), findsOneWidget);
     expect(find.bySemanticsLabel('로그인 일러스트'), findsOneWidget);
     expect(find.text('카카오로 로그인'), findsOneWidget);
+    expect(find.text('구글로 로그인'), findsOneWidget);
     expect(find.text('Apple로 로그인'), findsOneWidget);
 
     expect(
@@ -36,11 +37,15 @@ void main() {
     );
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('loginKakaoButton'))).dy,
-      closeTo(637.72, 0.01),
+      closeTo(582, 0.01),
+    );
+    expect(
+      tester.getTopLeft(find.byKey(const ValueKey('loginGoogleButton'))).dy,
+      closeTo(638, 0.01),
     );
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('loginAppleButton'))).dy,
-      closeTo(693.72, 0.01),
+      closeTo(694, 0.01),
     );
   });
 
@@ -56,6 +61,7 @@ void main() {
     expect(illustrationSize.width, lessThan(186));
     expect(illustrationSize.height, lessThan(186));
     expect(find.text('카카오로 로그인'), findsOneWidget);
+    expect(find.text('구글로 로그인'), findsOneWidget);
     expect(find.text('Apple로 로그인'), findsOneWidget);
   });
 }
