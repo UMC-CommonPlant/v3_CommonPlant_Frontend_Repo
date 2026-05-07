@@ -8,6 +8,7 @@ import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
+import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_card.dart';
 import 'package:commonplant_frontend/shared/widgets/common_plant_card.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
@@ -18,6 +19,7 @@ import 'package:go_router/go_router.dart';
 
 const double _heroContentHeight = 200;
 const double _homeSectionContentGap = 26;
+const int _placeInvitationRequestCount = 3;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -206,6 +208,10 @@ class _HomeBody extends ConsumerWidget {
             _HomeSectionHeader(
               title: 'My place',
               addSemanticsLabel: '장소 추가',
+              action: _HomePlaceRequestButton(
+                count: _placeInvitationRequestCount,
+                onPressed: () => context.push(AppRoutePaths.placeInvitations),
+              ),
               onAddPressed: hasPlaces
                   ? () => context.push(AppRoutePaths.placeCreate)
                   : null,
@@ -301,11 +307,13 @@ class _HomeSectionHeader extends StatelessWidget {
   const _HomeSectionHeader({
     required this.title,
     required this.addSemanticsLabel,
+    this.action,
     this.onAddPressed,
   });
 
   final String title;
   final String addSemanticsLabel;
+  final Widget? action;
   final VoidCallback? onAddPressed;
 
   @override
@@ -321,6 +329,8 @@ class _HomeSectionHeader extends StatelessWidget {
             ),
           ),
         ),
+        if (action != null) ...[const SizedBox(width: AppSpacing.x12), action!],
+        if (onAddPressed != null) const SizedBox(width: AppSpacing.x12),
         if (onAddPressed != null)
           Semantics(
             label: addSemanticsLabel,
@@ -328,6 +338,29 @@ class _HomeSectionHeader extends StatelessWidget {
             child: _HomeSectionAddButton(onPressed: onAddPressed!),
           ),
       ],
+    );
+  }
+}
+
+class _HomePlaceRequestButton extends StatelessWidget {
+  const _HomePlaceRequestButton({required this.count, required this.onPressed});
+
+  final int count;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: '장소 요청 $count건',
+      button: true,
+      child: CommonButton(
+        label: '요청 $count건',
+        onPressed: onPressed,
+        size: CommonButtonSize.small,
+        width: AppSizes.smallButtonWidth,
+        backgroundColor: AppColors.brandAccent,
+        foregroundColor: AppColors.white,
+      ),
     );
   }
 }
@@ -447,7 +480,7 @@ class _HomeBottomTabBar extends StatelessWidget {
                   icon: Icons.chat_bubble_outline,
                   semanticsLabel: '이야기',
                 ),
-                _HomeGardenTabItem(),
+                _HomeGardenTabItem(isSelected: true),
                 _HomeBottomTabItem(
                   icon: Icons.calendar_today_outlined,
                   semanticsLabel: '캘린더',
@@ -455,6 +488,7 @@ class _HomeBottomTabBar extends StatelessWidget {
                 _HomeBottomTabItem(
                   icon: Icons.person_outline,
                   semanticsLabel: '마이',
+                  iconSize: AppSizes.iconLarge,
                 ),
               ],
             ),
@@ -466,10 +500,15 @@ class _HomeBottomTabBar extends StatelessWidget {
 }
 
 class _HomeBottomTabItem extends StatelessWidget {
-  const _HomeBottomTabItem({required this.icon, required this.semanticsLabel});
+  const _HomeBottomTabItem({
+    required this.icon,
+    required this.semanticsLabel,
+    this.iconSize = AppSizes.iconMedium,
+  });
 
   final IconData icon;
   final String semanticsLabel;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
@@ -477,7 +516,7 @@ class _HomeBottomTabItem extends StatelessWidget {
       child: Center(
         child: Icon(
           icon,
-          size: 24,
+          size: iconSize,
           color: AppColors.textDisabled,
           semanticLabel: semanticsLabel,
         ),
@@ -487,7 +526,9 @@ class _HomeBottomTabItem extends StatelessWidget {
 }
 
 class _HomeGardenTabItem extends StatelessWidget {
-  const _HomeGardenTabItem();
+  const _HomeGardenTabItem({this.isSelected = true});
+
+  final bool isSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -496,22 +537,23 @@ class _HomeGardenTabItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CommonSvgIcon(
-              AppIconAssets.plant,
+            CommonSvgIcon(
+              isSelected ? AppIconAssets.plantSelected : AppIconAssets.plant,
               width: 24,
               height: 24,
-              color: AppColors.brandAccent,
               semanticsLabel: '정원',
             ),
-            const SizedBox(height: AppSpacing.x8),
-            Container(
-              width: 6,
-              height: 6,
-              decoration: const BoxDecoration(
-                color: AppColors.brandAccent,
-                shape: BoxShape.circle,
+            if (isSelected) ...[
+              const SizedBox(height: AppSpacing.x8),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: AppColors.brandAccent,
+                  shape: BoxShape.circle,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

@@ -14,6 +14,7 @@ abstract final class AppIconAssets {
   static const String people = 'assets/icons/people.svg';
   static const String placeEmpty = 'assets/icons/place_empty.svg';
   static const String plant = 'assets/icons/plant.svg';
+  static const String plantSelected = 'assets/icons/plant_selected.svg';
   static const String plantEmpty = 'assets/icons/plant_empty.svg';
   static const String userIllustration = 'assets/icons/user_illustration.svg';
   static const String watering = 'assets/icons/watering.svg';

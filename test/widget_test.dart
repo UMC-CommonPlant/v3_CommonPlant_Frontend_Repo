@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:commonplant_frontend/app/common_plant_app.dart';
+import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/features/home/presentation/home_screen.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
+import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,10 +20,27 @@ void main() {
     expect(find.textContaining('한걸음에', findRichText: true), findsOneWidget);
     expect(find.text('My place'), findsOneWidget);
     expect(find.text('My plant'), findsOneWidget);
+    expect(find.text('요청 3건'), findsOneWidget);
+    expect(
+      tester.getSize(find.bySemanticsLabel('장소 요청 3건')),
+      const Size(96, 36),
+    );
     expect(find.text('장소 추가하기'), findsOneWidget);
     expect(find.text('식물 추가하기'), findsOneWidget);
     expect(find.bySemanticsLabel('정원'), findsOneWidget);
     expect(find.byIcon(Icons.person_outline), findsOneWidget);
+    expect(
+      tester.widget<Icon>(find.byIcon(Icons.person_outline)).size,
+      AppSizes.iconLarge,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is CommonSvgIcon &&
+            widget.assetPath == AppIconAssets.plantSelected,
+      ),
+      findsOneWidget,
+    );
     expect(find.bySemanticsLabel('유저 일러스트'), findsOneWidget);
   });
 
@@ -68,11 +90,24 @@ void main() {
 
     expect(find.text('장소 추가하기'), findsNothing);
     expect(find.text('식물 추가하기'), findsNothing);
+    expect(find.text('요청 3건'), findsOneWidget);
+    expect(
+      tester.getSize(find.bySemanticsLabel('장소 요청 3건')),
+      const Size(96, 36),
+    );
     expect(find.bySemanticsLabel('장소 추가'), findsOneWidget);
     expect(find.bySemanticsLabel('식물 추가'), findsOneWidget);
     expect(tester.getSize(find.bySemanticsLabel('장소 추가')), const Size(24, 24));
     expect(tester.getSize(find.bySemanticsLabel('식물 추가')), const Size(24, 24));
     expect(find.bySemanticsLabel('몬스테라'), findsOneWidget);
+  });
+
+  test('선택된 식물 아이콘은 잎 면을 Sea Green Dark1로 채운다', () {
+    final svg = File(AppIconAssets.plantSelected).readAsStringSync();
+
+    expect(svg, contains('#00C596'));
+    expect(svg, contains('fill="#00C596"'));
+    expect(svg, contains('stroke="white"'));
   });
 }
 
