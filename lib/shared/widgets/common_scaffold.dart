@@ -131,6 +131,7 @@ class CommonNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      width: double.infinity,
       height: AppSizes.navigationBarHeight,
       child: Stack(
         alignment: Alignment.center,
