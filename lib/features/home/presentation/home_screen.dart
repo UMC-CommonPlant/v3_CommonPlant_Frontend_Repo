@@ -1,364 +1,519 @@
+import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
+import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
+import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
-import 'package:commonplant_frontend/core/theme/app_theme_tokens.dart';
-import 'package:commonplant_frontend/shared/widgets/common_add_tile.dart';
-import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
-import 'package:commonplant_frontend/shared/widgets/common_button.dart';
-import 'package:commonplant_frontend/shared/widgets/common_circle_image_box.dart';
-import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
-import 'package:commonplant_frontend/shared/widgets/common_edit_delete_popup.dart';
-import 'package:commonplant_frontend/shared/widgets/common_fab.dart';
-import 'package:commonplant_frontend/shared/widgets/common_memo_card.dart';
-import 'package:commonplant_frontend/shared/widgets/common_photo_add_button.dart';
+import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_card.dart';
-import 'package:commonplant_frontend/shared/widgets/common_place_guide_banner.dart';
-import 'package:commonplant_frontend/shared/widgets/common_place_image_add_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_plant_card.dart';
-import 'package:commonplant_frontend/shared/widgets/common_plus_icon_button.dart';
-import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
-import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
-import 'package:commonplant_frontend/shared/widgets/common_section_header.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
-import 'package:commonplant_frontend/shared/widgets/common_text_field.dart';
-import 'package:commonplant_frontend/shared/widgets/common_watering_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-final homeMessageProvider = Provider<String>(
-  (ref) => '피그마 이미지 기준으로 버튼, 추가 타일, 메모 카드 스타일을 다시 맞추고 있습니다.',
-);
+const double _heroContentHeight = 200;
+const double _homeSectionContentGap = 26;
 
-class HomeScreen extends ConsumerStatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final TextEditingController _nicknameController = TextEditingController();
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _nicknameFocusNode = FocusNode();
-  final Set<String> _unavailableNicknames = const {'커먼플랜트'};
-  String? _selectedAddress;
-
-  CommonTextFieldValidation _validateNickname(String value, bool isFocused) {
-    final nickname = value.trim();
-
-    if (nickname.isEmpty) {
-      return const CommonTextFieldValidation(
-        state: CommonTextFieldState.normal,
-      );
-    }
-
-    if (nickname.length < 2 || nickname.length > 10) {
-      return const CommonTextFieldValidation(
-        state: CommonTextFieldState.error,
-        helperText: '2~10자의 닉네임으로 입력해주세요',
-      );
-    }
-
-    if (isFocused) {
-      return const CommonTextFieldValidation(
-        state: CommonTextFieldState.normal,
-      );
-    }
-
-    if (_unavailableNicknames.contains(nickname)) {
-      return const CommonTextFieldValidation(
-        state: CommonTextFieldState.error,
-        helperText: '중복된 닉네임입니다',
-      );
-    }
-
-    return const CommonTextFieldValidation(
-      state: CommonTextFieldState.success,
-      helperText: '사용가능한 닉네임 입니다',
+  Widget build(BuildContext context) {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: AppColors.surfaceAlt,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: AppColors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+      child: Scaffold(
+        backgroundColor: AppColors.white,
+        bottomNavigationBar: const _HomeBottomTabBar(),
+        body: const _HomeFigmaFrame(),
+      ),
     );
   }
+}
 
-  @override
-  void dispose() {
-    _nicknameFocusNode.dispose();
-    _nicknameController.dispose();
-    _searchController.dispose();
-    super.dispose();
-  }
+class _HomeFigmaFrame extends StatelessWidget {
+  const _HomeFigmaFrame();
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final tokens =
-        Theme.of(context).extension<AppThemeTokens>() ?? AppThemeTokens.light;
-    final message = ref.watch(homeMessageProvider);
-    void noop() {}
-    void selectSampleAddress() {
-      setState(() {
-        _selectedAddress = '서울시 노원구 광운로 20';
-      });
-    }
+    final topInset = MediaQuery.paddingOf(context).top;
+    final heroHeight = topInset + _heroContentHeight;
 
-    void clearSampleAddress() {
-      setState(() {
-        _selectedAddress = null;
-      });
-    }
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(color: AppColors.white),
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          height: heroHeight,
+          child: _HomeHero(topInset: topInset),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          top: heroHeight,
+          bottom: 0,
+          child: const _HomeBody(),
+        ),
+      ],
+    );
+  }
+}
 
-    void closeModal() => Navigator.of(context, rootNavigator: true).pop();
-    void showDeleteDialog() {
-      showCommonDialog<void>(
-        context: context,
-        child: CommonDialogCard(
-          title: '커먼 파파',
-          message: '님을 친구 목록에서 삭제하시겠습니까?',
-          actions: [
-            CommonDialogActionButton(
-              label: '취소',
-              foregroundColor: tokens.textBody,
-              onPressed: closeModal,
+class _HomeHero extends StatelessWidget {
+  const _HomeHero({required this.topInset});
+
+  final double topInset;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(child: ColoredBox(color: AppColors.surfaceAlt)),
+        Positioned(
+          left: 0,
+          right: 0,
+          top: topInset,
+          height: _heroContentHeight,
+          child: CommonSvgIcon(
+            AppImageAssets.homeMainHeroBackground,
+            fit: BoxFit.fill,
+            semanticsLabel: '메인 배경',
+          ),
+        ),
+        Positioned(
+          left: AppSpacing.x20,
+          top: topInset + 48,
+          child: Text(
+            '커먼(유저 네임',
+            style: AppTextStyles.size16Bold.copyWith(
+              color: AppColorPrimitives.unspecifiedGreenGray,
             ),
-            CommonDialogActionButton.confirm(
-              label: '삭제',
-              foregroundColor: tokens.brandStrong,
-              onPressed: closeModal,
+          ),
+        ),
+        Positioned(
+          left: AppSpacing.x20,
+          top: topInset + 76,
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 44,
+                child: Container(
+                  width: 70,
+                  height: 10,
+                  color: AppColorPrimitives.unspecifiedGreenGray.withValues(
+                    alpha: 0.16,
+                  ),
+                ),
+              ),
+              RichText(
+                text: TextSpan(
+                  style: AppTextStyles.size20Medium.copyWith(
+                    color: AppColors.textHeadline,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  children: const [
+                    TextSpan(text: '님과 함께 친환경 한 걸음을\n'),
+                    TextSpan(
+                      text: '한걸음에',
+                      style: TextStyle(color: AppColors.brandStrong),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          right: 23,
+          top: topInset + 110,
+          width: 88,
+          height: 64,
+          child: const CommonSvgIcon(
+            AppIconAssets.userIllustration,
+            fit: BoxFit.fill,
+            semanticsLabel: '유저 일러스트',
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          top: topInset + 161,
+          height: 27,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFFD8DEDD).withValues(alpha: 0.6),
+                  const Color(0x00D8DEDD),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HomeContentFrame extends StatelessWidget {
+  const _HomeContentFrame({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
+      child: child,
+    );
+  }
+}
+
+class _HomeBody extends ConsumerWidget {
+  const _HomeBody();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final places = ref.watch(placeListProvider);
+    final hasPlaces = places.isNotEmpty;
+    final plants = ref.watch(plantListProvider);
+    final hasPlants = plants.isNotEmpty;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(top: AppSpacing.x24, bottom: 120),
+      child: _HomeContentFrame(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _HomeSectionHeader(
+              title: 'My place',
+              addSemanticsLabel: '장소 추가',
+              onAddPressed: hasPlaces
+                  ? () => context.push(AppRoutePaths.placeCreate)
+                  : null,
+            ),
+            const SizedBox(height: _homeSectionContentGap),
+            SizedBox(
+              height: AppSizes.placeAddTileHeight,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  if (hasPlaces)
+                    for (final place in places) ...[
+                      CommonPlaceCard(
+                        title: place.name,
+                        onTap: () => context.push(
+                          AppRoutePaths.placeDetailLocation(place.id),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.x12),
+                    ]
+                  else
+                    _HomeAddTile(
+                      label: '장소 추가하기',
+                      width: AppSizes.placeAddTileWidth,
+                      height: AppSizes.placeAddTileHeight,
+                      borderColor: AppColors.brandStrong,
+                      foregroundColor: AppColors.brandPrimary,
+                      iconAsset: AppIconAssets.plusGreen,
+                      onTap: () => context.push(AppRoutePaths.placeCreate),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.x32),
+            _HomeSectionHeader(
+              title: 'My plant',
+              addSemanticsLabel: '식물 추가',
+              onAddPressed: hasPlants
+                  ? () => context.push(AppRoutePaths.plantSearch)
+                  : null,
+            ),
+            const SizedBox(height: _homeSectionContentGap),
+            if (hasPlants)
+              SizedBox(
+                height: AppSizes.plantCardHeight,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    for (final plant in plants) ...[
+                      Semantics(
+                        label: plant.name,
+                        button: true,
+                        child: CommonPlantCard(
+                          onTap: () => context.push(
+                            AppRoutePaths.plantDetailLocation(plant.id),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.x12),
+                    ],
+                  ],
+                ),
+              )
+            else
+              _HomeAddTile(
+                label: '식물 추가하기',
+                width: AppSizes.plantAddTileWidth,
+                height: AppSizes.plantAddTileHeight,
+                borderColor: hasPlaces
+                    ? AppColors.brandStrong
+                    : AppColors.textDisabled,
+                foregroundColor: hasPlaces
+                    ? AppColors.brandPrimary
+                    : AppColors.textDisabled,
+                backgroundColor: hasPlaces
+                    ? AppColors.white
+                    : AppColors.surfaceDisabled,
+                iconAsset: hasPlaces
+                    ? AppIconAssets.plusGreen
+                    : AppIconAssets.plusGray,
+                onTap: hasPlaces
+                    ? () => context.push(AppRoutePaths.plantSearch)
+                    : null,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeSectionHeader extends StatelessWidget {
+  const _HomeSectionHeader({
+    required this.title,
+    required this.addSemanticsLabel,
+    this.onAddPressed,
+  });
+
+  final String title;
+  final String addSemanticsLabel;
+  final VoidCallback? onAddPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: AppTextStyles.size24Medium.copyWith(
+              color: AppColors.textHeadline,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        if (onAddPressed != null)
+          Semantics(
+            label: addSemanticsLabel,
+            button: true,
+            child: _HomeSectionAddButton(onPressed: onAddPressed!),
+          ),
+      ],
+    );
+  }
+}
+
+class _HomeSectionAddButton extends StatelessWidget {
+  const _HomeSectionAddButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(AppRadius.full),
+        child: const SizedBox.square(
+          dimension: AppSizes.iconMedium,
+          child: CommonSvgIcon(
+            AppIconAssets.plusGreen,
+            width: AppSizes.iconMedium,
+            height: AppSizes.iconMedium,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeAddTile extends StatelessWidget {
+  const _HomeAddTile({
+    required this.label,
+    required this.width,
+    required this.height,
+    required this.borderColor,
+    required this.foregroundColor,
+    required this.iconAsset,
+    this.backgroundColor = AppColors.white,
+    this.onTap,
+  });
+
+  final String label;
+  final double width;
+  final double height;
+  final Color borderColor;
+  final Color foregroundColor;
+  final Color backgroundColor;
+  final String iconAsset;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.small),
+        border: Border.all(color: borderColor),
+      ),
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CommonSvgIcon(
+              iconAsset,
+              width: 24,
+              height: 24,
+              semanticsLabel: label,
+            ),
+            const SizedBox(width: AppSpacing.x10),
+            Text(
+              label,
+              style: AppTextStyles.size14Medium.copyWith(
+                color: foregroundColor,
+              ),
             ),
           ],
         ),
-      );
+      ),
+    );
+
+    if (onTap == null) {
+      return content;
     }
 
-    void showEditDeletePopup() {
-      showDialog<void>(
-        context: context,
-        barrierColor: commonDialogBarrierColor,
-        barrierDismissible: true,
-        builder: (dialogContext) {
-          void closePopup() => Navigator.of(dialogContext).pop();
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.small),
+      child: content,
+    );
+  }
+}
 
-          return Stack(
-            children: [
-              Positioned(
-                top: 136,
-                right: 20,
-                child: CommonEditDeletePopup(
-                  onEdit: closePopup,
-                  onDelete: closePopup,
+class _HomeBottomTabBar extends StatelessWidget {
+  const _HomeBottomTabBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFFFDFDFD),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: AppColors.borderDefault)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              children: const [
+                _HomeBottomTabItem(
+                  icon: Icons.article_outlined,
+                  semanticsLabel: '정보',
                 ),
-              ),
-            ],
-          );
-        },
-      );
-    }
-
-    return CommonScaffold(
-      title: 'CommonPlant Components',
-      subtitle: '실제 피그마 캡처와 최대한 비슷하게 맞춘 컴포넌트 샘플',
-      floatingActionButton: CommonFabDial(
-        actions: [
-          CommonFabDialAction(
-            label: '식물 추가',
-            icon: const CommonSvgIcon(
-              AppIconAssets.plant,
-              width: 20,
-              height: 20,
-              semanticsLabel: '식물',
+                _HomeBottomTabItem(
+                  icon: Icons.chat_bubble_outline,
+                  semanticsLabel: '이야기',
+                ),
+                _HomeGardenTabItem(),
+                _HomeBottomTabItem(
+                  icon: Icons.calendar_today_outlined,
+                  semanticsLabel: '캘린더',
+                ),
+                _HomeBottomTabItem(
+                  icon: Icons.person_outline,
+                  semanticsLabel: '마이',
+                ),
+              ],
             ),
-            onPressed: noop,
           ),
-          CommonFabDialAction(
-            label: '장소 추가',
-            icon: const CommonSvgIcon(
-              AppIconAssets.edit,
-              width: 20,
-              height: 20,
-              semanticsLabel: '수정',
-            ),
-            onPressed: noop,
-          ),
-        ],
-        child: const CommonSvgIcon(
-          AppIconAssets.shape,
-          width: 5,
-          height: 25,
-          semanticsLabel: 'FAB 메뉴',
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(message, style: textTheme.bodyLarge),
-          const SizedBox(height: AppSpacing.x24),
-          const CommonSectionHeader(title: 'Buttons'),
-          const SizedBox(height: AppSpacing.x12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CommonButton(
-                label: '요청 3건',
-                onPressed: noop,
-                size: CommonButtonSize.small,
-                backgroundColor: tokens.brandStrong,
-                foregroundColor: tokens.onBrand,
-              ),
-              const SizedBox(height: AppSpacing.x12),
-              Row(
-                children: [
-                  Expanded(
-                    child: CommonButton(
-                      label: '등록',
-                      onPressed: noop,
-                      size: CommonButtonSize.medium,
-                      backgroundColor: tokens.brandStrong,
-                      foregroundColor: tokens.onBrand,
-                    ),
-                  ),
-                  Expanded(
-                    child: CommonButton(
-                      label: '취소',
-                      onPressed: noop,
-                      size: CommonButtonSize.medium,
-                      backgroundColor: tokens.textStrong,
-                      foregroundColor: tokens.onBrand,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.x12),
-              CommonButton(
-                label: '완료',
-                onPressed: noop,
-                size: CommonButtonSize.large,
-                backgroundColor: tokens.brandStrong,
-                foregroundColor: tokens.onBrand,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.x24),
-          const CommonSectionHeader(title: 'Fields'),
-          const SizedBox(height: AppSpacing.x12),
-          const CommonCircleImageBox(),
-          const SizedBox(height: AppSpacing.x16),
-          const CommonPhotoAddButton(),
-          const SizedBox(height: AppSpacing.x16),
-          const CommonPlaceImageAddButton(),
-          const SizedBox(height: AppSpacing.x16),
-          CommonTextField(
-            controller: _nicknameController,
-            focusNode: _nicknameFocusNode,
-            hintText: '닉네임을 입력해 주세요',
-            maxLength: 10,
-            validator: _validateNickname,
-          ),
-          const SizedBox(height: AppSpacing.x16),
-          CommonAddressOrPlaceField(
-            label: '주소',
-            value: _selectedAddress,
-            onTap: selectSampleAddress,
-            onClear: clearSampleAddress,
-          ),
-          const SizedBox(height: AppSpacing.x16),
-          CommonSearchTextField(
-            controller: _searchController,
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: AppSpacing.x24),
-          const CommonSectionHeader(title: 'Add Tiles'),
-          const SizedBox(height: AppSpacing.x12),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: CommonPlusIconButton(),
-          ),
-          const SizedBox(height: AppSpacing.x16),
-          const SizedBox(
-            width: AppSizes.placeAddTileWidth,
-            height: AppSizes.placeAddTileHeight,
-            child: CommonAddTile(
-              label: '장소 추가하기',
-              variant: CommonAddTileVariant.place,
-              width: AppSizes.placeAddTileWidth,
-              height: AppSizes.placeAddTileHeight,
+    );
+  }
+}
+
+class _HomeBottomTabItem extends StatelessWidget {
+  const _HomeBottomTabItem({required this.icon, required this.semanticsLabel});
+
+  final IconData icon;
+  final String semanticsLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Center(
+        child: Icon(
+          icon,
+          size: 24,
+          color: AppColors.textDisabled,
+          semanticLabel: semanticsLabel,
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeGardenTabItem extends StatelessWidget {
+  const _HomeGardenTabItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CommonSvgIcon(
+              AppIconAssets.plant,
+              width: 24,
+              height: 24,
+              color: AppColors.brandAccent,
+              semanticsLabel: '정원',
             ),
-          ),
-          const SizedBox(height: AppSpacing.x16),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: SizedBox(
-              width: AppSizes.plantAddTileWidth,
-              child: CommonAddTile(
-                label: '식물 추가하기',
-                variant: CommonAddTileVariant.plantDisabled,
-                enabled: false,
-                width: AppSizes.plantAddTileWidth,
-                height: AppSizes.plantAddTileHeight,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.x16),
-          const CommonPlaceGuideBanner(label: '가나다라마바사아자차'),
-          const SizedBox(height: AppSpacing.x24),
-          const CommonSectionHeader(title: 'Cards'),
-          const SizedBox(height: AppSpacing.x12),
-          const CommonPlaceCard(title: '스윗 홈_거실'),
-          const SizedBox(height: AppSpacing.x16),
-          const CommonPlantCard(),
-          const SizedBox(height: AppSpacing.x16),
-          CommonPlacePlantCard(
-            name: '몬테',
-            species: '몬스테라',
-            description: '일주일에 x번 물주는 거 잊지 않기',
-            action: const CommonWateringButton(),
-            dDayLabel: 'D-3',
-            dateLabel: '2022.11.20',
-          ),
-          const SizedBox(height: AppSpacing.x16),
-          CommonMemoCard(
-            author: '커먼플랜트',
-            content: '장마여서 물주는 날짜를 조금 늦춤 하지만 해는 말구나 몬테랑 함께...',
-            dateLabel: '2022.11.20',
-            avatar: Container(
-              width: AppSizes.memoAvatarSize,
-              height: AppSizes.memoAvatarSize,
+            const SizedBox(height: AppSpacing.x8),
+            Container(
+              width: 6,
+              height: 6,
               decoration: const BoxDecoration(
+                color: AppColors.brandAccent,
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [Color(0xFFB7D9D5), Color(0xFF6D8B9B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
               ),
             ),
-            thumbnail: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF9EC38E), Color(0xFF355E3B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.x24),
-          const CommonSectionHeader(title: 'Dialog'),
-          const SizedBox(height: AppSpacing.x12),
-          CommonButton(
-            label: '삭제 다이얼로그 보기',
-            onPressed: showDeleteDialog,
-            size: CommonButtonSize.large,
-            backgroundColor: tokens.brandStrong,
-            foregroundColor: tokens.onBrand,
-          ),
-          const SizedBox(height: AppSpacing.x16),
-          CommonButton(
-            label: '수정/삭제 팝업 보기',
-            onPressed: showEditDeletePopup,
-            size: CommonButtonSize.large,
-            backgroundColor: tokens.textStrong,
-            foregroundColor: tokens.onBrand,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
