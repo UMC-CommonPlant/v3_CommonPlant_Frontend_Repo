@@ -71,4 +71,7 @@ abstract final class AppSizes {
   static const double placeImageAddInnerSize = 100;
   static const double placeImageCameraBoxSize = 40;
   static const double placeImageCameraIconSize = 27;
+  static const double placeInvitationAvatarSize = 80;
+  static const double placeInvitationActionButtonWidth = 114;
+  static const double placeInvitationActionButtonHeight = 36;
 }

@@ -210,10 +210,7 @@ class _HomeBody extends ConsumerWidget {
               addSemanticsLabel: '장소 추가',
               action: _HomePlaceRequestButton(
                 count: _placeInvitationRequestCount,
-                onPressed: () {
-                  // TODO(#17): 온보딩 퍼블리싱 확인용 임시 진입점입니다. 확인 후 장소 요청 화면으로 되돌립니다.
-                  context.push(AppRoutePaths.onboarding);
-                },
+                onPressed: () => context.push(AppRoutePaths.placeInvitations),
               ),
               onAddPressed: hasPlaces
                   ? () => context.push(AppRoutePaths.placeCreate)

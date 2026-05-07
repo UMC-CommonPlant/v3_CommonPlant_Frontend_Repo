@@ -16,4 +16,8 @@ abstract final class AppImageAssets {
   static const String loginAppleLogo = 'assets/images/login_apple_logo.png';
   static const String profileSetupSampleAvatar =
       'assets/images/profile_setup_sample_avatar.jpg';
+  static const String placeInvitationAvatarCommonMom =
+      'assets/images/place_invitation_avatar_common_mom.jpg';
+  static const String placeInvitationAvatarDoraemon =
+      'assets/images/place_invitation_avatar_doraemon.jpg';
 }

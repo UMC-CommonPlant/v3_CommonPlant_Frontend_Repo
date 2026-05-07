@@ -102,15 +102,15 @@ void main() {
     expect(find.bySemanticsLabel('몬스테라'), findsOneWidget);
   });
 
-  testWidgets('요청 버튼은 임시로 온보딩 화면으로 이동한다', (WidgetTester tester) async {
+  testWidgets('요청 버튼은 장소 친구 요청 화면으로 이동한다', (WidgetTester tester) async {
     await tester.pumpWidget(const ProviderScope(child: CommonPlantApp()));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('요청 3건'));
     await tester.pumpAndSettle();
 
-    expect(find.text('식물을 내 공간으로,\n공간은 내 폰으로'), findsOneWidget);
-    expect(find.bySemanticsLabel('온보딩 일러스트'), findsOneWidget);
+    expect(find.text('장소 친구 요청'), findsOneWidget);
+    expect(find.text('스윗홈_욕실'), findsOneWidget);
   });
 
   test('선택된 식물 아이콘은 잎 면을 Sea Green Dark1로 채운다', () {
