@@ -14,7 +14,7 @@
 | `lib/features/home/presentation/home_screen.dart` | 인증 후 홈 화면 |
 | `lib/features/*/presentation/pages` | Onboarding, Login, Terms, Place, Plant, Memo route 화면 |
 
-현재 등록된 라우트는 Figma `phase 0` 페이지를 기준으로 route-level screen 17개입니다.
+현재 등록된 라우트는 Figma `phase 0` 페이지를 기준으로 route-level screen 18개입니다.
 
 ```dart
 final appRouterProvider = Provider<GoRouter>(
@@ -22,7 +22,7 @@ final appRouterProvider = Provider<GoRouter>(
 );
 ```
 
-`phase 0`의 17개 route-level screen은 실제 page 위젯에 연결되어 있습니다. 새 route를 추가할 때 아직 화면 구현이 없다면 같은 route spec을 유지한 채 `RoutePlaceholderPage`를 임시로 연결하고, 기능 화면이 구현되면 builder만 실제 page로 교체합니다.
+`phase 0`의 18개 route-level screen은 실제 page 위젯에 연결되어 있습니다. 새 route를 추가할 때 아직 화면 구현이 없다면 같은 route spec을 유지한 채 `RoutePlaceholderPage`를 임시로 연결하고, 기능 화면이 구현되면 builder만 실제 page로 교체합니다.
 
 ## 기본 원칙
 
@@ -41,6 +41,7 @@ Figma 파일 `Common Plant 복제`의 `phase 0` 페이지를 기준으로 프레
 | --- | --- | --- | --- | --- |
 | Home | `home` | `/` | `#2 Main`, `#2 Main/D` | 인증 후 홈, My place/My plant 요약 |
 | Onboarding | `onboarding` | `/onboarding` | `#1-1` | 시작/온보딩 |
+| Login | `login` | `/login` | `#1-2 Log in` | 카카오/Apple 소셜 로그인 |
 | Login | `profileSetup` | `/profile/setup` | `#1-2-2 Log in` | 닉네임, 프로필 이미지 설정 |
 | Terms | `terms` | `/terms/privacy` | `#1-2-3 Sign up / 2D` | 개인정보 이용약관 |
 | Place | `placeInvitations` | `/places/invitations` | `#2-2 Main / 장소 친구 요청` | 장소 초대 요청 목록 |
@@ -100,7 +101,7 @@ lib/app/router/
 | `route_placeholder_page.dart` | 미구현 route의 임시 화면 |
 | `redirect_notifier.dart` | 인증 상태 변경 시 router refresh 연결 |
 
-작은 MVP 화면에서도 Figma 기준 라우트가 이미 17개로 확정되었기 때문에 route spec과 path 상수는 분리해서 관리합니다.
+작은 MVP 화면에서도 Figma 기준 라우트가 이미 18개로 확정되었기 때문에 route spec과 path 상수는 분리해서 관리합니다.
 
 ## 인증 라우팅 기준
 
