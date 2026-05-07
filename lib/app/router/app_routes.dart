@@ -2,6 +2,20 @@ import 'package:commonplant_frontend/app/router/app_route_spec.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/app/router/route_placeholder_page.dart';
 import 'package:commonplant_frontend/features/home/presentation/home_screen.dart';
+import 'package:commonplant_frontend/features/login/presentation/pages/profile_setup_page.dart';
+import 'package:commonplant_frontend/features/memo/presentation/pages/memo_list_page.dart';
+import 'package:commonplant_frontend/features/memo/presentation/pages/memo_write_page.dart';
+import 'package:commonplant_frontend/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:commonplant_frontend/features/place/presentation/pages/address_search_page.dart';
+import 'package:commonplant_frontend/features/place/presentation/pages/friend_management_page.dart';
+import 'package:commonplant_frontend/features/place/presentation/pages/place_detail_page.dart';
+import 'package:commonplant_frontend/features/place/presentation/pages/place_form_page.dart';
+import 'package:commonplant_frontend/features/place/presentation/pages/place_friend_add_page.dart';
+import 'package:commonplant_frontend/features/place/presentation/pages/place_invitations_page.dart';
+import 'package:commonplant_frontend/features/plant/presentation/pages/plant_detail_page.dart';
+import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
+import 'package:commonplant_frontend/features/plant/presentation/pages/plant_search_page.dart';
+import 'package:commonplant_frontend/features/terms/presentation/pages/terms_page.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,7 +25,6 @@ const List<AppRouteSpec> appRouteSpecs = [
     path: AppRoutePaths.home,
     title: '홈',
     figmaFrames: ['#2 Main', '#2 Main/D'],
-    implementation: AppRouteImplementation.implemented,
   ),
   AppRouteSpec(
     name: AppRouteNames.onboarding,
@@ -127,9 +140,39 @@ List<RouteBase> buildAppRoutes() {
 }
 
 Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
-  return switch (route.implementation) {
-    AppRouteImplementation.implemented => const HomeScreen(),
-    AppRouteImplementation.placeholder => RoutePlaceholderPage(
+  return switch (route.name) {
+    AppRouteNames.home => const HomeScreen(),
+    AppRouteNames.onboarding => const OnboardingPage(),
+    AppRouteNames.profileSetup => const ProfileSetupPage(),
+    AppRouteNames.terms => const TermsPage(),
+    AppRouteNames.placeInvitations => const PlaceInvitationsPage(),
+    AppRouteNames.placeCreate => const PlaceFormPage(),
+    AppRouteNames.addressSearch => const AddressSearchPage(),
+    AppRouteNames.placeFriendAdd => const PlaceFriendAddPage(),
+    AppRouteNames.placeEdit => PlaceFormPage(
+      placeId: state.pathParameters['placeId'],
+    ),
+    AppRouteNames.friendManagement => FriendManagementPage(
+      placeId: state.pathParameters['placeId'] ?? '',
+    ),
+    AppRouteNames.placeDetail => PlaceDetailPage(
+      placeId: state.pathParameters['placeId'] ?? '',
+    ),
+    AppRouteNames.plantSearch => const PlantSearchPage(),
+    AppRouteNames.plantCreateDetails => const PlantFormPage(),
+    AppRouteNames.plantEdit => PlantFormPage(
+      plantId: state.pathParameters['plantId'],
+    ),
+    AppRouteNames.memoWrite => MemoWritePage(
+      plantId: state.pathParameters['plantId'] ?? '',
+    ),
+    AppRouteNames.memoList => MemoListPage(
+      plantId: state.pathParameters['plantId'] ?? '',
+    ),
+    AppRouteNames.plantDetail => PlantDetailPage(
+      plantId: state.pathParameters['plantId'] ?? '',
+    ),
+    _ => RoutePlaceholderPage(
       route: route,
       pathParameters: state.pathParameters,
     ),

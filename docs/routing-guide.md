@@ -10,8 +10,9 @@
 | `lib/app/router/app_router.dart` | 앱 전역 `GoRouter` Provider 정의 |
 | `lib/app/router/app_routes.dart` | Figma 기준 route tree와 route metadata 정의 |
 | `lib/app/router/route_paths.dart` | route name, path, location helper 상수 |
-| `lib/app/router/route_placeholder_page.dart` | 아직 실제 화면이 없는 route의 임시 진입 화면 |
-| `lib/features/home/presentation/home_screen.dart` | 현재 초기 화면 및 공용 컴포넌트 샘플 |
+| `lib/app/router/route_placeholder_page.dart` | 새 route 추가 시 임시 진입 화면으로 사용할 fallback |
+| `lib/features/home/presentation/home_screen.dart` | 인증 후 홈 화면 |
+| `lib/features/*/presentation/pages` | Onboarding, Login, Terms, Place, Plant, Memo route 화면 |
 
 현재 등록된 라우트는 Figma `phase 0` 페이지를 기준으로 route-level screen 17개입니다.
 
@@ -21,7 +22,7 @@ final appRouterProvider = Provider<GoRouter>(
 );
 ```
 
-`/` 홈은 기존 `HomeScreen`에 연결되어 있고, 아직 실제 화면이 구현되지 않은 route는 `RoutePlaceholderPage`로 연결합니다. 기능 화면이 구현되면 같은 route spec을 유지한 채 builder만 실제 page로 교체합니다.
+`phase 0`의 17개 route-level screen은 실제 page 위젯에 연결되어 있습니다. 새 route를 추가할 때 아직 화면 구현이 없다면 같은 route spec을 유지한 채 `RoutePlaceholderPage`를 임시로 연결하고, 기능 화면이 구현되면 builder만 실제 page로 교체합니다.
 
 ## 기본 원칙
 
