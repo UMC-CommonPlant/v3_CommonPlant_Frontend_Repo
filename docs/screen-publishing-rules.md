@@ -20,6 +20,7 @@
 5. 상태별 화면을 먼저 정의한 뒤 성공 상태 UI를 채웁니다.
 6. 긴 텍스트, 빈 이미지, 네트워크 실패, 키보드 노출 상태를 확인합니다.
 7. 테스트와 analyzer를 실행합니다.
+8. PR 생성 후 CommonPlant GitHub Project 10에 PR을 연결합니다.
 
 ## 레이아웃 기준
 
@@ -99,6 +100,7 @@
 - [ ] 터치 영역이 충분한가?
 - [ ] `fvm flutter analyze`를 통과하는가?
 - [ ] 필요한 widget test를 추가 또는 갱신했는가?
+- [ ] PR이 CommonPlant GitHub Project 10에 연결되었는가?
 
 ## 결정 필요
 
