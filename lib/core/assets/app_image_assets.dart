@@ -9,4 +9,9 @@ abstract final class AppImageAssets {
       'assets/images/home_main_hero_background.svg';
   static const String onboardingHeroIllustration =
       'assets/images/onboarding_hero_illustration.svg';
+  static const String loginHeroIllustration =
+      'assets/images/login_hero_illustration.svg';
+  static const String loginKakaoLogo = 'assets/images/login_kakao_logo.png';
+  static const String loginGoogleLogo = 'assets/images/login_google_logo.png';
+  static const String loginAppleLogo = 'assets/images/login_apple_logo.png';
 }

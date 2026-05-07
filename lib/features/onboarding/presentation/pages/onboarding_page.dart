@@ -86,7 +86,7 @@ class OnboardingPage extends StatelessWidget {
                 bottom: buttonBottom,
                 child: CommonButton(
                   label: '시작하기',
-                  onPressed: () => context.go(AppRoutePaths.profileSetup),
+                  onPressed: () => context.go(AppRoutePaths.login),
                 ),
               ),
             ],

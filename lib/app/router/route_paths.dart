@@ -3,6 +3,7 @@ abstract final class AppRouteNames {
 
   static const String home = 'home';
   static const String onboarding = 'onboarding';
+  static const String login = 'login';
   static const String profileSetup = 'profileSetup';
   static const String terms = 'terms';
   static const String placeInvitations = 'placeInvitations';
@@ -25,6 +26,7 @@ abstract final class AppRoutePaths {
 
   static const String home = '/';
   static const String onboarding = '/onboarding';
+  static const String login = '/login';
   static const String profileSetup = '/profile/setup';
   static const String terms = '/terms/privacy';
   static const String placeInvitations = '/places/invitations';
