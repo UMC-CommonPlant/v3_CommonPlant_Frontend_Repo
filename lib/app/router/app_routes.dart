@@ -152,7 +152,9 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
     AppRouteNames.onboarding => const OnboardingPage(),
     AppRouteNames.login => const LoginPage(),
     AppRouteNames.profileSetup => const ProfileSetupPage(),
-    AppRouteNames.terms => const TermsPage(),
+    AppRouteNames.terms => TermsPage(
+      nextDestination: _termsNextDestination(state),
+    ),
     AppRouteNames.placeInvitations => const PlaceInvitationsPage(),
     AppRouteNames.placeCreate => const PlaceFormPage(),
     AppRouteNames.addressSearch => const AddressSearchPage(),
@@ -184,5 +186,12 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
       route: route,
       pathParameters: state.pathParameters,
     ),
+  };
+}
+
+TermsNextDestination _termsNextDestination(GoRouterState state) {
+  return switch (state.uri.queryParameters['next']) {
+    'home' => TermsNextDestination.home,
+    _ => TermsNextDestination.profile,
   };
 }

@@ -118,7 +118,7 @@ void main() {
     await tester.tap(find.text('카카오로 로그인'));
     await tester.pumpAndSettle();
 
-    expect(find.text('프로필 설정'), findsOneWidget);
+    expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), '초록');
     await tester.tapAt(const Offset(24, 24));
@@ -129,15 +129,40 @@ void main() {
 
     expect(find.text('개인정보 이용약관'), findsOneWidget);
 
-    await tester.tap(find.byType(CheckboxListTile).at(0));
-    await tester.tap(find.byType(CheckboxListTile).at(1));
+    await tester.tap(find.text('동의합니다'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('동의하고 시작하기'));
-    await tester.tap(find.text('동의하고 시작하기'));
+    await tester.ensureVisible(find.text('확인'));
+    await tester.tap(find.text('확인'));
     await tester.pumpAndSettle();
 
     expect(find.text('My place'), findsOneWidget);
     expect(find.text('My plant'), findsOneWidget);
+  });
+
+  testWidgets('약관 보기에서 동의하면 프로필 설정 체크 상태로 돌아온다', (WidgetTester tester) async {
+    final router = createAppRouter(initialLocation: AppRoutePaths.profileSetup);
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appRouterProvider.overrideWithValue(router)],
+        child: const CommonPlantApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('보기'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('개인정보 이용약관'), findsOneWidget);
+
+    await tester.tap(find.text('동의합니다'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('확인'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
+    expect(find.bySemanticsLabel('개인정보 이용약관 동의됨'), findsOneWidget);
   });
 
   testWidgets('home에서 장소 등록 화면으로 이동한다', (WidgetTester tester) async {
