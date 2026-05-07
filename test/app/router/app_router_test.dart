@@ -118,7 +118,7 @@ void main() {
     await tester.tap(find.text('카카오로 로그인'));
     await tester.pumpAndSettle();
 
-    expect(find.text('프로필 설정'), findsOneWidget);
+    expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), '초록');
     await tester.tapAt(const Offset(24, 24));

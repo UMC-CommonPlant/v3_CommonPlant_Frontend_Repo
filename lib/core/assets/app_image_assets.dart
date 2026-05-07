@@ -14,4 +14,6 @@ abstract final class AppImageAssets {
   static const String loginKakaoLogo = 'assets/images/login_kakao_logo.png';
   static const String loginGoogleLogo = 'assets/images/login_google_logo.png';
   static const String loginAppleLogo = 'assets/images/login_apple_logo.png';
+  static const String profileSetupSampleAvatar =
+      'assets/images/profile_setup_sample_avatar.jpg';
 }
