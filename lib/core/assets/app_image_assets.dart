@@ -7,4 +7,6 @@ abstract final class AppImageAssets {
       'assets/images/place_default_illustration.png';
   static const String homeMainHeroBackground =
       'assets/images/home_main_hero_background.svg';
+  static const String onboardingHeroIllustration =
+      'assets/images/onboarding_hero_illustration.svg';
 }
