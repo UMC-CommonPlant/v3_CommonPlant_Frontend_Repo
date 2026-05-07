@@ -7,10 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Figma 기준 route-level screen 17개를 등록한다', () {
-    expect(appRouteSpecs, hasLength(17));
-    expect(appRouteSpecs.map((route) => route.name).toSet(), hasLength(17));
-    expect(appRouteSpecs.map((route) => route.path).toSet(), hasLength(17));
+  test('Figma 기준 route-level screen 18개를 등록한다', () {
+    expect(appRouteSpecs, hasLength(18));
+    expect(appRouteSpecs.map((route) => route.name).toSet(), hasLength(18));
+    expect(appRouteSpecs.map((route) => route.path).toSet(), hasLength(18));
   });
 
   testWidgets('Figma 기준 route-level screen이 모두 실제 화면으로 진입된다', (
@@ -19,6 +19,7 @@ void main() {
     final locations = <String>[
       AppRoutePaths.home,
       AppRoutePaths.onboarding,
+      AppRoutePaths.login,
       AppRoutePaths.profileSetup,
       AppRoutePaths.terms,
       AppRoutePaths.placeInvitations,
@@ -109,6 +110,12 @@ void main() {
 
     await tester.ensureVisible(find.text('시작하기'));
     await tester.tap(find.text('시작하기'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('카카오로 로그인'), findsOneWidget);
+    expect(find.text('Apple로 로그인'), findsOneWidget);
+
+    await tester.tap(find.text('카카오로 로그인'));
     await tester.pumpAndSettle();
 
     expect(find.text('프로필 설정'), findsOneWidget);

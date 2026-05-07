@@ -38,6 +38,7 @@ abstract final class AppColorPrimitives {
   static const unspecifiedBackgroundAlt = Color(0xFFF3F6F6); // 미지정(배경색)
   static const unspecifiedNearBlack = Color(0xFF101010); // 미지정
   static const unspecifiedBorder = Color(0xFFD9D9D9); // 미지정
+  static const kakaoYellow = Color(0xFFFEE500); // Kakao/Yellow
 }
 
 abstract final class AppColors {
@@ -70,6 +71,7 @@ abstract final class AppColors {
   static const iconInactive = AppColorPrimitives.grayGray4;
   static const danger = AppColorPrimitives.primaryElectricCrimson;
   static const guestLogin = AppColorPrimitives.unspecifiedGuestLogin;
+  static const loginKakaoBackground = AppColorPrimitives.kakaoYellow;
   static const onBrand = AppColorPrimitives.grayWhite;
   static const white = AppColorPrimitives.grayWhite;
 }

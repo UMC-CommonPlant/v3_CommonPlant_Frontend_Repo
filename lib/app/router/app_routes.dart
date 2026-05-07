@@ -2,6 +2,7 @@ import 'package:commonplant_frontend/app/router/app_route_spec.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/app/router/route_placeholder_page.dart';
 import 'package:commonplant_frontend/features/home/presentation/home_screen.dart';
+import 'package:commonplant_frontend/features/login/presentation/pages/login_page.dart';
 import 'package:commonplant_frontend/features/login/presentation/pages/profile_setup_page.dart';
 import 'package:commonplant_frontend/features/memo/presentation/pages/memo_list_page.dart';
 import 'package:commonplant_frontend/features/memo/presentation/pages/memo_write_page.dart';
@@ -31,6 +32,12 @@ const List<AppRouteSpec> appRouteSpecs = [
     path: AppRoutePaths.onboarding,
     title: '온보딩',
     figmaFrames: ['#1-1'],
+  ),
+  AppRouteSpec(
+    name: AppRouteNames.login,
+    path: AppRoutePaths.login,
+    title: '로그인',
+    figmaFrames: ['#1-2 Log in'],
   ),
   AppRouteSpec(
     name: AppRouteNames.profileSetup,
@@ -143,6 +150,7 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
   return switch (route.name) {
     AppRouteNames.home => const HomeScreen(),
     AppRouteNames.onboarding => const OnboardingPage(),
+    AppRouteNames.login => const LoginPage(),
     AppRouteNames.profileSetup => const ProfileSetupPage(),
     AppRouteNames.terms => const TermsPage(),
     AppRouteNames.placeInvitations => const PlaceInvitationsPage(),
