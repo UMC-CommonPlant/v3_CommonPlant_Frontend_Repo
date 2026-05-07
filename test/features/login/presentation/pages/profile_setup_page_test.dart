@@ -1,5 +1,7 @@
 import 'package:commonplant_frontend/features/login/presentation/pages/profile_setup_page.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_state_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -9,7 +11,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(const MaterialApp(home: ProfileSetupPage()));
+    await tester.pumpWidget(_profileSetupApp());
 
     expect(find.text('9:41'), findsNothing);
     expect(find.text('프로필 설정'), findsNothing);
@@ -17,6 +19,7 @@ void main() {
     expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
     expect(find.textContaining('0/10', findRichText: true), findsOneWidget);
     expect(find.text('개인정보 이용 약관 동의'), findsOneWidget);
+    expect(find.bySemanticsLabel('개인정보 이용약관 동의 필요'), findsOneWidget);
     expect(find.text('보기'), findsOneWidget);
     expect(find.text('완료'), findsOneWidget);
 
@@ -52,7 +55,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(const MaterialApp(home: ProfileSetupPage()));
+    await tester.pumpWidget(_profileSetupApp());
 
     await tester.tap(find.byKey(const ValueKey('profileAvatar')));
     await tester.enterText(find.byType(TextField), '커먼');
@@ -74,7 +77,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(const MaterialApp(home: ProfileSetupPage()));
+    await tester.pumpWidget(_profileSetupApp());
 
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('profileAvatar'))).dy,
@@ -83,6 +86,28 @@ void main() {
     expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
     expect(find.text('완료'), findsOneWidget);
   });
+
+  testWidgets('프로필 설정 화면은 약관 동의 상태를 체크 아이콘에 반영한다', (tester) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    container
+        .read(profileSetupStateProvider.notifier)
+        .setPrivacyTermsAccepted(true);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: ProfileSetupPage()),
+      ),
+    );
+
+    expect(find.bySemanticsLabel('개인정보 이용약관 동의됨'), findsOneWidget);
+  });
+}
+
+Widget _profileSetupApp() {
+  return const ProviderScope(child: MaterialApp(home: ProfileSetupPage()));
 }
 
 Matcher closeToSize(Size expected, double delta) {

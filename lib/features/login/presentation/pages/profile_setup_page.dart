@@ -7,9 +7,11 @@ import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_state_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 const double _figmaFrameWidth = 375;
@@ -26,14 +28,14 @@ const double _termsRowHeight = 56;
 const double _nicknameFieldHeight = 56;
 const double _nicknameFieldHeightWithHelper = 80;
 
-class ProfileSetupPage extends StatefulWidget {
+class ProfileSetupPage extends ConsumerStatefulWidget {
   const ProfileSetupPage({super.key});
 
   @override
-  State<ProfileSetupPage> createState() => _ProfileSetupPageState();
+  ConsumerState<ProfileSetupPage> createState() => _ProfileSetupPageState();
 }
 
-class _ProfileSetupPageState extends State<ProfileSetupPage> {
+class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
   final TextEditingController _nicknameController = TextEditingController();
   final FocusNode _nicknameFocusNode = FocusNode();
   bool _hasImage = false;
@@ -62,8 +64,36 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
     context.go(AppRoutePaths.login);
   }
 
+  void _openTerms(TermsReturnDestination destination) {
+    context.push(AppRoutePaths.termsLocation(next: destination.queryValue));
+  }
+
+  void _handleTermsCheck(bool isAccepted) {
+    if (isAccepted) {
+      ref
+          .read(profileSetupStateProvider.notifier)
+          .setPrivacyTermsAccepted(false);
+      return;
+    }
+
+    _openTerms(TermsReturnDestination.profile);
+  }
+
+  void _handleComplete(bool isTermsAccepted) {
+    if (isTermsAccepted) {
+      context.go(AppRoutePaths.home);
+      return;
+    }
+
+    _openTerms(TermsReturnDestination.home);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isTermsAccepted = ref.watch(
+      profileSetupStateProvider.select((state) => state.isPrivacyTermsAccepted),
+    );
+
     return Scaffold(
       backgroundColor: AppColors.textHeadline,
       body: LayoutBuilder(
@@ -154,7 +184,10 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                 child: Column(
                   children: [
                     _TermsAgreementRow(
-                      onViewPressed: () => context.push(AppRoutePaths.terms),
+                      isAccepted: isTermsAccepted,
+                      onCheckPressed: () => _handleTermsCheck(isTermsAccepted),
+                      onViewPressed: () =>
+                          _openTerms(TermsReturnDestination.profile),
                     ),
                     const SizedBox(height: AppSpacing.x16),
                     Padding(
@@ -163,7 +196,7 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                       ),
                       child: _ProfileCompleteButton(
                         enabled: _canSubmit,
-                        onPressed: () => context.go(AppRoutePaths.terms),
+                        onPressed: () => _handleComplete(isTermsAccepted),
                       ),
                     ),
                   ],
@@ -175,6 +208,15 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
       ),
     );
   }
+}
+
+enum TermsReturnDestination {
+  profile('profile'),
+  home('home');
+
+  const TermsReturnDestination(this.queryValue);
+
+  final String queryValue;
 }
 
 class _ProfileAvatar extends StatelessWidget {
@@ -336,8 +378,14 @@ class _ProfileNicknameField extends StatelessWidget {
 }
 
 class _TermsAgreementRow extends StatelessWidget {
-  const _TermsAgreementRow({required this.onViewPressed});
+  const _TermsAgreementRow({
+    required this.isAccepted,
+    required this.onCheckPressed,
+    required this.onViewPressed,
+  });
 
+  final bool isAccepted;
+  final VoidCallback onCheckPressed;
   final VoidCallback onViewPressed;
 
   @override
@@ -352,17 +400,31 @@ class _TermsAgreementRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: AppSizes.iconMedium,
-              height: AppSizes.iconMedium,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.iconInactive,
-              ),
-              child: const Icon(
-                Icons.check_rounded,
-                size: AppSizes.iconSmall,
-                color: AppColors.white,
+            Semantics(
+              button: true,
+              container: true,
+              label: isAccepted ? '개인정보 이용약관 동의됨' : '개인정보 이용약관 동의 필요',
+              child: GestureDetector(
+                key: const ValueKey('profileTermsCheckButton'),
+                behavior: HitTestBehavior.opaque,
+                onTap: onCheckPressed,
+                child: ExcludeSemantics(
+                  child: Container(
+                    width: AppSizes.iconMedium,
+                    height: AppSizes.iconMedium,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isAccepted
+                          ? AppColors.brandAccent
+                          : AppColors.textDisabled,
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      size: AppSizes.iconSmall,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.x12),
