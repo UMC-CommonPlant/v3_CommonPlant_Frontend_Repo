@@ -15,6 +15,7 @@ class CommonScaffold extends StatelessWidget {
     this.trailing,
     this.floatingActionButton,
     this.bodyPadding,
+    this.navigationTitleStyle,
     this.showNavigationBar = true,
     this.showBackButton = true,
     this.onBackPressed,
@@ -27,6 +28,7 @@ class CommonScaffold extends StatelessWidget {
   final Widget? trailing;
   final Widget? floatingActionButton;
   final EdgeInsetsGeometry? bodyPadding;
+  final TextStyle? navigationTitleStyle;
   final bool showNavigationBar;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
@@ -48,6 +50,7 @@ class CommonScaffold extends StatelessWidget {
               if (showNavigationBar)
                 CommonNavigationBar(
                   title: title,
+                  titleStyle: navigationTitleStyle,
                   showBackButton: showBackButton,
                   onBackPressed: onBackPressed,
                   trailing: trailing ?? _actionsTrailing(actions),
@@ -118,12 +121,14 @@ class CommonNavigationBar extends StatelessWidget {
   const CommonNavigationBar({
     super.key,
     required this.title,
+    this.titleStyle,
     this.showBackButton = true,
     this.onBackPressed,
     this.trailing,
   });
 
   final String title;
+  final TextStyle? titleStyle;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
   final Widget? trailing;
@@ -165,9 +170,11 @@ class CommonNavigationBar extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: AppTextStyles.size16Bold.copyWith(
-                color: AppColors.textStrong,
-              ),
+              style:
+                  titleStyle ??
+                  AppTextStyles.size16Bold.copyWith(
+                    color: AppColors.textStrong,
+                  ),
             ),
           ),
           Positioned(

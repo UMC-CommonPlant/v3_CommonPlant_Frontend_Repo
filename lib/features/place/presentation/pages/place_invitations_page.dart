@@ -1,10 +1,17 @@
+import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_radius.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/common/presentation/widgets/phase0_widgets.dart';
-import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:flutter/material.dart';
+
+const double _invitationContentGap = 14;
+const double _invitationButtonGap = 8;
+const double _invitationItemGap = 24;
+
+enum _InvitationResult { accepted, deleted }
 
 class PlaceInvitationsPage extends StatefulWidget {
   const PlaceInvitationsPage({super.key});
@@ -14,62 +21,59 @@ class PlaceInvitationsPage extends StatefulWidget {
 }
 
 class _PlaceInvitationsPageState extends State<PlaceInvitationsPage> {
-  final Map<String, String> _statuses = <String, String>{};
+  final Map<String, _InvitationResult> _results = <String, _InvitationResult>{};
 
   static const List<_PlaceInvitation> _invitations = [
     _PlaceInvitation(
       id: 'invite-1',
-      placeName: '성수 작업실',
-      inviter: '커먼 파파',
-      memberCount: 4,
+      inviterName: '커먼맘',
+      placeName: '스윗홈_욕실',
+      address: '서울시 노원구 광운로 20',
+      avatarAsset: AppImageAssets.placeInvitationAvatarCommonMom,
     ),
     _PlaceInvitation(
       id: 'invite-2',
-      placeName: '테라스 정원',
-      inviter: '초록이',
-      memberCount: 2,
+      inviterName: '커먼맘',
+      placeName: '스윗홈_베란다',
+      address: '서울시 노원구 광운로 20',
+      avatarAsset: AppImageAssets.placeInvitationAvatarCommonMom,
     ),
     _PlaceInvitation(
       id: 'invite-3',
-      placeName: '우리 동네 식물방',
-      inviter: '식집사',
-      memberCount: 8,
+      inviterName: '도라에몽',
+      placeName: '낫 스윗 회사_중앙',
+      address: '서울시 강남구 커먼로 55',
+      avatarAsset: AppImageAssets.placeInvitationAvatarDoraemon,
+      avatarAlignment: Alignment.topCenter,
     ),
   ];
 
-  void _updateStatus(String id, String status) {
-    setState(() => _statuses[id] = status);
+  void _setResult(String id, _InvitationResult result) {
+    setState(() => _results[id] = result);
   }
 
   @override
   Widget build(BuildContext context) {
     return CommonScaffold(
       title: '장소 친구 요청',
+      navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
+        color: AppColors.textStrong,
+        fontWeight: FontWeight.w700,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '초대받은 장소',
-            style: AppTextStyles.size24Medium.copyWith(
-              color: AppColors.textHeadline,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.x8),
-          Text(
-            '함께 관리할 장소 요청을 확인하고 참여 여부를 선택해 주세요.',
-            style: AppTextStyles.size16Medium.copyWith(
-              color: AppColors.textBody,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.x24),
           for (final invitation in _invitations) ...[
-            _InvitationCard(
+            _InvitationListItem(
               invitation: invitation,
-              status: _statuses[invitation.id],
-              onAccept: () => _updateStatus(invitation.id, '수락 완료'),
-              onReject: () => _updateStatus(invitation.id, '거절 완료'),
+              result: _results[invitation.id],
+              onAccept: () =>
+                  _setResult(invitation.id, _InvitationResult.accepted),
+              onDelete: () =>
+                  _setResult(invitation.id, _InvitationResult.deleted),
             ),
-            const SizedBox(height: AppSpacing.x12),
+            if (invitation.id != _invitations.last.id)
+              const SizedBox(height: _invitationItemGap),
           ],
         ],
       ),
@@ -77,77 +81,242 @@ class _PlaceInvitationsPageState extends State<PlaceInvitationsPage> {
   }
 }
 
-class _InvitationCard extends StatelessWidget {
-  const _InvitationCard({
+class _InvitationListItem extends StatelessWidget {
+  const _InvitationListItem({
     required this.invitation,
-    required this.status,
+    required this.result,
     required this.onAccept,
-    required this.onReject,
+    required this.onDelete,
   });
 
   final _PlaceInvitation invitation;
-  final String? status;
+  final _InvitationResult? result;
   final VoidCallback onAccept;
-  final VoidCallback onReject;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return Phase0Surface(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _InvitationAvatar(invitation: invitation),
+        const SizedBox(width: _invitationContentGap),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Phase0UserAvatar(label: invitation.inviter.characters.first),
-              const SizedBox(width: AppSpacing.x12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      invitation.placeName,
-                      style: AppTextStyles.size16Bold.copyWith(
-                        color: AppColors.textStrong,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.x4),
-                    Text(
-                      '${invitation.inviter} 님이 초대했어요 · ${invitation.memberCount}명 참여 중',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.size14Medium.copyWith(
-                        color: AppColors.textBody,
-                      ),
-                    ),
-                  ],
+              _InvitationDescription(invitation: invitation, result: result),
+              const SizedBox(height: _invitationButtonGap),
+              if (result == null)
+                _InvitationActions(
+                  invitation: invitation,
+                  onAccept: onAccept,
+                  onDelete: onDelete,
+                )
+              else
+                const SizedBox(
+                  height: AppSizes.placeInvitationActionButtonHeight,
                 ),
-              ),
             ],
           ),
-          const SizedBox(height: AppSpacing.x16),
-          if (status == null)
-            Row(
-              children: [
-                Expanded(
-                  child: CommonButton.secondary(
-                    label: '거절',
-                    size: CommonButtonSize.medium,
-                    onPressed: onReject,
+        ),
+      ],
+    );
+  }
+}
+
+class _InvitationAvatar extends StatelessWidget {
+  const _InvitationAvatar({required this.invitation});
+
+  final _PlaceInvitation invitation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: '${invitation.inviterName} 프로필 사진',
+      image: true,
+      child: ClipOval(
+        child: Image.asset(
+          invitation.avatarAsset,
+          width: AppSizes.placeInvitationAvatarSize,
+          height: AppSizes.placeInvitationAvatarSize,
+          fit: BoxFit.cover,
+          alignment: invitation.avatarAlignment,
+        ),
+      ),
+    );
+  }
+}
+
+class _InvitationDescription extends StatelessWidget {
+  const _InvitationDescription({
+    required this.invitation,
+    required this.result,
+  });
+
+  final _PlaceInvitation invitation;
+  final _InvitationResult? result;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          invitation.inviterName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTextStyles.size16Bold.copyWith(
+            color: AppColors.textHeadline,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.x4),
+        if (result == null)
+          _InvitationPlaceLine(invitation: invitation)
+        else
+          _InvitationResultText(invitation: invitation, result: result!),
+      ],
+    );
+  }
+}
+
+class _InvitationPlaceLine extends StatelessWidget {
+  const _InvitationPlaceLine({required this.invitation});
+
+  final _PlaceInvitation invitation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          invitation.placeName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTextStyles.size14Bold.copyWith(color: AppColors.textStrong),
+        ),
+        const SizedBox(width: AppSpacing.x4),
+        Flexible(
+          child: Text(
+            invitation.address,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.size12Medium.copyWith(
+              color: AppColors.textBody,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InvitationResultText extends StatelessWidget {
+  const _InvitationResultText({required this.invitation, required this.result});
+
+  final _PlaceInvitation invitation;
+  final _InvitationResult result;
+
+  @override
+  Widget build(BuildContext context) {
+    final message = switch (result) {
+      _InvitationResult.accepted => '${invitation.placeName}에서 함께 해보세요:)',
+      _InvitationResult.deleted => '요청 삭제됨',
+    };
+
+    final color = switch (result) {
+      _InvitationResult.accepted => AppColors.brandStrong,
+      _InvitationResult.deleted => AppColors.textStrong,
+    };
+
+    return Text(
+      message,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: AppTextStyles.size14Medium.copyWith(color: color),
+    );
+  }
+}
+
+class _InvitationActions extends StatelessWidget {
+  const _InvitationActions({
+    required this.invitation,
+    required this.onAccept,
+    required this.onDelete,
+  });
+
+  final _PlaceInvitation invitation;
+  final VoidCallback onAccept;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _InvitationActionButton(
+          label: '확인',
+          semanticsLabel: '${invitation.placeName} 확인',
+          backgroundColor: AppColors.brandPrimary,
+          foregroundColor: AppColors.white,
+          onPressed: onAccept,
+        ),
+        const SizedBox(width: _invitationButtonGap),
+        _InvitationActionButton(
+          label: '삭제',
+          semanticsLabel: '${invitation.placeName} 삭제',
+          backgroundColor: AppColors.borderDefault,
+          foregroundColor: AppColors.textStrong,
+          onPressed: onDelete,
+        ),
+      ],
+    );
+  }
+}
+
+class _InvitationActionButton extends StatelessWidget {
+  const _InvitationActionButton({
+    required this.label,
+    required this.semanticsLabel,
+    required this.backgroundColor,
+    required this.foregroundColor,
+    required this.onPressed,
+  });
+
+  final String label;
+  final String semanticsLabel;
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: semanticsLabel,
+      button: true,
+      container: true,
+      child: ExcludeSemantics(
+        child: Material(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(AppRadius.small),
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(AppRadius.small),
+            child: SizedBox(
+              width: AppSizes.placeInvitationActionButtonWidth,
+              height: AppSizes.placeInvitationActionButtonHeight,
+              child: Center(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.size14Bold.copyWith(
+                    color: foregroundColor,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.x8),
-                Expanded(
-                  child: CommonButton(
-                    label: '수락',
-                    size: CommonButtonSize.medium,
-                    onPressed: onAccept,
-                  ),
-                ),
-              ],
-            )
-          else
-            Phase0Chip(label: status!, isActive: status == '수락 완료'),
-        ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -156,13 +325,17 @@ class _InvitationCard extends StatelessWidget {
 class _PlaceInvitation {
   const _PlaceInvitation({
     required this.id,
+    required this.inviterName,
     required this.placeName,
-    required this.inviter,
-    required this.memberCount,
+    required this.address,
+    required this.avatarAsset,
+    this.avatarAlignment = Alignment.center,
   });
 
   final String id;
+  final String inviterName;
   final String placeName;
-  final String inviter;
-  final int memberCount;
+  final String address;
+  final String avatarAsset;
+  final Alignment avatarAlignment;
 }
