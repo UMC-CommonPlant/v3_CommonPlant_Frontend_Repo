@@ -11,6 +11,7 @@ const double _addressSearchResultHeight = 72;
 const double _addressSearchResultGap = 4;
 const double _addressSearchButtonWidth = 73;
 const double _addressSearchButtonHeight = 36;
+const double _addressSearchResultVerticalPadding = AppSpacing.x10;
 const double _addressSearchResultTextWidth = 219;
 
 class AddressSearchPage extends StatefulWidget {
@@ -155,7 +156,7 @@ class _AddressSearchResultTile extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.x20,
-            vertical: AppSpacing.x12,
+            vertical: _addressSearchResultVerticalPadding,
           ),
           child: Row(
             children: [
@@ -163,6 +164,7 @@ class _AddressSearchResultTile extends StatelessWidget {
                 width: _addressSearchResultTextWidth,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _AddressSearchResultTitle(result: result),
                     const SizedBox(height: AppSpacing.x4),

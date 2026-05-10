@@ -13,11 +13,13 @@ void main() {
     expect(find.text('신도림역 1호선', findRichText: true), findsOneWidget);
     expect(find.text('서울 구로구 경인로 688'), findsOneWidget);
     expect(find.text('선택'), findsWidgets);
+    expect(tester.takeException(), isNull);
 
     await tester.drag(find.byType(ListView), const Offset(0, -260));
     await tester.pumpAndSettle();
 
     expect(find.text('선택'), findsWidgets);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('주소 검색 결과를 선택하면 이전 화면으로 돌아간다', (WidgetTester tester) async {
