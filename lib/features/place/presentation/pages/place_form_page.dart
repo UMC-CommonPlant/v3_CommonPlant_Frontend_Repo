@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/common/presentation/widgets/phase0_widgets.dart';
@@ -47,6 +48,19 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   Widget build(BuildContext context) {
     final canSubmit = _nameController.text.trim().isNotEmpty;
 
+    if (!widget.isEdit) {
+      return _PlaceCreateScaffold(
+        nameController: _nameController,
+        address: _address,
+        canSubmit: canSubmit,
+        onNameChanged: (_) => setState(() {}),
+        onImageTap: () {},
+        onAddressTap: () => context.push(AppRoutePaths.addressSearch),
+        onAddressClear: () => setState(() => _address = null),
+        onNext: _submit,
+      );
+    }
+
     return CommonScaffold(
       title: widget.isEdit ? '장소 수정' : '장소 등록',
       child: Column(
@@ -64,7 +78,7 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
           CommonTextField(
             controller: _nameController,
             hintText: '장소 이름을 입력해 주세요',
-            maxLength: 20,
+            maxLength: 10,
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.x24),
@@ -115,10 +129,101 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
 
     if (widget.placeId case final placeId?) {
       notifier.updatePlace(id: placeId, name: name, address: _address);
+      context.go(AppRoutePaths.home);
     } else {
       notifier.addPlace(name: name, address: _address);
+      context.push(AppRoutePaths.placeFriendAdd);
     }
+  }
+}
 
-    context.go(AppRoutePaths.home);
+class _PlaceCreateScaffold extends StatelessWidget {
+  const _PlaceCreateScaffold({
+    required this.nameController,
+    required this.address,
+    required this.canSubmit,
+    required this.onNameChanged,
+    required this.onImageTap,
+    required this.onAddressTap,
+    required this.onAddressClear,
+    required this.onNext,
+  });
+
+  final TextEditingController nameController;
+  final String? address;
+  final bool canSubmit;
+  final ValueChanged<String> onNameChanged;
+  final VoidCallback onImageTap;
+  final VoidCallback onAddressTap;
+  final VoidCallback onAddressClear;
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      body: SafeArea(
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: Column(
+            children: [
+              CommonNavigationBar(
+                title: '장소 등록',
+                titleStyle: AppTextStyles.size18Medium.copyWith(
+                  color: AppColors.textStrong,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.x20,
+                        AppSpacing.x24,
+                        AppSpacing.x20,
+                        AppSizes.buttonHeight + AppSpacing.x40,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(
+                            child: CommonPlaceImageAddButton(onTap: onImageTap),
+                          ),
+                          const SizedBox(height: AppSpacing.x32),
+                          CommonTextField(
+                            controller: nameController,
+                            hintText: '장소의 이름을 입력해 주세요',
+                            maxLength: 10,
+                            onChanged: onNameChanged,
+                          ),
+                          const SizedBox(height: AppSpacing.x32),
+                          CommonAddressOrPlaceField(
+                            label: '주소',
+                            value: address,
+                            onTap: onAddressTap,
+                            onClear: onAddressClear,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      left: AppSpacing.x20,
+                      right: AppSpacing.x20,
+                      bottom: AppSpacing.x16,
+                      child: CommonButton(
+                        label: '다음',
+                        onPressed: canSubmit ? onNext : null,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

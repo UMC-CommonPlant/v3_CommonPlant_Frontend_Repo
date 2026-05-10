@@ -29,7 +29,7 @@ class CommonPlaceImageAddButton extends StatelessWidget {
               height: AppSizes.placeImageAddInnerSize,
               decoration: BoxDecoration(
                 color: AppColors.borderDefault,
-                borderRadius: BorderRadius.circular(AppRadius.small),
+                borderRadius: BorderRadius.circular(AppRadius.medium),
               ),
               alignment: Alignment.center,
               child: const CommonSvgIcon(
