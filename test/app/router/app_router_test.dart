@@ -284,7 +284,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('주소 검색'), findsOneWidget);
-    expect(find.text('서울시 노원구 광운로 20'), findsOneWidget);
+    expect(find.text('신도림역'), findsOneWidget);
+    expect(find.text('신도림역 1호선', findRichText: true), findsOneWidget);
 
     router.pop();
     await tester.pumpAndSettle();

@@ -14,6 +14,7 @@ class CommonSearchTextField extends StatefulWidget {
     this.hintText = '식물을 입력해 주세요.',
     this.onChanged,
     this.enabled = true,
+    this.horizontalPadding = 0,
   });
 
   final TextEditingController? controller;
@@ -21,6 +22,7 @@ class CommonSearchTextField extends StatefulWidget {
   final String hintText;
   final ValueChanged<String>? onChanged;
   final bool enabled;
+  final double horizontalPadding;
 
   @override
   State<CommonSearchTextField> createState() => _CommonSearchTextFieldState();
@@ -84,40 +86,43 @@ class _CommonSearchTextFieldState extends State<CommonSearchTextField> {
       child: SizedBox(
         width: double.infinity,
         height: AppSizes.searchTextFieldHeight,
-        child: Row(
-          children: [
-            const CommonSvgIcon(
-              AppIconAssets.search,
-              width: AppSizes.searchTextFieldIconSize,
-              height: AppSizes.searchTextFieldIconSize,
-              semanticsLabel: '검색',
-            ),
-            const SizedBox(width: AppSpacing.x16),
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                enabled: widget.enabled,
-                onChanged: widget.onChanged,
-                style: AppTextStyles.size18Medium.copyWith(
-                  color: AppColors.textHeadline,
-                ),
-                decoration: InputDecoration(
-                  hintText: widget.hintText,
-                  hintStyle: AppTextStyles.size18Medium.copyWith(
-                    color: AppColors.textDisabled,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding),
+          child: Row(
+            children: [
+              const CommonSvgIcon(
+                AppIconAssets.search,
+                width: AppSizes.searchTextFieldIconSize,
+                height: AppSizes.searchTextFieldIconSize,
+                semanticsLabel: '검색',
+              ),
+              const SizedBox(width: AppSpacing.x16),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  enabled: widget.enabled,
+                  onChanged: widget.onChanged,
+                  style: AppTextStyles.size18Medium.copyWith(
+                    color: AppColors.textHeadline,
                   ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
+                  decoration: InputDecoration(
+                    hintText: widget.hintText,
+                    hintStyle: AppTextStyles.size18Medium.copyWith(
+                      color: AppColors.textDisabled,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                  ),
                 ),
               ),
-            ),
-            if (_hasText) ...[
-              const SizedBox(width: AppSpacing.x16),
-              _SearchTextFieldClearButton(onPressed: _clearText),
+              if (_hasText) ...[
+                const SizedBox(width: AppSpacing.x16),
+                _SearchTextFieldClearButton(onPressed: _clearText),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
