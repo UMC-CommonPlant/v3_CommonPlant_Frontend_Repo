@@ -134,6 +134,7 @@ lib/
 | [디자인 토큰 규칙](docs/design-token-rules.md) | 색상, 폰트, 여백, radius, size 토큰 사용 기준 |
 | [공용 위젯 사용 가이드](docs/shared-widget-guide.md) | `shared/widgets` 컴포넌트 사용법과 추가 기준 |
 | [라우팅 구조 설명](docs/routing-guide.md) | `go_router` 기반 라우팅 구조, route 추가 기준, 인증 라우팅 확장 방향 |
+| [Figma 프레임 매핑](docs/figma-frame-map.md) | Phase 0 화면별 Figma frame 이름, node-id, 상태, 구현 PR 연결표 |
 | [Feature 작업 가이드](docs/feature-development-guide.md) | feature-first 구조, 계층 책임, API 모델 및 작업 순서 |
 | [화면 퍼블리싱 작업 규칙](docs/screen-publishing-rules.md) | Figma 화면 구현 시 공용 컴포넌트, 상태 UI, 반응형 기준 |
 | [Assets 및 Icons 규칙](docs/asset-icon-rules.md) | 아이콘/이미지 네이밍, 등록, 사용 기준 |

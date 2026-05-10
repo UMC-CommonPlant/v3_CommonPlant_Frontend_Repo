@@ -36,6 +36,7 @@ final appRouterProvider = Provider<GoRouter>(
 ## Figma 기준 라우트 설계
 
 Figma 파일 `Common Plant 복제`의 `phase 0` 페이지를 기준으로 프레임 이름, 내부 대표 텍스트, 플로우 위치를 함께 확인했습니다. alert, bottom sheet, 검색 결과, 버튼 처리 결과는 별도 route가 아니라 화면 상태로 처리합니다.
+정확한 Figma node-id, 상태 프레임, 구현 PR 연결은 `docs/figma-frame-map.md`를 기준으로 확인합니다.
 
 | 도메인 | Route name | Path | Figma 근거 | 화면 역할 |
 | --- | --- | --- | --- | --- |
