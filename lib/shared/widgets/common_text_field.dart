@@ -219,7 +219,7 @@ class _CommonTextFieldState extends State<CommonTextField> {
                     counterText: '',
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.x8,
+                      vertical: AppSpacing.x16,
                     ),
                     isDense: true,
                   ),

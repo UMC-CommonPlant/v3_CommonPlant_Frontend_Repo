@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
@@ -6,6 +7,7 @@ import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class PlaceFriendAddPage extends StatefulWidget {
   const PlaceFriendAddPage({super.key});
@@ -113,7 +115,7 @@ class _PlaceFriendAddPageState extends State<PlaceFriendAddPage> {
             label: '선택 완료',
             onPressed: _selectedIds.isEmpty
                 ? null
-                : () => Navigator.of(context).maybePop(),
+                : () => context.go(AppRoutePaths.home),
           ),
         ],
       ),

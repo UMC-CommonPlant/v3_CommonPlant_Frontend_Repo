@@ -181,10 +181,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('장소 등록'), findsOneWidget);
-    expect(find.text('장소 이름'), findsOneWidget);
+    expect(find.text('장소의 이름을 입력해 주세요'), findsOneWidget);
   });
 
-  testWidgets('장소 등록 후 홈에 장소가 추가되고 식물 추가가 활성화된다', (WidgetTester tester) async {
+  testWidgets('장소 등록 다음 단계 후 홈에 장소가 추가되고 식물 추가가 활성화된다', (
+    WidgetTester tester,
+  ) async {
     final router = createAppRouter(initialLocation: AppRoutePaths.placeCreate);
     addTearDown(router.dispose);
 
@@ -198,8 +200,14 @@ void main() {
 
     await tester.enterText(find.byType(TextField), '옥상 정원');
     await tester.pump();
-    await tester.ensureVisible(find.text('등록'));
-    await tester.tap(find.text('등록'));
+    await tester.ensureVisible(find.text('다음'));
+    await tester.tap(find.text('다음'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('친구 추가'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('선택 완료'));
+    await tester.tap(find.text('선택 완료'));
     await tester.pumpAndSettle();
 
     expect(find.text('My place'), findsOneWidget);
@@ -231,8 +239,11 @@ void main() {
 
     await tester.enterText(find.byType(TextField), '옥상 정원');
     await tester.pump();
-    await tester.ensureVisible(find.text('등록'));
-    await tester.tap(find.text('등록'));
+    await tester.ensureVisible(find.text('다음'));
+    await tester.tap(find.text('다음'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('선택 완료'));
+    await tester.tap(find.text('선택 완료'));
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('식물 추가하기'));
@@ -278,7 +289,9 @@ void main() {
     router.pop();
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('친구 추가하기'));
+    await tester.enterText(find.byType(TextField), '옥상 정원');
+    await tester.pump();
+    await tester.tap(find.text('다음'));
     await tester.pumpAndSettle();
 
     expect(find.text('친구 추가'), findsOneWidget);
