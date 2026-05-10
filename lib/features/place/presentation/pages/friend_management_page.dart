@@ -1,12 +1,17 @@
+import 'package:commonplant_frontend/app/router/route_paths.dart';
+import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/common/presentation/widgets/phase0_widgets.dart';
-import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_selection_widgets.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+const double _friendManagementSelectedMarkHeight = 57;
+const double _friendManagementSelectedMarkGap = 4;
 
 class FriendManagementPage extends StatefulWidget {
   const FriendManagementPage({super.key, required this.placeId});
@@ -19,10 +24,15 @@ class FriendManagementPage extends StatefulWidget {
 
 class _FriendManagementPageState extends State<FriendManagementPage> {
   final TextEditingController _searchController = TextEditingController();
-  final List<_PlaceMember> _members = [
-    const _PlaceMember(name: '커먼 파파', role: '리더'),
-    const _PlaceMember(name: '초록이', role: '팀원'),
-    const _PlaceMember(name: '식집사', role: '팀원'),
+  final Set<String> _selectedIds = <String>{'friend-1', 'friend-2'};
+
+  static const List<PlaceFriendProfile> _friends = [
+    PlaceFriendProfile(
+      id: 'friend-1',
+      name: '커먼맘',
+      imageAsset: AppImageAssets.placeFriendAddCommonMom,
+    ),
+    PlaceFriendProfile(id: 'friend-2', name: '커먼 파파'),
   ];
 
   @override
@@ -31,11 +41,28 @@ class _FriendManagementPageState extends State<FriendManagementPage> {
     super.dispose();
   }
 
-  void _showDeleteDialog(_PlaceMember member) {
+  void _toggleFriend(String friendId) {
+    final friend = _friends.firstWhere((friend) => friend.id == friendId);
+
+    if (_selectedIds.contains(friendId)) {
+      _showDeleteDialog(friend);
+      return;
+    }
+
+    setState(() => _selectedIds.add(friendId));
+  }
+
+  void _removeFriend(String friendId) {
+    final friend = _friends.firstWhere((friend) => friend.id == friendId);
+    _showDeleteDialog(friend);
+  }
+
+  void _showDeleteDialog(PlaceFriendProfile friend) {
     showCommonDialog<void>(
       context: context,
+      barrierColor: AppColors.textHeadline.withValues(alpha: 0.6),
       child: CommonDialogCard(
-        title: member.name,
+        title: friend.name,
         message: '님을 친구 목록에서 삭제하시겠습니까?',
         actions: [
           CommonDialogActionButton(
@@ -45,9 +72,8 @@ class _FriendManagementPageState extends State<FriendManagementPage> {
           ),
           CommonDialogActionButton.confirm(
             label: '삭제',
-            foregroundColor: AppColors.danger,
             onPressed: () {
-              setState(() => _members.remove(member));
+              setState(() => _selectedIds.remove(friend.id));
               Navigator.of(context).pop();
             },
           ),
@@ -56,77 +82,87 @@ class _FriendManagementPageState extends State<FriendManagementPage> {
     );
   }
 
+  void _leavePage() {
+    final navigator = Navigator.of(context);
+
+    if (navigator.canPop()) {
+      navigator.maybePop();
+      return;
+    }
+
+    final router = GoRouter.maybeOf(context);
+    if (router == null) {
+      return;
+    }
+
+    if (widget.placeId.isEmpty) {
+      router.go(AppRoutePaths.home);
+      return;
+    }
+
+    router.go(AppRoutePaths.placeDetailLocation(widget.placeId));
+  }
+
   @override
   Widget build(BuildContext context) {
     final query = _searchController.text.trim();
     final results = query.isEmpty
-        ? _members
-        : _members.where((member) => member.name.contains(query)).toList();
+        ? _friends
+        : _friends.where((friend) => friend.name.contains(query)).toList();
+    final selectedFriends = _friends
+        .where((friend) => _selectedIds.contains(friend.id))
+        .toList();
 
-    return CommonScaffold(
-      title: '친구 관리',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CommonSearchTextField(
-            controller: _searchController,
-            hintText: '친구 닉네임을 입력해 주세요.',
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: AppSpacing.x24),
-          for (final member in results) ...[
-            Phase0Surface(
-              child: Row(
-                children: [
-                  Phase0UserAvatar(label: member.name.characters.first),
-                  const SizedBox(width: AppSpacing.x12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          member.name,
-                          style: AppTextStyles.size16Bold.copyWith(
-                            color: AppColors.textStrong,
-                          ),
-                        ),
-                        Text(
-                          member.role,
-                          style: AppTextStyles.size14Medium.copyWith(
-                            color: member.role == '리더'
-                                ? AppColors.brandStrong
-                                : AppColors.textBody,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (member.role != '리더')
-                    CommonButton.text(
-                      label: '삭제',
-                      size: CommonButtonSize.medium,
-                      foregroundColor: AppColors.danger,
-                      onPressed: () => _showDeleteDialog(member),
-                    ),
-                ],
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      body: SafeArea(
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: Column(
+            children: [
+              CommonNavigationBar(
+                title: '친구 관리',
+                titleStyle: AppTextStyles.size18Medium.copyWith(
+                  color: AppColors.textStrong,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.x12),
-          ],
-          const SizedBox(height: AppSpacing.x16),
-          CommonButton(
-            label: '친구 추가',
-            onPressed: () => Navigator.of(context).maybePop(),
+              if (selectedFriends.isNotEmpty)
+                PlaceSelectedFriendMarkStrip(
+                  friends: selectedFriends,
+                  onRemove: _removeFriend,
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.x20,
+                    AppSpacing.x16,
+                    AppSpacing.x20,
+                    0,
+                  ),
+                  height: _friendManagementSelectedMarkHeight,
+                  separatorWidth: _friendManagementSelectedMarkGap,
+                ),
+              CommonSearchTextField(
+                controller: _searchController,
+                hintText: '닉네임 검색',
+                horizontalPadding: AppSpacing.x16,
+                onChanged: (_) => setState(() {}),
+              ),
+              Expanded(
+                child: PlaceFriendCandidateList(
+                  friends: results,
+                  selectedIds: _selectedIds,
+                  topPadding: 0,
+                  onToggle: _toggleFriend,
+                ),
+              ),
+              PlaceFriendBottomActions(
+                onCancel: _leavePage,
+                onComplete: _leavePage,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
-}
-
-class _PlaceMember {
-  const _PlaceMember({required this.name, required this.role});
-
-  final String name;
-  final String role;
 }

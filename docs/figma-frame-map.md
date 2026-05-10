@@ -44,8 +44,8 @@
 | Place | 친구 추가 | `/places/new/friends` | `#2-2-2-2 장소 등록-친구 추가 (기존 친구x) 과정1` | `1:3351` | 검색 결과 | #25 | 검색어 `커먼` 입력 상태 |
 | Place | 친구 추가 | `/places/new/friends` | `#2-2-2-2 장소 등록-친구 추가 (기존 친구x) 과정2` | `1:3660` | 친구 선택 후 | #29 | 검색어 `커먼` 입력 후 선택 친구 마크 표시 |
 | Place | 장소 수정 | `/places/:placeId/edit` | `#2-2-2 장소 수정` | `1:4220` | 기본 | #31 | 중복 후보 `1:6261`보다 최신 위치의 프레임 우선 |
-| Place | 친구 관리 | `/places/:placeId/friends` | `#2-3-2 친구 관리` | `1:3417` | 기본 | 대기 |  |
-| Place | 친구 관리 | `/places/:placeId/friends` | `#2-3-2 친구 관리 - 삭제 알럿` | 확인 필요 | alert | 대기 | 친구 관리 구현 전 확인 |
+| Place | 친구 관리 | `/places/:placeId/friends` | `#2-3-2 친구 관리` | `1:3417` | 기본 | #32 |  |
+| Place | 친구 관리 | `/places/:placeId/friends` | `#2-3-2 친구 관리 - 삭제 알럿 (리더` | `1:3491` | alert | #32 | 친구 삭제 확인 dialog |
 | Place | 장소 상세 | `/places/:placeId` | `#2-3 My place 리더화면` | 확인 필요 | 리더 | 대기 |  |
 | Place | 장소 상세 | `/places/:placeId` | `#2-3 My place 팀원화면` | 확인 필요 | 팀원 | 대기 |  |
 | Plant | 식물 등록 검색 | `/plants/new/search` | `#2-2-3 식물 등록` | 확인 필요 | 기본 | 대기 |  |
