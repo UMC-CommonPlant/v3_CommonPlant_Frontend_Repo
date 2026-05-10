@@ -1,13 +1,21 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
+import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
+import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/common/presentation/widgets/phase0_widgets.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
+import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+const double _friendAddResultTileHeight = 56;
+const double _friendAddAvatarSize = 40;
+const double _friendAddActionGap = 8;
+const double _friendAddTrailingWidth = 81;
 
 class PlaceFriendAddPage extends StatefulWidget {
   const PlaceFriendAddPage({super.key});
@@ -18,12 +26,30 @@ class PlaceFriendAddPage extends StatefulWidget {
 
 class _PlaceFriendAddPageState extends State<PlaceFriendAddPage> {
   final TextEditingController _searchController = TextEditingController();
-  final Set<String> _selectedIds = <String>{'friend-1'};
+  final Set<String> _selectedIds = <String>{};
 
   static const List<_FriendCandidate> _friends = [
-    _FriendCandidate(id: 'friend-1', name: '커먼 파파', email: 'papa@common.plant'),
-    _FriendCandidate(id: 'friend-2', name: '초록이', email: 'green@common.plant'),
-    _FriendCandidate(id: 'friend-3', name: '식집사', email: 'plant@common.plant'),
+    _FriendCandidate(
+      id: 'friend-1',
+      name: '커먼맘',
+      imageAsset: AppImageAssets.placeFriendAddCommonMom,
+    ),
+    _FriendCandidate(
+      id: 'friend-2',
+      name: '커먼인척',
+      imageAsset: AppImageAssets.placeFriendAddCommonFake,
+    ),
+    _FriendCandidate(
+      id: 'friend-3',
+      name: '커먼일뻔',
+      imageAsset: AppImageAssets.placeFriendAddCommonAlmost,
+    ),
+    _FriendCandidate(
+      id: 'friend-4',
+      name: '커먼일지도',
+      imageAsset: AppImageAssets.placeFriendAddCommonMaybe,
+    ),
+    _FriendCandidate(id: 'friend-5', name: '커먼 파파'),
   ];
 
   @override
@@ -42,80 +68,264 @@ class _PlaceFriendAddPageState extends State<PlaceFriendAddPage> {
     });
   }
 
+  void _cancel() {
+    final navigator = Navigator.of(context);
+
+    if (navigator.canPop()) {
+      navigator.maybePop();
+      return;
+    }
+
+    context.go(AppRoutePaths.home);
+  }
+
+  void _complete() {
+    context.go(AppRoutePaths.home);
+  }
+
   @override
   Widget build(BuildContext context) {
     final query = _searchController.text.trim();
     final results = query.isEmpty
-        ? _friends
+        ? const <_FriendCandidate>[]
         : _friends.where((friend) => friend.name.contains(query)).toList();
 
-    return CommonScaffold(
-      title: '친구 추가',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CommonSearchTextField(
-            controller: _searchController,
-            hintText: '친구 닉네임을 입력해 주세요.',
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: AppSpacing.x16),
-          Wrap(
-            spacing: AppSpacing.x8,
-            runSpacing: AppSpacing.x8,
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      body: SafeArea(
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: Column(
             children: [
-              for (final friend in _friends.where(
-                (friend) => _selectedIds.contains(friend.id),
-              ))
-                Phase0Chip(label: friend.name, isActive: true),
+              CommonNavigationBar(
+                title: '친구 추가',
+                titleStyle: AppTextStyles.size18Medium.copyWith(
+                  color: AppColors.textStrong,
+                  fontWeight: FontWeight.w700,
+                ),
+                trailing: _FriendAddSkipButton(onPressed: _complete),
+              ),
+              CommonSearchTextField(
+                controller: _searchController,
+                hintText: '닉네임 검색',
+                horizontalPadding: AppSpacing.x16,
+                onChanged: (_) => setState(() {}),
+              ),
+              Expanded(
+                child: _FriendCandidateList(
+                  friends: results,
+                  selectedIds: _selectedIds,
+                  onToggle: _toggle,
+                ),
+              ),
+              _FriendAddBottomActions(onCancel: _cancel, onComplete: _complete),
             ],
           ),
-          const SizedBox(height: AppSpacing.x24),
-          for (final friend in results) ...[
-            Phase0Surface(
-              onTap: () => _toggle(friend.id),
-              child: Row(
-                children: [
-                  Phase0UserAvatar(label: friend.name.characters.first),
-                  const SizedBox(width: AppSpacing.x12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          friend.name,
-                          style: AppTextStyles.size16Bold.copyWith(
-                            color: AppColors.textStrong,
-                          ),
-                        ),
-                        Text(
-                          friend.email,
-                          style: AppTextStyles.size14Medium.copyWith(
-                            color: AppColors.textBody,
-                          ),
-                        ),
-                      ],
-                    ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendAddSkipButton extends StatelessWidget {
+  const _FriendAddSkipButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: _friendAddTrailingWidth,
+      height: AppSizes.navigationBarHeight,
+      child: TextButton(
+        onPressed: onPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.textBody,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x16),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          minimumSize: const Size(0, AppSizes.navigationBarHeight),
+          textStyle: AppTextStyles.size14Medium,
+        ),
+        child: Text(
+          '건너뛰기',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTextStyles.size14Medium.copyWith(color: AppColors.textBody),
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendCandidateList extends StatelessWidget {
+  const _FriendCandidateList({
+    required this.friends,
+    required this.selectedIds,
+    required this.onToggle,
+  });
+
+  final List<_FriendCandidate> friends;
+  final Set<String> selectedIds;
+  final ValueChanged<String> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    if (friends.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(
+        top: AppSpacing.x8,
+        bottom: AppSpacing.x24,
+      ),
+      itemExtent: _friendAddResultTileHeight,
+      itemCount: friends.length,
+      itemBuilder: (context, index) {
+        final friend = friends[index];
+        final isSelected = selectedIds.contains(friend.id);
+
+        return _FriendCandidateTile(
+          friend: friend,
+          isSelected: isSelected,
+          onTap: () => onToggle(friend.id),
+        );
+      },
+    );
+  }
+}
+
+class _FriendCandidateTile extends StatelessWidget {
+  const _FriendCandidateTile({
+    required this.friend,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final _FriendCandidate friend;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: '${friend.name} ${isSelected ? '선택됨' : '선택 안됨'}',
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.x20,
+            vertical: AppSpacing.x8,
+          ),
+          child: Row(
+            children: [
+              _FriendAvatar(friend: friend),
+              const SizedBox(width: AppSpacing.x16),
+              Expanded(
+                child: Text(
+                  friend.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.size16Medium.copyWith(
+                    color: AppColors.textStrong,
                   ),
-                  Icon(
-                    _selectedIds.contains(friend.id)
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
-                    color: _selectedIds.contains(friend.id)
-                        ? AppColors.brandStrong
-                        : AppColors.textDisabled,
-                  ),
-                ],
+                ),
               ),
+              const SizedBox(width: AppSpacing.x16),
+              _FriendSelectionIcon(isSelected: isSelected),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FriendAvatar extends StatelessWidget {
+  const _FriendAvatar({required this.friend});
+
+  final _FriendCandidate friend;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: _friendAddAvatarSize,
+      child: ClipOval(
+        child: friend.imageAsset == null
+            ? const ColoredBox(
+                color: AppColors.borderDefault,
+                child: Center(
+                  child: CommonSvgIcon(
+                    AppIconAssets.addPerson,
+                    width: 28,
+                    height: 28,
+                    color: AppColors.white,
+                    semanticsLabel: '기본 프로필',
+                  ),
+                ),
+              )
+            : Image.asset(friend.imageAsset!, fit: BoxFit.cover),
+      ),
+    );
+  }
+}
+
+class _FriendSelectionIcon extends StatelessWidget {
+  const _FriendSelectionIcon({required this.isSelected});
+
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+      size: AppSizes.iconMedium,
+      color: isSelected ? AppColors.brandAccent : AppColors.textDisabled,
+    );
+  }
+}
+
+class _FriendAddBottomActions extends StatelessWidget {
+  const _FriendAddBottomActions({
+    required this.onCancel,
+    required this.onComplete,
+  });
+
+  final VoidCallback onCancel;
+  final VoidCallback onComplete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.x20,
+        0,
+        AppSpacing.x20,
+        AppSpacing.x16,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: CommonButton.dark(
+              label: '취소',
+              size: CommonButtonSize.medium,
+              backgroundColor: AppColors.textBody,
+              foregroundColor: AppColors.white,
+              onPressed: onCancel,
             ),
-            const SizedBox(height: AppSpacing.x12),
-          ],
-          const SizedBox(height: AppSpacing.x16),
-          CommonButton(
-            label: '선택 완료',
-            onPressed: _selectedIds.isEmpty
-                ? null
-                : () => context.go(AppRoutePaths.home),
+          ),
+          const SizedBox(width: _friendAddActionGap),
+          Expanded(
+            child: CommonButton(
+              label: '완료',
+              size: CommonButtonSize.medium,
+              backgroundColor: AppColors.brandAccent,
+              foregroundColor: AppColors.white,
+              onPressed: onComplete,
+            ),
           ),
         ],
       ),
@@ -127,10 +337,10 @@ class _FriendCandidate {
   const _FriendCandidate({
     required this.id,
     required this.name,
-    required this.email,
+    this.imageAsset,
   });
 
   final String id;
   final String name;
-  final String email;
+  final String? imageAsset;
 }
