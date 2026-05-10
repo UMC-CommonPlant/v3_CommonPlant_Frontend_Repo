@@ -10,10 +10,14 @@ class CommonPlaceImageAddButton extends StatelessWidget {
     super.key,
     this.onTap,
     this.size = AppSizes.placeImageAddButtonSize,
+    this.imageAsset,
+    this.imageSemanticsLabel,
   });
 
   final VoidCallback? onTap;
   final double size;
+  final String? imageAsset;
+  final String? imageSemanticsLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -24,20 +28,30 @@ class CommonPlaceImageAddButton extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Center(
-            child: Container(
-              width: AppSizes.placeImageAddInnerSize,
-              height: AppSizes.placeImageAddInnerSize,
-              decoration: BoxDecoration(
-                color: AppColors.borderDefault,
-                borderRadius: BorderRadius.circular(AppRadius.medium),
-              ),
-              alignment: Alignment.center,
-              child: const CommonSvgIcon(
-                AppIconAssets.addPlace,
-                width: 75,
-                height: 75,
-                color: AppColors.white,
-                semanticsLabel: '장소 이미지 추가',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.medium),
+              child: SizedBox(
+                width: AppSizes.placeImageAddInnerSize,
+                height: AppSizes.placeImageAddInnerSize,
+                child: imageAsset == null
+                    ? const ColoredBox(
+                        color: AppColors.borderDefault,
+                        child: Center(
+                          child: CommonSvgIcon(
+                            AppIconAssets.addPlace,
+                            width: 75,
+                            height: 75,
+                            color: AppColors.white,
+                            semanticsLabel: '장소 이미지 추가',
+                          ),
+                        ),
+                      )
+                    : Image.asset(
+                        imageAsset!,
+                        fit: BoxFit.cover,
+                        semanticLabel: imageSemanticsLabel,
+                        excludeFromSemantics: imageSemanticsLabel == null,
+                      ),
               ),
             ),
           ),

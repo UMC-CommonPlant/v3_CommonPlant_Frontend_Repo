@@ -31,6 +31,7 @@ class CommonTextField extends StatefulWidget {
     this.enabled = true,
     this.maxLength,
     this.showClearButton = true,
+    this.forceFocusedDecoration = false,
     this.keyboardType,
     this.validator,
   });
@@ -45,6 +46,7 @@ class CommonTextField extends StatefulWidget {
   final bool enabled;
   final int? maxLength;
   final bool showClearButton;
+  final bool forceFocusedDecoration;
   final TextInputType? keyboardType;
   final CommonTextFieldValidator? validator;
 
@@ -61,6 +63,8 @@ class _CommonTextFieldState extends State<CommonTextField> {
   FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode;
 
   bool get _isFocused => _focusNode.hasFocus;
+  bool get _usesFocusedDecoration =>
+      _isFocused || widget.forceFocusedDecoration;
   bool get _hasText => _controller.text.isNotEmpty;
 
   CommonTextFieldValidation get _validation {
@@ -127,7 +131,9 @@ class _CommonTextFieldState extends State<CommonTextField> {
       case CommonTextFieldState.disabled:
         return AppColors.textDisabled;
       case CommonTextFieldState.normal:
-        return _isFocused ? AppColors.textHeadline : AppColors.textDisabled;
+        return _usesFocusedDecoration
+            ? AppColors.textHeadline
+            : AppColors.textDisabled;
     }
   }
 
@@ -155,7 +161,7 @@ class _CommonTextFieldState extends State<CommonTextField> {
       children.add(widget.trailing!);
     }
 
-    if (widget.showClearButton && _isFocused && _hasText) {
+    if (widget.showClearButton && _usesFocusedDecoration && _hasText) {
       children.add(_CommonTextFieldClearButton(onPressed: _clearText));
     }
 
@@ -164,7 +170,7 @@ class _CommonTextFieldState extends State<CommonTextField> {
         _CommonTextFieldCounter(
           currentLength: _controller.text.length,
           maxLength: widget.maxLength!,
-          focused: _isFocused,
+          focused: _usesFocusedDecoration,
         ),
       );
     }

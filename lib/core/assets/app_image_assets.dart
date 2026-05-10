@@ -28,4 +28,6 @@ abstract final class AppImageAssets {
       'assets/images/place_friend_add_common_almost.jpg';
   static const String placeFriendAddCommonMaybe =
       'assets/images/place_friend_add_common_maybe.jpg';
+  static const String placeEditLivingRoom =
+      'assets/images/place_edit_living_room.jpg';
 }
