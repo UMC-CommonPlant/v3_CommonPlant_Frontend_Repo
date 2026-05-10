@@ -20,4 +20,12 @@ abstract final class AppImageAssets {
       'assets/images/place_invitation_avatar_common_mom.jpg';
   static const String placeInvitationAvatarDoraemon =
       'assets/images/place_invitation_avatar_doraemon.jpg';
+  static const String placeFriendAddCommonMom =
+      'assets/images/place_friend_add_common_mom.jpg';
+  static const String placeFriendAddCommonFake =
+      'assets/images/place_friend_add_common_fake.jpg';
+  static const String placeFriendAddCommonAlmost =
+      'assets/images/place_friend_add_common_almost.jpg';
+  static const String placeFriendAddCommonMaybe =
+      'assets/images/place_friend_add_common_maybe.jpg';
 }

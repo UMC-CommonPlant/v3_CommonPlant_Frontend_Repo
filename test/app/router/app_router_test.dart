@@ -206,8 +206,8 @@ void main() {
 
     expect(find.text('친구 추가'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('선택 완료'));
-    await tester.tap(find.text('선택 완료'));
+    await tester.ensureVisible(find.text('완료'));
+    await tester.tap(find.text('완료'));
     await tester.pumpAndSettle();
 
     expect(find.text('My place'), findsOneWidget);
@@ -242,8 +242,8 @@ void main() {
     await tester.ensureVisible(find.text('다음'));
     await tester.tap(find.text('다음'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('선택 완료'));
-    await tester.tap(find.text('선택 완료'));
+    await tester.ensureVisible(find.text('완료'));
+    await tester.tap(find.text('완료'));
     await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.text('식물 추가하기'));
@@ -296,6 +296,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('친구 추가'), findsOneWidget);
+    expect(find.text('닉네임 검색'), findsOneWidget);
+    expect(find.text('커먼 파파'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), '커먼');
+    await tester.pumpAndSettle();
+
     expect(find.text('커먼 파파'), findsWidgets);
   });
 
