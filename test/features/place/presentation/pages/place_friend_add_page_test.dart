@@ -31,8 +31,42 @@ void main() {
     await tester.tap(find.text('커먼맘'));
     await tester.pumpAndSettle();
 
+    expect(
+      find.byKey(const ValueKey('selected-friend-friend-1')),
+      findsOneWidget,
+    );
+    expect(find.text('커먼맘'), findsNWidgets(2));
     expect(find.byIcon(Icons.check_circle), findsOneWidget);
     expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(4));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('선택된 친구 마크 삭제 버튼으로 선택을 해제한다', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: PlaceFriendAddPage()));
+
+    await tester.enterText(find.byType(TextField), '커먼');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('커먼일뻔'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('selected-friend-friend-3')),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey('selected-friend-remove-friend-3')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('selected-friend-friend-3')),
+      findsNothing,
+    );
+    expect(find.byIcon(Icons.check_circle), findsNothing);
+    expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(5));
     expect(tester.takeException(), isNull);
   });
 }
