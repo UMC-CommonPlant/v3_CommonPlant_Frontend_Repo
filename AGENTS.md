@@ -24,7 +24,7 @@
 | --- | --- |
 | 라우팅, 화면 이동, 인증 redirect | `docs/routing-guide.md` |
 | feature 구조, API 모델, repository, datasource | `docs/feature-development-guide.md` |
-| 화면 퍼블리싱, Figma 반영, 반응형 UI | `docs/screen-publishing-rules.md` |
+| 화면 퍼블리싱, Figma 반영, 반응형 UI | `docs/screen-publishing-rules.md`, `docs/figma-frame-map.md` |
 | 색상, 폰트, spacing, radius, size | `docs/design-token-rules.md` |
 | 공용 버튼, 입력창, 카드, FAB, Dialog | `docs/shared-widget-guide.md` |
 | asset, icon, image 추가 | `docs/asset-icon-rules.md` |
