@@ -76,6 +76,7 @@ CommonButton(
 - clear 버튼: 포커스 중이고 입력값이 있을 때 표시
 - counter: 현재 글자수만 Bold
 - helper text: 상태에 따라 색상 변경
+- `forceFocusedDecoration`: 키보드 포커스를 강제로 주지 않고 활성 line, clear 버튼, counter 스타일만 유지할 때 사용
 
 외부 검증 조건이 필요한 경우 `validator`를 사용합니다.
 
