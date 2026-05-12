@@ -42,7 +42,7 @@ void main() {
     );
     expect(
       tester.getTopLeft(find.byType(CommonEditDeletePopup)).dy,
-      closeTo(tester.getBottomLeft(menuButton).dy + 4, 1),
+      closeTo(tester.getBottomLeft(menuButton).dy + 4 - 50, 1),
     );
 
     await tester.tap(find.text('삭제하기'));

@@ -24,6 +24,7 @@ class MemoListPage extends StatefulWidget {
 
 class _MemoListPageState extends State<MemoListPage> {
   static const double _writeActionWidth = AppSpacing.x20 * 4;
+  static const double _actionPopupTopAdjustment = 50;
 
   final List<_MemoItem> _memos = [
     const _MemoItem(
@@ -96,7 +97,10 @@ class _MemoListPageState extends State<MemoListPage> {
                     )
                     .toDouble();
             final popupTop =
-                (anchorOffset.dy + anchorSize.height + AppSpacing.x4)
+                (anchorOffset.dy +
+                        anchorSize.height +
+                        AppSpacing.x4 -
+                        _actionPopupTopAdjustment)
                     .clamp(
                       AppSpacing.x8,
                       constraints.maxHeight -
