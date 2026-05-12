@@ -90,7 +90,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('메모 작성'), findsOneWidget);
-    expect(find.text('오늘 식물 상태는 어땠나요?'), findsOneWidget);
+    expect(find.text('메모 내용을 입력해 주세요'), findsOneWidget);
     expect(find.text('라우트 준비 중'), findsNothing);
   });
 
@@ -409,7 +409,7 @@ void main() {
     await tester.tap(find.text('작성하기'));
     await tester.pumpAndSettle();
 
-    expect(find.text('오늘 식물 상태는 어땠나요?'), findsOneWidget);
+    expect(find.text('메모 내용을 입력해 주세요'), findsOneWidget);
   });
 
   testWidgets('memo list에서 메모 작성과 삭제 dialog를 표시한다', (
