@@ -58,8 +58,12 @@ class _PlantSearchPageState extends State<PlantSearchPage> {
               const SizedBox(height: AppSpacing.x8),
               _PlantSearchResultList(
                 plants: results,
-                onSelected: (_) =>
-                    context.push(AppRoutePaths.plantCreateDetails),
+                onSelected: (plant) => context.push(
+                  Uri(
+                    path: AppRoutePaths.plantCreateDetails,
+                    queryParameters: {'name': plant.name},
+                  ).toString(),
+                ),
               ),
             ],
           ],

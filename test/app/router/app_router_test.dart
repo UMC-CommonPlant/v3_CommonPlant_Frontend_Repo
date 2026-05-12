@@ -254,9 +254,6 @@ void main() {
     await tester.tap(find.text('몬스테라 델리오사'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField).first, '몬스테라');
-    await tester.tap(find.text('장소'));
-    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('등록'));
     await tester.tap(find.text('등록'));
     await tester.pumpAndSettle();
@@ -265,7 +262,7 @@ void main() {
     expect(find.text('식물 추가하기'), findsNothing);
     expect(find.bySemanticsLabel('식물 추가'), findsOneWidget);
     expect(tester.getSize(find.bySemanticsLabel('식물 추가')), const Size(24, 24));
-    expect(find.bySemanticsLabel('몬스테라'), findsOneWidget);
+    expect(find.bySemanticsLabel('몬스테라 델리오사'), findsOneWidget);
   });
 
   testWidgets('place form에서 주소 검색과 친구 추가 화면으로 이동한다', (
@@ -365,8 +362,9 @@ void main() {
     await tester.tap(find.text('몬스테라 델리오사'));
     await tester.pumpAndSettle();
 
-    expect(find.text('식물 등록'), findsOneWidget);
-    expect(find.text('식물 이름'), findsOneWidget);
+    expect(find.text('식물 등록 (2/2)'), findsOneWidget);
+    expect(find.text('장소 선택'), findsOneWidget);
+    expect(find.text('마지막으로 물 준 날짜'), findsOneWidget);
   });
 
   testWidgets('plant detail에서 식물 수정, 메모 목록, 메모 작성으로 이동한다', (
