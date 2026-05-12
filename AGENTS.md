@@ -12,6 +12,7 @@
 - 코드, 문서, 설정 등 저장소 변경이 필요한 요구사항을 받으면 먼저 요구사항을 분석하고 GitHub 이슈를 생성한 뒤 작업을 진행한다.
 - 작업 완료 후에는 검증 결과와 관련 커밋을 이슈에 남기고 완료 처리한다.
 - PR 생성 후에는 CommonPlant GitHub Project 10에 PR을 연결한다.
+- 이슈와 PR을 Project 10에 올린 뒤 제목 타입, Issue Type, assignees, milestone, category, status, parent issue를 최신화한다.
 - 화면 구현 전 공통 위젯과 디자인 토큰 재사용 가능 여부를 먼저 확인한다.
 - API 응답 파싱, 비즈니스 로직, 비동기 상태 처리를 화면 위젯에 직접 넣지 않는다.
 - 결정되지 않은 정책은 임의로 확정하지 않고 사용자에게 질문한다.
@@ -60,6 +61,15 @@
 - API client, 인증 토큰, 에러 처리 정책이 확정되는 경우
 - 테스트 방식이나 품질 게이트가 바뀌는 경우
 - 브랜치, 커밋, PR 규칙이 바뀌는 경우
+
+## GitHub Project 정리 기준
+
+- 이슈 제목은 `[Epic]`, `[Feature]`, `[Task]`, `[Bug]` 중 하나로 시작하고, GitHub Issue Type도 같은 의미로 입력한다.
+- 신규 일반 이슈와 PR은 `ywkim95`, `allmanLee`를 assignees로 지정한다.
+- 신규 일반 이슈와 PR은 `v1.0.0 - MVP (핵심 기능 개발)` milestone을 지정한다.
+- Project 10의 category는 도메인 기준으로 `User`, `Place`, `Plant`, `Memo`, `Info`, `Story`, `Calendar` 중 알맞게 지정한다.
+- 작업 중인 이슈는 Project 10 status를 `In Progress`, PR 생성 후 이슈와 PR은 `In Review`, 병합 또는 완료 후에는 `Done`으로 맞춘다.
+- 상위 범위가 있으면 parent issue를 연결하고, 하위 이슈 연결로 Sub-issues progress가 자동 갱신되었는지 확인한다.
 
 ## 커밋 규칙
 
