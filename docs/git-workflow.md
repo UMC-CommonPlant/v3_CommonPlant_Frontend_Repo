@@ -50,10 +50,13 @@ git switch -c feature/place-list
 
 작업 전 이슈 생성 기준:
 
-- 요구사항 분석 후 작업 범위가 드러나는 제목을 작성합니다.
+- 요구사항 분석 후 `[Epic]`, `[Feature]`, `[Task]`, `[Bug]` 중 하나로 시작하는 제목을 작성합니다.
+- 제목 타입과 같은 의미의 GitHub Issue Type을 입력합니다.
 - 본문에는 작업 개요, 목표, 완료 조건, 검증 기준을 포함합니다.
 - 관련 도메인이나 작업 유형에 맞는 라벨을 지정합니다.
-- 담당자가 명확하면 assignee를 지정합니다.
+- 신규 일반 이슈는 `ywkim95`, `allmanLee`를 assignees로 지정합니다.
+- 신규 일반 이슈는 `v1.0.0 - MVP (핵심 기능 개발)` milestone을 지정합니다.
+- 상위 범위가 있으면 parent issue를 연결합니다.
 - 기존 이슈가 같은 범위를 이미 다루고 있으면 새 이슈를 만들지 않고 기존 이슈를 사용합니다.
 
 작업 중 연결 기준:
@@ -180,6 +183,8 @@ Docs: 프로젝트 작업 가이드 추가
 
 - Project URL: https://github.com/orgs/UMC-CommonPlant/projects/10/views/1
 - 이슈가 이미 Project에 있어도 PR은 별도 항목으로 추가합니다.
+- 이슈와 PR 모두 assignees, milestone, category, status를 최신 상태로 맞춥니다.
+- parent issue가 있으면 연결하고, parent의 Sub-issues progress가 자동 갱신되었는지 확인합니다.
 - `gh` CLI를 사용할 수 있으면 아래 명령으로 추가합니다.
 
 ```bash
@@ -194,12 +199,33 @@ gh project item-add 10 --owner UMC-CommonPlant --url https://github.com/UMC-Comm
 
 CLI 권한이 부족하면 GitHub UI의 PR 우측 `Projects` 영역에서 위 Project를 직접 연결합니다.
 
+## Project 필드 최신화 기준
+
+| 항목 | 기준 |
+| --- | --- |
+| Title | 이슈는 `[Epic]`, `[Feature]`, `[Task]`, `[Bug]` prefix를 사용합니다. |
+| Issue Type | 제목 prefix와 같은 의미로 `Epic`, `Feature`, `Task`, `Bug` 중 선택합니다. |
+| Assignees | 신규 일반 이슈와 PR은 `ywkim95`, `allmanLee`를 지정합니다. |
+| Milestone | 신규 일반 이슈와 PR은 `v1.0.0 - MVP (핵심 기능 개발)`을 지정합니다. |
+| Status | 작업 시작은 `In Progress`, PR 생성 후는 `In Review`, 완료 후는 `Done`입니다. |
+| Category | 도메인 기준으로 `User`, `Place`, `Plant`, `Memo`, `Info`, `Story`, `Calendar` 중 선택합니다. |
+| Parent issue | Epic/Feature/Task 계층이 있으면 parent issue를 연결합니다. |
+| Sub-issues progress | parent issue의 하위 이슈 연결 상태로 자동 갱신되므로 연결 후 표시를 확인합니다. |
+
+문서, 설정, 라우팅, 공통 인프라처럼 특정 도메인 하나에 묶기 어려운 작업은 category를 `Story`로 지정합니다.
+화면 구현처럼 도메인이 분명한 작업은 해당 도메인 category를 우선합니다.
+
 ## PR 체크리스트
 
 - [ ] 기준 브랜치가 올바른가?
 - [ ] 일반 작업 PR의 base가 `develop`인가?
 - [ ] 배포 PR의 base가 `main`이고 head가 `release/*`인가?
 - [ ] PR이 CommonPlant GitHub Project 10에 연결되었는가?
+- [ ] 이슈와 PR의 assignees가 `ywkim95`, `allmanLee`로 지정되었는가?
+- [ ] 이슈와 PR의 milestone이 지정되었는가?
+- [ ] Project 10의 category와 status가 최신 상태인가?
+- [ ] 이슈 제목 prefix와 GitHub Issue Type이 일치하는가?
+- [ ] parent issue와 Sub-issues progress가 필요한 경우 연결되었는가?
 - [ ] 커밋이 논리적 단위로 정리되었는가?
 - [ ] `fvm dart format --output=none --set-exit-if-changed .`를 통과했는가?
 - [ ] `fvm flutter analyze`를 통과했는가?

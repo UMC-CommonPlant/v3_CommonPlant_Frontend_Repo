@@ -22,6 +22,7 @@
 7. 긴 텍스트, 빈 이미지, 네트워크 실패, 키보드 노출 상태를 확인합니다.
 8. 테스트와 analyzer를 실행합니다.
 9. PR 생성 후 CommonPlant GitHub Project 10에 PR을 연결합니다.
+10. 이슈와 PR의 타입, assignees, milestone, category, status, parent issue를 최신화합니다.
 
 ## 레이아웃 기준
 
@@ -102,6 +103,9 @@
 - [ ] `fvm flutter analyze`를 통과하는가?
 - [ ] 필요한 widget test를 추가 또는 갱신했는가?
 - [ ] PR이 CommonPlant GitHub Project 10에 연결되었는가?
+- [ ] 이슈와 PR의 Project 10 category/status, assignees, milestone이 최신화되었는가?
+- [ ] 이슈 제목 타입과 GitHub Issue Type이 일치하는가?
+- [ ] parent issue가 필요한 경우 연결되어 Sub-issues progress가 갱신되었는가?
 
 ## 결정 필요
 
