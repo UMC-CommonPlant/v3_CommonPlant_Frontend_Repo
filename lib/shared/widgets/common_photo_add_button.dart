@@ -14,12 +14,14 @@ class CommonPhotoAddButton extends StatelessWidget {
     this.currentCount = 0,
     this.maxCount = 1,
     this.size = AppSizes.photoAddButtonSize,
+    this.backgroundColor,
   });
 
   final VoidCallback? onTap;
   final int currentCount;
   final int maxCount;
   final double size;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class CommonPhotoAddButton extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: backgroundColor ?? Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadius.small),
         border: Border.all(color: AppColors.borderDefault, width: 1),
       ),
