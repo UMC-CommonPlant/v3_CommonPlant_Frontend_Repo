@@ -46,8 +46,8 @@
 | Place | 장소 수정 | `/places/:placeId/edit` | `#2-2-2 장소 수정` | `1:4220` | 기본 | #31 | 중복 후보 `1:6261`보다 최신 위치의 프레임 우선 |
 | Place | 친구 관리 | `/places/:placeId/friends` | `#2-3-2 친구 관리` | `1:3417` | 기본 | #32 |  |
 | Place | 친구 관리 | `/places/:placeId/friends` | `#2-3-2 친구 관리 - 삭제 알럿 (리더` | `1:3491` | alert | #32 | 친구 삭제 확인 dialog |
-| Place | 장소 상세 | `/places/:placeId` | `#2-3 My place 리더화면` | `1:2393` | 리더 | 대기 | FAB: 식물 추가하기, 장소 수정하기, 장소 나가기 |
-| Place | 장소 상세 | `/places/:placeId` | `#2-3 My place 팀원화면` | `1:2708` | 팀원 | 대기 | FAB: 식물 추가하기, 장소 나가기 |
+| Place | 장소 상세 | `/places/:placeId` | `#2-3 My place 리더화면` | `1:2393` | 리더 | #33 | FAB: 식물 추가하기, 장소 수정하기, 장소 나가기 |
+| Place | 장소 상세 | `/places/:placeId` | `#2-3 My place 팀원화면` | `1:2708` | 팀원 | #33 | FAB: 식물 추가하기, 장소 나가기 |
 | Plant | 식물 등록 검색 | `/plants/new/search` | `#2-2-3 식물 등록` | 확인 필요 | 기본 | 대기 |  |
 | Plant | 식물 등록 검색 | `/plants/new/search` | `#2-2-3 식물 등록(검색 후)` | 확인 필요 | 검색 결과 | 대기 | route가 아닌 상태 |
 | Plant | 식물 등록 정보 입력 | `/plants/new/details` | `#2-2-3-2 식물 등록` | 확인 필요 | 기본 | 대기 |  |
