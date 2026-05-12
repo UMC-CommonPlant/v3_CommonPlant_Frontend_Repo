@@ -378,7 +378,7 @@ class _PlaceFriendStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         for (final friend in friends)
           _PlaceFriendMark(friend: friend, profile: friend.toProfile()),
