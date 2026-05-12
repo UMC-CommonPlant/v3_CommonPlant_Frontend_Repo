@@ -52,8 +52,8 @@
 | Plant | 식물 등록 검색 | `/plants/new/search` | `#2-2-3 식물 등록(검색 후)` | `1:4610` | 검색 결과 | #34 | 검색어 `몬스테라` 입력 상태 |
 | Plant | 식물 등록 정보 입력 | `/plants/new/details` | `#2-2-3-2 식물 등록` | `1:4362` | 기본 | #34 | 1단계 검색 결과 선택 후 입력 화면 |
 | Plant | 식물 수정 | `/plants/:plantId/edit` | `#2-2-3-3 식물 수정` | `1:4254` | 기본 | #35 |  |
-| Plant | 식물 상세 | `/plants/:plantId` | `#2-4 My plants` | `1:5186` | 기본 | 대기 | 기본 상세 화면 |
-| Plant | 식물 상세 | `/plants/:plantId` | `#2-4 My plants` | `1:5539` | 메뉴 | 대기 | route가 아닌 더보기 수정/삭제 상태 |
+| Plant | 식물 상세 | `/plants/:plantId` | `#2-4 My plants` | `1:5186` | 기본 | #36 | 기본 상세 화면 |
+| Plant | 식물 상세 | `/plants/:plantId` | `#2-4 My plants` | `1:5539` | 메뉴 | #36 | route가 아닌 더보기 수정/삭제 상태 |
 | Memo | 메모 작성 | `/plants/:plantId/memos/new` | `#2-4-2 메모 작성` | 확인 필요 | 기본 | 대기 |  |
 | Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모` | 확인 필요 | 기본 | 대기 |  |
 | Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 수정/삭제` | 확인 필요 | 메뉴 | 대기 | route가 아닌 상태 |
