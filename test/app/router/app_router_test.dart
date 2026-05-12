@@ -399,8 +399,8 @@ void main() {
     await tester.tap(find.bySemanticsLabel('메모 전체보기'));
     await tester.pumpAndSettle();
 
-    expect(find.text('메모'), findsOneWidget);
-    expect(find.text('총 3개의 메모'), findsOneWidget);
+    expect(find.text('Memo'), findsOneWidget);
+    expect(find.text('커먼플랜트'), findsOneWidget);
 
     router.pop();
     await tester.pumpAndSettle();
@@ -428,7 +428,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('작성'));
+    await tester.tap(find.text('작성하기'));
     await tester.pumpAndSettle();
 
     expect(find.text('메모 작성'), findsOneWidget);
@@ -441,6 +441,6 @@ void main() {
     await tester.tap(find.text('삭제하기'));
     await tester.pumpAndSettle();
 
-    expect(find.text('메모를 삭제할까요?'), findsOneWidget);
+    expect(find.text('게시물 삭제'), findsOneWidget);
   });
 }
