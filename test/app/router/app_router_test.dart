@@ -342,7 +342,7 @@ void main() {
     await tester.tap(find.text('몬테').first);
     await tester.pumpAndSettle();
 
-    expect(find.text('식물 상세'), findsOneWidget);
+    expect(find.text('My plant'), findsOneWidget);
   });
 
   testWidgets('plant search에서 식물 등록 정보 입력으로 이동한다', (WidgetTester tester) async {
@@ -383,7 +383,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(IconButton).last);
+    await tester.tap(find.byTooltip('식물 상세 메뉴'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('수정하기'));
     await tester.pumpAndSettle();
 
     expect(find.text('식물 수정'), findsOneWidget);
@@ -393,8 +395,8 @@ void main() {
     router.pop();
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('전체보기'));
-    await tester.tap(find.text('전체보기'));
+    await tester.ensureVisible(find.bySemanticsLabel('메모 전체보기'));
+    await tester.tap(find.bySemanticsLabel('메모 전체보기'));
     await tester.pumpAndSettle();
 
     expect(find.text('메모'), findsOneWidget);
@@ -403,8 +405,8 @@ void main() {
     router.pop();
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('메모 작성'));
-    await tester.tap(find.text('메모 작성'));
+    await tester.ensureVisible(find.text('작성하기'));
+    await tester.tap(find.text('작성하기'));
     await tester.pumpAndSettle();
 
     expect(find.text('오늘 식물 상태는 어땠나요?'), findsOneWidget);
