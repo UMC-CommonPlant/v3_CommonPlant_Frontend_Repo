@@ -167,6 +167,7 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
     ),
     AppRouteNames.placeDetail => PlaceDetailPage(
       placeId: state.pathParameters['placeId'] ?? '',
+      role: placeDetailRoleFromQuery(state.uri.queryParameters['role']),
     ),
     AppRouteNames.plantSearch => const PlantSearchPage(),
     AppRouteNames.plantCreateDetails => const PlantFormPage(),

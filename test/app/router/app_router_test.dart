@@ -69,9 +69,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('장소 상세'), findsOneWidget);
-    expect(find.text('우리집 거실'), findsOneWidget);
-    expect(find.text('장소 ID'), findsOneWidget);
+    expect(find.text('My place'), findsOneWidget);
+    expect(find.text('스윗 홈_거실'), findsOneWidget);
+    expect(find.text('서울시 노원구 광운로 20'), findsOneWidget);
     expect(find.text('라우트 준비 중'), findsNothing);
   });
 
@@ -321,7 +321,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(IconButton).last);
+    await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('장소 수정하기'));
     await tester.pumpAndSettle();
 
     expect(find.text('장소 수정'), findsOneWidget);
@@ -329,8 +331,7 @@ void main() {
     router.pop();
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('관리'));
-    await tester.tap(find.text('관리'));
+    await tester.tap(find.bySemanticsLabel('친구 관리'));
     await tester.pumpAndSettle();
 
     expect(find.text('친구 관리'), findsOneWidget);
@@ -338,8 +339,8 @@ void main() {
     router.pop();
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('몬스테라'));
-    await tester.tap(find.text('몬스테라'));
+    await tester.ensureVisible(find.text('몬테').first);
+    await tester.tap(find.text('몬테').first);
     await tester.pumpAndSettle();
 
     expect(find.text('식물 상세'), findsOneWidget);
