@@ -15,6 +15,7 @@ class CommonSearchTextField extends StatefulWidget {
     this.onChanged,
     this.enabled = true,
     this.horizontalPadding = 0,
+    this.iconTextSpacing = AppSpacing.x16,
   });
 
   final TextEditingController? controller;
@@ -23,6 +24,7 @@ class CommonSearchTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final bool enabled;
   final double horizontalPadding;
+  final double iconTextSpacing;
 
   @override
   State<CommonSearchTextField> createState() => _CommonSearchTextFieldState();
@@ -96,7 +98,7 @@ class _CommonSearchTextFieldState extends State<CommonSearchTextField> {
                 height: AppSizes.searchTextFieldIconSize,
                 semanticsLabel: '검색',
               ),
-              const SizedBox(width: AppSpacing.x16),
+              SizedBox(width: widget.iconTextSpacing),
               Expanded(
                 child: TextField(
                   controller: _controller,

@@ -220,7 +220,7 @@ void main() {
     await tester.tap(find.text('식물 추가하기'));
     await tester.pumpAndSettle();
 
-    expect(find.text('식물 등록'), findsOneWidget);
+    expect(find.text('식물 등록  (1/2)'), findsOneWidget);
   });
 
   testWidgets('식물 등록 후 홈에서 식물 추가 카드 대신 헤더 +를 표시한다', (
@@ -249,7 +249,9 @@ void main() {
     await tester.ensureVisible(find.text('식물 추가하기'));
     await tester.tap(find.text('식물 추가하기'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('몬스테라'));
+    await tester.enterText(find.byType(TextField), '몬스테라');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('몬스테라 델리오사'));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField).first, '몬스테라');
@@ -358,7 +360,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('몬스테라'));
+    await tester.enterText(find.byType(TextField), '몬스테라');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('몬스테라 델리오사'));
     await tester.pumpAndSettle();
 
     expect(find.text('식물 등록'), findsOneWidget);

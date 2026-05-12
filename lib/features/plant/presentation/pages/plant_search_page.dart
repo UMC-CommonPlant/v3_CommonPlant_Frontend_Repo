@@ -1,13 +1,10 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
-import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/common/presentation/widgets/phase0_widgets.dart';
-import 'package:commonplant_frontend/shared/widgets/common_add_tile.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
-import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,9 +19,10 @@ class _PlantSearchPageState extends State<PlantSearchPage> {
   final TextEditingController _searchController = TextEditingController();
 
   static const List<_PlantCandidate> _plants = [
-    _PlantCandidate(name: '몬스테라', species: 'Monstera deliciosa'),
-    _PlantCandidate(name: '스투키', species: 'Sansevieria stuckyi'),
-    _PlantCandidate(name: '아레카야자', species: 'Dypsis lutescens'),
+    _PlantCandidate(name: '몬스테라 델리오사'),
+    _PlantCandidate(name: '몬스테라 알보 바리에가타'),
+    _PlantCandidate(name: '몬스테라 보르시지아나'),
+    _PlantCandidate(name: '무늬 몬스테라'),
   ];
 
   @override
@@ -35,95 +33,124 @@ class _PlantSearchPageState extends State<PlantSearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    final query = _searchController.text.trim();
-    final results = query.isEmpty
-        ? _plants
-        : _plants
-              .where(
-                (plant) =>
-                    plant.name.contains(query) || plant.species.contains(query),
-              )
-              .toList();
+    final results = _matchingPlants(_searchController.text);
 
     return CommonScaffold(
-      title: '식물 등록',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CommonSearchTextField(
-            controller: _searchController,
-            hintText: '식물을 입력해 주세요.',
-            onChanged: (_) => setState(() {}),
+      title: '식물 등록  (1/2)',
+      navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
+        color: AppColors.textStrong,
+        fontWeight: FontWeight.w700,
+      ),
+      bodyPadding: EdgeInsets.zero,
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CommonSearchTextField(
+              controller: _searchController,
+              hintText: '식물을 입력해 주세요.',
+              horizontalPadding: AppSpacing.x20,
+              iconTextSpacing: AppSpacing.x12,
+              onChanged: (_) => setState(() {}),
+            ),
+            if (results.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.x8),
+              _PlantSearchResultList(
+                plants: results,
+                onSelected: (_) =>
+                    context.push(AppRoutePaths.plantCreateDetails),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<_PlantCandidate> _matchingPlants(String value) {
+    final query = _normalize(value);
+
+    if (query.isEmpty) {
+      return const [];
+    }
+
+    return _plants
+        .where((plant) => _normalize(plant.name).contains(query))
+        .toList(growable: false);
+  }
+
+  String _normalize(String value) {
+    return value.replaceAll(RegExp(r'\s+'), '').toLowerCase();
+  }
+}
+
+class _PlantSearchResultList extends StatelessWidget {
+  const _PlantSearchResultList({
+    required this.plants,
+    required this.onSelected,
+  });
+
+  final List<_PlantCandidate> plants;
+  final ValueChanged<_PlantCandidate> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (final entry in plants.indexed)
+          _PlantSearchResultTile(
+            plant: entry.$2,
+            isHighlighted: entry.$1 == 0,
+            onTap: () => onSelected(entry.$2),
           ),
-          const SizedBox(height: AppSpacing.x24),
-          Phase0Section(
-            title: '식물 선택',
-            subtitle: '등록할 식물을 검색하거나 직접 입력할 수 있어요.',
-            child: Column(
-              children: [
-                for (final plant in results) ...[
-                  Phase0Surface(
-                    onTap: () => context.push(AppRoutePaths.plantCreateDetails),
-                    child: Row(
-                      children: [
-                        const CommonSvgIcon(
-                          AppIconAssets.plantEmpty,
-                          height: 56,
-                          semanticsLabel: '식물',
-                        ),
-                        const SizedBox(width: AppSpacing.x16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                plant.name,
-                                style: AppTextStyles.size16Bold.copyWith(
-                                  color: AppColors.textStrong,
-                                ),
-                              ),
-                              const SizedBox(height: AppSpacing.x4),
-                              Text(
-                                plant.species,
-                                style: AppTextStyles.size14Medium.copyWith(
-                                  color: AppColors.textBody,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(
-                          Icons.chevron_right,
-                          color: AppColors.textStrong,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.x12),
-                ],
-                CommonAddTile(
-                  label: '직접 입력하기',
-                  helper: '검색 결과에 없는 식물을 등록해요.',
-                  icon: const CommonSvgIcon(
-                    AppIconAssets.plusGreen,
-                    width: 24,
-                    height: 24,
-                    semanticsLabel: '직접 입력',
-                  ),
-                  onTap: () => context.push(AppRoutePaths.plantCreateDetails),
+      ],
+    );
+  }
+}
+
+class _PlantSearchResultTile extends StatelessWidget {
+  const _PlantSearchResultTile({
+    required this.plant,
+    required this.isHighlighted,
+    required this.onTap,
+  });
+
+  final _PlantCandidate plant;
+  final bool isHighlighted;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: isHighlighted ? AppColors.surfaceDisabled : AppColors.surfaceBase,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          width: double.infinity,
+          height: AppSizes.plantSearchResultTileHeight,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                plant.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.size16Bold.copyWith(
+                  color: AppColors.textHeadline,
                 ),
-              ],
+              ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
 class _PlantCandidate {
-  const _PlantCandidate({required this.name, required this.species});
+  const _PlantCandidate({required this.name});
 
   final String name;
-  final String species;
 }

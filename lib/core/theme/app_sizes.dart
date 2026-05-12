@@ -25,6 +25,7 @@ abstract final class AppSizes {
   static const double addressOrPlaceDeleteIconSize = 24;
   static const double searchTextFieldHeight = 64;
   static const double searchTextFieldIconSize = 24;
+  static const double plantSearchResultTileHeight = 42;
   static const double textFieldClearButtonSize = 24;
   static const double textFieldClearIconSize = 16;
   static const double profileImageBoxSize = 100;
