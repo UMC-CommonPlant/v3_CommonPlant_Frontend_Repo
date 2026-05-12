@@ -94,19 +94,15 @@ class PlantDetailPage extends StatelessWidget {
       bodyPadding: EdgeInsets.zero,
       child: SizedBox(
         width: double.infinity,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: AppSizes.mobileWidth),
-            child: Column(
-              children: [
-                _PlantHero(detail: detail),
-                _PlantCareSummary(detail: detail),
-                _MemoPreviewSection(plantId: plantId, memos: detail.memos),
-                _PlantInfoSection(detail: detail),
-                const SizedBox(height: 82),
-              ],
-            ),
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _PlantDetailContentWidth(child: _PlantHero(detail: detail)),
+            _PlantCareSummary(detail: detail),
+            _MemoPreviewSection(plantId: plantId, memos: detail.memos),
+            _PlantInfoSection(detail: detail),
+            const SizedBox(height: 82),
+          ],
         ),
       ),
     );
@@ -187,6 +183,22 @@ class _PlantMemo {
   final String dateLabel;
   final String? avatarAsset;
   final String? thumbnailAsset;
+}
+
+class _PlantDetailContentWidth extends StatelessWidget {
+  const _PlantDetailContentWidth({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: AppSizes.mobileWidth),
+        child: child,
+      ),
+    );
+  }
 }
 
 class _PlantDetailMenuButton extends StatelessWidget {
@@ -367,57 +379,64 @@ class _PlantCareSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const _SectionDivider(),
-        const SizedBox(height: AppSpacing.x24),
-        RichText(
-          textAlign: TextAlign.center,
-          text: TextSpan(
-            style: AppTextStyles.size16Medium.copyWith(
-              color: AppColors.textBody,
-            ),
+        _PlantDetailContentWidth(
+          child: Column(
             children: [
-              TextSpan(text: '${detail.name}와 함께한지 '),
-              TextSpan(
-                text: '${detail.daysTogether}일',
-                style: AppTextStyles.size18Medium.copyWith(
-                  color: AppColors.textStrong,
-                  fontWeight: FontWeight.w700,
+              const SizedBox(height: AppSpacing.x24),
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: AppTextStyles.size16Medium.copyWith(
+                    color: AppColors.textBody,
+                  ),
+                  children: [
+                    TextSpan(text: '${detail.name}와 함께한지 '),
+                    TextSpan(
+                      text: '${detail.daysTogether}일',
+                      style: AppTextStyles.size18Medium.copyWith(
+                        color: AppColors.textStrong,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const TextSpan(text: '이 지났어요!'),
+                  ],
                 ),
               ),
-              const TextSpan(text: '이 지났어요!'),
+              const SizedBox(height: AppSpacing.x8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CommonSvgIcon(
+                    AppIconAssets.watering,
+                    width: 32,
+                    height: 25,
+                    color: AppColors.brandAccent,
+                    semanticsLabel: '물주기',
+                  ),
+                  const SizedBox(width: AppSpacing.x8),
+                  Text(
+                    detail.dDayLabel,
+                    style: AppTextStyles.size24Medium.copyWith(
+                      fontSize: 28,
+                      height: 36 / 28,
+                      color: AppColors.textStrong,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.x12),
+              _PlantDateSummary(
+                startDate: detail.startDate,
+                lastWateredDate: detail.lastWateredDate,
+              ),
+              const SizedBox(height: AppSpacing.x24),
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.x8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CommonSvgIcon(
-              AppIconAssets.watering,
-              width: 32,
-              height: 25,
-              color: AppColors.brandAccent,
-              semanticsLabel: '물주기',
-            ),
-            const SizedBox(width: AppSpacing.x8),
-            Text(
-              detail.dDayLabel,
-              style: AppTextStyles.size24Medium.copyWith(
-                fontSize: 28,
-                height: 36 / 28,
-                color: AppColors.textStrong,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.x12),
-        _PlantDateSummary(
-          startDate: detail.startDate,
-          lastWateredDate: detail.lastWateredDate,
-        ),
-        const SizedBox(height: AppSpacing.x24),
       ],
     );
   }
@@ -474,32 +493,43 @@ class _MemoPreviewSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const _SectionDivider(),
-        _MemoSectionHeader(
-          onPressed: () =>
-              context.push(AppRoutePaths.memoListLocation(plantId)),
-        ),
-        SizedBox(
-          height: AppSizes.memoCardHeight,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) => _PlantMemoCard(memo: memos[index]),
-            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.x8),
-            itemCount: memos.length,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.x20,
-            AppSpacing.x16,
-            AppSpacing.x20,
-            AppSpacing.x24,
-          ),
-          child: CommonButton(
-            label: '작성하기',
-            size: CommonButtonSize.medium,
-            onPressed: () =>
-                context.push(AppRoutePaths.memoWriteLocation(plantId)),
+        _PlantDetailContentWidth(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _MemoSectionHeader(
+                onPressed: () =>
+                    context.push(AppRoutePaths.memoListLocation(plantId)),
+              ),
+              SizedBox(
+                height: AppSizes.memoCardHeight,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.x20,
+                  ),
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) =>
+                      _PlantMemoCard(memo: memos[index]),
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(width: AppSpacing.x8),
+                  itemCount: memos.length,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.x20,
+                  AppSpacing.x16,
+                  AppSpacing.x20,
+                  AppSpacing.x24,
+                ),
+                child: CommonButton(
+                  label: '작성하기',
+                  size: CommonButtonSize.medium,
+                  onPressed: () =>
+                      context.push(AppRoutePaths.memoWriteLocation(plantId)),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -610,59 +640,62 @@ class _PlantInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const _SectionDivider(),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
-          child: Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: AppSpacing.x10),
-                    child: Text(
-                      '식물정보',
-                      style: AppTextStyles.size18Medium.copyWith(
-                        color: AppColors.iconInactive,
-                        fontWeight: FontWeight.w700,
+        _PlantDetailContentWidth(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: AppSpacing.x10),
+                      child: Text(
+                        '식물정보',
+                        style: AppTextStyles.size18Medium.copyWith(
+                          color: AppColors.iconInactive,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF6FBF9),
-                  borderRadius: BorderRadius.circular(AppRadius.medium),
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.x16),
-                    child: Row(
-                      children: [
-                        const CommonSvgIcon(
-                          AppIconAssets.watering,
-                          width: 24,
-                          height: 24,
-                          semanticsLabel: '물주기 주기',
-                        ),
-                        const SizedBox(width: AppSpacing.x8),
-                        Text(
-                          detail.wateringCycleLabel,
-                          style: AppTextStyles.size14Medium.copyWith(
-                            color: AppColors.textStrong,
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF6FBF9),
+                    borderRadius: BorderRadius.circular(AppRadius.medium),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.x16),
+                      child: Row(
+                        children: [
+                          const CommonSvgIcon(
+                            AppIconAssets.watering,
+                            width: 24,
+                            height: 24,
+                            semanticsLabel: '물주기 주기',
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: AppSpacing.x8),
+                          Text(
+                            detail.wateringCycleLabel,
+                            style: AppTextStyles.size14Medium.copyWith(
+                              color: AppColors.textStrong,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -676,6 +709,7 @@ class _SectionDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SizedBox(
+      key: ValueKey('plant-detail-section-divider'),
       height: AppSpacing.x8,
       width: double.infinity,
       child: ColoredBox(color: AppColors.surfaceDisabled),

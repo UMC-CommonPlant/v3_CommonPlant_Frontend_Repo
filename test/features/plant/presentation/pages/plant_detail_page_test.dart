@@ -21,6 +21,22 @@ void main() {
       tester.getCenter(find.byTooltip('식물 상세 메뉴')).dy,
       lessThanOrEqualTo(56),
     );
+    expect(
+      tester
+          .getTopLeft(
+            find.byKey(const ValueKey('plant-detail-section-divider')).first,
+          )
+          .dx,
+      0,
+    );
+    expect(
+      tester
+          .getSize(
+            find.byKey(const ValueKey('plant-detail-section-divider')).first,
+          )
+          .width,
+      tester.view.physicalSize.width / tester.view.devicePixelRatio,
+    );
 
     await tester.tap(find.byTooltip('식물 상세 메뉴'));
     await tester.pumpAndSettle();
