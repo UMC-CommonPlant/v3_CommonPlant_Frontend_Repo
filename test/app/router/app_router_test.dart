@@ -383,7 +383,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.bySemanticsLabel('식물 상세 메뉴'));
+    await tester.tap(find.byTooltip('식물 상세 메뉴'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('수정하기'));
     await tester.pumpAndSettle();

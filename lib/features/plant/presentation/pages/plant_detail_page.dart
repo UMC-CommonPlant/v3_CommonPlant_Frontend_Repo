@@ -33,7 +33,10 @@ class PlantDetailPage extends StatelessWidget {
           child: Stack(
             children: [
               Positioned(
-                top: MediaQuery.paddingOf(dialogContext).top + 92,
+                top:
+                    MediaQuery.paddingOf(dialogContext).top +
+                    AppSizes.navigationBarHeight +
+                    AppSpacing.x8,
                 right: AppSpacing.x20,
                 child: CommonEditDeletePopup(
                   onEdit: () {
@@ -85,6 +88,9 @@ class PlantDetailPage extends StatelessWidget {
         color: AppColors.textStrong,
         fontWeight: FontWeight.w700,
       ),
+      trailing: _PlantDetailMenuButton(
+        onPressed: () => _showPlantMenu(context),
+      ),
       bodyPadding: EdgeInsets.zero,
       child: SizedBox(
         width: double.infinity,
@@ -93,7 +99,6 @@ class PlantDetailPage extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: AppSizes.mobileWidth),
             child: Column(
               children: [
-                _PlantDetailMenuRow(onPressed: () => _showPlantMenu(context)),
                 _PlantHero(detail: detail),
                 _PlantCareSummary(detail: detail),
                 _MemoPreviewSection(plantId: plantId, memos: detail.memos),
@@ -184,38 +189,30 @@ class _PlantMemo {
   final String? thumbnailAsset;
 }
 
-class _PlantDetailMenuRow extends StatelessWidget {
-  const _PlantDetailMenuRow({required this.onPressed});
+class _PlantDetailMenuButton extends StatelessWidget {
+  const _PlantDetailMenuButton({required this.onPressed});
 
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 36,
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: Padding(
-          padding: const EdgeInsets.only(right: AppSpacing.x20),
-          child: Semantics(
-            button: true,
-            label: '식물 상세 메뉴',
-            child: ExcludeSemantics(
-              child: IconButton(
-                onPressed: onPressed,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 36,
-                  height: 36,
-                ),
-                icon: const CommonSvgIcon(
-                  AppIconAssets.shape,
-                  width: 4,
-                  height: 20,
-                  color: AppColors.textStrong,
-                ),
-              ),
-            ),
+    return Semantics(
+      button: true,
+      label: '식물 상세 메뉴',
+      child: ExcludeSemantics(
+        child: IconButton(
+          tooltip: '식물 상세 메뉴',
+          onPressed: onPressed,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints.tightFor(
+            width: AppSizes.navigationBarSideWidth,
+            height: AppSizes.navigationBarHeight,
+          ),
+          icon: const CommonSvgIcon(
+            AppIconAssets.shape,
+            width: 4,
+            height: 20,
+            color: AppColors.textStrong,
           ),
         ),
       ),

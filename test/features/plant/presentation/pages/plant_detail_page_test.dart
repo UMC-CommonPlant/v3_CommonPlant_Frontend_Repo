@@ -17,8 +17,12 @@ void main() {
     expect(find.text('Memo'), findsOneWidget);
     expect(find.text('식물정보'), findsOneWidget);
     expect(find.text('10 Day'), findsOneWidget);
+    expect(
+      tester.getCenter(find.byTooltip('식물 상세 메뉴')).dy,
+      lessThanOrEqualTo(56),
+    );
 
-    await tester.tap(find.bySemanticsLabel('식물 상세 메뉴'));
+    await tester.tap(find.byTooltip('식물 상세 메뉴'));
     await tester.pumpAndSettle();
 
     expect(find.text('수정하기'), findsOneWidget);
@@ -31,7 +35,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.bySemanticsLabel('식물 상세 메뉴'));
+    await tester.tap(find.byTooltip('식물 상세 메뉴'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('삭제하기'));
     await tester.pumpAndSettle();
