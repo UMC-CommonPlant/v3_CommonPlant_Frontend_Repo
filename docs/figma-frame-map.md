@@ -56,9 +56,9 @@
 | Plant | 식물 상세 | `/plants/:plantId` | `#2-4 My plants` | `1:5539` | 메뉴 | #36 | route가 아닌 더보기 수정/삭제 상태 |
 | Memo | 메모 작성 | `/plants/:plantId/memos/new` | `#2-4-2 메모 작성` | `1:4984` | 기본 | #37 | 사진/본문 입력 전 기본 상태 |
 | Memo | 메모 작성 | `/plants/:plantId/memos/new` | `#2-4-2 메모 작성` | `1:5035` | 입력 | #37 | 사진 1장 및 본문 입력 상태 |
-| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모` | 확인 필요 | 기본 | 대기 |  |
-| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 수정/삭제` | 확인 필요 | 메뉴 | 대기 | route가 아닌 상태 |
-| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 삭제 alert` | 확인 필요 | alert | 대기 | route가 아닌 상태 |
+| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모` | 확인 필요 | 기본 | #38 | Figma page screenshot 기준 피드형 Memo 화면 |
+| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 수정/삭제` | 확인 필요 | 메뉴 | #38 | route가 아닌 수정/삭제 popup 상태 |
+| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 삭제 alert` | 확인 필요 | alert | #38 | route가 아닌 게시물 삭제 dialog 상태 |
 
 ## 구현 시 확인 순서
 
