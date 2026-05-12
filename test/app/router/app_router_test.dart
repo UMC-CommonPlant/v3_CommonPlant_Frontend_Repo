@@ -387,6 +387,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('식물 수정'), findsOneWidget);
+    expect(find.text('몬테'), findsOneWidget);
+    expect(find.text('완료'), findsOneWidget);
 
     router.pop();
     await tester.pumpAndSettle();

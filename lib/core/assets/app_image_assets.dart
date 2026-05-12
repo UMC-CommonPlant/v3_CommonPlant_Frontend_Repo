@@ -32,6 +32,8 @@ abstract final class AppImageAssets {
       'assets/images/place_edit_living_room.jpg';
   static const String placeDetailMonstera =
       'assets/images/place_detail_monstera.jpg';
+  static const String plantEditMonstera =
+      'assets/images/plant_edit_monstera.jpg';
   static const String placeDetailAvatarMe =
       'assets/images/place_detail_avatar_me.jpg';
   static const String placeDetailAvatarCommonMom =
