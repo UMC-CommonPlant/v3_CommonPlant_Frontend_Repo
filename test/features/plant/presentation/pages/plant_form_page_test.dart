@@ -19,4 +19,22 @@ void main() {
     expect(find.text('취소'), findsOneWidget);
     expect(find.text('등록'), findsOneWidget);
   });
+
+  testWidgets('식물 수정 화면은 Figma 기준 입력 상태와 비활성 완료 버튼을 표시한다', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: PlantFormPage(plantId: 'plant-1')),
+      ),
+    );
+
+    expect(find.text('식물 수정'), findsOneWidget);
+    expect(find.text('몬테'), findsOneWidget);
+    expect(find.text('2/10', findRichText: true), findsOneWidget);
+    expect(find.bySemanticsLabel('식물 사진 수정'), findsOneWidget);
+
+    final completeButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, '완료'),
+    );
+    expect(completeButton.onPressed, isNull);
+  });
 }

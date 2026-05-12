@@ -1,16 +1,17 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
+import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/common/presentation/widgets/phase0_widgets.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
-import 'package:commonplant_frontend/shared/widgets/common_photo_add_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_card.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
+import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:commonplant_frontend/shared/widgets/common_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,11 +30,10 @@ class PlantFormPage extends ConsumerStatefulWidget {
 }
 
 class _PlantFormPageState extends ConsumerState<PlantFormPage> {
+  static const String _defaultEditPlantName = '몬테';
+
   late final TextEditingController _nameController;
-  late final TextEditingController _descriptionController;
   late final String _selectedPlantName;
-  String? _place;
-  String? _wateringDate;
   String? _selectedPlaceId;
 
   static const List<_PlantRegistrationPlace> _places = [
@@ -63,117 +63,40 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   void initState() {
     super.initState();
     _selectedPlantName = _normalizedInitialPlantName();
-    _nameController = TextEditingController(text: widget.isEdit ? '몬스테라' : '');
-    _descriptionController = TextEditingController(
-      text: widget.isEdit ? '거실 창가 오른쪽에서 키우는 중' : '',
+    _nameController = TextEditingController(
+      text: widget.isEdit ? _defaultEditPlantName : '',
     );
-    _place = widget.isEdit ? '우리집 거실' : null;
-    _wateringDate = widget.isEdit ? '2026.05.05' : null;
     _selectedPlaceId = widget.isEdit ? null : _places.first.id;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _descriptionController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isEdit) {
-      return _PlantCreateScaffold(
-        places: _places,
-        selectedPlaceId: _selectedPlaceId,
-        wateringDate: '2023. 01. 30',
-        onPlaceSelected: (place) => setState(() => _selectedPlaceId = place.id),
-        onCancel: _cancelCreate,
-        onSubmit: _submitCreate,
+    if (widget.isEdit) {
+      final trimmedName = _nameController.text.trim();
+      final canSubmit =
+          trimmedName.isNotEmpty && trimmedName != _defaultEditPlantName;
+
+      return _PlantEditScaffold(
+        nameController: _nameController,
+        canSubmit: canSubmit,
+        onChanged: (_) => setState(() {}),
+        onSubmit: _submitEdit,
       );
     }
 
-    final canSubmit = _nameController.text.trim().isNotEmpty && _place != null;
-
-    return CommonScaffold(
-      title: widget.isEdit ? '식물 수정' : '식물 등록',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              CommonPhotoAddButton(currentCount: widget.isEdit ? 1 : 0),
-              const SizedBox(width: AppSpacing.x16),
-              Expanded(
-                child: Text(
-                  '식물 사진은 최대 5장까지 추가할 수 있어요.',
-                  style: AppTextStyles.size14Medium.copyWith(
-                    color: AppColors.textBody,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.x32),
-          Text(
-            '식물 이름',
-            style: AppTextStyles.size16Bold.copyWith(
-              color: AppColors.textStrong,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.x8),
-          CommonTextField(
-            controller: _nameController,
-            hintText: '식물 이름을 입력해 주세요',
-            maxLength: 20,
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: AppSpacing.x24),
-          CommonAddressOrPlaceField(
-            label: '장소',
-            value: _place,
-            onTap: () => setState(() => _place = '우리집 거실'),
-            onClear: () => setState(() => _place = null),
-          ),
-          const SizedBox(height: AppSpacing.x8),
-          CommonAddressOrPlaceField(
-            label: '마지막 물준 날',
-            value: _wateringDate,
-            onTap: () => setState(() => _wateringDate = '2026.05.06'),
-            onClear: () => setState(() => _wateringDate = null),
-          ),
-          const SizedBox(height: AppSpacing.x24),
-          Text(
-            '메모',
-            style: AppTextStyles.size16Bold.copyWith(
-              color: AppColors.textStrong,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.x8),
-          CommonTextField(
-            controller: _descriptionController,
-            hintText: '관리 위치나 특징을 입력해 주세요',
-            maxLength: 40,
-          ),
-          const SizedBox(height: AppSpacing.x24),
-          Phase0Section(
-            title: '관리 태그',
-            child: const Wrap(
-              spacing: AppSpacing.x8,
-              runSpacing: AppSpacing.x8,
-              children: [
-                Phase0Chip(label: '공기정화', isActive: true),
-                Phase0Chip(label: '초보자 추천', isActive: true),
-                Phase0Chip(label: '간접광'),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.x32),
-          CommonButton(
-            label: widget.isEdit ? '저장' : '등록',
-            onPressed: canSubmit ? _submit : null,
-          ),
-        ],
-      ),
+    return _PlantCreateScaffold(
+      places: _places,
+      selectedPlaceId: _selectedPlaceId,
+      wateringDate: '2023. 01. 30',
+      onPlaceSelected: (place) => setState(() => _selectedPlaceId = place.id),
+      onCancel: _cancelCreate,
+      onSubmit: _submitCreate,
     );
   }
 
@@ -225,31 +148,140 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     context.go(AppRoutePaths.home);
   }
 
-  void _submit() {
+  void _submitEdit() {
     final name = _nameController.text.trim();
-    final description = _descriptionController.text.trim();
-
-    if (widget.isEdit) {
-      ref
-          .read(plantListProvider.notifier)
-          .updatePlant(
-            id: widget.plantId!,
-            name: name,
-            placeName: _place,
-            description: description.isEmpty ? null : description,
-          );
-      context.go(AppRoutePaths.plantDetailLocation(widget.plantId!));
-      return;
-    }
 
     ref
         .read(plantListProvider.notifier)
-        .addPlant(
-          name: name,
-          placeName: _place,
-          description: description.isEmpty ? null : description,
-        );
-    context.go(AppRoutePaths.home);
+        .updatePlant(id: widget.plantId!, name: name);
+    context.go(AppRoutePaths.plantDetailLocation(widget.plantId!));
+  }
+}
+
+class _PlantEditScaffold extends StatelessWidget {
+  const _PlantEditScaffold({
+    required this.nameController,
+    required this.canSubmit,
+    required this.onChanged,
+    required this.onSubmit,
+  });
+
+  final TextEditingController nameController;
+  final bool canSubmit;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      body: SafeArea(
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: Column(
+            children: [
+              CommonNavigationBar(
+                title: '식물 수정',
+                titleStyle: AppTextStyles.size18Medium.copyWith(
+                  color: AppColors.textStrong,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.x20,
+                    AppSpacing.x24,
+                    AppSpacing.x20,
+                    AppSpacing.x24,
+                  ),
+                  child: Column(
+                    children: [
+                      const _PlantEditPhotoButton(),
+                      const SizedBox(height: AppSpacing.x32),
+                      CommonTextField(
+                        controller: nameController,
+                        maxLength: 10,
+                        forceFocusedDecoration: true,
+                        onChanged: onChanged,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.x20,
+                  0,
+                  AppSpacing.x20,
+                  AppSpacing.x16,
+                ),
+                child: CommonButton(
+                  label: '완료',
+                  onPressed: canSubmit ? onSubmit : null,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlantEditPhotoButton extends StatelessWidget {
+  const _PlantEditPhotoButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: AppSizes.plantEditPhotoCanvasSize,
+      height: AppSizes.plantEditPhotoCanvasSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: AppSpacing.x10,
+            top: AppSpacing.x10,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.medium),
+              child: Image.asset(
+                AppImageAssets.plantEditMonstera,
+                width: AppSizes.plantEditPhotoImageSize,
+                height: AppSizes.plantEditPhotoImageSize,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Positioned(
+            left: AppSizes.plantEditPhotoOverlayOffset,
+            top: AppSizes.plantEditPhotoOverlayOffset,
+            child: Semantics(
+              label: '식물 사진 수정',
+              button: true,
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  color: AppColors.iconInactive,
+                  shape: BoxShape.circle,
+                ),
+                child: SizedBox.square(
+                  dimension: AppSizes.plantEditPhotoCameraSize,
+                  child: Center(
+                    child: CommonSvgIcon(
+                      AppIconAssets.cameraAlt,
+                      width: AppSizes.iconLarge,
+                      height: AppSizes.iconLarge,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
