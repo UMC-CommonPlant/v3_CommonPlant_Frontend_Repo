@@ -131,30 +131,35 @@ class _CommonFabDialState extends State<CommonFabDial> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                ...widget.actions.reversed.map(
+                ...widget.actions.map(
                   (action) => Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.x12),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          action.label,
-                          style: AppTextStyles.size16Bold.copyWith(
-                            color: tokens.onBrand,
-                          ),
+                    child: Semantics(
+                      button: true,
+                      label: action.label,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => _invokeAction(action),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              action.label,
+                              style: AppTextStyles.size16Bold.copyWith(
+                                color: tokens.onBrand,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.x12),
+                            CommonFab(
+                              size: AppSizes.miniFabSize,
+                              backgroundColor: tokens.surfaceBase,
+                              foregroundColor: tokens.textHeadline,
+                              onPressed: () => _invokeAction(action),
+                              child: action.icon,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: AppSpacing.x12),
-                        CommonFab(
-                          size: AppSizes.miniFabSize,
-                          backgroundColor: tokens.surfaceBase,
-                          foregroundColor: tokens.textHeadline,
-                          onPressed: () {
-                            _hideOverlay();
-                            action.onPressed();
-                          },
-                          child: action.icon,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -165,5 +170,10 @@ class _CommonFabDialState extends State<CommonFabDial> {
         ),
       ],
     );
+  }
+
+  void _invokeAction(CommonFabDialAction action) {
+    _hideOverlay();
+    action.onPressed();
   }
 }

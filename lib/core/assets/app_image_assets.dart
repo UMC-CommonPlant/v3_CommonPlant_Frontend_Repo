@@ -30,4 +30,10 @@ abstract final class AppImageAssets {
       'assets/images/place_friend_add_common_maybe.jpg';
   static const String placeEditLivingRoom =
       'assets/images/place_edit_living_room.jpg';
+  static const String placeDetailMonstera =
+      'assets/images/place_detail_monstera.jpg';
+  static const String placeDetailAvatarMe =
+      'assets/images/place_detail_avatar_me.jpg';
+  static const String placeDetailAvatarCommonMom =
+      'assets/images/place_detail_avatar_common_mom.jpg';
 }
