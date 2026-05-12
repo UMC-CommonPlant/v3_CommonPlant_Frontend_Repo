@@ -181,8 +181,13 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 - `flutter analyze`
 - `flutter test`
 
-## 추가 결정 필요
+## Phase 0 이후 필요 작업
 
-- [ ] 백엔드 에러 코드와 사용자 메시지 매핑표
-- [ ] Golden test 및 integration test 도입 범위
-- [ ] Android/iOS 스토어 계정, signing secret, 배포 대상
+- [ ] 홈 화면 Figma 기본/요청/로그인 필요 상태의 node-id를 `docs/figma-frame-map.md`에 확정 반영합니다.
+- [ ] 메모 목록 기본/메뉴/삭제 alert 상태의 Figma node-id를 확정합니다.
+- [ ] API 연동을 위해 `dio`, `freezed`, `json_serializable` 기반 모델/클라이언트 구조를 도입합니다.
+- [ ] 인증 토큰 저장은 `flutter_secure_storage` 기준으로 구현하고 인증 redirect 정책을 확정합니다.
+- [ ] 백엔드 에러 코드와 사용자 메시지 매핑표를 확정합니다.
+- [ ] mock 데이터 화면을 실제 repository/provider 흐름으로 전환합니다.
+- [ ] Golden test 및 integration test 도입 범위와 실행 환경을 확정합니다.
+- [ ] Android/iOS 스토어 계정, signing secret, 배포 대상과 release 자동화 값을 확정합니다.
