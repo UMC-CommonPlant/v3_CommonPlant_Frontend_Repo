@@ -13,6 +13,7 @@ class CommonScaffold extends StatelessWidget {
     this.subtitle,
     this.actions,
     this.trailing,
+    this.trailingWidth,
     this.floatingActionButton,
     this.bodyPadding,
     this.navigationTitleStyle,
@@ -26,6 +27,7 @@ class CommonScaffold extends StatelessWidget {
   final Widget child;
   final List<Widget>? actions;
   final Widget? trailing;
+  final double? trailingWidth;
   final Widget? floatingActionButton;
   final EdgeInsetsGeometry? bodyPadding;
   final TextStyle? navigationTitleStyle;
@@ -54,6 +56,7 @@ class CommonScaffold extends StatelessWidget {
                   showBackButton: showBackButton,
                   onBackPressed: onBackPressed,
                   trailing: trailing ?? _actionsTrailing(actions),
+                  trailingWidth: trailingWidth,
                 ),
               Expanded(
                 child: SingleChildScrollView(
@@ -125,6 +128,7 @@ class CommonNavigationBar extends StatelessWidget {
     this.showBackButton = true,
     this.onBackPressed,
     this.trailing,
+    this.trailingWidth,
   });
 
   final String title;
@@ -132,9 +136,18 @@ class CommonNavigationBar extends StatelessWidget {
   final bool showBackButton;
   final VoidCallback? onBackPressed;
   final Widget? trailing;
+  final double? trailingWidth;
 
   @override
   Widget build(BuildContext context) {
+    final effectiveTrailingWidth =
+        trailingWidth ?? AppSizes.navigationBarSideWidth;
+    final titleHorizontalPadding = showBackButton || trailing != null
+        ? AppSizes.navigationBarSideWidth > effectiveTrailingWidth
+              ? AppSizes.navigationBarSideWidth
+              : effectiveTrailingWidth
+        : AppSizes.navigationBarSideWidth;
+
     return SizedBox(
       width: double.infinity,
       height: AppSizes.navigationBarHeight,
@@ -162,9 +175,7 @@ class CommonNavigationBar extends StatelessWidget {
                 : const SizedBox.shrink(),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSizes.navigationBarSideWidth,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: titleHorizontalPadding),
             child: Text(
               title,
               maxLines: 1,
@@ -181,7 +192,7 @@ class CommonNavigationBar extends StatelessWidget {
             right: 0,
             top: 0,
             bottom: 0,
-            width: AppSizes.navigationBarSideWidth,
+            width: effectiveTrailingWidth,
             child: Center(child: trailing ?? const SizedBox.shrink()),
           ),
         ],

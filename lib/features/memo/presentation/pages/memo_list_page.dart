@@ -23,6 +23,8 @@ class MemoListPage extends StatefulWidget {
 }
 
 class _MemoListPageState extends State<MemoListPage> {
+  static const double _writeActionWidth = AppSpacing.x20 * 4;
+
   final List<_MemoItem> _memos = [
     const _MemoItem(
       author: '커먼플랜트',
@@ -58,27 +60,67 @@ class _MemoListPageState extends State<MemoListPage> {
     context.push(AppRoutePaths.memoWriteLocation(widget.plantId));
   }
 
-  void _showActionPopup(_MemoItem memo) {
+  void _showActionPopup(_MemoItem memo, BuildContext anchorContext) {
+    final anchorRenderObject = anchorContext.findRenderObject();
+    final overlayRenderObject = Overlay.maybeOf(
+      context,
+    )?.context.findRenderObject();
+
+    if (anchorRenderObject is! RenderBox || overlayRenderObject is! RenderBox) {
+      return;
+    }
+
+    final anchorOffset = anchorRenderObject.localToGlobal(
+      Offset.zero,
+      ancestor: overlayRenderObject,
+    );
+    final anchorSize = anchorRenderObject.size;
+
     showDialog<void>(
       context: context,
       barrierColor: commonDialogBarrierColor,
       builder: (dialogContext) {
         void closePopup() => Navigator.of(dialogContext).pop();
 
-        return Stack(
-          children: [
-            Positioned(
-              top: 160,
-              right: AppSpacing.x20,
-              child: CommonEditDeletePopup(
-                onEdit: closePopup,
-                onDelete: () {
-                  closePopup();
-                  _showDeleteDialog(memo);
-                },
-              ),
-            ),
-          ],
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final popupLeft =
+                (anchorOffset.dx +
+                        anchorSize.width -
+                        AppSizes.editDeletePopupWidth)
+                    .clamp(
+                      AppSpacing.x8,
+                      constraints.maxWidth -
+                          AppSizes.editDeletePopupWidth -
+                          AppSpacing.x8,
+                    )
+                    .toDouble();
+            final popupTop =
+                (anchorOffset.dy + anchorSize.height + AppSpacing.x4)
+                    .clamp(
+                      AppSpacing.x8,
+                      constraints.maxHeight -
+                          AppSizes.editDeletePopupHeight -
+                          AppSpacing.x8,
+                    )
+                    .toDouble();
+
+            return Stack(
+              children: [
+                Positioned(
+                  top: popupTop,
+                  left: popupLeft,
+                  child: CommonEditDeletePopup(
+                    onEdit: closePopup,
+                    onDelete: () {
+                      closePopup();
+                      _showDeleteDialog(memo);
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -109,21 +151,34 @@ class _MemoListPageState extends State<MemoListPage> {
     );
   }
 
+  Widget _buildWriteAction() {
+    return SizedBox(
+      width: _writeActionWidth,
+      child: TextButton(
+        onPressed: _openWritePage,
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.brandStrong,
+          padding: EdgeInsets.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textStyle: AppTextStyles.size14Medium,
+        ),
+        child: const Text(
+          '작성하기',
+          maxLines: 1,
+          overflow: TextOverflow.visible,
+          softWrap: false,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CommonScaffold(
       title: 'Memo',
       bodyPadding: EdgeInsets.zero,
-      trailing: TextButton(
-        onPressed: _openWritePage,
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.brandStrong,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x12),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          textStyle: AppTextStyles.size14Medium,
-        ),
-        child: const Text('작성하기'),
-      ),
+      trailingWidth: _writeActionWidth,
+      trailing: _buildWriteAction(),
       floatingActionButton: FloatingActionButton(
         tooltip: '메모 작성',
         onPressed: _openWritePage,
@@ -142,7 +197,7 @@ class _MemoFeedList extends StatelessWidget {
   const _MemoFeedList({required this.memos, required this.onOpenMenu});
 
   final List<_MemoItem> memos;
-  final ValueChanged<_MemoItem> onOpenMenu;
+  final void Function(_MemoItem memo, BuildContext anchorContext) onOpenMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +207,10 @@ class _MemoFeedList extends StatelessWidget {
         children: [
           const SizedBox(height: AppSpacing.x32),
           for (final memo in memos) ...[
-            _MemoFeedItem(memo: memo, onOpenMenu: () => onOpenMenu(memo)),
+            _MemoFeedItem(
+              memo: memo,
+              onOpenMenu: (anchorContext) => onOpenMenu(memo, anchorContext),
+            ),
             if (memo != memos.last)
               const ColoredBox(
                 color: AppColors.surfaceDisabled,
@@ -169,7 +227,7 @@ class _MemoFeedItem extends StatelessWidget {
   const _MemoFeedItem({required this.memo, required this.onOpenMenu});
 
   final _MemoItem memo;
-  final VoidCallback onOpenMenu;
+  final ValueChanged<BuildContext> onOpenMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -197,25 +255,29 @@ class _MemoFeedItem extends StatelessWidget {
                   ),
                 ),
               ),
-              Semantics(
-                button: true,
-                label: '메모 메뉴 열기: ${memo.author}',
-                child: ExcludeSemantics(
-                  child: IconButton(
-                    tooltip: '메모 메뉴 열기',
-                    onPressed: onOpenMenu,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints.tightFor(
-                      width: AppSizes.iconButtonSize,
-                      height: AppSizes.iconButtonSize,
+              Builder(
+                builder: (anchorContext) {
+                  return Semantics(
+                    button: true,
+                    label: '메모 메뉴 열기: ${memo.author}',
+                    child: ExcludeSemantics(
+                      child: IconButton(
+                        tooltip: '메모 메뉴 열기',
+                        onPressed: () => onOpenMenu(anchorContext),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints.tightFor(
+                          width: AppSizes.iconButtonSize,
+                          height: AppSizes.iconButtonSize,
+                        ),
+                        icon: const Icon(
+                          Icons.more_horiz,
+                          color: AppColors.textStrong,
+                          size: AppSizes.iconMedium,
+                        ),
+                      ),
                     ),
-                    icon: const Icon(
-                      Icons.more_horiz,
-                      color: AppColors.textStrong,
-                      size: AppSizes.iconMedium,
-                    ),
-                  ),
-                ),
+                  );
+                },
               ),
             ],
           ),

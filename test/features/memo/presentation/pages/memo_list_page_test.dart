@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/features/memo/presentation/pages/memo_list_page.dart';
+import 'package:commonplant_frontend/shared/widgets/common_edit_delete_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,6 +13,10 @@ void main() {
     expect(find.text('Memo'), findsOneWidget);
     expect(find.text('작성하기'), findsOneWidget);
     expect(find.byTooltip('메모 작성'), findsOneWidget);
+    expect(
+      tester.getSize(find.widgetWithText(TextButton, '작성하기')).width,
+      greaterThanOrEqualTo(80),
+    );
     expect(find.text('커먼플랜트'), findsOneWidget);
     expect(find.text('커먼맘'), findsNWidgets(2));
     expect(find.text('커먼 파파'), findsOneWidget);
@@ -24,11 +29,21 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.bySemanticsLabel('메모 메뉴 열기: 커먼플랜트'));
+    final menuButton = find.bySemanticsLabel('메모 메뉴 열기: 커먼플랜트');
+
+    await tester.tap(menuButton);
     await tester.pumpAndSettle();
 
     expect(find.text('수정하기'), findsOneWidget);
     expect(find.text('삭제하기'), findsOneWidget);
+    expect(
+      tester.getTopRight(find.byType(CommonEditDeletePopup)).dx,
+      closeTo(tester.getTopRight(menuButton).dx, 1),
+    );
+    expect(
+      tester.getTopLeft(find.byType(CommonEditDeletePopup)).dy,
+      closeTo(tester.getBottomLeft(menuButton).dy + 4, 1),
+    );
 
     await tester.tap(find.text('삭제하기'));
     await tester.pumpAndSettle();
