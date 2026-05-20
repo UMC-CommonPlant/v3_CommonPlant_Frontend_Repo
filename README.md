@@ -141,6 +141,7 @@ lib/
 | [상태관리 Provider 작성 기준](docs/state-management-guide.md) | Riverpod Provider 선택, 파일 배치, async 상태 처리 기준 |
 | [폼 검증 및 에러 메시지 작성 기준](docs/form-validation-error-guide.md) | 입력 검증 위치, helper/error 메시지, 서버 에러 처리 기준 |
 | [테스트 작성 기준](docs/testing-guide.md) | unit/widget test 작성 기준, 실행 명령, CI/pre-commit 연계 |
+| [API Swagger 연계 참고 문서](docs/api-swagger-reference.md) | 서버 Swagger 기반 API 목록, 요청 모델, 확인 필요 명세 정리 |
 | [Git 브랜치 및 커밋 전략](docs/git-workflow.md) | 브랜치 전략, 커밋 메시지, PR 체크리스트 |
 | [배포 및 릴리즈 자동화 전략](docs/release-workflow.md) | `main` publish 전략, release 브랜치, Android/iOS 자동화 단계 |
 
