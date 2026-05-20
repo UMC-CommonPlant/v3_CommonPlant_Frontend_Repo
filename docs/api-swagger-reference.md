@@ -282,6 +282,55 @@
   - `401`: 인증 실패
   - `404`: 이미지 없음
 
+## 화면별 API 매핑
+
+아래 표는 현재 Swagger에서 method, path, 목적, 필수 parameter가 충돌 없이 확인되는 API만 화면에 연결한 목록이다.
+Swagger에 없거나 content type/schema 충돌이 있는 API는 넣지 않고 `확인 필요`에 남긴다.
+단, 모든 API의 성공 response body schema는 공통으로 비어 있으므로 실제 DTO 작성 전에는 응답 예시 확인이 필요하다.
+
+| 화면 | Route | 필요한 API | 사용 목적 |
+| --- | --- | --- | --- |
+| 홈 | `/` | `GET /users` | 홈 상단 사용자 정보 표시 |
+| 홈 | `/` | `GET /place/myGarden` | 사용자의 장소 목록과 메인 정원 정보 표시 |
+| 홈 | `/` | `GET /plants?page=0&size=...` | 사용자의 식물 요약 목록 표시 |
+| 온보딩 | `/onboarding` | 연결 가능 API 없음 | 화면 이동만 처리 |
+| 로그인 | `/login` | `POST /auth/login` | 소셜 SDK token으로 로그인 또는 가입 필요 상태 판단 |
+| 프로필 설정 | `/profile/setup` | `POST /auth/register` | signupToken과 프로필 입력값으로 회원가입 완료 |
+| 개인정보 이용약관 | `/terms/privacy` | 연결 가능 API 없음 | 약관 동의 UI 및 다음 화면 이동 처리 |
+| 장소 친구 요청 | `/places/invitations` | 연결 가능 API 없음 | 초대 요청 목록/수락/거절 API가 Swagger에 없음 |
+| 장소 등록 | `/places/new` | `POST /place/create` | 장소 이름, 주소, 선택 이미지로 장소 생성 |
+| 주소 검색 | `/places/new/address-search` | 연결 가능 API 없음 | 주소 검색 API가 Swagger에 없음 |
+| 친구 추가 | `/places/new/friends` | 연결 가능 API 없음 | 사용자 검색/친구 초대 API가 Swagger에 없음 |
+| 장소 수정 | `/places/:placeId/edit` | 연결 가능 API 없음 | `PUT /place/update/{code}`는 content type 확인 필요로 제외 |
+| 친구 관리 | `/places/:placeId/friends` | 연결 가능 API 없음 | 장소 멤버 조회/삭제/권한 API가 Swagger에 없음 |
+| 장소 상세 | `/places/:placeId` | `GET /place/{code}` | 장소 상세 정보 조회 |
+| 장소 상세 | `/places/:placeId` | `DELETE /place/delete/{code}` | 장소 나가기 또는 삭제 액션 후보 |
+| 식물 등록 검색 | `/plants/new/search` | 연결 가능 API 없음 | 식물 검색 API가 Swagger에 없음 |
+| 식물 등록 정보 입력 | `/plants/new/details` | `GET /place/user` | 식물을 등록할 장소 선택 목록 조회 |
+| 식물 등록 정보 입력 | `/plants/new/details` | `POST /plants` | 선택한 장소에 식물 생성 |
+| 식물 수정 | `/plants/:plantId/edit` | `GET /plants/{plantId}/edit?placeId=...` | 식물 수정 화면 초기값 조회 |
+| 식물 수정 | `/plants/:plantId/edit` | `PUT /plants/{plantId}?placeId=...` | 식물 이미지, 애칭, 마지막 물 준 날짜 수정 |
+| 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}?placeId=...` | 식물 상세, 장소명, 대표 메모 정보 조회 |
+| 식물 상세 | `/plants/:plantId` | `DELETE /plants/{plantId}?placeId=...` | 식물 삭제 |
+| 메모 작성 | `/plants/:plantId/memos/new` | 연결 가능 API 없음 | 메모 생성 API가 Swagger에 없음 |
+| 메모 목록 | `/plants/:plantId/memos` | 연결 가능 API 없음 | 메모 목록/수정/삭제 API가 Swagger에 없음 |
+
+## 화면별 제외 API
+
+아래 API는 현재 화면에서 필요해 보이지만 충돌 또는 명세 공백 때문에 위 매핑에서 제외한다.
+
+| 화면 | 제외 API | 제외 사유 |
+| --- | --- | --- |
+| 프로필 설정 | `PUT /users` | request schema가 식물 수정용 `UpdateRequest`로 연결되어 있어 사용자 수정 DTO 확인 필요 |
+| 장소 수정 | `PUT /place/update/{code}` | 설명은 이미지 업로드 포함이나 content type이 `application/json;charset=UTF-8`로 등록되어 있어 multipart 여부 확인 필요 |
+| 장소 친구 요청 | 미정 | 초대 요청 목록, 수락, 거절 API가 Swagger에 없음 |
+| 친구 추가 | 미정 | 사용자 검색, 친구 선택, 장소 초대 API가 Swagger에 없음 |
+| 친구 관리 | 미정 | 장소 멤버 목록, 멤버 삭제, 권한 변경 API가 Swagger에 없음 |
+| 주소 검색 | 미정 | 서버 주소 검색 API 사용 여부가 Swagger에 없음 |
+| 식물 등록 검색 | 미정 | 식물 학명/추천 검색 API가 Swagger에 없음 |
+| 메모 작성 | 미정 | 메모 생성 API가 Swagger에 없음 |
+| 메모 목록 | 미정 | 메모 목록, 수정, 삭제 API가 Swagger에 없음 |
+
 ## 확인 필요
 
 - 모든 API의 response body schema가 Swagger에 없다. DTO를 확정하려면 성공 응답 예시 또는 schema가 필요하다.
