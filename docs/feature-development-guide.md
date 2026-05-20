@@ -175,6 +175,16 @@ lib/core/network/
 
 feature의 datasource는 공통 Dio client를 주입받아 사용하고, 화면이나 Controller에서 직접 Dio를 생성하지 않습니다.
 
+실제 API 호출은 기본 개발/테스트 흐름을 깨지 않도록 `COMMONPLANT_USE_API` dart-define으로 켭니다.
+base URL은 `COMMONPLANT_API_BASE_URL`로 바꿀 수 있으며 기본값은 서버 Swagger 기준 `https://commonplant.site/api/v1`입니다.
+
+```bash
+fvm flutter run --dart-define=COMMONPLANT_USE_API=true
+fvm flutter run --dart-define=COMMONPLANT_USE_API=true --dart-define=COMMONPLANT_API_BASE_URL=https://commonplant.site/api/v1
+```
+
+Swagger에 성공 response body schema가 없는 API는 mapper에서 확인 가능한 필드만 사용하고, 필수 필드가 없으면 공통 API 오류로 처리합니다. 응답 구조가 확정되기 전까지 화면에서 임의 필드를 직접 읽지 않습니다.
+
 ## 작업 순서
 
 1. 요구사항과 Figma 범위를 확인합니다.

@@ -63,12 +63,24 @@ abstract final class AppRoutePaths {
     return '/places/${Uri.encodeComponent(placeId)}/friends';
   }
 
-  static String plantEditLocation(String plantId) {
-    return '/plants/${Uri.encodeComponent(plantId)}/edit';
+  static String plantEditLocation(String plantId, {String? placeId}) {
+    final path = '/plants/${Uri.encodeComponent(plantId)}/edit';
+
+    if (placeId == null) {
+      return path;
+    }
+
+    return Uri(path: path, queryParameters: {'placeId': placeId}).toString();
   }
 
-  static String plantDetailLocation(String plantId) {
-    return '/plants/${Uri.encodeComponent(plantId)}';
+  static String plantDetailLocation(String plantId, {String? placeId}) {
+    final path = '/plants/${Uri.encodeComponent(plantId)}';
+
+    if (placeId == null) {
+      return path;
+    }
+
+    return Uri(path: path, queryParameters: {'placeId': placeId}).toString();
   }
 
   static String memoWriteLocation(String plantId) {

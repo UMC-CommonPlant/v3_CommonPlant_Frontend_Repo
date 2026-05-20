@@ -1,9 +1,12 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
+import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
@@ -66,7 +69,7 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
         onImageTap: () {},
         onAddressTap: () => context.push(AppRoutePaths.addressSearch),
         onAddressClear: () => setState(() => _address = null),
-        onNext: _submit,
+        onNext: () => _submit(),
       );
     }
 
@@ -78,11 +81,11 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
       onImageTap: () {},
       onAddressTap: () => context.push(AppRoutePaths.addressSearch),
       onAddressClear: () => setState(() => _address = null),
-      onComplete: _submit,
+      onComplete: () => _submit(),
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final name = _nameController.text.trim();
     final notifier = ref.read(placeListProvider.notifier);
 
@@ -90,6 +93,28 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
       notifier.updatePlace(id: placeId, name: name, address: _address);
       context.go(AppRoutePaths.home);
     } else {
+      if (ref.read(useRemoteApiProvider)) {
+        try {
+          await ref
+              .read(placeRepositoryProvider)
+              .createPlace(CreatePlaceRequest(name: name, address: _address));
+          ref.invalidate(remotePlaceListProvider);
+        } catch (error) {
+          if (!mounted) {
+            return;
+          }
+
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('장소 생성에 실패했어요: $error')));
+          return;
+        }
+      }
+
+      if (!mounted) {
+        return;
+      }
+
       notifier.addPlace(name: name, address: _address);
       context.push(AppRoutePaths.placeFriendAdd);
     }

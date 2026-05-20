@@ -175,6 +175,7 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
     ),
     AppRouteNames.plantEdit => PlantFormPage(
       plantId: state.pathParameters['plantId'],
+      placeId: state.uri.queryParameters['placeId'],
     ),
     AppRouteNames.memoWrite => MemoWritePage(
       plantId: state.pathParameters['plantId'] ?? '',
@@ -184,6 +185,7 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
     ),
     AppRouteNames.plantDetail => PlantDetailPage(
       plantId: state.pathParameters['plantId'] ?? '',
+      placeId: state.uri.queryParameters['placeId'],
     ),
     _ => RoutePlaceholderPage(
       route: route,

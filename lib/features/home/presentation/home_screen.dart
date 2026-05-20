@@ -194,9 +194,27 @@ class _HomeBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final places = ref.watch(placeListProvider);
+    final placesAsync = ref.watch(placeSummariesProvider);
+    final plantsAsync = ref.watch(plantSummariesProvider);
+
+    if (placesAsync.isLoading || plantsAsync.isLoading) {
+      return const _HomeStatusBody(
+        child: CircularProgressIndicator(color: AppColors.brandPrimary),
+      );
+    }
+
+    if (placesAsync.hasError || plantsAsync.hasError) {
+      return _HomeStatusBody(
+        child: Text(
+          '데이터를 불러오지 못했어요',
+          style: AppTextStyles.size16Medium.copyWith(color: AppColors.textBody),
+        ),
+      );
+    }
+
+    final places = placesAsync.value ?? const [];
     final hasPlaces = places.isNotEmpty;
-    final plants = ref.watch(plantListProvider);
+    final plants = plantsAsync.value ?? const [];
     final hasPlants = plants.isNotEmpty;
 
     return SingleChildScrollView(
@@ -266,7 +284,10 @@ class _HomeBody extends ConsumerWidget {
                         button: true,
                         child: CommonPlantCard(
                           onTap: () => context.push(
-                            AppRoutePaths.plantDetailLocation(plant.id),
+                            AppRoutePaths.plantDetailLocation(
+                              plant.id,
+                              placeId: plant.placeId,
+                            ),
                           ),
                         ),
                       ),
@@ -298,6 +319,22 @@ class _HomeBody extends ConsumerWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _HomeStatusBody extends StatelessWidget {
+  const _HomeStatusBody({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.x20),
+        child: child,
       ),
     );
   }
