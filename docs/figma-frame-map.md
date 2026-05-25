@@ -24,7 +24,7 @@
 
 | 도메인 | 화면 | Route | Figma frame | node-id | 상태 | 구현 PR | 비고 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Home | 홈 | `/` | `#2 Main` | 확인 필요 | 기본 | #16 | 홈 기본 프레임. 다음 홈 수정 시 재확인 |
+| Home | 홈 | `/` | `#2 Main` | 확인 필요 | 기본 | #16 | 2026-05-25 MCP metadata에서 exact frame 미확인. `1:6156`은 요청 있음, `1:6296`은 로그인 필요 상태이므로 기본으로 대체하지 않음 |
 | Home | 홈 | `/` | `#2 Main (요청있을 시)` | `1:6156` | 요청 있음 | #21 | 홈 요청 버튼 확인에 사용 |
 | Home | 홈 | `/` | `#2 Main/D` | `1:6296` | 로그인 필요 안내 | #16 | route가 아닌 홈 상태 |
 | Onboarding | 온보딩 | `/onboarding` | `#1-1` | `1:4822` | 기본 | #18 |  |
@@ -56,9 +56,16 @@
 | Plant | 식물 상세 | `/plants/:plantId` | `#2-4 My plants` | `1:5539` | 메뉴 | #36 | route가 아닌 더보기 수정/삭제 상태 |
 | Memo | 메모 작성 | `/plants/:plantId/memos/new` | `#2-4-2 메모 작성` | `1:4984` | 기본 | #37 | 사진/본문 입력 전 기본 상태 |
 | Memo | 메모 작성 | `/plants/:plantId/memos/new` | `#2-4-2 메모 작성` | `1:5035` | 입력 | #37 | 사진 1장 및 본문 입력 상태 |
-| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모` | 확인 필요 | 기본 | #38 | Figma page screenshot 기준 피드형 Memo 화면 |
-| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 수정/삭제` | 확인 필요 | 메뉴 | #38 | route가 아닌 수정/삭제 popup 상태 |
-| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 삭제 alert` | 확인 필요 | alert | #38 | route가 아닌 게시물 삭제 dialog 상태 |
+| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모` | 확인 필요 | 기본 | #38 | 2026-05-25 MCP metadata와 #38 구현 기록 기준 route-level node-id 미확인. Figma node-specific URL 확보 필요 |
+| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 수정/삭제` | 확인 필요 | 메뉴 | #38 | route가 아닌 수정/삭제 popup 상태. 2026-05-25 state frame node-id 미확인 |
+| Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 삭제 alert` | 확인 필요 | alert | #38 | route가 아닌 게시물 삭제 dialog 상태. 2026-05-25 state frame node-id 미확인 |
+
+## 미확정 node-id 재확인 로그
+
+| 확인일 | 대상 | 확인 결과 | 다음 확인 방법 |
+| --- | --- | --- | --- |
+| 2026-05-25 | Home `#2 Main` 기본 | MCP metadata에서 `#2 Main (요청있을 시)` (`1:6156`)와 `#2 Main/D` (`1:6296`)는 확인했지만, 기본 `#2 Main` exact frame은 확인하지 못했다. 요청 있음/로그인 필요 상태를 기본 화면 node-id로 대체하지 않는다. | Figma 원본에서 기본 홈 프레임을 직접 선택한 뒤 node-specific URL을 복사해 `node-id`를 콜론 형식으로 기록한다. |
+| 2026-05-25 | Memo `#2-4-3 메모` 기본/메뉴/삭제 alert | #38 구현 기록에 route-level node-id가 직접 식별되지 않았다고 남아 있고, MCP metadata 재확인에서도 메모 작성(`1:4984`, `1:5035`) 이후 exact state frame을 확정하지 못했다. | Figma 원본에서 기본, 수정/삭제 popup, 삭제 alert 상태 프레임을 각각 직접 선택해 node-specific URL을 확보한다. |
 
 ## 구현 시 확인 순서
 
