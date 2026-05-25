@@ -177,21 +177,12 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     }
 
     if (ref.read(useRemoteApiProvider)) {
-      final placeId = int.tryParse(selectedPlace.id);
-
-      if (placeId == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('장소 ID 형식을 확인해 주세요.')));
-        return;
-      }
-
       try {
         await ref
             .read(plantRepositoryProvider)
             .createPlant(
               CreatePlantRequest(
-                placeId: placeId,
+                placeCode: selectedPlace.id,
                 nickname: _selectedPlantName,
                 scientificNameKo: _selectedPlantName,
               ),
@@ -232,7 +223,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
             .read(plantRepositoryProvider)
             .updatePlant(
               plantId: widget.plantId!,
-              placeId: widget.placeId!,
+              placeCode: widget.placeId!,
               request: UpdatePlantRequest(nickname: name),
             );
         ref.invalidate(remotePlantListProvider);

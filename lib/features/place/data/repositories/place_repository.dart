@@ -43,6 +43,13 @@ class PlaceRepository {
     return _remoteDataSource.createPlace(request);
   }
 
+  Future<void> updatePlace({
+    required String code,
+    required UpdatePlaceRequest request,
+  }) {
+    return _remoteDataSource.updatePlace(code: code, request: request);
+  }
+
   Future<void> deletePlace(String code) {
     return _remoteDataSource.deletePlace(code);
   }

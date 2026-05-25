@@ -55,6 +55,27 @@ class PlaceRemoteDataSource {
     }
   }
 
+  Future<void> updatePlace({
+    required String code,
+    required UpdatePlaceRequest request,
+    MultipartFile? image,
+  }) async {
+    try {
+      await _dio.put<Object?>(
+        '/place/update/$code',
+        data: FormData.fromMap({
+          'place': MultipartFile.fromString(
+            jsonEncode(request.toJson()),
+            contentType: DioMediaType('application', 'json'),
+          ),
+          if (image != null) 'image': image,
+        }),
+      );
+    } on DioException catch (error) {
+      throw ApiException.fromDio(error);
+    }
+  }
+
   Future<void> deletePlace(String code) async {
     try {
       await _dio.delete<Object?>('/place/delete/$code');

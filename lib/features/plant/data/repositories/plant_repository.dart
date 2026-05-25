@@ -30,54 +30,40 @@ class PlantRepository {
     return _remoteDataSource.createPlant(request);
   }
 
-  Future<PlantDetail> fetchPlant({
-    required String plantId,
-    required String placeId,
-  }) async {
-    final data = await _remoteDataSource.getPlant(
-      plantId: plantId,
-      placeId: placeId,
-    );
+  Future<PlantDetail> fetchPlant({required String plantId}) async {
+    final data = await _remoteDataSource.getPlant(plantId: plantId);
     final object = unwrapJsonObject(data, context: '식물 상세 조회');
 
-    return plantDetailFromJson(
-      object,
-      fallbackId: plantId,
-      fallbackPlaceId: placeId,
-    );
+    return plantDetailFromJson(object, fallbackId: plantId);
   }
 
-  Future<PlantEditInfo> fetchPlantEditInfo({
-    required String plantId,
-    required String placeId,
-  }) async {
-    final data = await _remoteDataSource.getPlantEditInfo(
-      plantId: plantId,
-      placeId: placeId,
-    );
+  Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {
+    final data = await _remoteDataSource.getPlantEditInfo(plantId: plantId);
     final object = unwrapJsonObject(data, context: '식물 수정 정보 조회');
 
-    return PlantEditInfo(
-      name: readRequiredString(object, const ['nickname', 'name'], '식물 애칭'),
-      lastWateredDate: readOptionalString(object, const ['lastWateredDate']),
-      imageKey: readOptionalString(object, const ['imageKey']),
-    );
+    return plantEditInfoFromJson(object);
   }
 
   Future<void> updatePlant({
     required String plantId,
-    required String placeId,
+    required String placeCode,
     required UpdatePlantRequest request,
   }) {
     return _remoteDataSource.updatePlant(
       plantId: plantId,
-      placeId: placeId,
+      placeCode: placeCode,
       request: request,
     );
   }
 
-  Future<void> deletePlant({required String plantId, required String placeId}) {
-    return _remoteDataSource.deletePlant(plantId: plantId, placeId: placeId);
+  Future<void> deletePlant({
+    required String plantId,
+    required String placeCode,
+  }) {
+    return _remoteDataSource.deletePlant(
+      plantId: plantId,
+      placeCode: placeCode,
+    );
   }
 }
 
@@ -85,9 +71,13 @@ PlantSummary plantSummaryFromJson(JsonMap json) {
   return PlantSummary(
     id: readRequiredString(json, const ['id', 'plantId'], '식물 ID'),
     name: readRequiredString(json, const ['nickname', 'name'], '식물 이름'),
-    placeId: readOptionalString(json, const ['placeId']),
+    placeId: readOptionalString(json, const ['placeId', 'placeCode']),
     placeName: readOptionalString(json, const ['placeName']),
     description: readOptionalString(json, const ['description']),
+    imageUrl: readOptionalString(json, const [
+      'representativeImageUrl',
+      'imageUrl',
+    ]),
   );
 }
 
@@ -98,16 +88,35 @@ PlantDetail plantDetailFromJson(
 }) {
   return PlantDetail(
     id: readOptionalString(json, const ['id', 'plantId']) ?? fallbackId,
-    name: readRequiredString(json, const ['nickname', 'name'], '식물 이름'),
-    placeId: readOptionalString(json, const ['placeId']) ?? fallbackPlaceId,
+    name: readRequiredString(json, const [
+      'nickname',
+      'name',
+      'scientificNameKo',
+      'scientificNameEn',
+    ], '식물 이름'),
+    placeId:
+        readOptionalString(json, const ['placeId', 'placeCode']) ??
+        fallbackPlaceId,
     placeName: readOptionalString(json, const ['placeName']),
     species: readOptionalString(json, const [
       'scientificNameEn',
       'scientificNameKo',
       'species',
     ]),
-    description: readOptionalString(json, const ['description']),
+    description: readOptionalString(json, const ['plantInfo', 'description']),
     lastWateredDate: readOptionalString(json, const ['lastWateredDate']),
     imageKey: readOptionalString(json, const ['imageKey']),
+    imageUrl: readOptionalString(json, const ['imageUrl']),
+    memo: readOptionalString(json, const ['memo']),
+    registeredAt: readOptionalString(json, const ['registeredAt']),
+  );
+}
+
+PlantEditInfo plantEditInfoFromJson(JsonMap json) {
+  return PlantEditInfo(
+    name: readRequiredString(json, const ['nickname', 'name'], '식물 애칭'),
+    lastWateredDate: readOptionalString(json, const ['lastWateredDate']),
+    imageKey: readOptionalString(json, const ['imageKey']),
+    imageUrl: readOptionalString(json, const ['imageUrl']),
   );
 }

@@ -1,6 +1,6 @@
 class CreatePlantRequest {
   const CreatePlantRequest({
-    required this.placeId,
+    required this.placeCode,
     required this.nickname,
     this.scientificNameKo,
     this.scientificNameEn,
@@ -8,7 +8,7 @@ class CreatePlantRequest {
     this.description,
   });
 
-  final int placeId;
+  final String placeCode;
   final String nickname;
   final String? scientificNameKo;
   final String? scientificNameEn;
@@ -17,7 +17,7 @@ class CreatePlantRequest {
 
   Map<String, Object?> toJson() {
     return {
-      'placeId': placeId,
+      'placeCode': placeCode,
       'nickname': nickname,
       if (scientificNameKo != null) 'scientificNameKo': scientificNameKo,
       if (scientificNameEn != null) 'scientificNameEn': scientificNameEn,

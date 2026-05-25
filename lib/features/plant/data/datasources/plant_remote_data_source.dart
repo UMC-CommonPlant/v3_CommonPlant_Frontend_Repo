@@ -38,15 +38,9 @@ class PlantRemoteDataSource {
     }
   }
 
-  Future<Object?> getPlant({
-    required String plantId,
-    required String placeId,
-  }) async {
+  Future<Object?> getPlant({required String plantId}) async {
     try {
-      final response = await _dio.get<Object?>(
-        '/plants/$plantId',
-        queryParameters: {'placeId': placeId},
-      );
+      final response = await _dio.get<Object?>('/plants/$plantId');
 
       return response.data;
     } on DioException catch (error) {
@@ -54,15 +48,9 @@ class PlantRemoteDataSource {
     }
   }
 
-  Future<Object?> getPlantEditInfo({
-    required String plantId,
-    required String placeId,
-  }) async {
+  Future<Object?> getPlantEditInfo({required String plantId}) async {
     try {
-      final response = await _dio.get<Object?>(
-        '/plants/$plantId/edit',
-        queryParameters: {'placeId': placeId},
-      );
+      final response = await _dio.get<Object?>('/plants/$plantId/edit');
 
       return response.data;
     } on DioException catch (error) {
@@ -72,13 +60,13 @@ class PlantRemoteDataSource {
 
   Future<void> updatePlant({
     required String plantId,
-    required String placeId,
+    required String placeCode,
     required UpdatePlantRequest request,
   }) async {
     try {
       await _dio.put<Object?>(
         '/plants/$plantId',
-        queryParameters: {'placeId': placeId},
+        queryParameters: {'placeCode': placeCode},
         data: FormData.fromMap({
           'plant': MultipartFile.fromString(
             jsonEncode(request.toJson()),
@@ -93,12 +81,12 @@ class PlantRemoteDataSource {
 
   Future<void> deletePlant({
     required String plantId,
-    required String placeId,
+    required String placeCode,
   }) async {
     try {
       await _dio.delete<Object?>(
         '/plants/$plantId',
-        queryParameters: {'placeId': placeId},
+        queryParameters: {'placeCode': placeCode},
       );
     } on DioException catch (error) {
       throw ApiException.fromDio(error);

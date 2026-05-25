@@ -94,10 +94,19 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
       context.go(AppRoutePaths.home);
     } else {
       if (ref.read(useRemoteApiProvider)) {
+        final address = _address?.trim();
+
+        if (address == null || address.isEmpty) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('장소 주소를 입력해 주세요.')));
+          return;
+        }
+
         try {
           await ref
               .read(placeRepositoryProvider)
-              .createPlace(CreatePlaceRequest(name: name, address: _address));
+              .createPlace(CreatePlaceRequest(name: name, address: address));
           ref.invalidate(remotePlaceListProvider);
         } catch (error) {
           if (!mounted) {
