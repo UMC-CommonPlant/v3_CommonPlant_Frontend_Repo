@@ -1,11 +1,14 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_edit_delete_popup.dart';
@@ -13,12 +16,14 @@ import 'package:commonplant_frontend/shared/widgets/common_memo_card.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class PlantDetailPage extends StatelessWidget {
-  const PlantDetailPage({super.key, required this.plantId});
+  const PlantDetailPage({super.key, required this.plantId, this.placeId});
 
   final String plantId;
+  final String? placeId;
 
   void _showPlantMenu(BuildContext context) {
     showGeneralDialog<void>(
@@ -41,7 +46,12 @@ class PlantDetailPage extends StatelessWidget {
                 child: CommonEditDeletePopup(
                   onEdit: () {
                     Navigator.of(dialogContext).pop();
-                    context.push(AppRoutePaths.plantEditLocation(plantId));
+                    context.push(
+                      AppRoutePaths.plantEditLocation(
+                        plantId,
+                        placeId: placeId,
+                      ),
+                    );
                   },
                   onDelete: () {
                     Navigator.of(dialogContext).pop();
@@ -80,8 +90,26 @@ class PlantDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final detail = _PlantDetailData.mock();
+    final mockDetail = _PlantDetailData.mock();
 
+    if (AppEnvironment.useRemoteApi) {
+      return Consumer(
+        builder: (context, ref, _) {
+          final remoteDetail = ref.watch(remotePlantDetailProvider(plantId));
+          final detail = switch (remoteDetail) {
+            AsyncData(:final value) => mockDetail.applyRemote(value),
+            _ => mockDetail,
+          };
+
+          return _buildScaffold(context, detail);
+        },
+      );
+    }
+
+    return _buildScaffold(context, mockDetail);
+  }
+
+  Widget _buildScaffold(BuildContext context, _PlantDetailData detail) {
     return CommonScaffold(
       title: 'My plant',
       navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
@@ -131,6 +159,20 @@ class _PlantDetailData {
   final String lastWateredDate;
   final String wateringCycleLabel;
   final List<_PlantMemo> memos;
+
+  _PlantDetailData applyRemote(PlantDetail detail) {
+    return _PlantDetailData(
+      placeName: detail.placeName ?? placeName,
+      name: detail.name,
+      species: detail.species ?? species,
+      daysTogether: daysTogether,
+      dDayLabel: dDayLabel,
+      startDate: startDate,
+      lastWateredDate: detail.lastWateredDate ?? lastWateredDate,
+      wateringCycleLabel: wateringCycleLabel,
+      memos: memos,
+    );
+  }
 
   static _PlantDetailData mock() {
     return const _PlantDetailData(

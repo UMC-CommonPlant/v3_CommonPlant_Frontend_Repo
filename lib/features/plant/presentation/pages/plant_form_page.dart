@@ -1,11 +1,15 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
+import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
+import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
@@ -18,9 +22,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 class PlantFormPage extends ConsumerStatefulWidget {
-  const PlantFormPage({super.key, this.plantId, this.initialPlantName});
+  const PlantFormPage({
+    super.key,
+    this.plantId,
+    this.placeId,
+    this.initialPlantName,
+  });
 
   final String? plantId;
+  final String? placeId;
   final String? initialPlantName;
 
   bool get isEdit => plantId != null;
@@ -86,17 +96,24 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
         nameController: _nameController,
         canSubmit: canSubmit,
         onChanged: (_) => setState(() {}),
-        onSubmit: _submitEdit,
+        onSubmit: () => _submitEdit(),
       );
     }
 
+    final remotePlaces = ref.watch(plantRegistrationPlaceProvider);
+    final registrationPlaces = _registrationPlacesFromSummaries(
+      remotePlaces.value ?? const [],
+    );
+    final places = registrationPlaces.isEmpty ? _places : registrationPlaces;
+    final selectedPlaceId = _effectiveSelectedPlaceId(places);
+
     return _PlantCreateScaffold(
-      places: _places,
-      selectedPlaceId: _selectedPlaceId,
+      places: places,
+      selectedPlaceId: selectedPlaceId,
       wateringDate: '2023. 01. 30',
       onPlaceSelected: (place) => setState(() => _selectedPlaceId = place.id),
       onCancel: _cancelCreate,
-      onSubmit: _submitCreate,
+      onSubmit: () => _submitCreate(),
     );
   }
 
@@ -111,19 +128,36 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   }
 
   _PlantRegistrationPlace? get _selectedPlace {
+    final remotePlaces = ref.read(plantRegistrationPlaceProvider).value;
+    final places = _registrationPlacesFromSummaries(remotePlaces ?? const []);
+    final effectivePlaces = places.isEmpty ? _places : places;
     final selectedPlaceId = _selectedPlaceId;
 
     if (selectedPlaceId == null) {
       return null;
     }
 
-    for (final place in _places) {
+    for (final place in effectivePlaces) {
       if (place.id == selectedPlaceId) {
         return place;
       }
     }
 
-    return null;
+    return effectivePlaces.isEmpty ? null : effectivePlaces.first;
+  }
+
+  String? _effectiveSelectedPlaceId(List<_PlantRegistrationPlace> places) {
+    final selectedPlaceId = _selectedPlaceId;
+
+    if (selectedPlaceId != null) {
+      for (final place in places) {
+        if (place.id == selectedPlaceId) {
+          return selectedPlaceId;
+        }
+      }
+    }
+
+    return places.isEmpty ? null : places.first.id;
   }
 
   void _cancelCreate() {
@@ -135,26 +169,102 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     context.go(AppRoutePaths.home);
   }
 
-  void _submitCreate() {
+  Future<void> _submitCreate() async {
     final selectedPlace = _selectedPlace;
 
     if (selectedPlace == null) {
       return;
     }
 
+    if (ref.read(useRemoteApiProvider)) {
+      try {
+        await ref
+            .read(plantRepositoryProvider)
+            .createPlant(
+              CreatePlantRequest(
+                placeCode: selectedPlace.id,
+                nickname: _selectedPlantName,
+                scientificNameKo: _selectedPlantName,
+              ),
+            );
+        ref.invalidate(remotePlantListProvider);
+      } catch (error) {
+        if (!mounted) {
+          return;
+        }
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('식물 등록에 실패했어요: $error')));
+        return;
+      }
+    }
+
+    if (!mounted) {
+      return;
+    }
+
     ref
         .read(plantListProvider.notifier)
-        .addPlant(name: _selectedPlantName, placeName: selectedPlace.name);
+        .addPlant(
+          name: _selectedPlantName,
+          placeId: selectedPlace.id,
+          placeName: selectedPlace.name,
+        );
     context.go(AppRoutePaths.home);
   }
 
-  void _submitEdit() {
+  Future<void> _submitEdit() async {
     final name = _nameController.text.trim();
+
+    if (ref.read(useRemoteApiProvider) && widget.placeId != null) {
+      try {
+        await ref
+            .read(plantRepositoryProvider)
+            .updatePlant(
+              plantId: widget.plantId!,
+              placeCode: widget.placeId!,
+              request: UpdatePlantRequest(nickname: name),
+            );
+        ref.invalidate(remotePlantListProvider);
+      } catch (error) {
+        if (!mounted) {
+          return;
+        }
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('식물 수정에 실패했어요: $error')));
+        return;
+      }
+    }
+
+    if (!mounted) {
+      return;
+    }
 
     ref
         .read(plantListProvider.notifier)
         .updatePlant(id: widget.plantId!, name: name);
-    context.go(AppRoutePaths.plantDetailLocation(widget.plantId!));
+    context.go(
+      AppRoutePaths.plantDetailLocation(
+        widget.plantId!,
+        placeId: widget.placeId,
+      ),
+    );
+  }
+
+  List<_PlantRegistrationPlace> _registrationPlacesFromSummaries(
+    List<PlaceSummary> summaries,
+  ) {
+    return [
+      for (final place in summaries)
+        _PlantRegistrationPlace(
+          id: place.id,
+          name: place.name,
+          imageAsset: AppImageAssets.placeEditLivingRoom,
+        ),
+    ];
   }
 }
 
