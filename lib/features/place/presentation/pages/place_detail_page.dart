@@ -9,6 +9,7 @@ import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_selection_widgets.dart';
+import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_fab.dart';
 import 'package:commonplant_frontend/shared/widgets/common_plant_card.dart';
@@ -29,7 +30,7 @@ PlaceDetailRole? placeDetailRoleFromQuery(String? value) {
   };
 }
 
-class PlaceDetailPage extends StatelessWidget {
+class PlaceDetailPage extends ConsumerWidget {
   const PlaceDetailPage({super.key, required this.placeId, this.role});
 
   final String placeId;
@@ -58,24 +59,55 @@ class PlaceDetailPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final mockDetail = _PlaceDetailData.mock(placeId, role: role);
 
-    if (AppEnvironment.useRemoteApi) {
-      return Consumer(
-        builder: (context, ref, _) {
-          final remoteDetail = ref.watch(placeDetailProvider(placeId));
-          final detail = switch (remoteDetail) {
-            AsyncData(:final value) => mockDetail.applySummary(value),
-            _ => mockDetail,
-          };
-
-          return _buildScaffold(context, detail);
-        },
-      );
+    if (!ref.watch(useRemoteApiProvider)) {
+      return _buildScaffold(context, mockDetail);
     }
 
-    return _buildScaffold(context, mockDetail);
+    final remoteDetail = ref.watch(placeDetailProvider(placeId));
+
+    return remoteDetail.when(
+      data: (summary) {
+        if (_isEmptyRemoteSummary(summary)) {
+          return _buildStatusScaffold(
+            context,
+            const _PlaceDetailStatusView(
+              icon: AppIconAssets.placeEmpty,
+              title: '장소 정보를 찾을 수 없어요',
+              message: '다시 장소 목록에서 선택해 주세요',
+              semanticsLabel: '장소 정보 없음',
+            ),
+          );
+        }
+
+        return _buildScaffold(context, mockDetail.applySummary(summary));
+      },
+      error: (error, stackTrace) {
+        return _buildStatusScaffold(
+          context,
+          _PlaceDetailStatusView(
+            icon: AppIconAssets.placeEmpty,
+            title: '장소 정보를 불러오지 못했어요',
+            message: '잠시 후 다시 시도해 주세요',
+            semanticsLabel: '장소 정보 오류',
+            actionLabel: '다시 시도',
+            onAction: () => ref.invalidate(placeDetailProvider(placeId)),
+          ),
+        );
+      },
+      loading: () {
+        return _buildStatusScaffold(
+          context,
+          const _PlaceDetailStatusView(
+            title: '장소 정보를 불러오고 있어요',
+            message: '장소와 식물 정보를 준비하고 있어요',
+            isLoading: true,
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildScaffold(BuildContext context, _PlaceDetailData detail) {
@@ -103,6 +135,109 @@ class PlaceDetailPage extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusScaffold(BuildContext context, Widget child) {
+    return CommonScaffold(
+      title: 'My place',
+      navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
+        color: AppColors.textStrong,
+        fontWeight: FontWeight.w700,
+      ),
+      bodyPadding: EdgeInsets.zero,
+      child: SizedBox(
+        width: double.infinity,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: AppSizes.mobileWidth),
+            child: SizedBox(height: AppSizes.mobileWidth, child: child),
+          ),
+        ),
+      ),
+    );
+  }
+
+  bool _isEmptyRemoteSummary(PlaceSummary summary) {
+    return summary.name.trim().isEmpty;
+  }
+}
+
+class _PlaceDetailStatusView extends StatelessWidget {
+  const _PlaceDetailStatusView({
+    required this.title,
+    required this.message,
+    this.icon,
+    this.semanticsLabel,
+    this.actionLabel,
+    this.onAction,
+    this.isLoading = false,
+  });
+
+  final String title;
+  final String message;
+  final String? icon;
+  final String? semanticsLabel;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isLoading)
+              SizedBox.square(
+                dimension: AppSizes.iconLarge,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.brandStrong,
+                  ),
+                ),
+              )
+            else if (icon case final icon?)
+              CommonSvgIcon(
+                icon,
+                width: AppSizes.iconLarge,
+                height: AppSizes.iconLarge,
+                color: AppColors.iconInactive,
+                semanticsLabel: semanticsLabel,
+              ),
+            const SizedBox(height: AppSpacing.x16),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.size18Medium.copyWith(
+                color: AppColors.textStrong,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.x8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.size14Medium.copyWith(
+                color: AppColors.textBody,
+              ),
+            ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: AppSpacing.x24),
+              SizedBox(
+                width: AppSizes.smallButtonWidth,
+                child: CommonButton.secondary(
+                  label: actionLabel!,
+                  size: CommonButtonSize.medium,
+                  onPressed: onAction,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

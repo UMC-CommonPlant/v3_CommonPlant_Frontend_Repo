@@ -32,12 +32,10 @@ final plantRegistrationPlaceProvider = FutureProvider<List<PlaceSummary>>((
   return ref.watch(placeListProvider);
 });
 
-final placeDetailProvider = FutureProvider.family<PlaceSummary, String>((
-  ref,
-  code,
-) {
-  return ref.watch(placeRepositoryProvider).fetchPlace(code);
-});
+final placeDetailProvider = FutureProvider.family<PlaceSummary, String>(
+  (ref, code) => ref.watch(placeRepositoryProvider).fetchPlace(code),
+  retry: (retryCount, error) => null,
+);
 
 class PlaceListNotifier extends Notifier<List<PlaceSummary>> {
   int _nextId = 1;
