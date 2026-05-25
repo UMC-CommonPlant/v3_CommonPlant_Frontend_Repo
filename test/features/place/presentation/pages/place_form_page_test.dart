@@ -52,7 +52,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('장소 등록 화면은 원격 제출 중 다음 버튼을 잠근다', (tester) async {
+  testWidgets('장소 등록 화면은 원격 주소가 없으면 안내하고 요청하지 않는다', (tester) async {
     final repository = _PendingPlaceRepository();
 
     await tester.pumpWidget(
@@ -71,14 +71,9 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, '다음'));
     await tester.pump();
 
-    expect(repository.createCalls, 1);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-    final nextButton = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, '다음'),
-    );
-
-    expect(nextButton.onPressed, isNull);
+    expect(repository.createCalls, 0);
+    expect(find.text('장소 주소를 입력해 주세요.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }
 

@@ -92,12 +92,10 @@ class PlantDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final mockDetail = _PlantDetailData.mock();
 
-    if (AppEnvironment.useRemoteApi && placeId != null) {
+    if (AppEnvironment.useRemoteApi) {
       return Consumer(
         builder: (context, ref, _) {
-          final remoteDetail = ref.watch(
-            remotePlantDetailProvider((plantId: plantId, placeId: placeId!)),
-          );
+          final remoteDetail = ref.watch(remotePlantDetailProvider(plantId));
           final detail = switch (remoteDetail) {
             AsyncData(:final value) => mockDetail.applyRemote(value),
             _ => mockDetail,

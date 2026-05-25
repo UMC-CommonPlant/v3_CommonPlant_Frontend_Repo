@@ -8,6 +8,9 @@ class PlantDetail {
     this.description,
     this.lastWateredDate,
     this.imageKey,
+    this.imageUrl,
+    this.memo,
+    this.registeredAt,
   });
 
   final String id;
@@ -18,6 +21,9 @@ class PlantDetail {
   final String? description;
   final String? lastWateredDate;
   final String? imageKey;
+  final String? imageUrl;
+  final String? memo;
+  final String? registeredAt;
 }
 
 class PlantEditInfo {
@@ -25,9 +31,11 @@ class PlantEditInfo {
     required this.name,
     this.lastWateredDate,
     this.imageKey,
+    this.imageUrl,
   });
 
   final String name;
   final String? lastWateredDate;
   final String? imageKey;
+  final String? imageUrl;
 }

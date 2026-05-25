@@ -283,6 +283,9 @@ class _HomeBody extends ConsumerWidget {
                         label: plant.name,
                         button: true,
                         child: CommonPlantCard(
+                          imageProvider: plant.imageUrl == null
+                              ? null
+                              : NetworkImage(plant.imageUrl!),
                           onTap: () => context.push(
                             AppRoutePaths.plantDetailLocation(
                               plant.id,

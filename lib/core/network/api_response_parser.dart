@@ -16,25 +16,10 @@ JsonMap jsonObjectFromResponse(Object? data, {required String context}) {
 
 List<JsonMap> jsonListFromResponse(Object? data, {required String context}) {
   final normalized = _normalizeResponseData(data);
-  final unwrapped = _unwrapData(normalized);
+  final list = _findJsonList(_unwrapData(normalized));
 
-  if (unwrapped is List) {
-    return [
-      for (final item in unwrapped)
-        if (item is JsonMap) item,
-    ];
-  }
-
-  if (unwrapped is JsonMap) {
-    for (final key in const ['items', 'content', 'list', 'places', 'plants']) {
-      final value = unwrapped[key];
-      if (value is List) {
-        return [
-          for (final item in value)
-            if (item is JsonMap) item,
-        ];
-      }
-    }
+  if (list != null) {
+    return list;
   }
 
   throw ApiException(message: '$context 응답에서 목록 데이터를 찾을 수 없습니다.');
@@ -122,4 +107,26 @@ Object? _unwrapData(Object? data) {
   }
 
   return data;
+}
+
+List<JsonMap>? _findJsonList(Object? data) {
+  if (data is List) {
+    return [
+      for (final item in data)
+        if (item is JsonMap) item,
+    ];
+  }
+
+  if (data is! JsonMap) {
+    return null;
+  }
+
+  for (final key in const ['items', 'content', 'list', 'places', 'plants']) {
+    final list = _findJsonList(data[key]);
+    if (list != null) {
+      return list;
+    }
+  }
+
+  return null;
 }

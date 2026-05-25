@@ -86,7 +86,7 @@ class _PendingPlantRepository extends PlantRepository {
   @override
   Future<void> updatePlant({
     required String plantId,
-    required String placeId,
+    required String placeCode,
     required UpdatePlantRequest request,
   }) {
     updateCalls++;

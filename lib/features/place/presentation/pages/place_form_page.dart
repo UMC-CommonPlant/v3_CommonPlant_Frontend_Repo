@@ -95,6 +95,16 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
 
     final name = _nameController.text.trim();
     final notifier = ref.read(placeListProvider.notifier);
+    final address = _address?.trim();
+
+    if (!widget.isEdit &&
+        ref.read(useRemoteApiProvider) &&
+        (address == null || address.isEmpty)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('장소 주소를 입력해 주세요.')));
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 
@@ -109,7 +119,7 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
           try {
             await ref
                 .read(placeRepositoryProvider)
-                .createPlace(CreatePlaceRequest(name: name, address: _address));
+                .createPlace(CreatePlaceRequest(name: name, address: address!));
             ref.invalidate(remotePlaceListProvider);
           } catch (error) {
             if (!mounted) {
