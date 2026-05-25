@@ -1,13 +1,15 @@
+import 'package:commonplant_frontend/app/common_plant_app.dart';
+import 'package:commonplant_frontend/app/router/app_router.dart';
+import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/features/memo/presentation/pages/memo_list_page.dart';
 import 'package:commonplant_frontend/shared/widgets/common_edit_delete_popup.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('메모 목록 기본 화면은 피드형 메모와 작성 액션을 표시한다', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: MemoListPage(plantId: 'plant-1')),
-    );
+    await tester.pumpWidget(_buildMemoListApp('plant-1'));
     await tester.pumpAndSettle();
 
     expect(find.text('Memo'), findsOneWidget);
@@ -24,9 +26,7 @@ void main() {
   });
 
   testWidgets('메모 더보기는 수정삭제 메뉴와 삭제 확인 알럿을 표시한다', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: MemoListPage(plantId: 'plant-1')),
-    );
+    await tester.pumpWidget(_buildMemoListApp('plant-1'));
     await tester.pumpAndSettle();
 
     final menuButton = find.bySemanticsLabel('메모 메뉴 열기: 커먼플랜트');
@@ -57,4 +57,66 @@ void main() {
     expect(find.text('커먼플랜트'), findsNothing);
     expect(find.textContaining('장마여서 물주는 날짜를 조금 늦춤'), findsNothing);
   });
+
+  testWidgets('메모 작성 완료 후 목록으로 돌아와 입력한 메모를 표시한다', (tester) async {
+    final router = createAppRouter(
+      initialLocation: AppRoutePaths.memoWriteLocation('local-memo-plant'),
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appRouterProvider.overrideWithValue(router)],
+        child: const CommonPlantApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '새 잎이 올라왔다');
+    await tester.pump();
+    await tester.tap(find.text('완료'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Memo'), findsOneWidget);
+    expect(find.text('새 잎이 올라왔다'), findsOneWidget);
+  });
+
+  testWidgets('마지막 로컬 메모를 삭제하면 빈 상태를 표시한다', (tester) async {
+    final router = createAppRouter(
+      initialLocation: AppRoutePaths.memoWriteLocation('single-local-memo'),
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appRouterProvider.overrideWithValue(router)],
+        child: const CommonPlantApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '삭제될 메모');
+    await tester.pump();
+    await tester.tap(find.text('완료'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('삭제될 메모'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('메모 메뉴 열기'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('삭제하기'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('삭제'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('삭제될 메모'), findsNothing);
+    expect(find.text('아직 작성된 메모가 없어요'), findsOneWidget);
+    expect(find.text('식물의 변화를 메모로 남겨보세요'), findsOneWidget);
+  });
+}
+
+Widget _buildMemoListApp(String plantId) {
+  return ProviderScope(
+    child: MaterialApp(home: MemoListPage(plantId: plantId)),
+  );
 }

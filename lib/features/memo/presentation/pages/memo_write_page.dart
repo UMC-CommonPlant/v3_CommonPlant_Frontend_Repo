@@ -5,22 +5,24 @@ import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/memo/presentation/providers/memo_list_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_photo_add_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class MemoWritePage extends StatefulWidget {
+class MemoWritePage extends ConsumerStatefulWidget {
   const MemoWritePage({super.key, required this.plantId});
 
   final String plantId;
 
   @override
-  State<MemoWritePage> createState() => _MemoWritePageState();
+  ConsumerState<MemoWritePage> createState() => _MemoWritePageState();
 }
 
-class _MemoWritePageState extends State<MemoWritePage> {
+class _MemoWritePageState extends ConsumerState<MemoWritePage> {
   static const int _maxMemoLength = 200;
   static const int _maxPhotoCount = 1;
 
@@ -55,6 +57,13 @@ class _MemoWritePageState extends State<MemoWritePage> {
   }
 
   void _submit() {
+    ref
+        .read(memoListProvider.notifier)
+        .addMemo(
+          plantId: widget.plantId,
+          content: _memoController.text.trim(),
+          hasPhoto: _hasPhoto,
+        );
     context.go(AppRoutePaths.memoListLocation(widget.plantId));
   }
 

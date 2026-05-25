@@ -1,67 +1,37 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
-import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/memo/presentation/providers/memo_list_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_edit_delete_popup.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class MemoListPage extends StatefulWidget {
+class MemoListPage extends ConsumerWidget {
   const MemoListPage({super.key, required this.plantId});
 
   final String plantId;
 
-  @override
-  State<MemoListPage> createState() => _MemoListPageState();
-}
-
-class _MemoListPageState extends State<MemoListPage> {
   static const double _writeActionWidth = AppSpacing.x20 * 4;
   static const double _actionPopupTopAdjustment = 50;
 
-  final List<_MemoItem> _memos = [
-    const _MemoItem(
-      author: '커먼플랜트',
-      content:
-          '장마여서 물주는 날짜를 조금 늦춤 하지만 해는 맑구나 몬테랑 함께한 지 벌써 56일이 되었구나 요즘 잎이 갈라지니 채광이 더 드는 곳으로 자리를 옮겨야 할 것 같다.',
-      dateLabel: '2022.11.20',
-      avatarAsset: AppImageAssets.profileSetupSampleAvatar,
-      imageAsset: AppImageAssets.memoListMonstera,
-    ),
-    const _MemoItem(
-      author: '커먼맘',
-      content: '오늘은 잎이 조금 시들하구나 커먼아 해결책은?',
-      dateLabel: '2022.11.20',
-      avatarAsset: AppImageAssets.placeDetailAvatarCommonMom,
-    ),
-    const _MemoItem(
-      author: '커먼맘',
-      content:
-          '오늘은 잎의 상태가 매우 좋다 커먼아 앱에서 알려준 물주기의 주기가 아주 딱 맞는 것 같구나. 요즘 내가 물 주기 누르는 거 자꾸 깜빡깜빡하니 커먼이 네가 조금 더 신경써주길 바란다.',
-      dateLabel: '2022.11.20',
-      avatarAsset: AppImageAssets.placeDetailAvatarCommonMom,
-      imageAsset: AppImageAssets.memoListMonstera,
-      imageAlignment: Alignment.topCenter,
-    ),
-    const _MemoItem(
-      author: '커먼 파파',
-      content: '오늘도 맑음',
-      dateLabel: '2022.11.20',
-    ),
-  ];
-
-  void _openWritePage() {
-    context.push(AppRoutePaths.memoWriteLocation(widget.plantId));
+  void _openWritePage(BuildContext context) {
+    context.push(AppRoutePaths.memoWriteLocation(plantId));
   }
 
-  void _showActionPopup(_MemoItem memo, BuildContext anchorContext) {
+  void _showActionPopup({
+    required BuildContext context,
+    required WidgetRef ref,
+    required MemoItem memo,
+    required BuildContext anchorContext,
+  }) {
     final anchorRenderObject = anchorContext.findRenderObject();
     final overlayRenderObject = Overlay.maybeOf(
       context,
@@ -118,7 +88,7 @@ class _MemoListPageState extends State<MemoListPage> {
                     onEdit: closePopup,
                     onDelete: () {
                       closePopup();
-                      _showDeleteDialog(memo);
+                      _showDeleteDialog(context: context, ref: ref, memo: memo);
                     },
                   ),
                 ),
@@ -130,7 +100,13 @@ class _MemoListPageState extends State<MemoListPage> {
     );
   }
 
-  void _showDeleteDialog(_MemoItem memo) {
+  void _showDeleteDialog({
+    required BuildContext context,
+    required WidgetRef ref,
+    required MemoItem memo,
+  }) {
+    final navigator = Navigator.of(context);
+
     showCommonDialog<void>(
       context: context,
       child: CommonDialogCard(
@@ -140,14 +116,16 @@ class _MemoListPageState extends State<MemoListPage> {
           CommonDialogActionButton(
             label: '취소',
             foregroundColor: AppColors.textBody,
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: navigator.pop,
           ),
           CommonDialogActionButton.confirm(
             label: '삭제',
             foregroundColor: AppColors.danger,
             onPressed: () {
-              setState(() => _memos.remove(memo));
-              Navigator.of(context).pop();
+              navigator.pop();
+              ref
+                  .read(memoListProvider.notifier)
+                  .deleteMemo(plantId: plantId, memoId: memo.id);
             },
           ),
         ],
@@ -155,11 +133,11 @@ class _MemoListPageState extends State<MemoListPage> {
     );
   }
 
-  Widget _buildWriteAction() {
+  Widget _buildWriteAction(BuildContext context) {
     return SizedBox(
       width: _writeActionWidth,
       child: TextButton(
-        onPressed: _openWritePage,
+        onPressed: () => _openWritePage(context),
         style: TextButton.styleFrom(
           foregroundColor: AppColors.brandStrong,
           padding: EdgeInsets.zero,
@@ -177,22 +155,77 @@ class _MemoListPageState extends State<MemoListPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final memos = ref.watch(memoItemsProvider(plantId));
+
     return CommonScaffold(
       title: 'Memo',
       bodyPadding: EdgeInsets.zero,
       trailingWidth: _writeActionWidth,
-      trailing: _buildWriteAction(),
+      trailing: _buildWriteAction(context),
       floatingActionButton: FloatingActionButton(
         tooltip: '메모 작성',
-        onPressed: _openWritePage,
+        onPressed: () => _openWritePage(context),
         elevation: 0,
         backgroundColor: AppColors.brandStrong,
         foregroundColor: AppColors.white,
         shape: const CircleBorder(),
         child: const Icon(Icons.add, size: AppSizes.iconLarge),
       ),
-      child: _MemoFeedList(memos: _memos, onOpenMenu: _showActionPopup),
+      child: memos.isEmpty
+          ? const _MemoEmptyView()
+          : _MemoFeedList(
+              memos: memos,
+              onOpenMenu: (memo, anchorContext) {
+                _showActionPopup(
+                  context: context,
+                  ref: ref,
+                  memo: memo,
+                  anchorContext: anchorContext,
+                );
+              },
+            ),
+    );
+  }
+}
+
+class _MemoEmptyView extends StatelessWidget {
+  const _MemoEmptyView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CommonSvgIcon(
+              AppIconAssets.plantEmpty,
+              width: AppSizes.iconLarge,
+              height: AppSizes.iconLarge,
+              color: AppColors.iconInactive,
+              semanticsLabel: '메모 없음',
+            ),
+            const SizedBox(height: AppSpacing.x16),
+            Text(
+              '아직 작성된 메모가 없어요',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.size18Medium.copyWith(
+                color: AppColors.textStrong,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.x8),
+            Text(
+              '식물의 변화를 메모로 남겨보세요',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.size14Medium.copyWith(
+                color: AppColors.textBody,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -200,8 +233,8 @@ class _MemoListPageState extends State<MemoListPage> {
 class _MemoFeedList extends StatelessWidget {
   const _MemoFeedList({required this.memos, required this.onOpenMenu});
 
-  final List<_MemoItem> memos;
-  final void Function(_MemoItem memo, BuildContext anchorContext) onOpenMenu;
+  final List<MemoItem> memos;
+  final void Function(MemoItem memo, BuildContext anchorContext) onOpenMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -230,7 +263,7 @@ class _MemoFeedList extends StatelessWidget {
 class _MemoFeedItem extends StatelessWidget {
   const _MemoFeedItem({required this.memo, required this.onOpenMenu});
 
-  final _MemoItem memo;
+  final MemoItem memo;
   final ValueChanged<BuildContext> onOpenMenu;
 
   @override
@@ -350,22 +383,4 @@ class _MemoAvatar extends StatelessWidget {
       ),
     );
   }
-}
-
-class _MemoItem {
-  const _MemoItem({
-    required this.author,
-    required this.content,
-    required this.dateLabel,
-    this.avatarAsset,
-    this.imageAsset,
-    this.imageAlignment = Alignment.center,
-  });
-
-  final String author;
-  final String content;
-  final String dateLabel;
-  final String? avatarAsset;
-  final String? imageAsset;
-  final Alignment imageAlignment;
 }
