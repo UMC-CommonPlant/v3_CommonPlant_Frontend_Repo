@@ -43,6 +43,8 @@ static const grayGray6 = Color(0xFF404040);
 ```dart
 static const brandStrong = AppColorPrimitives.seaGreenDark3;
 static const textStrong = AppColorPrimitives.grayGray6;
+static const actionBlue = AppColorPrimitives.lightSystemBlue;
+static const alertSurface = AppColorPrimitives.lightAlertBackground;
 ```
 
 공용 위젯에서 `BuildContext`가 있고 테마 변경 가능성을 고려해야 한다면 `AppThemeTokens`를 우선 사용합니다.

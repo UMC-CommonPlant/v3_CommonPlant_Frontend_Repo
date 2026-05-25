@@ -49,7 +49,7 @@ void main() {
     );
   });
 
-  testWidgets('프로필 설정 입력 화면은 성공 상태와 활성 완료 버튼을 표시한다', (tester) async {
+  testWidgets('프로필 사진 액션 시트에서 샘플 이미지를 선택할 수 있다', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(375, 812);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -58,10 +58,60 @@ void main() {
     await tester.pumpWidget(_profileSetupApp());
 
     await tester.tap(find.byKey(const ValueKey('profileAvatar')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('프로필 사진 설정'), findsOneWidget);
+    expect(find.text('앨범에서 사진 선택'), findsOneWidget);
+    expect(find.text('기본 이미지로 변경'), findsOneWidget);
+    expect(find.text('취소'), findsOneWidget);
+
+    await tester.tap(find.text('앨범에서 사진 선택'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('사용자의 사진에 접근하려고 합니다'), findsOneWidget);
+    expect(find.text('사진 선택...'), findsOneWidget);
+
+    await tester.tap(find.text('사진 선택...'));
+    await tester.pumpAndSettle();
+
+    expect(find.bySemanticsLabel('프로필 이미지'), findsOneWidget);
+  });
+
+  testWidgets('프로필 사진을 기본 이미지로 되돌릴 수 있다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(375, 812);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(_profileSetupApp());
+
+    await tester.tap(find.byKey(const ValueKey('profileAvatar')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('앨범에서 사진 선택'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('사진 선택...'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('profileAvatar')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('기본 이미지로 변경'));
+    await tester.pumpAndSettle();
+
+    expect(find.bySemanticsLabel('프로필 추가'), findsOneWidget);
+    expect(find.bySemanticsLabel('프로필 이미지'), findsNothing);
+  });
+
+  testWidgets('프로필 설정 입력 화면은 성공 상태와 활성 완료 버튼을 표시한다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(375, 812);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(_profileSetupApp());
+
     await tester.enterText(find.byType(TextField), '커먼');
     await tester.pump();
 
-    expect(find.bySemanticsLabel('프로필 이미지'), findsOneWidget);
     expect(find.text('커먼'), findsOneWidget);
     expect(find.textContaining('0/10', findRichText: true), findsNothing);
     expect(find.text('사용 가능한 닉네임입니다'), findsOneWidget);

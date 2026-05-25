@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
@@ -27,6 +28,16 @@ const double _bottomActionsTop = 626;
 const double _termsRowHeight = 56;
 const double _nicknameFieldHeight = 56;
 const double _nicknameFieldHeightWithHelper = 80;
+const double _profileActionSheetButtonHeight = 56;
+const double _profileActionSheetHorizontalInset = 8;
+const double _profileActionSheetRadius = 14;
+const double _profilePermissionDialogWidth = 270;
+const double _profilePermissionDialogHeight = 248;
+const double _profilePermissionActionHeight = 44;
+
+enum _ProfileImageSheetAction { selectFromAlbum, resetToDefault }
+
+enum _ProfilePhotoPermissionAction { selectLimited, allowAll, deny }
 
 class ProfileSetupPage extends ConsumerStatefulWidget {
   const ProfileSetupPage({super.key});
@@ -52,8 +63,48 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
     super.dispose();
   }
 
-  void _toggleSampleImage() {
-    setState(() => _hasImage = !_hasImage);
+  Future<void> _openProfileImageSheet() async {
+    _nicknameFocusNode.unfocus();
+
+    final action = await showModalBottomSheet<_ProfileImageSheetAction>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: AppColors.textHeadline.withValues(alpha: 0.6),
+      elevation: 0,
+      builder: (context) => const _ProfileImageActionSheet(),
+    );
+
+    if (!mounted || action == null) {
+      return;
+    }
+
+    switch (action) {
+      case _ProfileImageSheetAction.selectFromAlbum:
+        await _openPhotoPermissionDialog();
+      case _ProfileImageSheetAction.resetToDefault:
+        setState(() => _hasImage = false);
+    }
+  }
+
+  Future<void> _openPhotoPermissionDialog() async {
+    final action = await showDialog<_ProfilePhotoPermissionAction>(
+      context: context,
+      barrierColor: AppColors.textHeadline.withValues(alpha: 0.6),
+      builder: (context) => const _ProfilePhotoPermissionDialog(),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    switch (action) {
+      case _ProfilePhotoPermissionAction.selectLimited:
+      case _ProfilePhotoPermissionAction.allowAll:
+        setState(() => _hasImage = true);
+      case _ProfilePhotoPermissionAction.deny:
+      case null:
+        break;
+    }
   }
 
   void _goBack() {
@@ -166,7 +217,7 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
                   children: [
                     _ProfileAvatar(
                       hasImage: _hasImage,
-                      onTap: _toggleSampleImage,
+                      onTap: _openProfileImageSheet,
                     ),
                     const SizedBox(height: AppSpacing.x16),
                     _ProfileNicknameField(
@@ -205,6 +256,270 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _ProfileImageActionSheet extends StatelessWidget {
+  const _ProfileImageActionSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: _profileActionSheetHorizontalInset,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(_profileActionSheetRadius),
+              child: ColoredBox(
+                color: AppColors.white,
+                child: Column(
+                  children: [
+                    _ProfileActionSheetTitle(label: '프로필 사진 설정'),
+                    _ProfileActionSheetButton(
+                      label: '앨범에서 사진 선택',
+                      onTap: () => Navigator.of(
+                        context,
+                      ).pop(_ProfileImageSheetAction.selectFromAlbum),
+                    ),
+                    _ProfileActionSheetButton(
+                      label: '기본 이미지로 변경',
+                      onTap: () => Navigator.of(
+                        context,
+                      ).pop(_ProfileImageSheetAction.resetToDefault),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.x12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(_profileActionSheetRadius),
+              child: ColoredBox(
+                color: AppColors.white,
+                child: _ProfileActionSheetButton(
+                  label: '취소',
+                  isEmphasized: true,
+                  onTap: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.x8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileActionSheetTitle extends StatelessWidget {
+  const _ProfileActionSheetTitle({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: _profileActionSheetButtonHeight,
+      child: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.size12Medium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ),
+          const _ProfileSheetDivider(),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileActionSheetButton extends StatelessWidget {
+  const _ProfileActionSheetButton({
+    required this.label,
+    required this.onTap,
+    this.isEmphasized = false,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final bool isEmphasized;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = isEmphasized
+        ? AppTextStyles.size18Medium.copyWith(
+            color: AppColors.actionBlue,
+            fontWeight: FontWeight.w700,
+          )
+        : AppTextStyles.size18Medium.copyWith(color: AppColors.actionBlue);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: _profileActionSheetButtonHeight,
+          width: double.infinity,
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: style,
+                  ),
+                ),
+              ),
+              if (!isEmphasized) const _ProfileSheetDivider(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileSheetDivider extends StatelessWidget {
+  const _ProfileSheetDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: AppColorPrimitives.separatorColors.withValues(alpha: 0.36),
+    );
+  }
+}
+
+class _ProfilePhotoPermissionDialog extends StatelessWidget {
+  const _ProfilePhotoPermissionDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: AppColors.alertSurface,
+      clipBehavior: Clip.antiAlias,
+      constraints: const BoxConstraints(),
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.dialog),
+      ),
+      child: SizedBox(
+        width: _profilePermissionDialogWidth,
+        height: _profilePermissionDialogHeight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.x16,
+                  vertical: AppSpacing.x16,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '‘커먼플랜트’이(가) 사용자의 사진에 접근하려고 합니다.',
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.size16Bold.copyWith(
+                        color: AppColors.textHeadline,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '프로필 사진, 장소, 식물을 등록하거나,\n식물에 관한 메모를 등록할 때 사용합니다.',
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.size12Medium.copyWith(
+                        color: AppColors.textHeadline,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            _ProfilePermissionActionButton(
+              label: '사진 선택...',
+              onTap: () => Navigator.of(
+                context,
+              ).pop(_ProfilePhotoPermissionAction.selectLimited),
+            ),
+            _ProfilePermissionActionButton(
+              label: '모든 사진에 대한 접근 허용',
+              onTap: () => Navigator.of(
+                context,
+              ).pop(_ProfilePhotoPermissionAction.allowAll),
+            ),
+            _ProfilePermissionActionButton(
+              label: '허용 안 함',
+              onTap: () =>
+                  Navigator.of(context).pop(_ProfilePhotoPermissionAction.deny),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfilePermissionActionButton extends StatelessWidget {
+  const _ProfilePermissionActionButton({
+    required this.label,
+    required this.onTap,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: _profilePermissionActionHeight,
+          child: Column(
+            children: [
+              const _ProfileSheetDivider(),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.size16Medium.copyWith(
+                      color: AppColors.actionBlue,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
