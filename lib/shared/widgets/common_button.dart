@@ -23,6 +23,7 @@ class CommonButton extends StatelessWidget {
     this.borderColor,
     this.leading,
     this.trailing,
+    this.isLoading = false,
   });
 
   const CommonButton.secondary({
@@ -37,6 +38,7 @@ class CommonButton extends StatelessWidget {
     this.borderColor,
     this.leading,
     this.trailing,
+    this.isLoading = false,
   }) : variant = CommonButtonVariant.secondary;
 
   const CommonButton.neutral({
@@ -51,6 +53,7 @@ class CommonButton extends StatelessWidget {
     this.borderColor,
     this.leading,
     this.trailing,
+    this.isLoading = false,
   }) : variant = CommonButtonVariant.neutral;
 
   const CommonButton.dark({
@@ -65,6 +68,7 @@ class CommonButton extends StatelessWidget {
     this.borderColor,
     this.leading,
     this.trailing,
+    this.isLoading = false,
   }) : variant = CommonButtonVariant.dark;
 
   const CommonButton.text({
@@ -79,6 +83,7 @@ class CommonButton extends StatelessWidget {
     this.borderColor,
     this.leading,
     this.trailing,
+    this.isLoading = false,
   }) : variant = CommonButtonVariant.text;
 
   final String label;
@@ -92,6 +97,9 @@ class CommonButton extends StatelessWidget {
   final Color? borderColor;
   final Widget? leading;
   final Widget? trailing;
+  final bool isLoading;
+
+  VoidCallback? get _effectiveOnPressed => isLoading ? null : onPressed;
 
   double get _height {
     switch (size) {
@@ -129,6 +137,18 @@ class CommonButton extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        if (isLoading) ...[
+          SizedBox.square(
+            dimension: AppSizes.iconSmall,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                textStyle.color ?? AppThemeTokens.light.textDisabled,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.x8),
+        ],
         if (leading != null) ...[
           leading!,
           const SizedBox(width: AppSpacing.x8),
@@ -160,18 +180,22 @@ class CommonButton extends StatelessWidget {
         foregroundColor ??
         switch (variant) {
           CommonButtonVariant.primary || CommonButtonVariant.dark =>
-            onPressed == null ? tokens.textDisabled : tokens.onBrand,
+            _effectiveOnPressed == null ? tokens.textDisabled : tokens.onBrand,
           CommonButtonVariant.secondary || CommonButtonVariant.text =>
-            onPressed == null ? tokens.textDisabled : tokens.brandAccent,
+            _effectiveOnPressed == null
+                ? tokens.textDisabled
+                : tokens.brandAccent,
           CommonButtonVariant.neutral =>
-            onPressed == null ? tokens.textDisabled : tokens.textStrong,
+            _effectiveOnPressed == null
+                ? tokens.textDisabled
+                : tokens.textStrong,
         };
 
     return baseStyle.copyWith(color: effectiveForegroundColor);
   }
 
   Color _backgroundColor(AppThemeTokens tokens) {
-    if (onPressed == null) {
+    if (_effectiveOnPressed == null) {
       return backgroundColor ?? tokens.surfaceDisabled;
     }
 
@@ -222,7 +246,7 @@ class CommonButton extends StatelessWidget {
       case CommonButtonVariant.primary:
         return _wrapWidth(
           FilledButton(
-            onPressed: onPressed,
+            onPressed: _effectiveOnPressed,
             style: FilledButton.styleFrom(
               backgroundColor: _backgroundColor(tokens),
               foregroundColor: textStyle.color,
@@ -239,7 +263,7 @@ class CommonButton extends StatelessWidget {
       case CommonButtonVariant.secondary:
         return _wrapWidth(
           OutlinedButton(
-            onPressed: onPressed,
+            onPressed: _effectiveOnPressed,
             style: OutlinedButton.styleFrom(
               backgroundColor: _backgroundColor(tokens),
               foregroundColor: textStyle.color,
@@ -257,7 +281,7 @@ class CommonButton extends StatelessWidget {
       case CommonButtonVariant.dark:
         return _wrapWidth(
           FilledButton(
-            onPressed: onPressed,
+            onPressed: _effectiveOnPressed,
             style: FilledButton.styleFrom(
               backgroundColor: _backgroundColor(tokens),
               foregroundColor: textStyle.color,
@@ -275,7 +299,7 @@ class CommonButton extends StatelessWidget {
       case CommonButtonVariant.neutral:
         return _wrapWidth(
           FilledButton(
-            onPressed: onPressed,
+            onPressed: _effectiveOnPressed,
             style: FilledButton.styleFrom(
               backgroundColor: _backgroundColor(tokens),
               foregroundColor: textStyle.color,
@@ -293,7 +317,7 @@ class CommonButton extends StatelessWidget {
       case CommonButtonVariant.text:
         return _wrapWidth(
           TextButton(
-            onPressed: onPressed,
+            onPressed: _effectiveOnPressed,
             style: TextButton.styleFrom(
               backgroundColor: _backgroundColor(tokens),
               foregroundColor: textStyle.color,

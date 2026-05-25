@@ -45,6 +45,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   late final TextEditingController _nameController;
   late final String _selectedPlantName;
   String? _selectedPlaceId;
+  bool _isSubmitting = false;
 
   static const List<_PlantRegistrationPlace> _places = [
     _PlantRegistrationPlace(
@@ -90,11 +91,14 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     if (widget.isEdit) {
       final trimmedName = _nameController.text.trim();
       final canSubmit =
-          trimmedName.isNotEmpty && trimmedName != _defaultEditPlantName;
+          trimmedName.isNotEmpty &&
+          trimmedName != _defaultEditPlantName &&
+          !_isSubmitting;
 
       return _PlantEditScaffold(
         nameController: _nameController,
         canSubmit: canSubmit,
+        isSubmitting: _isSubmitting,
         onChanged: (_) => setState(() {}),
         onSubmit: () => _submitEdit(),
       );
@@ -111,6 +115,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
       places: places,
       selectedPlaceId: selectedPlaceId,
       wateringDate: '2023. 01. 30',
+      isSubmitting: _isSubmitting,
       onPlaceSelected: (place) => setState(() => _selectedPlaceId = place.id),
       onCancel: _cancelCreate,
       onSubmit: () => _submitCreate(),
@@ -170,88 +175,112 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   }
 
   Future<void> _submitCreate() async {
+    if (_isSubmitting) {
+      return;
+    }
+
     final selectedPlace = _selectedPlace;
 
     if (selectedPlace == null) {
       return;
     }
 
-    if (ref.read(useRemoteApiProvider)) {
-      try {
-        await ref
-            .read(plantRepositoryProvider)
-            .createPlant(
-              CreatePlantRequest(
-                placeCode: selectedPlace.id,
-                nickname: _selectedPlantName,
-                scientificNameKo: _selectedPlantName,
-              ),
-            );
-        ref.invalidate(remotePlantListProvider);
-      } catch (error) {
-        if (!mounted) {
+    setState(() => _isSubmitting = true);
+
+    try {
+      if (ref.read(useRemoteApiProvider)) {
+        try {
+          await ref
+              .read(plantRepositoryProvider)
+              .createPlant(
+                CreatePlantRequest(
+                  placeCode: selectedPlace.id,
+                  nickname: _selectedPlantName,
+                  scientificNameKo: _selectedPlantName,
+                ),
+              );
+          ref.invalidate(remotePlantListProvider);
+        } catch (error) {
+          if (!mounted) {
+            return;
+          }
+
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('식물 등록에 실패했어요: $error')));
           return;
         }
+      }
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('식물 등록에 실패했어요: $error')));
+      if (!mounted) {
         return;
       }
-    }
 
-    if (!mounted) {
-      return;
+      ref
+          .read(plantListProvider.notifier)
+          .addPlant(
+            name: _selectedPlantName,
+            placeId: selectedPlace.id,
+            placeName: selectedPlace.name,
+          );
+      context.go(AppRoutePaths.home);
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
     }
-
-    ref
-        .read(plantListProvider.notifier)
-        .addPlant(
-          name: _selectedPlantName,
-          placeId: selectedPlace.id,
-          placeName: selectedPlace.name,
-        );
-    context.go(AppRoutePaths.home);
   }
 
   Future<void> _submitEdit() async {
-    final name = _nameController.text.trim();
-
-    if (ref.read(useRemoteApiProvider) && widget.placeId != null) {
-      try {
-        await ref
-            .read(plantRepositoryProvider)
-            .updatePlant(
-              plantId: widget.plantId!,
-              placeCode: widget.placeId!,
-              request: UpdatePlantRequest(nickname: name),
-            );
-        ref.invalidate(remotePlantListProvider);
-      } catch (error) {
-        if (!mounted) {
-          return;
-        }
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('식물 수정에 실패했어요: $error')));
-        return;
-      }
-    }
-
-    if (!mounted) {
+    if (_isSubmitting) {
       return;
     }
 
-    ref
-        .read(plantListProvider.notifier)
-        .updatePlant(id: widget.plantId!, name: name);
-    context.go(
-      AppRoutePaths.plantDetailLocation(
-        widget.plantId!,
-        placeId: widget.placeId,
-      ),
-    );
+    final name = _nameController.text.trim();
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      if (ref.read(useRemoteApiProvider) && widget.placeId != null) {
+        try {
+          await ref
+              .read(plantRepositoryProvider)
+              .updatePlant(
+                plantId: widget.plantId!,
+                placeCode: widget.placeId!,
+                request: UpdatePlantRequest(nickname: name),
+              );
+          ref.invalidate(remotePlantListProvider);
+        } catch (error) {
+          if (!mounted) {
+            return;
+          }
+
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('식물 수정에 실패했어요: $error')));
+          return;
+        }
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      ref
+          .read(plantListProvider.notifier)
+          .updatePlant(id: widget.plantId!, name: name);
+      context.go(
+        AppRoutePaths.plantDetailLocation(
+          widget.plantId!,
+          placeId: widget.placeId,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
   List<_PlantRegistrationPlace> _registrationPlacesFromSummaries(
@@ -272,12 +301,14 @@ class _PlantEditScaffold extends StatelessWidget {
   const _PlantEditScaffold({
     required this.nameController,
     required this.canSubmit,
+    required this.isSubmitting,
     required this.onChanged,
     required this.onSubmit,
   });
 
   final TextEditingController nameController;
   final bool canSubmit;
+  final bool isSubmitting;
   final ValueChanged<String> onChanged;
   final VoidCallback onSubmit;
 
@@ -329,6 +360,7 @@ class _PlantEditScaffold extends StatelessWidget {
                 ),
                 child: CommonButton(
                   label: '완료',
+                  isLoading: isSubmitting,
                   onPressed: canSubmit ? onSubmit : null,
                 ),
               ),
@@ -400,6 +432,7 @@ class _PlantCreateScaffold extends StatelessWidget {
     required this.places,
     required this.selectedPlaceId,
     required this.wateringDate,
+    required this.isSubmitting,
     required this.onPlaceSelected,
     required this.onCancel,
     required this.onSubmit,
@@ -408,6 +441,7 @@ class _PlantCreateScaffold extends StatelessWidget {
   final List<_PlantRegistrationPlace> places;
   final String? selectedPlaceId;
   final String wateringDate;
+  final bool isSubmitting;
   final ValueChanged<_PlantRegistrationPlace> onPlaceSelected;
   final VoidCallback onCancel;
   final VoidCallback onSubmit;
@@ -451,7 +485,11 @@ class _PlantCreateScaffold extends StatelessWidget {
                   ),
                 ),
               ),
-              _PlantFormBottomActions(onCancel: onCancel, onSubmit: onSubmit),
+              _PlantFormBottomActions(
+                isSubmitting: isSubmitting,
+                onCancel: onCancel,
+                onSubmit: onSubmit,
+              ),
             ],
           ),
         ),
@@ -576,10 +614,12 @@ class _PlantWateringDateField extends StatelessWidget {
 
 class _PlantFormBottomActions extends StatelessWidget {
   const _PlantFormBottomActions({
+    required this.isSubmitting,
     required this.onCancel,
     required this.onSubmit,
   });
 
+  final bool isSubmitting;
   final VoidCallback onCancel;
   final VoidCallback onSubmit;
 
@@ -610,6 +650,7 @@ class _PlantFormBottomActions extends StatelessWidget {
               size: CommonButtonSize.medium,
               backgroundColor: AppColors.brandAccent,
               foregroundColor: AppColors.white,
+              isLoading: isSubmitting,
               onPressed: onSubmit,
             ),
           ),

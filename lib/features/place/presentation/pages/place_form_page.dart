@@ -35,6 +35,7 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   late final String _initialName;
   late final String? _initialAddress;
   String? _address;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -58,13 +59,14 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
         !widget.isEdit ||
         currentName != _initialName ||
         _address != _initialAddress;
-    final canSubmit = currentName.isNotEmpty && hasChanges;
+    final canSubmit = currentName.isNotEmpty && hasChanges && !_isSubmitting;
 
     if (!widget.isEdit) {
       return _PlaceCreateScaffold(
         nameController: _nameController,
         address: _address,
         canSubmit: canSubmit,
+        isSubmitting: _isSubmitting,
         onNameChanged: (_) => setState(() {}),
         onImageTap: () {},
         onAddressTap: () => context.push(AppRoutePaths.addressSearch),
@@ -77,6 +79,7 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
       nameController: _nameController,
       address: _address,
       canSubmit: canSubmit,
+      isSubmitting: _isSubmitting,
       onNameChanged: (_) => setState(() {}),
       onImageTap: () {},
       onAddressTap: () => context.push(AppRoutePaths.addressSearch),
@@ -86,46 +89,61 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   }
 
   Future<void> _submit() async {
+    if (_isSubmitting) {
+      return;
+    }
+
     final name = _nameController.text.trim();
     final notifier = ref.read(placeListProvider.notifier);
+    final address = _address?.trim();
 
-    if (widget.placeId case final placeId?) {
-      notifier.updatePlace(id: placeId, name: name, address: _address);
-      context.go(AppRoutePaths.home);
-    } else {
-      if (ref.read(useRemoteApiProvider)) {
-        final address = _address?.trim();
+    if (!widget.isEdit &&
+        ref.read(useRemoteApiProvider) &&
+        (address == null || address.isEmpty)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('장소 주소를 입력해 주세요.')));
+      return;
+    }
 
-        if (address == null || address.isEmpty) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('장소 주소를 입력해 주세요.')));
-          return;
+    setState(() => _isSubmitting = true);
+
+    try {
+      if (widget.placeId case final placeId?) {
+        notifier.updatePlace(id: placeId, name: name, address: _address);
+        if (mounted) {
+          context.go(AppRoutePaths.home);
         }
+      } else {
+        if (ref.read(useRemoteApiProvider)) {
+          try {
+            await ref
+                .read(placeRepositoryProvider)
+                .createPlace(CreatePlaceRequest(name: name, address: address!));
+            ref.invalidate(remotePlaceListProvider);
+          } catch (error) {
+            if (!mounted) {
+              return;
+            }
 
-        try {
-          await ref
-              .read(placeRepositoryProvider)
-              .createPlace(CreatePlaceRequest(name: name, address: address));
-          ref.invalidate(remotePlaceListProvider);
-        } catch (error) {
-          if (!mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('장소 생성에 실패했어요: $error')));
             return;
           }
+        }
 
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('장소 생성에 실패했어요: $error')));
+        if (!mounted) {
           return;
         }
-      }
 
-      if (!mounted) {
-        return;
+        notifier.addPlace(name: name, address: _address);
+        context.push(AppRoutePaths.placeFriendAdd);
       }
-
-      notifier.addPlace(name: name, address: _address);
-      context.push(AppRoutePaths.placeFriendAdd);
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
     }
   }
 }
@@ -135,6 +153,7 @@ class _PlaceEditScaffold extends StatelessWidget {
     required this.nameController,
     required this.address,
     required this.canSubmit,
+    required this.isSubmitting,
     required this.onNameChanged,
     required this.onImageTap,
     required this.onAddressTap,
@@ -145,6 +164,7 @@ class _PlaceEditScaffold extends StatelessWidget {
   final TextEditingController nameController;
   final String? address;
   final bool canSubmit;
+  final bool isSubmitting;
   final ValueChanged<String> onNameChanged;
   final VoidCallback onImageTap;
   final VoidCallback onAddressTap;
@@ -212,6 +232,7 @@ class _PlaceEditScaffold extends StatelessWidget {
                       bottom: AppSpacing.x16,
                       child: CommonButton(
                         label: '완료',
+                        isLoading: isSubmitting,
                         onPressed: canSubmit ? onComplete : null,
                       ),
                     ),
@@ -231,6 +252,7 @@ class _PlaceCreateScaffold extends StatelessWidget {
     required this.nameController,
     required this.address,
     required this.canSubmit,
+    required this.isSubmitting,
     required this.onNameChanged,
     required this.onImageTap,
     required this.onAddressTap,
@@ -241,6 +263,7 @@ class _PlaceCreateScaffold extends StatelessWidget {
   final TextEditingController nameController;
   final String? address;
   final bool canSubmit;
+  final bool isSubmitting;
   final ValueChanged<String> onNameChanged;
   final VoidCallback onImageTap;
   final VoidCallback onAddressTap;
@@ -303,6 +326,7 @@ class _PlaceCreateScaffold extends StatelessWidget {
                       bottom: AppSpacing.x16,
                       child: CommonButton(
                         label: '다음',
+                        isLoading: isSubmitting,
                         onPressed: canSubmit ? onNext : null,
                       ),
                     ),

@@ -292,17 +292,25 @@ class _ProfileNicknameField extends StatelessWidget {
     return nickname.length >= 2 && nickname.length <= 10;
   }
 
+  bool get _hasNicknameError {
+    final nickname = controller.text.trim();
+    return nickname.isNotEmpty && !_hasValidNickname;
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasText = controller.text.isNotEmpty;
     final hasValidNickname = _hasValidNickname;
-    final lineColor = hasValidNickname
+    final hasNicknameError = _hasNicknameError;
+    final lineColor = hasNicknameError
+        ? AppColors.danger
+        : hasValidNickname
         ? AppColors.brandStrong
         : AppColors.textDisabled;
 
     return SizedBox(
       key: const ValueKey('profileNicknameField'),
-      height: hasValidNickname
+      height: hasValidNickname || hasNicknameError
           ? _nicknameFieldHeightWithHelper
           : _nicknameFieldHeight,
       child: Stack(
@@ -368,6 +376,17 @@ class _ProfileNicknameField extends StatelessWidget {
                 '사용 가능한 닉네임입니다',
                 style: AppTextStyles.size12Medium.copyWith(
                   color: AppColors.brandStrong,
+                ),
+              ),
+            ),
+          if (hasNicknameError)
+            Positioned(
+              left: 0,
+              top: 64,
+              child: Text(
+                '2~10자의 닉네임으로 입력해 주세요',
+                style: AppTextStyles.size12Medium.copyWith(
+                  color: AppColors.danger,
                 ),
               ),
             ),
