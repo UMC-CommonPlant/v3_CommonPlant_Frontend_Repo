@@ -28,6 +28,10 @@ abstract final class AppColorPrimitives {
   static const lightLabelTertiary = Color(
     0x4D3C3C43,
   ); // Light/Label/Teriary 30%
+  static const lightSystemBlue = Color(0xFF007AFF); // Light/System/Blue
+  static const lightAlertBackground = Color(
+    0xFFF2F2F2,
+  ); // Light/Background/Alert
 
   static const primaryElectricCrimson = Color(
     0xFFE91237,
@@ -69,6 +73,8 @@ abstract final class AppColors {
   static const textDisabled = AppColorPrimitives.grayGray3;
 
   static const iconInactive = AppColorPrimitives.grayGray4;
+  static const actionBlue = AppColorPrimitives.lightSystemBlue;
+  static const alertSurface = AppColorPrimitives.lightAlertBackground;
   static const danger = AppColorPrimitives.primaryElectricCrimson;
   static const guestLogin = AppColorPrimitives.unspecifiedGuestLogin;
   static const loginKakaoBackground = AppColorPrimitives.kakaoYellow;
