@@ -179,6 +179,25 @@ Docs: 프로젝트 작업 가이드 추가
 
 ## GitHub Project 연결
 
+## GitHub 본문 작성 기준
+
+`gh issue create`, `gh pr create`, `gh issue comment`, `gh pr comment`처럼 Markdown 본문을 남기는 명령은 실제 줄바꿈이 보존되도록 `--body-file -` 또는 heredoc 기반 입력을 사용합니다.
+쉘 문자열 안에 `\n`을 넣으면 GitHub 화면에 줄바꿈이 아니라 문자 `\n`이 그대로 보일 수 있으므로 사용하지 않습니다.
+
+권장 예시:
+
+```bash
+gh pr create --body-file - <<'EOF'
+## 관련 이슈
+- Closes #50
+
+## 테스트
+- git diff --check
+EOF
+```
+
+코멘트도 여러 줄이면 같은 방식을 사용합니다.
+
 일반 작업 PR을 생성한 뒤에는 CommonPlant GitHub Project 10에 PR을 함께 연결합니다.
 
 - Project URL: https://github.com/orgs/UMC-CommonPlant/projects/10/views/1
