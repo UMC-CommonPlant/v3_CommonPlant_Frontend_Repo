@@ -182,13 +182,17 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 - `flutter analyze`
 - `flutter test`
 
-## Phase 0 이후 필요 작업
+## 진행해야 할 작업 내역
 
-- [ ] 홈 화면 Figma 기본/요청/로그인 필요 상태의 node-id를 `docs/figma-frame-map.md`에 확정 반영합니다.
-- [ ] 메모 목록 기본/메뉴/삭제 alert 상태의 Figma node-id를 확정합니다.
-- [ ] API 연동을 위해 `dio`, `freezed`, `json_serializable` 기반 모델/클라이언트 구조를 도입합니다.
-- [ ] 인증 토큰 저장은 `flutter_secure_storage` 기준으로 구현하고 인증 redirect 정책을 확정합니다.
-- [ ] 백엔드 에러 코드와 사용자 메시지 매핑표를 확정합니다.
-- [ ] mock 데이터 화면을 실제 repository/provider 흐름으로 전환합니다.
-- [ ] Golden test 및 integration test 도입 범위와 실행 환경을 확정합니다.
-- [ ] Android/iOS 스토어 계정, signing secret, 배포 대상과 release 자동화 값을 확정합니다.
+남은 작업은 한 번에 묶지 않고 `이슈 생성 -> Project 10 등록 -> develop 기반 브랜치 생성 -> 작업 -> 검증 -> 커밋/푸시 -> PR 생성` 순서로 하나씩 진행합니다.
+세부 순서와 이슈/브랜치 단위는 [남은 작업 진행 계획](docs/remaining-work-plan.md)을 기준으로 관리합니다.
+
+우선순위:
+
+1. [ ] Figma frame map의 `확인 필요` node-id를 최신화합니다.
+2. [ ] 프로필 설정, 식물 검색, 메모 화면처럼 백엔드와 무관한 프론트 UX를 보강합니다.
+3. [ ] 장소/식물 상세 화면의 mock fallback과 loading/empty/error 상태를 정리합니다.
+4. [ ] 공통 form submit/loading/error 패턴을 재사용 가능한 형태로 정리합니다.
+5. [ ] User, Place, Plant, Image API 계층을 화면 Provider/Controller에 단계적으로 연결합니다.
+6. [ ] 백엔드 확인 필요 항목을 별도 이슈로 분리하고 Swagger 문서를 갱신합니다.
+7. [ ] Golden test, integration test, release/signing 정책처럼 아직 결정되지 않은 품질/배포 항목을 확정합니다.
