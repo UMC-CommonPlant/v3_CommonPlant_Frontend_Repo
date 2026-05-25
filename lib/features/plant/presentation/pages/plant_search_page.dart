@@ -33,6 +33,7 @@ class _PlantSearchPageState extends State<PlantSearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final hasQuery = _normalize(_searchController.text).isNotEmpty;
     final results = _matchingPlants(_searchController.text);
 
     return CommonScaffold(
@@ -65,7 +66,8 @@ class _PlantSearchPageState extends State<PlantSearchPage> {
                   ).toString(),
                 ),
               ),
-            ],
+            ] else if (hasQuery)
+              const _PlantSearchEmptyState(),
           ],
         ),
       ),
@@ -148,6 +150,41 @@ class _PlantSearchResultTile extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PlantSearchEmptyState extends StatelessWidget {
+  const _PlantSearchEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.x20,
+        AppSpacing.x40,
+        AppSpacing.x20,
+        0,
+      ),
+      child: Column(
+        children: [
+          Text(
+            '검색 결과가 없어요',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.size16Bold.copyWith(
+              color: AppColors.textHeadline,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.x8),
+          Text(
+            '다른 이름으로 다시 검색해 주세요',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.size14Medium.copyWith(
+              color: AppColors.textBody,
+            ),
+          ),
+        ],
       ),
     );
   }
