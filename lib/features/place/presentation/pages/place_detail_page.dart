@@ -1,11 +1,13 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_selection_widgets.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_fab.dart';
@@ -14,6 +16,7 @@ import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:commonplant_frontend/shared/widgets/common_watering_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 enum PlaceDetailRole { leader, member }
@@ -56,8 +59,26 @@ class PlaceDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final detail = _PlaceDetailData.mock(placeId, role: role);
+    final mockDetail = _PlaceDetailData.mock(placeId, role: role);
 
+    if (AppEnvironment.useRemoteApi) {
+      return Consumer(
+        builder: (context, ref, _) {
+          final remoteDetail = ref.watch(placeDetailProvider(placeId));
+          final detail = switch (remoteDetail) {
+            AsyncData(:final value) => mockDetail.applySummary(value),
+            _ => mockDetail,
+          };
+
+          return _buildScaffold(context, detail);
+        },
+      );
+    }
+
+    return _buildScaffold(context, mockDetail);
+  }
+
+  Widget _buildScaffold(BuildContext context, _PlaceDetailData detail) {
     return CommonScaffold(
       title: 'My place',
       navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
@@ -78,7 +99,7 @@ class PlaceDetailPage extends StatelessWidget {
             child: Column(
               children: [
                 _PlaceDetailHeader(detail: detail, placeId: placeId),
-                _PlacePlantList(plants: detail.plants),
+                _PlacePlantList(placeId: placeId, plants: detail.plants),
               ],
             ),
           ),
@@ -106,6 +127,18 @@ class _PlaceDetailData {
   final String humidityLabel;
   final List<_PlaceFriend> friends;
   final List<_PlacePlant> plants;
+
+  _PlaceDetailData applySummary(PlaceSummary summary) {
+    return _PlaceDetailData(
+      role: role,
+      name: summary.name,
+      address: summary.address ?? address,
+      sunlightLabel: sunlightLabel,
+      humidityLabel: humidityLabel,
+      friends: friends,
+      plants: plants,
+    );
+  }
 
   static _PlaceDetailData mock(String placeId, {PlaceDetailRole? role}) {
     final effectiveRole = role ?? _roleFromPlaceId(placeId);
@@ -485,8 +518,9 @@ class _FriendManagementShortcut extends StatelessWidget {
 }
 
 class _PlacePlantList extends StatelessWidget {
-  const _PlacePlantList({required this.plants});
+  const _PlacePlantList({required this.placeId, required this.plants});
 
+  final String placeId;
   final List<_PlacePlant> plants;
 
   @override
@@ -517,8 +551,9 @@ class _PlacePlantList extends StatelessWidget {
                 dateLabel: plant.dateLabel,
                 isPrimary: plant.canWater,
               ),
-              onTap: () =>
-                  context.push(AppRoutePaths.plantDetailLocation(plant.id)),
+              onTap: () => context.push(
+                AppRoutePaths.plantDetailLocation(plant.id, placeId: placeId),
+              ),
             ),
             if (plant != plants.last) const SizedBox(height: AppSpacing.x16),
           ],

@@ -1,25 +1,43 @@
+import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+export 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 
 final placeListProvider =
     NotifierProvider<PlaceListNotifier, List<PlaceSummary>>(
       PlaceListNotifier.new,
     );
 
-class PlaceSummary {
-  const PlaceSummary({required this.id, required this.name, this.address});
+final remotePlaceListProvider = FutureProvider<List<PlaceSummary>>((ref) {
+  return ref.watch(placeRepositoryProvider).fetchMyGardenPlaces();
+});
 
-  final String id;
-  final String name;
-  final String? address;
-
-  PlaceSummary copyWith({String? id, String? name, String? address}) {
-    return PlaceSummary(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      address: address ?? this.address,
-    );
+final placeSummariesProvider = Provider<AsyncValue<List<PlaceSummary>>>((ref) {
+  if (ref.watch(useRemoteApiProvider)) {
+    return ref.watch(remotePlaceListProvider);
   }
-}
+
+  return AsyncData(ref.watch(placeListProvider));
+});
+
+final plantRegistrationPlaceProvider = FutureProvider<List<PlaceSummary>>((
+  ref,
+) {
+  if (ref.watch(useRemoteApiProvider)) {
+    return ref.watch(placeRepositoryProvider).fetchUserPlaces();
+  }
+
+  return ref.watch(placeListProvider);
+});
+
+final placeDetailProvider = FutureProvider.family<PlaceSummary, String>((
+  ref,
+  code,
+) {
+  return ref.watch(placeRepositoryProvider).fetchPlace(code);
+});
 
 class PlaceListNotifier extends Notifier<List<PlaceSummary>> {
   int _nextId = 1;

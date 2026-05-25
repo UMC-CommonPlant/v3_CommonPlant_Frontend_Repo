@@ -1,37 +1,43 @@
+import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
+import 'package:commonplant_frontend/features/plant/domain/entities/plant_summary.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+export 'package:commonplant_frontend/features/plant/domain/entities/plant_summary.dart';
 
 final plantListProvider =
     NotifierProvider<PlantListNotifier, List<PlantSummary>>(
       PlantListNotifier.new,
     );
 
-class PlantSummary {
-  const PlantSummary({
-    required this.id,
-    required this.name,
-    this.placeName,
-    this.description,
-  });
+final remotePlantListProvider = FutureProvider<List<PlantSummary>>((ref) {
+  return ref.watch(plantRepositoryProvider).fetchPlants();
+});
 
-  final String id;
-  final String name;
-  final String? placeName;
-  final String? description;
-
-  PlantSummary copyWith({
-    String? id,
-    String? name,
-    String? placeName,
-    String? description,
-  }) {
-    return PlantSummary(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      placeName: placeName ?? this.placeName,
-      description: description ?? this.description,
-    );
+final plantSummariesProvider = Provider<AsyncValue<List<PlantSummary>>>((ref) {
+  if (ref.watch(useRemoteApiProvider)) {
+    return ref.watch(remotePlantListProvider);
   }
-}
+
+  return AsyncData(ref.watch(plantListProvider));
+});
+
+typedef PlantPlaceParams = ({String plantId, String placeId});
+
+final remotePlantDetailProvider =
+    FutureProvider.family<PlantDetail, PlantPlaceParams>((ref, params) {
+      return ref
+          .watch(plantRepositoryProvider)
+          .fetchPlant(plantId: params.plantId, placeId: params.placeId);
+    });
+
+final remotePlantEditInfoProvider =
+    FutureProvider.family<PlantEditInfo, PlantPlaceParams>((ref, params) {
+      return ref
+          .watch(plantRepositoryProvider)
+          .fetchPlantEditInfo(plantId: params.plantId, placeId: params.placeId);
+    });
 
 class PlantListNotifier extends Notifier<List<PlantSummary>> {
   int _nextId = 1;
@@ -43,12 +49,14 @@ class PlantListNotifier extends Notifier<List<PlantSummary>> {
 
   PlantSummary addPlant({
     required String name,
+    String? placeId,
     String? placeName,
     String? description,
   }) {
     final plant = PlantSummary(
       id: 'plant-${_nextId++}',
       name: name,
+      placeId: placeId,
       placeName: placeName,
       description: description,
     );
@@ -59,6 +67,7 @@ class PlantListNotifier extends Notifier<List<PlantSummary>> {
   void updatePlant({
     required String id,
     required String name,
+    String? placeId,
     String? placeName,
     String? description,
   }) {
@@ -67,6 +76,7 @@ class PlantListNotifier extends Notifier<List<PlantSummary>> {
         if (plant.id == id)
           plant.copyWith(
             name: name,
+            placeId: placeId,
             placeName: placeName,
             description: description,
           )
