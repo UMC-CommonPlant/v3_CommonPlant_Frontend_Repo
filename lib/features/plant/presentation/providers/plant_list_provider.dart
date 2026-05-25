@@ -23,19 +23,19 @@ final plantSummariesProvider = Provider<AsyncValue<List<PlantSummary>>>((ref) {
   return AsyncData(ref.watch(plantListProvider));
 });
 
-final remotePlantDetailProvider = FutureProvider.family<PlantDetail, String>((
-  ref,
-  plantId,
-) {
-  return ref.watch(plantRepositoryProvider).fetchPlant(plantId: plantId);
-});
+final remotePlantDetailProvider = FutureProvider.family<PlantDetail, String>(
+  (ref, plantId) =>
+      ref.watch(plantRepositoryProvider).fetchPlant(plantId: plantId),
+  retry: (retryCount, error) => null,
+);
 
 final remotePlantEditInfoProvider =
-    FutureProvider.family<PlantEditInfo, String>((ref, plantId) {
-      return ref
+    FutureProvider.family<PlantEditInfo, String>(
+      (ref, plantId) => ref
           .watch(plantRepositoryProvider)
-          .fetchPlantEditInfo(plantId: plantId);
-    });
+          .fetchPlantEditInfo(plantId: plantId),
+      retry: (retryCount, error) => null,
+    );
 
 class PlantListNotifier extends Notifier<List<PlantSummary>> {
   int _nextId = 1;

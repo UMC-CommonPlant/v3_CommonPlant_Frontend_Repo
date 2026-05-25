@@ -9,6 +9,7 @@ import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_edit_delete_popup.dart';
@@ -19,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class PlantDetailPage extends StatelessWidget {
+class PlantDetailPage extends ConsumerWidget {
   const PlantDetailPage({super.key, required this.plantId, this.placeId});
 
   final String plantId;
@@ -89,24 +90,41 @@ class PlantDetailPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final mockDetail = _PlantDetailData.mock();
 
-    if (AppEnvironment.useRemoteApi) {
-      return Consumer(
-        builder: (context, ref, _) {
-          final remoteDetail = ref.watch(remotePlantDetailProvider(plantId));
-          final detail = switch (remoteDetail) {
-            AsyncData(:final value) => mockDetail.applyRemote(value),
-            _ => mockDetail,
-          };
-
-          return _buildScaffold(context, detail);
-        },
-      );
+    if (!ref.watch(useRemoteApiProvider)) {
+      return _buildScaffold(context, mockDetail);
     }
 
-    return _buildScaffold(context, mockDetail);
+    final remoteDetail = ref.watch(remotePlantDetailProvider(plantId));
+
+    return remoteDetail.when(
+      data: (detail) {
+        if (_isEmptyRemoteDetail(detail)) {
+          return const PlantStateScaffold(
+            title: 'My plant',
+            statusTitle: '식물 정보를 찾을 수 없어요',
+            message: '다시 식물 목록에서 선택해 주세요',
+          );
+        }
+
+        return _buildScaffold(context, mockDetail.applyRemote(detail));
+      },
+      error: (error, stackTrace) => PlantStateScaffold(
+        title: 'My plant',
+        statusTitle: '식물 정보를 불러오지 못했어요',
+        message: '잠시 후 다시 시도해 주세요',
+        actionLabel: '다시 시도',
+        onAction: () => ref.invalidate(remotePlantDetailProvider(plantId)),
+      ),
+      loading: () => const PlantStateScaffold(
+        title: 'My plant',
+        statusTitle: '식물 정보를 불러오고 있어요',
+        message: '식물과 메모 정보를 준비하고 있어요',
+        isLoading: true,
+      ),
+    );
   }
 
   Widget _buildScaffold(BuildContext context, _PlantDetailData detail) {
@@ -134,6 +152,10 @@ class PlantDetailPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool _isEmptyRemoteDetail(PlantDetail detail) {
+    return detail.name.trim().isEmpty;
   }
 }
 

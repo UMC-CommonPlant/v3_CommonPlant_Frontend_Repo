@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/plant/data/datasources/plant_remote_data_source.dart';
 import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
 import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -59,6 +60,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), '몬테라');
     await tester.pump();
@@ -74,6 +76,69 @@ void main() {
     );
 
     expect(completeButton.onPressed, isNull);
+  });
+
+  testWidgets('remote loading 상태는 식물 수정 폼 대신 로딩 안내를 표시한다', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(
+            _PendingEditInfoPlantRepository(),
+          ),
+        ],
+        child: const MaterialApp(home: PlantFormPage(plantId: 'plant-remote')),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('식물 수정 정보를 불러오고 있어요'), findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
+  });
+
+  testWidgets('remote empty 상태는 식물 수정 정보 없음 안내를 표시한다', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(
+            _StaticEditInfoPlantRepository(const PlantEditInfo(name: '')),
+          ),
+        ],
+        child: const MaterialApp(home: PlantFormPage(plantId: 'plant-empty')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('식물 수정 정보를 찾을 수 없어요'), findsOneWidget);
+    expect(find.text('다시 식물 상세에서 수정해 주세요'), findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
+  });
+
+  testWidgets('remote error 상태는 재시도 후 식물 수정 폼을 표시한다', (tester) async {
+    final repository = _RetryEditInfoPlantRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: const MaterialApp(home: PlantFormPage(plantId: 'plant-retry')),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('식물 수정 정보를 불러오지 못했어요'), findsOneWidget);
+    expect(find.text('다시 시도'), findsOneWidget);
+
+    await tester.tap(find.text('다시 시도'));
+    await tester.pumpAndSettle();
+
+    expect(repository.editInfoFetchCalls, 2);
+    expect(find.text('필로덴드론'), findsOneWidget);
+    expect(find.text('식물 수정 정보를 불러오지 못했어요'), findsNothing);
   });
 }
 
@@ -91,5 +156,50 @@ class _PendingPlantRepository extends PlantRepository {
   }) {
     updateCalls++;
     return _completer.future;
+  }
+
+  @override
+  Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {
+    return const PlantEditInfo(name: '몬테');
+  }
+}
+
+class _PendingEditInfoPlantRepository extends PlantRepository {
+  _PendingEditInfoPlantRepository() : super(PlantRemoteDataSource(Dio()));
+
+  final Completer<PlantEditInfo> _completer = Completer<PlantEditInfo>();
+
+  @override
+  Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) {
+    return _completer.future;
+  }
+}
+
+class _StaticEditInfoPlantRepository extends PlantRepository {
+  _StaticEditInfoPlantRepository(this.editInfo)
+    : super(PlantRemoteDataSource(Dio()));
+
+  final PlantEditInfo editInfo;
+
+  @override
+  Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {
+    return editInfo;
+  }
+}
+
+class _RetryEditInfoPlantRepository extends PlantRepository {
+  _RetryEditInfoPlantRepository() : super(PlantRemoteDataSource(Dio()));
+
+  int editInfoFetchCalls = 0;
+
+  @override
+  Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {
+    editInfoFetchCalls++;
+
+    if (editInfoFetchCalls == 1) {
+      throw Exception('network');
+    }
+
+    return const PlantEditInfo(name: '필로덴드론');
   }
 }

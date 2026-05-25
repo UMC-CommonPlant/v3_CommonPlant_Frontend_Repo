@@ -10,7 +10,9 @@ import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
 import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_card.dart';
@@ -46,6 +48,8 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   late final String _selectedPlantName;
   String? _selectedPlaceId;
   bool _isSubmitting = false;
+  String _initialEditPlantName = _defaultEditPlantName;
+  bool _hasAppliedRemoteEditInfo = false;
 
   static const List<_PlantRegistrationPlace> _places = [
     _PlantRegistrationPlace(
@@ -89,19 +93,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   @override
   Widget build(BuildContext context) {
     if (widget.isEdit) {
-      final trimmedName = _nameController.text.trim();
-      final canSubmit =
-          trimmedName.isNotEmpty &&
-          trimmedName != _defaultEditPlantName &&
-          !_isSubmitting;
-
-      return _PlantEditScaffold(
-        nameController: _nameController,
-        canSubmit: canSubmit,
-        isSubmitting: _isSubmitting,
-        onChanged: (_) => setState(() {}),
-        onSubmit: () => _submitEdit(),
-      );
+      return _buildEditMode();
     }
 
     final remotePlaces = ref.watch(plantRegistrationPlaceProvider);
@@ -120,6 +112,77 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
       onCancel: _cancelCreate,
       onSubmit: () => _submitCreate(),
     );
+  }
+
+  Widget _buildEditMode() {
+    if (!ref.watch(useRemoteApiProvider)) {
+      return _buildEditScaffold();
+    }
+
+    final plantId = widget.plantId!;
+    final editInfo = ref.watch(remotePlantEditInfoProvider(plantId));
+
+    return editInfo.when(
+      data: (info) {
+        if (_isEmptyRemoteEditInfo(info)) {
+          return const PlantStateScaffold(
+            title: '식물 수정',
+            statusTitle: '식물 수정 정보를 찾을 수 없어요',
+            message: '다시 식물 상세에서 수정해 주세요',
+          );
+        }
+
+        _applyRemoteEditInfo(info);
+
+        return _buildEditScaffold();
+      },
+      error: (error, stackTrace) => PlantStateScaffold(
+        title: '식물 수정',
+        statusTitle: '식물 수정 정보를 불러오지 못했어요',
+        message: '잠시 후 다시 시도해 주세요',
+        actionLabel: '다시 시도',
+        onAction: () => ref.invalidate(remotePlantEditInfoProvider(plantId)),
+      ),
+      loading: () => const PlantStateScaffold(
+        title: '식물 수정',
+        statusTitle: '식물 수정 정보를 불러오고 있어요',
+        message: '식물 이름과 사진 정보를 준비하고 있어요',
+        isLoading: true,
+      ),
+    );
+  }
+
+  Widget _buildEditScaffold() {
+    final trimmedName = _nameController.text.trim();
+    final canSubmit =
+        trimmedName.isNotEmpty &&
+        trimmedName != _initialEditPlantName &&
+        !_isSubmitting;
+
+    return _PlantEditScaffold(
+      nameController: _nameController,
+      canSubmit: canSubmit,
+      isSubmitting: _isSubmitting,
+      onChanged: (_) => setState(() {}),
+      onSubmit: () => _submitEdit(),
+    );
+  }
+
+  void _applyRemoteEditInfo(PlantEditInfo info) {
+    if (_hasAppliedRemoteEditInfo) {
+      return;
+    }
+
+    final name = info.name.trim();
+
+    _initialEditPlantName = name;
+    _nameController.text = name;
+    _nameController.selection = TextSelection.collapsed(offset: name.length);
+    _hasAppliedRemoteEditInfo = true;
+  }
+
+  bool _isEmptyRemoteEditInfo(PlantEditInfo info) {
+    return info.name.trim().isEmpty;
   }
 
   String _normalizedInitialPlantName() {
