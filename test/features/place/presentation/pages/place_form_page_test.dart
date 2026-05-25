@@ -1,4 +1,11 @@
+import 'dart:async';
+
+import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
+import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
+import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_form_page.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,4 +51,46 @@ void main() {
     expect(completeButton.onPressed, isNotNull);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('장소 등록 화면은 원격 제출 중 다음 버튼을 잠근다', (tester) async {
+    final repository = _PendingPlaceRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          placeRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: const MaterialApp(home: PlaceFormPage()),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField), '거실');
+    await tester.pump();
+
+    await tester.tap(find.widgetWithText(FilledButton, '다음'));
+    await tester.pump();
+
+    expect(repository.createCalls, 1);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    final nextButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, '다음'),
+    );
+
+    expect(nextButton.onPressed, isNull);
+  });
+}
+
+class _PendingPlaceRepository extends PlaceRepository {
+  _PendingPlaceRepository() : super(PlaceRemoteDataSource(Dio()));
+
+  final Completer<void> _completer = Completer<void>();
+  int createCalls = 0;
+
+  @override
+  Future<void> createPlace(CreatePlaceRequest request) {
+    createCalls++;
+    return _completer.future;
+  }
 }

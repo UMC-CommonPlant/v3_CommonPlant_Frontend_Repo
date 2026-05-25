@@ -71,6 +71,26 @@ void main() {
     );
   });
 
+  testWidgets('프로필 설정 화면은 짧은 닉네임에 오류 메시지를 표시한다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(375, 812);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(_profileSetupApp());
+
+    await tester.enterText(find.byType(TextField), '커');
+    await tester.pump();
+
+    expect(find.text('2~10자의 닉네임으로 입력해 주세요'), findsOneWidget);
+
+    final completeButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, '완료'),
+    );
+
+    expect(completeButton.onPressed, isNull);
+  });
+
   testWidgets('프로필 설정 화면은 낮은 높이에서 주요 요소를 세로 축소 배치한다', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(320, 640);
