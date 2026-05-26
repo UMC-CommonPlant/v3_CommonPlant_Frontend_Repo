@@ -9,6 +9,7 @@ import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_state_provider.dart';
+import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
@@ -49,18 +50,37 @@ class ProfileSetupPage extends ConsumerStatefulWidget {
 class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
   final TextEditingController _nicknameController = TextEditingController();
   final FocusNode _nicknameFocusNode = FocusNode();
+  late final FormSubmitController _submitController;
   bool _hasImage = false;
 
-  bool get _canSubmit {
+  bool get _hasValidNickname {
     final nickname = _nicknameController.text.trim();
     return nickname.length >= 2 && nickname.length <= 10;
   }
 
+  bool get _isSubmitting => _submitController.state.isSubmitting;
+
+  @override
+  void initState() {
+    super.initState();
+    _submitController = FormSubmitController()
+      ..addListener(_handleSubmitStateChanged);
+  }
+
   @override
   void dispose() {
+    _submitController
+      ..removeListener(_handleSubmitStateChanged)
+      ..dispose();
     _nicknameFocusNode.dispose();
     _nicknameController.dispose();
     super.dispose();
+  }
+
+  void _handleSubmitStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _openProfileImageSheet() async {
@@ -130,13 +150,19 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
     _openTerms(TermsReturnDestination.profile);
   }
 
-  void _handleComplete(bool isTermsAccepted) {
-    if (isTermsAccepted) {
-      context.go(AppRoutePaths.home);
-      return;
-    }
+  Future<void> _handleComplete(bool isTermsAccepted) async {
+    await _submitController.submit(() async {
+      if (!mounted) {
+        return;
+      }
 
-    _openTerms(TermsReturnDestination.home);
+      if (isTermsAccepted) {
+        context.go(AppRoutePaths.home);
+        return;
+      }
+
+      _openTerms(TermsReturnDestination.home);
+    });
   }
 
   @override
@@ -246,7 +272,8 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
                         horizontal: horizontalInset,
                       ),
                       child: _ProfileCompleteButton(
-                        enabled: _canSubmit,
+                        enabled: _hasValidNickname,
+                        isSubmitting: _isSubmitting,
                         onPressed: () => _handleComplete(isTermsAccepted),
                       ),
                     ),
@@ -792,15 +819,17 @@ class _TermsAgreementRow extends StatelessWidget {
 class _ProfileCompleteButton extends StatelessWidget {
   const _ProfileCompleteButton({
     required this.enabled,
+    required this.isSubmitting,
     required this.onPressed,
   });
 
   final bool enabled;
-  final VoidCallback onPressed;
+  final bool isSubmitting;
+  final Future<void> Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
-    if (!enabled) {
+    if (!enabled && !isSubmitting) {
       return CommonButton(
         key: const ValueKey('profileCompleteButton'),
         label: '완료',
@@ -816,7 +845,8 @@ class _ProfileCompleteButton extends StatelessWidget {
       backgroundColor: AppColors.white,
       foregroundColor: AppColors.brandPrimary,
       borderColor: AppColors.brandPrimary,
-      onPressed: onPressed,
+      isLoading: isSubmitting,
+      onPressed: enabled && !isSubmitting ? onPressed : null,
     );
   }
 }
