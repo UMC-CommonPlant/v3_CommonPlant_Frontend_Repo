@@ -8,6 +8,7 @@ import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
 import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
+import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_image_add_button.dart';
@@ -34,8 +35,10 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   late final TextEditingController _nameController;
   late final String _initialName;
   late final String? _initialAddress;
+  late final FormSubmitController _submitController;
   String? _address;
-  bool _isSubmitting = false;
+
+  bool get _isSubmitting => _submitController.state.isSubmitting;
 
   @override
   void initState() {
@@ -43,13 +46,24 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
     _initialName = widget.isEdit ? _placeEditInitialName : '';
     _initialAddress = null;
     _nameController = TextEditingController(text: _initialName);
+    _submitController = FormSubmitController()
+      ..addListener(_handleSubmitStateChanged);
     _address = _initialAddress;
   }
 
   @override
   void dispose() {
+    _submitController
+      ..removeListener(_handleSubmitStateChanged)
+      ..dispose();
     _nameController.dispose();
     super.dispose();
+  }
+
+  void _handleSubmitStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -106,9 +120,7 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
       return;
     }
 
-    setState(() => _isSubmitting = true);
-
-    try {
+    await _submitController.submit(() async {
       if (widget.placeId case final placeId?) {
         notifier.updatePlace(id: placeId, name: name, address: _address);
         if (mounted) {
@@ -116,21 +128,10 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
         }
       } else {
         if (ref.read(useRemoteApiProvider)) {
-          try {
-            await ref
-                .read(placeRepositoryProvider)
-                .createPlace(CreatePlaceRequest(name: name, address: address!));
-            ref.invalidate(remotePlaceListProvider);
-          } catch (error) {
-            if (!mounted) {
-              return;
-            }
-
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('장소 생성에 실패했어요: $error')));
-            return;
-          }
+          await ref
+              .read(placeRepositoryProvider)
+              .createPlace(CreatePlaceRequest(name: name, address: address!));
+          ref.invalidate(remotePlaceListProvider);
         }
 
         if (!mounted) {
@@ -140,11 +141,21 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
         notifier.addPlace(name: name, address: _address);
         context.push(AppRoutePaths.placeFriendAdd);
       }
-    } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
+    }, failureMessage: widget.isEdit ? '장소 수정에 실패했어요' : '장소 생성에 실패했어요');
+
+    _showSubmitErrorIfNeeded();
+  }
+
+  void _showSubmitErrorIfNeeded() {
+    final errorMessage = _submitController.state.errorMessage;
+
+    if (!mounted || errorMessage == null) {
+      return;
     }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(errorMessage)));
   }
 }
 

@@ -78,6 +78,37 @@ void main() {
     expect(completeButton.onPressed, isNull);
   });
 
+  testWidgets('식물 수정 실패는 공통 제출 오류 메시지를 표시하고 재시도 가능하다', (tester) async {
+    final repository = _FailingPlantUpdateRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: const MaterialApp(
+          home: PlantFormPage(plantId: 'plant-1', placeId: 'place-1'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '몬테라');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, '완료'));
+    await tester.pumpAndSettle();
+
+    expect(repository.updateCalls, 1);
+    expect(find.text('식물 수정에 실패했어요'), findsOneWidget);
+    expect(find.textContaining('raw failure'), findsNothing);
+
+    final completeButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, '완료'),
+    );
+    expect(completeButton.onPressed, isNotNull);
+  });
+
   testWidgets('remote loading 상태는 식물 수정 폼 대신 로딩 안내를 표시한다', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -156,6 +187,27 @@ class _PendingPlantRepository extends PlantRepository {
   }) {
     updateCalls++;
     return _completer.future;
+  }
+
+  @override
+  Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {
+    return const PlantEditInfo(name: '몬테');
+  }
+}
+
+class _FailingPlantUpdateRepository extends PlantRepository {
+  _FailingPlantUpdateRepository() : super(PlantRemoteDataSource(Dio()));
+
+  int updateCalls = 0;
+
+  @override
+  Future<void> updatePlant({
+    required String plantId,
+    required String placeCode,
+    required UpdatePlantRequest request,
+  }) async {
+    updateCalls++;
+    throw StateError('raw failure');
   }
 
   @override

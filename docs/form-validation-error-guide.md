@@ -99,6 +99,14 @@ CommonTextField(
 
 버튼 UI는 `CommonButton`의 `onPressed: null` 상태를 활용합니다.
 
+여러 폼에서 제출 상태가 반복되면 `shared/forms/form_submit_controller.dart`의
+`FormSubmitController`와 `FormSubmitState`를 사용합니다.
+
+- 화면은 `FormSubmitController.state.isSubmitting`을 버튼 `isLoading`과 `onPressed` 조건에 반영합니다.
+- 제출 로직은 `submit`에 전달하고, 화면별 실패 문구는 `failureMessage`로 주입합니다.
+- 실패 후에는 `state.errorMessage`를 Snackbar, Dialog 등 화면 정책에 맞게 사용자 메시지로 표시합니다.
+- repository 호출, route 이동, Provider invalidate는 각 feature 화면 또는 controller 책임으로 유지합니다.
+
 ## 서버 에러 처리
 
 API 연동이 들어오면 아래 순서로 처리합니다.
