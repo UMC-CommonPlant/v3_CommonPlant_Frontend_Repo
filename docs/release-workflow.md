@@ -12,6 +12,8 @@
 | Android 배포 자동화 | 미구현 |
 | iOS 배포 자동화 | 미구현 |
 | Store 계정/secret | 미정 |
+| 환경값 주입 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL`을 `dart-define` 또는 CI/CD에서 주입 |
+| Flavor 전략 | 앱 정체성은 flavor, 환경값은 CI/CD 주입으로 분리 |
 
 ## 브랜치 전략
 
@@ -97,6 +99,56 @@ main
 | tag `v*` | 스토어 업로드 workflow 실행 |
 
 운영 배포는 `tag v*` 기준을 추천합니다. `main`에 병합된 모든 커밋이 자동 배포되는 것보다 명시적인 릴리즈 의도가 드러나기 때문입니다.
+
+## 환경과 flavor 전략
+
+커먼플랜트는 flavor와 환경값 주입을 분리하는 하이브리드 방식을 기준으로 합니다.
+flavor는 앱의 정체성을 구분하고, API 사용 여부와 base URL 같은 실행 환경값은 `dart-define` 또는 CI/CD variables/secrets로 주입합니다.
+
+| 구분 | 관리 대상 | 관리 방식 | 기준 |
+| --- | --- | --- | --- |
+| Flutter flavor | `dev`, `staging`, `prod` 앱 구분, 앱 이름, application id, bundle id, 아이콘, Firebase 설정 | Android/iOS flavor 설정 | 앱이 설치/배포 채널별로 분리되어야 할 때 도입 |
+| `dart-define` 환경값 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` | 로컬 실행 명령 또는 CI/CD variables/secrets | 실행 시점마다 바뀌는 값으로 관리 |
+| 민감 정보 | signing key, store token, 비공개 API key | GitHub Secrets 또는 배포 도구 secret 저장소 | 저장소에 커밋하지 않음 |
+
+### Flavor 역할
+
+- `dev`, `staging`, `prod` flavor는 별도 앱 설치, 앱명, bundle id, application id, 아이콘, Firebase 설정이 필요해질 때 추가합니다.
+- flavor 안에 API base URL을 직접 하드코딩하지 않습니다.
+- 운영 배포용 `prod` flavor는 `release/*`, `main`, `v*` 태그 기반 workflow에서만 사용합니다.
+- flavor가 아직 없는 현재 단계에서는 `dart-define` 주입만으로 remote API 모드를 켭니다.
+
+### 환경값 주입
+
+로컬 개발에서는 필요할 때 `dart-define`으로 API mode를 켭니다.
+
+```bash
+fvm flutter run \
+  --dart-define=COMMONPLANT_USE_API=true \
+  --dart-define=COMMONPLANT_API_BASE_URL=https://commonplant.site/api/v1
+```
+
+배포 빌드에서는 CI/CD가 환경별 값을 주입합니다.
+
+```bash
+fvm flutter build appbundle --release \
+  --dart-define=COMMONPLANT_USE_API=true \
+  --dart-define=COMMONPLANT_API_BASE_URL=$COMMONPLANT_API_BASE_URL
+```
+
+환경값 파일을 사용할 경우 실제 값 파일은 커밋하지 않고, 필요하면 `.example` 파일만 문서용으로 둡니다.
+
+```bash
+fvm flutter run --dart-define-from-file=env/local.api.json
+fvm flutter build appbundle --flavor prod --dart-define-from-file=env/prod.json
+```
+
+### 단계별 도입
+
+1. 현재 단계에서는 `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 주입 기준을 유지합니다.
+2. release workflow를 만들 때 GitHub Environment별 variables/secrets로 환경값을 주입합니다.
+3. 별도 앱 설치나 스토어 채널 분리가 필요해지면 Android/iOS `dev`, `staging`, `prod` flavor를 추가합니다.
+4. flavor가 추가된 뒤에도 API base URL과 API mode는 CI/CD 주입값을 우선합니다.
 
 ## 버전 전략
 
@@ -190,6 +242,8 @@ secret이 준비되기 전에는 release workflow를 추가하지 않습니다. 
 - [ ] 릴리즈 노트를 작성했는가?
 - [ ] `fvm flutter analyze`를 통과했는가?
 - [ ] `fvm flutter test`를 통과했는가?
+- [ ] release flavor 또는 환경값 주입 경로가 의도한 대상인가?
+- [ ] 운영 배포에서 `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 값이 CI/CD로 주입되는가?
 - [ ] Android release build가 생성되는가?
 - [ ] iOS archive가 생성되는가?
 - [ ] QA 승인 또는 내부 테스트 승인이 완료되었는가?
@@ -200,6 +254,7 @@ secret이 준비되기 전에는 release workflow를 추가하지 않습니다. 
 
 - Android 배포 대상을 Google Play Internal testing으로 할지 Firebase App Distribution으로 할지 정해야 합니다.
 - iOS 인증서 관리를 Fastlane match로 할지 GitHub Secrets로 직접 관리할지 정해야 합니다.
-- dev/staging/prod flavor를 둘지 결정해야 합니다.
+- `dev`, `staging`, `prod` flavor의 앱명, application id, bundle id, 아이콘, Firebase 설정값을 정해야 합니다.
+- staging/prod 서버 full base URL과 API versioning 정책을 정해야 합니다.
 - 앱 버전과 build number 자동 증가 방식을 정해야 합니다.
 - production 배포를 완전 자동화할지, manual approval을 둘지 정해야 합니다.

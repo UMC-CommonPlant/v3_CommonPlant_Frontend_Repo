@@ -29,12 +29,13 @@
 | 6 | `[Task] 식물 상세 상태 UI 정리` | `feature/plant-detail-state-ui` | Plant | 식물 상세/수정 화면의 mock fallback, remote loading, empty, error 표시 정리 | 상세/수정 정보 상태 UI 테스트 통과 |
 | 7 | `[Task] 공통 폼 제출 상태 패턴 정리` | `refactor/form-submit-state` | Story | 중복된 submit/loading/error 처리 방식을 공통 helper 또는 controller 패턴으로 정리 | 장소/식물/프로필 폼 회귀 테스트 통과 |
 | 8 | `[Feature] User API 화면 연결` | `feature/user-api-ui-binding` | User | User 조회/수정/검색 repository를 프로필 또는 친구 검색 화면에 연결 | API mode provider 테스트와 화면 상태 테스트 통과 |
-| 9 | `[Feature] Place API 화면 연결` | `feature/place-api-ui-binding` | Place | 장소 수정, 상세 조회, 삭제 흐름을 repository/provider에 연결 | Place create/update/detail/delete 관련 테스트 통과 |
-| 10 | `[Feature] Plant API 화면 연결` | `feature/plant-api-ui-binding` | Plant | 식물 상세, 수정 정보, 수정, 삭제 흐름을 repository/provider에 연결 | Plant detail/edit/update/delete 관련 테스트 통과 |
-| 11 | `[Feature] Image API 화면 연결` | `feature/image-api-ui-binding` | Story | 프로필, 장소, 식물, 메모 이미지 선택 흐름과 image repository 연결 가능 지점 정리 | 이미지 key/url 정책 확인 범위 내 테스트 통과 |
-| 12 | `[Task] 백엔드 확인 항목 이슈 분리` | `docs/backend-api-open-questions` | Story | `docs/api-swagger-reference.md`의 백엔드 확인 필요 항목을 질문 단위로 정리 | Auth/Friend/Image/Error/Token/검색/Memo 질문 목록 반영 |
-| 13 | `[Task] 테스트 전략 확정` | `docs/test-strategy-follow-up` | Story | Golden test, integration test 도입 범위와 실행 환경 결정 문서화 | 테스트 종류별 적용/보류 기준 문서화 |
-| 14 | `[Task] 릴리즈 정책 확정` | `docs/release-policy-follow-up` | Story | signing secret, store 계정, release 자동화 결정 항목 정리 | 배포 전 확인 항목과 보류 사유 문서화 |
+| 9 | `[Task] 환경 flavor 전략 문서화` | `docs/flavor-env-strategy` | Story | flavor는 앱 정체성, API mode/base URL은 CI/CD 주입으로 분리하는 기준 정리 | release/API 문서에 하이브리드 전략 반영 |
+| 10 | `[Feature] Place API 화면 연결` | `feature/place-api-ui-binding` | Place | 장소 수정, 상세 조회, 삭제 흐름을 repository/provider에 연결 | Place create/update/detail/delete 관련 테스트 통과 |
+| 11 | `[Feature] Plant API 화면 연결` | `feature/plant-api-ui-binding` | Plant | 식물 상세, 수정 정보, 수정, 삭제 흐름을 repository/provider에 연결 | Plant detail/edit/update/delete 관련 테스트 통과 |
+| 12 | `[Feature] Image API 화면 연결` | `feature/image-api-ui-binding` | Story | 프로필, 장소, 식물, 메모 이미지 선택 흐름과 image repository 연결 가능 지점 정리 | 이미지 key/url 정책 확인 범위 내 테스트 통과 |
+| 13 | `[Task] 백엔드 확인 항목 이슈 분리` | `docs/backend-api-open-questions` | Story | `docs/api-swagger-reference.md`의 백엔드 확인 필요 항목을 질문 단위로 정리 | Auth/Friend/Image/Error/Token/검색/Memo 질문 목록 반영 |
+| 14 | `[Task] 테스트 전략 확정` | `docs/test-strategy-follow-up` | Story | Golden test, integration test 도입 범위와 실행 환경 결정 문서화 | 테스트 종류별 적용/보류 기준 문서화 |
+| 15 | `[Task] 릴리즈 정책 확정` | `docs/release-policy-follow-up` | Story | signing secret, store 계정, release 자동화 결정 항목 정리 | 배포 전 확인 항목과 보류 사유 문서화 |
 
 ## 백엔드 확인이 필요한 항목
 
@@ -49,9 +50,9 @@
 - 에러 response body의 `code`, `message` 필드명
 - refresh token 재발급과 로그아웃 API 제공 여부
 - 주소 검색, 식물 검색, 메모 API 제공 계획
-- 서버 full base URL과 flavor별 base URL 정책
+- 서버 staging/prod full base URL과 API versioning 정책
 
 ## 다음 작업 후보
 
-이 문서가 병합되면 다음 작업은 순서 1번인 `[Task] Figma 프레임 매핑 최신화`로 시작한다.
-Figma node-id 확인이 당장 어렵다면 순서 2번인 `[Task] 프로필 설정 이미지 UX 보강`을 먼저 진행한다.
+#67 User API 화면 연결이 병합된 뒤, Place/Plant API 화면 연결 전 환경과 flavor 전략을 먼저 정리한다.
+순서 9번 `[Task] 환경 flavor 전략 문서화`가 병합되면 순서 10번 `[Feature] Place API 화면 연결`로 돌아간다.

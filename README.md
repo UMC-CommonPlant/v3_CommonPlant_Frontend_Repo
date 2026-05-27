@@ -121,6 +121,7 @@ lib/
 - 배포 후보는 `develop`에서 `release/*` 브랜치를 생성해 안정화한 뒤 `main`으로 PR을 보냅니다.
 - 운영 긴급 수정만 예외적으로 `main`에서 `hotfix/*` 브랜치를 생성하고, 배포 후 `develop`에 되돌려 반영합니다.
 - HTTP 클라이언트는 API 연동 시점에 `dio`를 기준으로 도입합니다.
+- 실제 API 사용 여부와 base URL은 `dart-define` 또는 CI/CD 환경값으로 주입하고, flavor는 앱 정체성 구분에 사용합니다.
 - API 모델은 `freezed`와 `json_serializable` 기반 생성을 기본 방향으로 삼되, 실제 패키지 추가는 첫 API 연동 PR에서 함께 진행합니다.
 - 인증 토큰은 `flutter_secure_storage` 기반 보관을 기본 방향으로 합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.

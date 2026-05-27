@@ -519,7 +519,7 @@
 | 로그아웃 API | 없음 | 남음 |
 | pagination 응답 구조와 total count | `PlantPageContent`에 `items`, `totalCount`, `page`, `size` 추가 | 해소 |
 | 이미지 key 저장 주체와 업로드 후 반환 값 | Image API response schema 없음 | 남음 |
-| 앱 flavor별 full base URL 정책 | Swagger server는 여전히 `/api/v1`만 제공 | 남음 |
+| 앱 flavor별 full base URL 정책 | 프론트 환경 전략은 `docs/release-workflow.md`에서 flavor와 CI/CD 주입 분리로 정리. Swagger server는 여전히 `/api/v1`만 제공 | 일부 해소 |
 
 ## API 연계 코드에 반영 가능한 부분
 
@@ -560,7 +560,7 @@
 - refresh token 재발급과 로그아웃 API 제공 여부를 확인해야 한다.
 - 주소 검색, 식물 검색, 메모 API 제공 계획을 확인해야 한다.
 - Swagger의 Place/Plant path가 `placeCode`와 `placeId`를 혼용하지 않는지 확인해야 한다.
-- 서버 full base URL과 앱 flavor별 base URL 정책을 확정해야 한다.
+- 서버 staging/prod full base URL과 API versioning 정책을 확인해야 한다. 앱 flavor별 주입 방식은 `docs/release-workflow.md` 기준을 따른다.
 
 ## 첫 API 연계 보강 우선순위 제안
 
