@@ -4,11 +4,13 @@ import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
 import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
 import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_form_page.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   testWidgets('장소 수정 화면은 기존 장소 정보와 비활성 완료 버튼을 표시한다', (
@@ -75,6 +77,54 @@ void main() {
     expect(find.text('장소 주소를 입력해 주세요.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('remote 장소 수정 화면은 조회값으로 초기화하고 수정 API를 호출한다', (tester) async {
+    final repository = _EditablePlaceRepository(
+      const PlaceSummary(id: 'place-1', name: '루프탑', address: '서울시 성북구'),
+    );
+
+    await tester.pumpWidget(_remotePlaceEditApp(repository));
+    await tester.pumpAndSettle();
+
+    expect(find.text('루프탑'), findsOneWidget);
+    expect(find.text('서울시 성북구'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), '루프탑 정원');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, '완료'));
+    await tester.pumpAndSettle();
+
+    expect(repository.updateCalls, 1);
+    expect(repository.latestUpdateCode, 'place-1');
+    expect(repository.latestUpdateRequest?.toJson(), {
+      'name': '루프탑 정원',
+      'address': '서울시 성북구',
+    });
+    expect(find.text('홈'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+Widget _remotePlaceEditApp(PlaceRepository repository) {
+  final router = GoRouter(
+    initialLocation: '/places/place-1/edit',
+    routes: [
+      GoRoute(path: '/', builder: (context, state) => const Text('홈')),
+      GoRoute(
+        path: '/places/:placeId/edit',
+        builder: (context, state) =>
+            PlaceFormPage(placeId: state.pathParameters['placeId']),
+      ),
+    ],
+  );
+
+  return ProviderScope(
+    overrides: [
+      useRemoteApiProvider.overrideWithValue(true),
+      placeRepositoryProvider.overrideWithValue(repository),
+    ],
+    child: MaterialApp.router(routerConfig: router),
+  );
 }
 
 class _PendingPlaceRepository extends PlaceRepository {
@@ -87,5 +137,29 @@ class _PendingPlaceRepository extends PlaceRepository {
   Future<void> createPlace(CreatePlaceRequest request) {
     createCalls++;
     return _completer.future;
+  }
+}
+
+class _EditablePlaceRepository extends PlaceRepository {
+  _EditablePlaceRepository(this.summary) : super(PlaceRemoteDataSource(Dio()));
+
+  final PlaceSummary summary;
+  int updateCalls = 0;
+  String? latestUpdateCode;
+  UpdatePlaceRequest? latestUpdateRequest;
+
+  @override
+  Future<PlaceSummary> fetchPlace(String code) async {
+    return summary;
+  }
+
+  @override
+  Future<void> updatePlace({
+    required String code,
+    required UpdatePlaceRequest request,
+  }) async {
+    updateCalls++;
+    latestUpdateCode = code;
+    latestUpdateRequest = request;
   }
 }

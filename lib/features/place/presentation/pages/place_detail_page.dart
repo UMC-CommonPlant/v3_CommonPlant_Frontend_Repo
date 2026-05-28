@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
@@ -7,8 +9,10 @@ import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_selection_widgets.dart';
+import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_fab.dart';
@@ -30,11 +34,41 @@ PlaceDetailRole? placeDetailRoleFromQuery(String? value) {
   };
 }
 
-class PlaceDetailPage extends ConsumerWidget {
+class PlaceDetailPage extends ConsumerStatefulWidget {
   const PlaceDetailPage({super.key, required this.placeId, this.role});
 
   final String placeId;
   final PlaceDetailRole? role;
+
+  @override
+  ConsumerState<PlaceDetailPage> createState() => _PlaceDetailPageState();
+}
+
+class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
+  late final FormSubmitController _exitController;
+
+  bool get _isExiting => _exitController.state.isSubmitting;
+
+  @override
+  void initState() {
+    super.initState();
+    _exitController = FormSubmitController()
+      ..addListener(_handleExitStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _exitController
+      ..removeListener(_handleExitStateChanged)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _handleExitStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   void _showExitDialog(BuildContext context) {
     showCommonDialog<void>(
@@ -51,7 +85,7 @@ class PlaceDetailPage extends ConsumerWidget {
           CommonDialogActionButton.confirm(
             label: '나가기',
             foregroundColor: AppColors.danger,
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: _isExiting ? null : () => _confirmExit(context),
           ),
         ],
       ),
@@ -59,14 +93,14 @@ class PlaceDetailPage extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mockDetail = _PlaceDetailData.mock(placeId, role: role);
+  Widget build(BuildContext context) {
+    final mockDetail = _PlaceDetailData.mock(widget.placeId, role: widget.role);
 
     if (!ref.watch(useRemoteApiProvider)) {
       return _buildScaffold(context, mockDetail);
     }
 
-    final remoteDetail = ref.watch(placeDetailProvider(placeId));
+    final remoteDetail = ref.watch(placeDetailProvider(widget.placeId));
 
     return remoteDetail.when(
       data: (summary) {
@@ -93,7 +127,7 @@ class PlaceDetailPage extends ConsumerWidget {
             message: '잠시 후 다시 시도해 주세요',
             semanticsLabel: '장소 정보 오류',
             actionLabel: '다시 시도',
-            onAction: () => ref.invalidate(placeDetailProvider(placeId)),
+            onAction: () => ref.invalidate(placeDetailProvider(widget.placeId)),
           ),
         );
       },
@@ -110,6 +144,37 @@ class PlaceDetailPage extends ConsumerWidget {
     );
   }
 
+  void _confirmExit(BuildContext context) {
+    Navigator.of(context).pop();
+    unawaited(_exitPlace(context));
+  }
+
+  Future<void> _exitPlace(BuildContext context) async {
+    if (!ref.read(useRemoteApiProvider)) {
+      return;
+    }
+
+    await _exitController.submit(() async {
+      await ref.read(placeRepositoryProvider).deletePlace(widget.placeId);
+      ref.invalidate(placeDetailProvider(widget.placeId));
+      ref.invalidate(remotePlaceListProvider);
+      ref.invalidate(plantRegistrationPlaceProvider);
+    }, failureMessage: '장소 나가기에 실패했어요');
+
+    if (!mounted || !context.mounted) {
+      return;
+    }
+
+    if (_exitController.state.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_exitController.state.errorMessage!)),
+      );
+      return;
+    }
+
+    context.go(AppRoutePaths.home);
+  }
+
   Widget _buildScaffold(BuildContext context, _PlaceDetailData detail) {
     return CommonScaffold(
       title: 'My place',
@@ -119,7 +184,7 @@ class PlaceDetailPage extends ConsumerWidget {
       ),
       bodyPadding: EdgeInsets.zero,
       floatingActionButton: _PlaceDetailFab(
-        placeId: placeId,
+        placeId: widget.placeId,
         role: detail.role,
         onExit: () => _showExitDialog(context),
       ),
@@ -130,8 +195,8 @@ class PlaceDetailPage extends ConsumerWidget {
             constraints: const BoxConstraints(maxWidth: AppSizes.mobileWidth),
             child: Column(
               children: [
-                _PlaceDetailHeader(detail: detail, placeId: placeId),
-                _PlacePlantList(placeId: placeId, plants: detail.plants),
+                _PlaceDetailHeader(detail: detail, placeId: widget.placeId),
+                _PlacePlantList(placeId: widget.placeId, plants: detail.plants),
               ],
             ),
           ),

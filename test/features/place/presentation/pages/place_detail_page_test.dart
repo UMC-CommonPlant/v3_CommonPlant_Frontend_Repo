@@ -9,6 +9,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   testWidgets('리더는 FAB에서 장소 수정 액션을 확인할 수 있다', (tester) async {
@@ -122,10 +123,59 @@ void main() {
     expect(find.text('옥상 정원'), findsOneWidget);
     expect(find.text('장소 정보를 불러오지 못했어요'), findsNothing);
   });
+
+  testWidgets('remote 장소 나가기 확인은 삭제 API를 호출하고 홈으로 이동한다', (tester) async {
+    final repository = _DeletablePlaceRepository(
+      const PlaceSummary(
+        id: 'remote-place',
+        name: '옥상 정원',
+        address: '서울시 노원구 광운로 20',
+      ),
+    );
+
+    await tester.pumpWidget(_remotePlaceDetailApp(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('장소 나가기'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('나가기'));
+    await tester.pumpAndSettle();
+
+    expect(repository.deleteCalls, 1);
+    expect(repository.latestDeleteCode, 'remote-place');
+    expect(find.text('홈'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Widget _buildPlaceDetailApp(Widget home) {
   return ProviderScope(child: MaterialApp(home: home));
+}
+
+Widget _remotePlaceDetailApp(PlaceRepository repository) {
+  final router = GoRouter(
+    initialLocation: '/places/remote-place',
+    routes: [
+      GoRoute(path: '/', builder: (context, state) => const Text('홈')),
+      GoRoute(
+        path: '/places/:placeId',
+        builder: (context, state) => PlaceDetailPage(
+          placeId: state.pathParameters['placeId'] ?? '',
+          role: PlaceDetailRole.leader,
+        ),
+      ),
+    ],
+  );
+
+  return ProviderScope(
+    overrides: [
+      useRemoteApiProvider.overrideWithValue(true),
+      placeRepositoryProvider.overrideWithValue(repository),
+    ],
+    child: MaterialApp.router(routerConfig: router),
+  );
 }
 
 class _PendingPlaceRepository extends PlaceRepository {
@@ -168,5 +218,24 @@ class _RetryPlaceRepository extends PlaceRepository {
       name: '옥상 정원',
       address: '서울시 노원구 광운로 20',
     );
+  }
+}
+
+class _DeletablePlaceRepository extends PlaceRepository {
+  _DeletablePlaceRepository(this.summary) : super(PlaceRemoteDataSource(Dio()));
+
+  final PlaceSummary summary;
+  int deleteCalls = 0;
+  String? latestDeleteCode;
+
+  @override
+  Future<PlaceSummary> fetchPlace(String code) async {
+    return summary;
+  }
+
+  @override
+  Future<void> deletePlace(String code) async {
+    deleteCalls++;
+    latestDeleteCode = code;
   }
 }
