@@ -33,10 +33,11 @@ class PlaceFormPage extends ConsumerStatefulWidget {
 
 class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   late final TextEditingController _nameController;
-  late final String _initialName;
-  late final String? _initialAddress;
   late final FormSubmitController _submitController;
+  late String _initialName;
+  String? _initialAddress;
   String? _address;
+  String? _remoteInitialPlaceId;
 
   bool get _isSubmitting => _submitController.state.isSubmitting;
 
@@ -68,6 +69,45 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isEdit && ref.watch(useRemoteApiProvider)) {
+      final placeId = widget.placeId!;
+      final remoteDetail = ref.watch(placeDetailProvider(placeId));
+
+      return remoteDetail.when(
+        loading: () {
+          return const _PlaceFormStatusScaffold(
+            title: '장소 정보를 불러오고 있어요',
+            message: '장소 수정 정보를 준비하고 있어요',
+            isLoading: true,
+          );
+        },
+        error: (error, stackTrace) {
+          return _PlaceFormStatusScaffold(
+            title: '장소 정보를 불러오지 못했어요',
+            message: '잠시 후 다시 시도해 주세요',
+            actionLabel: '다시 시도',
+            onAction: () => ref.invalidate(placeDetailProvider(placeId)),
+          );
+        },
+        data: (summary) {
+          if (summary.name.trim().isEmpty) {
+            return const _PlaceFormStatusScaffold(
+              title: '장소 정보를 찾을 수 없어요',
+              message: '다시 장소 목록에서 선택해 주세요',
+            );
+          }
+
+          _applyRemoteSummary(summary);
+
+          return _buildForm(context);
+        },
+      );
+    }
+
+    return _buildForm(context);
+  }
+
+  Widget _buildForm(BuildContext context) {
     final currentName = _nameController.text.trim();
     final hasChanges =
         !widget.isEdit ||
@@ -102,6 +142,20 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
     );
   }
 
+  void _applyRemoteSummary(PlaceSummary summary) {
+    final placeId = widget.placeId;
+
+    if (placeId == null || _remoteInitialPlaceId == placeId) {
+      return;
+    }
+
+    _remoteInitialPlaceId = placeId;
+    _initialName = summary.name;
+    _initialAddress = summary.address;
+    _address = summary.address;
+    _nameController.text = summary.name;
+  }
+
   Future<void> _submit() async {
     if (_isSubmitting) {
       return;
@@ -120,28 +174,55 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
       return;
     }
 
-    await _submitController.submit(() async {
-      if (widget.placeId case final placeId?) {
-        notifier.updatePlace(id: placeId, name: name, address: _address);
-        if (mounted) {
-          context.go(AppRoutePaths.home);
+    await _submitController.submit(
+      () async {
+        if (widget.placeId case final placeId?) {
+          if (ref.read(useRemoteApiProvider)) {
+            if (address == null || address.isEmpty) {
+              throw const _PlaceFormValidationException('장소 주소를 입력해 주세요.');
+            }
+
+            await ref
+                .read(placeRepositoryProvider)
+                .updatePlace(
+                  code: placeId,
+                  request: UpdatePlaceRequest(name: name, address: address),
+                );
+            ref.invalidate(placeDetailProvider(placeId));
+            ref.invalidate(remotePlaceListProvider);
+            ref.invalidate(plantRegistrationPlaceProvider);
+          } else {
+            notifier.updatePlace(id: placeId, name: name, address: _address);
+          }
+
+          if (mounted) {
+            context.go(AppRoutePaths.home);
+          }
+        } else {
+          if (ref.read(useRemoteApiProvider)) {
+            await ref
+                .read(placeRepositoryProvider)
+                .createPlace(CreatePlaceRequest(name: name, address: address!));
+            ref.invalidate(remotePlaceListProvider);
+          }
+
+          if (!mounted) {
+            return;
+          }
+
+          notifier.addPlace(name: name, address: _address);
+          context.push(AppRoutePaths.placeFriendAdd);
         }
-      } else {
-        if (ref.read(useRemoteApiProvider)) {
-          await ref
-              .read(placeRepositoryProvider)
-              .createPlace(CreatePlaceRequest(name: name, address: address!));
-          ref.invalidate(remotePlaceListProvider);
+      },
+      failureMessage: widget.isEdit ? '장소 수정에 실패했어요' : '장소 생성에 실패했어요',
+      failureMessageBuilder: (error) {
+        if (error case _PlaceFormValidationException(:final message)) {
+          return message;
         }
 
-        if (!mounted) {
-          return;
-        }
-
-        notifier.addPlace(name: name, address: _address);
-        context.push(AppRoutePaths.placeFriendAdd);
-      }
-    }, failureMessage: widget.isEdit ? '장소 수정에 실패했어요' : '장소 생성에 실패했어요');
+        return widget.isEdit ? '장소 수정에 실패했어요' : '장소 생성에 실패했어요';
+      },
+    );
 
     _showSubmitErrorIfNeeded();
   }
@@ -156,6 +237,99 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(errorMessage)));
+  }
+}
+
+class _PlaceFormValidationException implements Exception {
+  const _PlaceFormValidationException(this.message);
+
+  final String message;
+}
+
+class _PlaceFormStatusScaffold extends StatelessWidget {
+  const _PlaceFormStatusScaffold({
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+    this.isLoading = false,
+  });
+
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            CommonNavigationBar(
+              title: '장소 수정',
+              titleStyle: AppTextStyles.size18Medium.copyWith(
+                color: AppColors.textStrong,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.x20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isLoading)
+                        SizedBox.square(
+                          dimension: AppSizes.iconLarge,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.brandStrong,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: AppSpacing.x16),
+                      Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.size18Medium.copyWith(
+                          color: AppColors.textStrong,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.x8),
+                      Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.size14Medium.copyWith(
+                          color: AppColors.textBody,
+                        ),
+                      ),
+                      if (actionLabel != null && onAction != null) ...[
+                        const SizedBox(height: AppSpacing.x24),
+                        SizedBox(
+                          width: AppSizes.smallButtonWidth,
+                          child: CommonButton.secondary(
+                            label: actionLabel!,
+                            size: CommonButtonSize.medium,
+                            onPressed: onAction,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
