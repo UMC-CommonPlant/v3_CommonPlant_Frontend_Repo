@@ -39,7 +39,7 @@
 
 ## 백엔드 확인이 필요한 항목
 
-아래 항목은 Swagger만 보고 화면 동작을 확정하지 않는다.
+아래 항목은 Swagger만 보고 화면 동작을 확정하지 않는다. 질문 단위 상세 목록은 `docs/backend-api-open-questions.md`에서 관리한다.
 
 - `POST /auth/register` request schema와 multipart JSON part 필드
 - multipart JSON part의 `Content-Type: application/json` 필요 여부
