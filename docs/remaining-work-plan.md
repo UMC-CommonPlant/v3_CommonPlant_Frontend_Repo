@@ -54,5 +54,5 @@
 
 ## 다음 작업 후보
 
-#67 User API 화면 연결이 병합된 뒤, Place/Plant API 화면 연결 전 환경과 flavor 전략을 먼저 정리한다.
-순서 9번 `[Task] 환경 flavor 전략 문서화`가 병합되면 순서 10번 `[Feature] Place API 화면 연결`로 돌아간다.
+순서 14번 `[Task] 테스트 전략 확정`이 병합되면 순서 15번 `[Task] 릴리즈 정책 확정`을 진행한다.
+테스트 전략은 Golden test와 integration test의 적용/보류 기준을 문서화하고, 릴리즈 정책은 signing secret, store 계정, release 자동화 결정 항목을 정리한다.
