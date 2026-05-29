@@ -27,6 +27,39 @@ void main() {
         startsWith('multipart/form-data'),
       );
     });
+
+    test('장소 생성은 optional image part를 multipart에 포함한다', () async {
+      final adapter = _CapturingAdapter();
+      final dataSource = PlaceRemoteDataSource(_dioWith(adapter));
+
+      await dataSource.createPlace(
+        const CreatePlaceRequest(name: '정원', address: '서울특별시'),
+        image: MultipartFile.fromString('image-bytes', filename: 'place.png'),
+      );
+
+      final formData = adapter.latestOptions.data as FormData;
+
+      expect(adapter.latestOptions.method, 'POST');
+      expect(adapter.latestOptions.path, '/place/create');
+      expect(formData.files.map((file) => file.key), contains('image'));
+    });
+
+    test('장소 수정은 optional image part를 multipart에 포함한다', () async {
+      final adapter = _CapturingAdapter();
+      final dataSource = PlaceRemoteDataSource(_dioWith(adapter));
+
+      await dataSource.updatePlace(
+        code: 'Abc123',
+        request: const UpdatePlaceRequest(name: '정원', address: '서울특별시'),
+        image: MultipartFile.fromString('image-bytes', filename: 'place.png'),
+      );
+
+      final formData = adapter.latestOptions.data as FormData;
+
+      expect(adapter.latestOptions.method, 'PUT');
+      expect(adapter.latestOptions.path, '/place/update/Abc123');
+      expect(formData.files.map((file) => file.key), contains('image'));
+    });
   });
 }
 

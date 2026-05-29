@@ -184,6 +184,7 @@ class _PendingPlantRepository extends PlantRepository {
     required String plantId,
     required String placeCode,
     required UpdatePlantRequest request,
+    MultipartFile? image,
   }) {
     updateCalls++;
     return _completer.future;
@@ -205,6 +206,7 @@ class _FailingPlantUpdateRepository extends PlantRepository {
     required String plantId,
     required String placeCode,
     required UpdatePlantRequest request,
+    MultipartFile? image,
   }) async {
     updateCalls++;
     throw StateError('raw failure');

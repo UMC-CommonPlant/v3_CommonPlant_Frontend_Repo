@@ -41,6 +41,40 @@ void main() {
       expect(adapter.latestOptions.queryParameters, {'placeCode': 'Abc123'});
     });
 
+    test('식물 생성은 optional image part를 multipart에 포함한다', () async {
+      final adapter = _CapturingAdapter();
+      final dataSource = PlantRemoteDataSource(_dioWith(adapter));
+
+      await dataSource.createPlant(
+        const CreatePlantRequest(placeCode: 'Abc123', nickname: '몬스테라'),
+        image: MultipartFile.fromString('image-bytes', filename: 'plant.png'),
+      );
+
+      final formData = adapter.latestOptions.data as FormData;
+
+      expect(adapter.latestOptions.method, 'POST');
+      expect(adapter.latestOptions.path, '/plants');
+      expect(formData.files.map((file) => file.key), contains('image'));
+    });
+
+    test('식물 수정은 optional image part를 multipart에 포함한다', () async {
+      final adapter = _CapturingAdapter();
+      final dataSource = PlantRemoteDataSource(_dioWith(adapter));
+
+      await dataSource.updatePlant(
+        plantId: '1',
+        placeCode: 'Abc123',
+        request: const UpdatePlantRequest(nickname: '거실 몬스테라'),
+        image: MultipartFile.fromString('image-bytes', filename: 'plant.png'),
+      );
+
+      final formData = adapter.latestOptions.data as FormData;
+
+      expect(adapter.latestOptions.method, 'PUT');
+      expect(adapter.latestOptions.path, '/plants/1');
+      expect(formData.files.map((file) => file.key), contains('image'));
+    });
+
     test('식물 삭제는 placeCode query를 보낸다', () async {
       final adapter = _CapturingAdapter();
       final dataSource = PlantRemoteDataSource(_dioWith(adapter));
