@@ -9,6 +9,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   testWidgets('식물 상세는 Figma 주요 정보와 더보기 메뉴를 표시한다', (tester) async {
@@ -132,10 +133,61 @@ void main() {
     expect(find.text('필로덴드론'), findsOneWidget);
     expect(find.text('식물 정보를 불러오지 못했어요'), findsNothing);
   });
+
+  testWidgets('remote 식물 삭제 확인은 삭제 API를 호출하고 홈으로 이동한다', (tester) async {
+    final repository = _DeletablePlantRepository(
+      const PlantDetail(
+        id: 'plant-remote',
+        name: '필로덴드론',
+        placeId: 'place-1',
+        placeName: '거실 정원',
+      ),
+    );
+
+    await tester.pumpWidget(_remotePlantDetailApp(repository));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('식물 상세 메뉴'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('삭제하기'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('삭제'));
+    await tester.pumpAndSettle();
+
+    expect(repository.deleteCalls, 1);
+    expect(repository.latestDeletedPlantId, 'plant-remote');
+    expect(repository.latestDeletedPlaceCode, 'place-1');
+    expect(find.text('홈'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Widget _buildPlantDetailApp(Widget home) {
   return ProviderScope(child: MaterialApp(home: home));
+}
+
+Widget _remotePlantDetailApp(PlantRepository repository) {
+  final router = GoRouter(
+    initialLocation: '/plants/plant-remote?placeId=place-1',
+    routes: [
+      GoRoute(path: '/', builder: (context, state) => const Text('홈')),
+      GoRoute(
+        path: '/plants/:plantId',
+        builder: (context, state) => PlantDetailPage(
+          plantId: state.pathParameters['plantId'] ?? '',
+          placeId: state.uri.queryParameters['placeId'],
+        ),
+      ),
+    ],
+  );
+
+  return ProviderScope(
+    overrides: [
+      useRemoteApiProvider.overrideWithValue(true),
+      plantRepositoryProvider.overrideWithValue(repository),
+    ],
+    child: MaterialApp.router(routerConfig: router),
+  );
 }
 
 class _PendingPlantRepository extends PlantRepository {
@@ -181,5 +233,29 @@ class _RetryPlantRepository extends PlantRepository {
       species: 'Philodendron',
       lastWateredDate: '2026.05.25',
     );
+  }
+}
+
+class _DeletablePlantRepository extends PlantRepository {
+  _DeletablePlantRepository(this.detail) : super(PlantRemoteDataSource(Dio()));
+
+  final PlantDetail detail;
+  int deleteCalls = 0;
+  String? latestDeletedPlantId;
+  String? latestDeletedPlaceCode;
+
+  @override
+  Future<PlantDetail> fetchPlant({required String plantId}) async {
+    return detail;
+  }
+
+  @override
+  Future<void> deletePlant({
+    required String plantId,
+    required String placeCode,
+  }) async {
+    deleteCalls++;
+    latestDeletedPlantId = plantId;
+    latestDeletedPlaceCode = placeCode;
   }
 }

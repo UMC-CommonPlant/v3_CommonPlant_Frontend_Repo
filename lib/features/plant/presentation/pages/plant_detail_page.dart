@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
@@ -7,9 +9,11 @@ import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
+import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_edit_delete_popup.dart';
@@ -20,13 +24,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class PlantDetailPage extends ConsumerWidget {
+class PlantDetailPage extends ConsumerStatefulWidget {
   const PlantDetailPage({super.key, required this.plantId, this.placeId});
 
   final String plantId;
   final String? placeId;
 
-  void _showPlantMenu(BuildContext context) {
+  @override
+  ConsumerState<PlantDetailPage> createState() => _PlantDetailPageState();
+}
+
+class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
+  late final FormSubmitController _deleteController;
+
+  bool get _isDeleting => _deleteController.state.isSubmitting;
+
+  @override
+  void initState() {
+    super.initState();
+    _deleteController = FormSubmitController()
+      ..addListener(_handleDeleteStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _deleteController
+      ..removeListener(_handleDeleteStateChanged)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _handleDeleteStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _showPlantMenu(BuildContext context, String? placeCode) {
     showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -49,14 +83,14 @@ class PlantDetailPage extends ConsumerWidget {
                     Navigator.of(dialogContext).pop();
                     context.push(
                       AppRoutePaths.plantEditLocation(
-                        plantId,
-                        placeId: placeId,
+                        widget.plantId,
+                        placeId: placeCode,
                       ),
                     );
                   },
                   onDelete: () {
                     Navigator.of(dialogContext).pop();
-                    _showDeleteDialog(context);
+                    _showDeleteDialog(context, placeCode);
                   },
                 ),
               ),
@@ -67,7 +101,7 @@ class PlantDetailPage extends ConsumerWidget {
     );
   }
 
-  void _showDeleteDialog(BuildContext context) {
+  void _showDeleteDialog(BuildContext context, String? placeCode) {
     showCommonDialog<void>(
       context: context,
       child: CommonDialogCard(
@@ -82,7 +116,9 @@ class PlantDetailPage extends ConsumerWidget {
           CommonDialogActionButton.confirm(
             label: '삭제',
             foregroundColor: AppColors.danger,
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: _isDeleting
+                ? null
+                : () => _confirmDelete(context, placeCode),
           ),
         ],
       ),
@@ -90,14 +126,14 @@ class PlantDetailPage extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mockDetail = _PlantDetailData.mock();
+  Widget build(BuildContext context) {
+    final mockDetail = _PlantDetailData.mock(placeCode: widget.placeId);
 
     if (!ref.watch(useRemoteApiProvider)) {
       return _buildScaffold(context, mockDetail);
     }
 
-    final remoteDetail = ref.watch(remotePlantDetailProvider(plantId));
+    final remoteDetail = ref.watch(remotePlantDetailProvider(widget.plantId));
 
     return remoteDetail.when(
       data: (detail) {
@@ -116,7 +152,8 @@ class PlantDetailPage extends ConsumerWidget {
         statusTitle: '식물 정보를 불러오지 못했어요',
         message: '잠시 후 다시 시도해 주세요',
         actionLabel: '다시 시도',
-        onAction: () => ref.invalidate(remotePlantDetailProvider(plantId)),
+        onAction: () =>
+            ref.invalidate(remotePlantDetailProvider(widget.plantId)),
       ),
       loading: () => const PlantStateScaffold(
         title: 'My plant',
@@ -127,6 +164,48 @@ class PlantDetailPage extends ConsumerWidget {
     );
   }
 
+  void _confirmDelete(BuildContext context, String? placeCode) {
+    Navigator.of(context).pop();
+    unawaited(_deletePlant(context, placeCode));
+  }
+
+  Future<void> _deletePlant(BuildContext context, String? placeCode) async {
+    if (!ref.read(useRemoteApiProvider)) {
+      return;
+    }
+
+    final effectivePlaceCode = placeCode?.trim();
+
+    if (effectivePlaceCode == null || effectivePlaceCode.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('장소 정보를 확인할 수 없어요.')));
+      return;
+    }
+
+    await _deleteController.submit(() async {
+      await ref
+          .read(plantRepositoryProvider)
+          .deletePlant(plantId: widget.plantId, placeCode: effectivePlaceCode);
+      ref.invalidate(remotePlantListProvider);
+      ref.invalidate(remotePlantDetailProvider(widget.plantId));
+      ref.invalidate(remotePlantEditInfoProvider(widget.plantId));
+    }, failureMessage: '식물 삭제에 실패했어요');
+
+    if (!mounted || !context.mounted) {
+      return;
+    }
+
+    if (_deleteController.state.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_deleteController.state.errorMessage!)),
+      );
+      return;
+    }
+
+    context.go(AppRoutePaths.home);
+  }
+
   Widget _buildScaffold(BuildContext context, _PlantDetailData detail) {
     return CommonScaffold(
       title: 'My plant',
@@ -135,7 +214,7 @@ class PlantDetailPage extends ConsumerWidget {
         fontWeight: FontWeight.w700,
       ),
       trailing: _PlantDetailMenuButton(
-        onPressed: () => _showPlantMenu(context),
+        onPressed: () => _showPlantMenu(context, detail.placeCode),
       ),
       bodyPadding: EdgeInsets.zero,
       child: SizedBox(
@@ -145,7 +224,7 @@ class PlantDetailPage extends ConsumerWidget {
           children: [
             _PlantDetailContentWidth(child: _PlantHero(detail: detail)),
             _PlantCareSummary(detail: detail),
-            _MemoPreviewSection(plantId: plantId, memos: detail.memos),
+            _MemoPreviewSection(plantId: widget.plantId, memos: detail.memos),
             _PlantInfoSection(detail: detail),
             const SizedBox(height: 82),
           ],
@@ -161,6 +240,7 @@ class PlantDetailPage extends ConsumerWidget {
 
 class _PlantDetailData {
   const _PlantDetailData({
+    required this.placeCode,
     required this.placeName,
     required this.name,
     required this.species,
@@ -172,6 +252,7 @@ class _PlantDetailData {
     required this.memos,
   });
 
+  final String? placeCode;
   final String placeName;
   final String name;
   final String species;
@@ -184,6 +265,7 @@ class _PlantDetailData {
 
   _PlantDetailData applyRemote(PlantDetail detail) {
     return _PlantDetailData(
+      placeCode: detail.placeId ?? placeCode,
       placeName: detail.placeName ?? placeName,
       name: detail.name,
       species: detail.species ?? species,
@@ -196,8 +278,9 @@ class _PlantDetailData {
     );
   }
 
-  static _PlantDetailData mock() {
-    return const _PlantDetailData(
+  static _PlantDetailData mock({String? placeCode}) {
+    return _PlantDetailData(
+      placeCode: placeCode,
       placeName: '스윗홈_거실',
       name: '몬테',
       species: 'Monstera deliciosa',
@@ -206,7 +289,7 @@ class _PlantDetailData {
       startDate: '2022.11.24',
       lastWateredDate: '2022.11.24',
       wateringCycleLabel: '10 Day',
-      memos: [
+      memos: const [
         _PlantMemo(
           author: '커먼플랜트',
           content: '장마여서 물주는 날짜를 조금 늦춤 하지만 해는 맑구나 몬테랑 함께...',
