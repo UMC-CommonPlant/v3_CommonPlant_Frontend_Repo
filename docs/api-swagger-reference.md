@@ -535,11 +535,27 @@
 - 반영: `createPlaceReq`는 `address`가 required이므로 장소 생성 요청 DTO와 API mode 제출 전 검증을 조정했다.
 - 반영: User 조회/수정/검색 DTO와 datasource/repository는 `UserResponse`, `UserListJsonResponse`, `UserUpdateMultipartRequest` 기준으로 추가했다.
 - 반영: `PUT /users`는 multipart `user` JSON part와 optional `image` part를 사용하는 datasource로 구성했다.
+- 반영: `UserRepository.updateMe`는 화면의 이미지 선택 흐름이 `MultipartFile`을 확보하면 optional `image` part를 전달할 수 있도록 열어두었다.
 - 반영: `GET /users/{keyword}`는 사용자 검색 datasource/repository 후보로 추가했다.
+- 반영: `POST /place/create`와 `PUT /place/update/{code}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
 - 반영: `PUT /place/update/{code}`는 multipart 전송 datasource/repository를 추가했다.
+- 반영: `POST /plants`와 `PUT /plants/{plantId}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
 - 반영: Auth login DTO는 Swagger의 `newUser` 필드명을 명시적으로 보존한다.
 - 반영: Friend 요청 목록/전송/수락/거절 endpoint는 response schema가 없으므로 raw 또는 void 경계로 datasource/repository만 추가했다.
 - 반영: Image 업로드/조회/수정/삭제 endpoint는 response schema가 없으므로 raw 또는 void 경계로 datasource/repository만 추가했다.
+
+### Image 화면 연결 판단
+
+현재 화면에서 안전하게 열어둘 수 있는 범위는 도메인 API의 optional `image` multipart part까지이다. 프로필 수정, 장소 생성/수정, 식물 생성/수정은 실제 파일 선택기가 `MultipartFile`을 제공하면 repository에 전달할 수 있다.
+
+독립형 Image API(`/s3/images`)는 response schema가 없어 화면에서 반환된 image key/url을 확정적으로 읽을 수 없다. 따라서 프로필, 장소, 식물, 메모 화면에서 `/s3/images` 업로드 결과를 `imageKey`, `imgUrl`, `imageUrl`로 임의 매핑하지 않는다.
+
+현재 보류 범위:
+
+- 프로필 설정의 회원가입 이미지 업로드는 `POST /auth/register` request schema 충돌이 있어 연결하지 않는다.
+- 장소/식물 화면은 도메인 multipart `image` part 전달 경계까지만 열어두고, 실제 파일 선택기 도입은 별도 UI 작업에서 진행한다.
+- 메모 화면은 아직 Memo API가 없어 로컬 사진 상태만 유지한다.
+- `/s3/images` 다운로드 URL 조회는 성공 response의 URL 필드 또는 wrapper 구조가 확정된 뒤 화면 fallback 정책과 함께 연결한다.
 
 ## 백엔드에 다시 확인해야 할 부분
 
@@ -556,6 +572,8 @@
 - `sendFriendReq.receiverName`이 사용자 display name 배열인지, 고유 user id 배열인지 확인해야 한다.
 - `friendDecisionReq.friendId`가 요청 id인지 사용자 id인지 확인해야 한다.
 - Image API의 upload/download/update/delete 성공 response schema와 반환되는 image key/url 필드명이 필요하다. 현재 코드는 raw response까지만 받는다.
+- 화면 이미지 업로드가 `/s3/images` 선업로드 후 image key를 도메인 API에 전달하는 방식인지, 각 도메인 API의 optional `image` part를 직접 사용하는 방식인지 확인해야 한다.
+- `/s3/images`의 presigned download URL 응답이 문자열인지, `{ url }`, `{ imageUrl }`, `{ downloadUrl }` 같은 object인지, 공통 wrapper `result` 안에 들어가는지 확인해야 한다.
 - 에러 응답 body schema와 `code`, `message` 필드명이 필요하다.
 - refresh token 재발급과 로그아웃 API 제공 여부를 확인해야 한다.
 - 주소 검색, 식물 검색, 메모 API 제공 계획을 확인해야 한다.

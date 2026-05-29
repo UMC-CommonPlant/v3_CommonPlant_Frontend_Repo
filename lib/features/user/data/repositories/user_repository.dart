@@ -3,6 +3,7 @@ import 'package:commonplant_frontend/core/network/api_response_parser.dart';
 import 'package:commonplant_frontend/features/user/data/datasources/user_remote_data_source.dart';
 import 'package:commonplant_frontend/features/user/data/dtos/user_requests.dart';
 import 'package:commonplant_frontend/features/user/domain/entities/user_profile.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final userRemoteDataSourceProvider = Provider<UserRemoteDataSource>((ref) {
@@ -32,8 +33,11 @@ class UserRepository {
     return [for (final item in items) userProfileFromJson(item)];
   }
 
-  Future<UserProfile> updateMe(UpdateUserRequest request) async {
-    final data = await _remoteDataSource.updateMe(request);
+  Future<UserProfile> updateMe(
+    UpdateUserRequest request, {
+    MultipartFile? image,
+  }) async {
+    final data = await _remoteDataSource.updateMe(request, image: image);
     final object = unwrapJsonObject(data, context: '내 정보 수정');
 
     return userProfileFromJson(object);

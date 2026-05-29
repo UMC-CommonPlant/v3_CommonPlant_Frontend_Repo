@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/features/plant/data/datasources/plant_remot
 import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_summary.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final plantRemoteDataSourceProvider = Provider<PlantRemoteDataSource>((ref) {
@@ -26,8 +27,8 @@ class PlantRepository {
     return [for (final item in items) plantSummaryFromJson(item)];
   }
 
-  Future<void> createPlant(CreatePlantRequest request) {
-    return _remoteDataSource.createPlant(request);
+  Future<void> createPlant(CreatePlantRequest request, {MultipartFile? image}) {
+    return _remoteDataSource.createPlant(request, image: image);
   }
 
   Future<PlantDetail> fetchPlant({required String plantId}) async {
@@ -48,11 +49,13 @@ class PlantRepository {
     required String plantId,
     required String placeCode,
     required UpdatePlantRequest request,
+    MultipartFile? image,
   }) {
     return _remoteDataSource.updatePlant(
       plantId: plantId,
       placeCode: placeCode,
       request: request,
+      image: image,
     );
   }
 

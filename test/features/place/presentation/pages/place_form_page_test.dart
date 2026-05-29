@@ -134,7 +134,7 @@ class _PendingPlaceRepository extends PlaceRepository {
   int createCalls = 0;
 
   @override
-  Future<void> createPlace(CreatePlaceRequest request) {
+  Future<void> createPlace(CreatePlaceRequest request, {MultipartFile? image}) {
     createCalls++;
     return _completer.future;
   }
@@ -157,6 +157,7 @@ class _EditablePlaceRepository extends PlaceRepository {
   Future<void> updatePlace({
     required String code,
     required UpdatePlaceRequest request,
+    MultipartFile? image,
   }) async {
     updateCalls++;
     latestUpdateCode = code;

@@ -39,7 +39,10 @@ class PlaceRemoteDataSource {
     }
   }
 
-  Future<void> createPlace(CreatePlaceRequest request) async {
+  Future<void> createPlace(
+    CreatePlaceRequest request, {
+    MultipartFile? image,
+  }) async {
     try {
       await _dio.post<Object?>(
         '/place/create',
@@ -48,6 +51,7 @@ class PlaceRemoteDataSource {
             jsonEncode(request.toJson()),
             contentType: DioMediaType('application', 'json'),
           ),
+          if (image != null) 'image': image,
         }),
       );
     } on DioException catch (error) {

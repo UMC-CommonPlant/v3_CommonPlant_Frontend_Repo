@@ -22,7 +22,10 @@ class PlantRemoteDataSource {
     }
   }
 
-  Future<void> createPlant(CreatePlantRequest request) async {
+  Future<void> createPlant(
+    CreatePlantRequest request, {
+    MultipartFile? image,
+  }) async {
     try {
       await _dio.post<Object?>(
         '/plants',
@@ -31,6 +34,7 @@ class PlantRemoteDataSource {
             jsonEncode(request.toJson()),
             contentType: DioMediaType('application', 'json'),
           ),
+          if (image != null) 'image': image,
         }),
       );
     } on DioException catch (error) {
@@ -62,6 +66,7 @@ class PlantRemoteDataSource {
     required String plantId,
     required String placeCode,
     required UpdatePlantRequest request,
+    MultipartFile? image,
   }) async {
     try {
       await _dio.put<Object?>(
@@ -72,6 +77,7 @@ class PlantRemoteDataSource {
             jsonEncode(request.toJson()),
             contentType: DioMediaType('application', 'json'),
           ),
+          if (image != null) 'image': image,
         }),
       );
     } on DioException catch (error) {
