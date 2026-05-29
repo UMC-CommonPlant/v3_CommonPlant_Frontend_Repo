@@ -559,26 +559,20 @@
 
 ## 백엔드에 다시 확인해야 할 부분
 
-아래 항목은 Swagger만 보고 코드에 확정 반영하면 위험하다.
+상세 질문 목록은 `docs/backend-api-open-questions.md`에서 관리한다. 아래 표는 Swagger 참고 문서 관점의 요약이다.
 
-- `POST /auth/register` request schema가 맞는지 확인해야 한다. 현재 `RegisterMultipartRequest.register`가 참조하는 `Register` schema는 회원가입 입력값이 아니라 토큰 응답처럼 보인다.
-- 회원가입 request가 실제로 multipart인지, 이미지가 없는 경우에도 multipart로 보내야 하는지 확인해야 한다.
-- 회원가입 request JSON part의 실제 필드가 `signupToken`, `name`, `introduction`, `imgUrl`인지 다시 확인해야 한다.
-- multipart 요청에서 JSON part의 content type을 `application/json`으로 보내야 하는지 확인해야 한다.
-- Place 조회, 생성, 수정, 삭제 API의 성공 response body 구조가 필요하다.
-- `/place/myGarden`, `/place/user`, `/place/{code}`의 실제 list/object wrapper와 필드명이 필요하다.
-- Friend 요청 목록 `GET /friends/requests`의 response schema가 필요하다. 현재 코드는 raw response까지만 받는다.
-- Friend accept/decline/request 성공 response와 실패 시 error body schema가 필요하다. 현재 코드는 성공 body를 읽지 않는 void 처리까지만 한다.
-- `sendFriendReq.receiverName`이 사용자 display name 배열인지, 고유 user id 배열인지 확인해야 한다.
-- `friendDecisionReq.friendId`가 요청 id인지 사용자 id인지 확인해야 한다.
-- Image API의 upload/download/update/delete 성공 response schema와 반환되는 image key/url 필드명이 필요하다. 현재 코드는 raw response까지만 받는다.
-- 화면 이미지 업로드가 `/s3/images` 선업로드 후 image key를 도메인 API에 전달하는 방식인지, 각 도메인 API의 optional `image` part를 직접 사용하는 방식인지 확인해야 한다.
-- `/s3/images`의 presigned download URL 응답이 문자열인지, `{ url }`, `{ imageUrl }`, `{ downloadUrl }` 같은 object인지, 공통 wrapper `result` 안에 들어가는지 확인해야 한다.
-- 에러 응답 body schema와 `code`, `message` 필드명이 필요하다.
-- refresh token 재발급과 로그아웃 API 제공 여부를 확인해야 한다.
-- 주소 검색, 식물 검색, 메모 API 제공 계획을 확인해야 한다.
-- Swagger의 Place/Plant path가 `placeCode`와 `placeId`를 혼용하지 않는지 확인해야 한다.
-- 서버 staging/prod full base URL과 API versioning 정책을 확인해야 한다. 앱 flavor별 주입 방식은 `docs/release-workflow.md` 기준을 따른다.
+| 영역 | 대표 확인 항목 | 프론트 영향 |
+| --- | --- | --- |
+| Auth | `POST /auth/register` request part schema, multipart 전송 정책 | 프로필 설정 회원가입 API 연결 보류 |
+| 공통 Multipart | JSON part의 `Content-Type: application/json` 필요 여부 | Auth/Place/Plant/User multipart 전송 정책 정합성 |
+| Place | 조회/생성/수정/삭제 성공 response, 목록/상세 wrapper와 필드명 | 장소 mapper와 실데이터 화면 정책 제한 |
+| Friend | 요청 목록/전송/수락/거절 response, `receiverName`, `friendId` 의미 | 친구 요청 화면과 액션 payload 확정 불가 |
+| Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물/메모 이미지 key/url 매핑 보류 |
+| Error | 에러 body의 `code`, `message`, field error 구조 | 공통 사용자 메시지와 field error 매핑 보류 |
+| Token | refresh token 재발급, 로그아웃 API 제공 여부 | 인증 만료 복구와 세션 종료 정책 보류 |
+| 검색 | 주소 검색, 식물 검색 API 제공 여부와 사용자 검색 매칭 정책 | 주소/식물 검색 실데이터 연결 보류 |
+| Memo | 메모 CRUD API, 이미지 첨부, 목록 response 구조 | 메모 화면 실데이터 연결 보류 |
+| 환경 | staging/prod full base URL과 API versioning 정책 | CI/CD 환경값과 release 검증 보류 |
 
 ## 첫 API 연계 보강 우선순위 제안
 

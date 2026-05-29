@@ -143,6 +143,7 @@ lib/
 | [폼 검증 및 에러 메시지 작성 기준](docs/form-validation-error-guide.md) | 입력 검증 위치, helper/error 메시지, 서버 에러 처리 기준 |
 | [테스트 작성 기준](docs/testing-guide.md) | unit/widget test 작성 기준, 실행 명령, CI/pre-commit 연계 |
 | [API Swagger 연계 참고 문서](docs/api-swagger-reference.md) | 서버 Swagger 변경사항, API 계층 반영 가능 항목, 백엔드 확인 필요 항목 |
+| [백엔드 API 확인 질문 목록](docs/backend-api-open-questions.md) | Swagger와 API 계층 기준으로 분리한 백엔드 확인 질문 목록 |
 | [Git 브랜치 및 커밋 전략](docs/git-workflow.md) | 브랜치 전략, 커밋 메시지, PR 체크리스트 |
 | [배포 및 릴리즈 자동화 전략](docs/release-workflow.md) | `main` publish 전략, release 브랜치, Android/iOS 자동화 단계 |
 
