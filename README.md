@@ -138,6 +138,7 @@ lib/
 | [Figma 프레임 매핑](docs/figma-frame-map.md) | Phase 0 화면별 Figma frame 이름, node-id, 상태, 구현 PR 연결표 |
 | [Feature 작업 가이드](docs/feature-development-guide.md) | feature-first 구조, 계층 책임, API 모델 및 작업 순서 |
 | [화면 퍼블리싱 작업 규칙](docs/screen-publishing-rules.md) | Figma 화면 구현 시 공용 컴포넌트, 상태 UI, 반응형 기준 |
+| [프론트 단독 작업 체크리스트](docs/frontend-only-work-checklist.md) | 백엔드 영향 없이 진행 가능한 버튼, 라우팅, 상태 전이, 애니메이션 작업 목록 |
 | [Assets 및 Icons 규칙](docs/asset-icon-rules.md) | 아이콘/이미지 네이밍, 등록, 사용 기준 |
 | [상태관리 Provider 작성 기준](docs/state-management-guide.md) | Riverpod Provider 선택, 파일 배치, async 상태 처리 기준 |
 | [폼 검증 및 에러 메시지 작성 기준](docs/form-validation-error-guide.md) | 입력 검증 위치, helper/error 메시지, 서버 에러 처리 기준 |
