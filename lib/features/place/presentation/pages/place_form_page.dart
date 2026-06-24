@@ -5,10 +5,8 @@ import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
-import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_form_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
-import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_image_add_button.dart';
@@ -33,13 +31,10 @@ class PlaceFormPage extends ConsumerStatefulWidget {
 
 class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   late final TextEditingController _nameController;
-  late final FormSubmitController _submitController;
   late String _initialName;
   String? _initialAddress;
   String? _address;
   String? _remoteInitialPlaceId;
-
-  bool get _isSubmitting => _submitController.state.isSubmitting;
 
   @override
   void initState() {
@@ -47,24 +42,13 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
     _initialName = widget.isEdit ? _placeEditInitialName : '';
     _initialAddress = null;
     _nameController = TextEditingController(text: _initialName);
-    _submitController = FormSubmitController()
-      ..addListener(_handleSubmitStateChanged);
     _address = _initialAddress;
   }
 
   @override
   void dispose() {
-    _submitController
-      ..removeListener(_handleSubmitStateChanged)
-      ..dispose();
     _nameController.dispose();
     super.dispose();
-  }
-
-  void _handleSubmitStateChanged() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   @override
@@ -108,19 +92,21 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   }
 
   Widget _buildForm(BuildContext context) {
+    final submitState = ref.watch(placeFormControllerProvider);
+    final isSubmitting = submitState.isSubmitting;
     final currentName = _nameController.text.trim();
     final hasChanges =
         !widget.isEdit ||
         currentName != _initialName ||
         _address != _initialAddress;
-    final canSubmit = currentName.isNotEmpty && hasChanges && !_isSubmitting;
+    final canSubmit = currentName.isNotEmpty && hasChanges && !isSubmitting;
 
     if (!widget.isEdit) {
       return _PlaceCreateScaffold(
         nameController: _nameController,
         address: _address,
         canSubmit: canSubmit,
-        isSubmitting: _isSubmitting,
+        isSubmitting: isSubmitting,
         onNameChanged: (_) => setState(() {}),
         onImageTap: () {},
         onAddressTap: () => context.push(AppRoutePaths.addressSearch),
@@ -133,7 +119,7 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
       nameController: _nameController,
       address: _address,
       canSubmit: canSubmit,
-      isSubmitting: _isSubmitting,
+      isSubmitting: isSubmitting,
       onNameChanged: (_) => setState(() {}),
       onImageTap: () {},
       onAddressTap: () => context.push(AppRoutePaths.addressSearch),
@@ -157,78 +143,40 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   }
 
   Future<void> _submit() async {
-    if (_isSubmitting) {
+    if (ref.read(placeFormControllerProvider).isSubmitting) {
       return;
     }
 
     final name = _nameController.text.trim();
-    final notifier = ref.read(placeListProvider.notifier);
     final address = _address?.trim();
+    final input = switch (widget.placeId) {
+      final placeId? => PlaceFormSubmitInput.update(
+        placeId: placeId,
+        name: name,
+        address: address,
+      ),
+      null => PlaceFormSubmitInput.create(name: name, address: address),
+    };
+    final result = await ref
+        .read(placeFormControllerProvider.notifier)
+        .submit(input);
 
-    if (!widget.isEdit &&
-        ref.read(useRemoteApiProvider) &&
-        (address == null || address.isEmpty)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('장소 주소를 입력해 주세요.')));
+    if (!mounted) {
       return;
     }
 
-    await _submitController.submit(
-      () async {
-        if (widget.placeId case final placeId?) {
-          if (ref.read(useRemoteApiProvider)) {
-            if (address == null || address.isEmpty) {
-              throw const _PlaceFormValidationException('장소 주소를 입력해 주세요.');
-            }
-
-            await ref
-                .read(placeRepositoryProvider)
-                .updatePlace(
-                  code: placeId,
-                  request: UpdatePlaceRequest(name: name, address: address),
-                );
-            ref.invalidate(placeDetailProvider(placeId));
-            ref.invalidate(remotePlaceListProvider);
-            ref.invalidate(plantRegistrationPlaceProvider);
-          } else {
-            notifier.updatePlace(id: placeId, name: name, address: _address);
-          }
-
-          if (mounted) {
-            context.go(AppRoutePaths.home);
-          }
-        } else {
-          if (ref.read(useRemoteApiProvider)) {
-            await ref
-                .read(placeRepositoryProvider)
-                .createPlace(CreatePlaceRequest(name: name, address: address!));
-            ref.invalidate(remotePlaceListProvider);
-          }
-
-          if (!mounted) {
-            return;
-          }
-
-          notifier.addPlace(name: name, address: _address);
-          context.push(AppRoutePaths.placeFriendAdd);
-        }
-      },
-      failureMessage: widget.isEdit ? '장소 수정에 실패했어요' : '장소 생성에 실패했어요',
-      failureMessageBuilder: (error) {
-        if (error case _PlaceFormValidationException(:final message)) {
-          return message;
-        }
-
-        return widget.isEdit ? '장소 수정에 실패했어요' : '장소 생성에 실패했어요';
-      },
-    );
-
-    _showSubmitErrorIfNeeded();
+    switch (result?.destination) {
+      case PlaceFormSubmitDestination.home:
+        context.go(AppRoutePaths.home);
+      case PlaceFormSubmitDestination.friendAdd:
+        context.push(AppRoutePaths.placeFriendAdd);
+      case null:
+        _showSubmitErrorIfNeeded();
+    }
   }
 
   void _showSubmitErrorIfNeeded() {
-    final errorMessage = _submitController.state.errorMessage;
+    final errorMessage = ref.read(placeFormControllerProvider).errorMessage;
 
     if (!mounted || errorMessage == null) {
       return;
@@ -238,12 +186,6 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
       context,
     ).showSnackBar(SnackBar(content: Text(errorMessage)));
   }
-}
-
-class _PlaceFormValidationException implements Exception {
-  const _PlaceFormValidationException(this.message);
-
-  final String message;
 }
 
 class _PlaceFormStatusScaffold extends StatelessWidget {
