@@ -65,7 +65,7 @@
 ## GitHub Project 정리 기준
 
 - 이슈 제목은 `[Epic]`, `[Feature]`, `[Task]`, `[Bug]` 중 하나로 시작하고, GitHub Issue Type도 같은 의미로 입력한다.
-- 신규 일반 이슈와 PR은 `ywkim95`, `allmanLee`를 assignees로 지정한다.
+- 신규 일반 이슈와 PR은 `allmanLee`, `ywkim95`, `bbielo`를 assignees로 지정한다.
 - 신규 일반 이슈와 PR은 `v1.0.0 - MVP (핵심 기능 개발)` milestone을 지정한다.
 - Project 10의 category는 도메인 기준으로 `User`, `Place`, `Plant`, `Memo`, `Info`, `Story`, `Calendar` 중 알맞게 지정한다.
 - 작업 중인 이슈는 Project 10 status를 `In Progress`, PR 생성 후 이슈와 PR은 `In Review`, 병합 또는 완료 후에는 `Done`으로 맞춘다.
