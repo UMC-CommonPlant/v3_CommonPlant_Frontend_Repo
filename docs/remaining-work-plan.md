@@ -9,7 +9,7 @@
 - 모든 작업 브랜치는 최신 `develop`에서 생성한다.
 - 한 브랜치는 아래 표의 한 행만 다룬다.
 - 이슈 제목은 `[Task]`, `[Feature]`, `[Bug]` 중 하나로 시작한다.
-- 신규 이슈와 PR은 `ywkim95`, `allmanLee`를 assignee로 지정한다.
+- 신규 이슈와 PR은 `allmanLee`, `ywkim95`, `bbielo`를 assignee로 지정한다.
 - 신규 이슈와 PR은 `v1.0.0 - MVP (핵심 기능 개발)` milestone을 지정한다.
 - Project 10 status는 작업 시작 시 `In Progress`, PR 생성 후 `In Review`, 병합 후 `Done`으로 맞춘다.
 - GitHub 이슈, PR, 코멘트 본문은 실제 줄바꿈 보존을 위해 `--body-file -` 또는 heredoc 입력을 사용한다.
