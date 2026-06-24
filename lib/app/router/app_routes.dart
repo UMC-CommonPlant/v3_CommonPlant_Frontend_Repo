@@ -1,4 +1,6 @@
 import 'package:commonplant_frontend/app/router/app_route_spec.dart';
+import 'package:commonplant_frontend/app/router/route_parameter_error_page.dart';
+import 'package:commonplant_frontend/app/router/route_parameters.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/app/router/route_placeholder_page.dart';
 import 'package:commonplant_frontend/features/home/presentation/home_screen.dart';
@@ -159,39 +161,84 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
     AppRouteNames.placeCreate => const PlaceFormPage(),
     AppRouteNames.addressSearch => const AddressSearchPage(),
     AppRouteNames.placeFriendAdd => const PlaceFriendAddPage(),
-    AppRouteNames.placeEdit => PlaceFormPage(
-      placeId: state.pathParameters['placeId'],
+    AppRouteNames.placeEdit => _buildWithRequiredPathParameter(
+      route: route,
+      state: state,
+      parameterName: 'placeId',
+      builder: (placeId) => PlaceFormPage(placeId: placeId),
     ),
-    AppRouteNames.friendManagement => FriendManagementPage(
-      placeId: state.pathParameters['placeId'] ?? '',
+    AppRouteNames.friendManagement => _buildWithRequiredPathParameter(
+      route: route,
+      state: state,
+      parameterName: 'placeId',
+      builder: (placeId) => FriendManagementPage(placeId: placeId),
     ),
-    AppRouteNames.placeDetail => PlaceDetailPage(
-      placeId: state.pathParameters['placeId'] ?? '',
-      role: placeDetailRoleFromQuery(state.uri.queryParameters['role']),
+    AppRouteNames.placeDetail => _buildWithRequiredPathParameter(
+      route: route,
+      state: state,
+      parameterName: 'placeId',
+      builder: (placeId) => PlaceDetailPage(
+        placeId: placeId,
+        role: placeDetailRoleFromQuery(state.uri.queryParameters['role']),
+      ),
     ),
     AppRouteNames.plantSearch => const PlantSearchPage(),
     AppRouteNames.plantCreateDetails => PlantFormPage(
       initialPlantName: state.uri.queryParameters['name'],
     ),
-    AppRouteNames.plantEdit => PlantFormPage(
-      plantId: state.pathParameters['plantId'],
-      placeId: state.uri.queryParameters['placeId'],
+    AppRouteNames.plantEdit => _buildWithRequiredPathParameter(
+      route: route,
+      state: state,
+      parameterName: 'plantId',
+      builder: (plantId) => PlantFormPage(
+        plantId: plantId,
+        placeId: state.uri.queryParameters['placeId'],
+      ),
     ),
-    AppRouteNames.memoWrite => MemoWritePage(
-      plantId: state.pathParameters['plantId'] ?? '',
+    AppRouteNames.memoWrite => _buildWithRequiredPathParameter(
+      route: route,
+      state: state,
+      parameterName: 'plantId',
+      builder: (plantId) => MemoWritePage(plantId: plantId),
     ),
-    AppRouteNames.memoList => MemoListPage(
-      plantId: state.pathParameters['plantId'] ?? '',
+    AppRouteNames.memoList => _buildWithRequiredPathParameter(
+      route: route,
+      state: state,
+      parameterName: 'plantId',
+      builder: (plantId) => MemoListPage(plantId: plantId),
     ),
-    AppRouteNames.plantDetail => PlantDetailPage(
-      plantId: state.pathParameters['plantId'] ?? '',
-      placeId: state.uri.queryParameters['placeId'],
+    AppRouteNames.plantDetail => _buildWithRequiredPathParameter(
+      route: route,
+      state: state,
+      parameterName: 'plantId',
+      builder: (plantId) => PlantDetailPage(
+        plantId: plantId,
+        placeId: state.uri.queryParameters['placeId'],
+      ),
     ),
     _ => RoutePlaceholderPage(
       route: route,
       pathParameters: state.pathParameters,
     ),
   };
+}
+
+Widget _buildWithRequiredPathParameter({
+  required AppRouteSpec route,
+  required GoRouterState state,
+  required String parameterName,
+  required Widget Function(String value) builder,
+}) {
+  final parameterValue = requiredPathParameter(
+    state.pathParameters,
+    parameterName,
+  );
+
+  if (parameterValue == null) {
+    return RouteParameterErrorPage(route: route, parameterName: parameterName);
+  }
+
+  return builder(parameterValue);
 }
 
 TermsNextDestination _termsNextDestination(GoRouterState state) {
