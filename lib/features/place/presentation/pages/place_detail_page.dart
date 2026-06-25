@@ -9,10 +9,9 @@ import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_exit_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_selection_widgets.dart';
-import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_fab.dart';
@@ -45,32 +44,9 @@ class PlaceDetailPage extends ConsumerStatefulWidget {
 }
 
 class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
-  late final FormSubmitController _exitController;
-
-  bool get _isExiting => _exitController.state.isSubmitting;
-
-  @override
-  void initState() {
-    super.initState();
-    _exitController = FormSubmitController()
-      ..addListener(_handleExitStateChanged);
-  }
-
-  @override
-  void dispose() {
-    _exitController
-      ..removeListener(_handleExitStateChanged)
-      ..dispose();
-    super.dispose();
-  }
-
-  void _handleExitStateChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
   void _showExitDialog(BuildContext context) {
+    final isExiting = ref.read(placeExitControllerProvider).isSubmitting;
+
     showCommonDialog<void>(
       context: context,
       child: CommonDialogCard(
@@ -85,7 +61,7 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
           CommonDialogActionButton.confirm(
             label: '나가기',
             foregroundColor: AppColors.danger,
-            onPressed: _isExiting ? null : () => _confirmExit(context),
+            onPressed: isExiting ? null : () => _confirmExit(context),
           ),
         ],
       ),
@@ -150,29 +126,28 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
   }
 
   Future<void> _exitPlace(BuildContext context) async {
-    if (!ref.read(useRemoteApiProvider)) {
-      return;
-    }
-
-    await _exitController.submit(() async {
-      await ref.read(placeRepositoryProvider).deletePlace(widget.placeId);
-      ref.invalidate(placeDetailProvider(widget.placeId));
-      ref.invalidate(remotePlaceListProvider);
-      ref.invalidate(plantRegistrationPlaceProvider);
-    }, failureMessage: '장소 나가기에 실패했어요');
+    final result = await ref
+        .read(placeExitControllerProvider.notifier)
+        .exit(widget.placeId);
 
     if (!mounted || !context.mounted) {
       return;
     }
 
-    if (_exitController.state.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_exitController.state.errorMessage!)),
-      );
+    if (result?.destination == PlaceExitDestination.home) {
+      context.go(AppRoutePaths.home);
       return;
     }
 
-    context.go(AppRoutePaths.home);
+    final errorMessage = ref.read(placeExitControllerProvider).errorMessage;
+
+    if (errorMessage == null) {
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(errorMessage)));
   }
 
   Widget _buildScaffold(BuildContext context, _PlaceDetailData detail) {
