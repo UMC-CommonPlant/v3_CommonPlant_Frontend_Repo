@@ -9,11 +9,10 @@ import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_delete_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
-import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_edit_delete_popup.dart';
@@ -35,31 +34,6 @@ class PlantDetailPage extends ConsumerStatefulWidget {
 }
 
 class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
-  late final FormSubmitController _deleteController;
-
-  bool get _isDeleting => _deleteController.state.isSubmitting;
-
-  @override
-  void initState() {
-    super.initState();
-    _deleteController = FormSubmitController()
-      ..addListener(_handleDeleteStateChanged);
-  }
-
-  @override
-  void dispose() {
-    _deleteController
-      ..removeListener(_handleDeleteStateChanged)
-      ..dispose();
-    super.dispose();
-  }
-
-  void _handleDeleteStateChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
   void _showPlantMenu(BuildContext context, String? placeCode) {
     showGeneralDialog<void>(
       context: context,
@@ -102,6 +76,8 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
   }
 
   void _showDeleteDialog(BuildContext context, String? placeCode) {
+    final isDeleting = ref.read(plantDeleteControllerProvider).isSubmitting;
+
     showCommonDialog<void>(
       context: context,
       child: CommonDialogCard(
@@ -116,7 +92,7 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
           CommonDialogActionButton.confirm(
             label: '삭제',
             foregroundColor: AppColors.danger,
-            onPressed: _isDeleting
+            onPressed: isDeleting
                 ? null
                 : () => _confirmDelete(context, placeCode),
           ),
@@ -170,40 +146,28 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
   }
 
   Future<void> _deletePlant(BuildContext context, String? placeCode) async {
-    if (!ref.read(useRemoteApiProvider)) {
-      return;
-    }
-
-    final effectivePlaceCode = placeCode?.trim();
-
-    if (effectivePlaceCode == null || effectivePlaceCode.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('장소 정보를 확인할 수 없어요.')));
-      return;
-    }
-
-    await _deleteController.submit(() async {
-      await ref
-          .read(plantRepositoryProvider)
-          .deletePlant(plantId: widget.plantId, placeCode: effectivePlaceCode);
-      ref.invalidate(remotePlantListProvider);
-      ref.invalidate(remotePlantDetailProvider(widget.plantId));
-      ref.invalidate(remotePlantEditInfoProvider(widget.plantId));
-    }, failureMessage: '식물 삭제에 실패했어요');
+    final result = await ref
+        .read(plantDeleteControllerProvider.notifier)
+        .delete(plantId: widget.plantId, placeCode: placeCode);
 
     if (!mounted || !context.mounted) {
       return;
     }
 
-    if (_deleteController.state.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_deleteController.state.errorMessage!)),
-      );
+    if (result?.destination == PlantDeleteDestination.home) {
+      context.go(AppRoutePaths.home);
       return;
     }
 
-    context.go(AppRoutePaths.home);
+    final errorMessage = ref.read(plantDeleteControllerProvider).errorMessage;
+
+    if (errorMessage == null) {
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(errorMessage)));
   }
 
   Widget _buildScaffold(BuildContext context, _PlantDetailData detail) {
