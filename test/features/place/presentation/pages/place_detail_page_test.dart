@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
 import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_detail_page.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';

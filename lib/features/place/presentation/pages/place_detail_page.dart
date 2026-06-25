@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
-import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/presentation/fixtures/place_detail_fixture.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_exit_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_widgets.dart';
@@ -18,16 +19,6 @@ import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-enum PlaceDetailRole { leader, member }
-
-PlaceDetailRole? placeDetailRoleFromQuery(String? value) {
-  return switch (value) {
-    'leader' => PlaceDetailRole.leader,
-    'member' || 'team' => PlaceDetailRole.member,
-    _ => null,
-  };
-}
 
 class PlaceDetailPage extends ConsumerStatefulWidget {
   const PlaceDetailPage({super.key, required this.placeId, this.role});
@@ -66,7 +57,7 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final mockDetail = _PlaceDetailData.mock(widget.placeId, role: widget.role);
+    final mockDetail = placeDetailFixture(widget.placeId, role: widget.role);
 
     if (!ref.watch(useRemoteApiProvider)) {
       return _buildScaffold(context, mockDetail);
@@ -146,7 +137,7 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
     ).showSnackBar(SnackBar(content: Text(errorMessage)));
   }
 
-  Widget _buildScaffold(BuildContext context, _PlaceDetailData detail) {
+  Widget _buildScaffold(BuildContext context, PlaceDetailFixtureData detail) {
     return CommonScaffold(
       title: 'My place',
       navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
@@ -284,108 +275,5 @@ class _PlaceDetailStatusView extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _PlaceDetailData {
-  const _PlaceDetailData({
-    required this.role,
-    required this.name,
-    required this.address,
-    required this.sunlightLabel,
-    required this.humidityLabel,
-    required this.friends,
-    required this.plants,
-  });
-
-  final PlaceDetailRole role;
-  final String name;
-  final String address;
-  final String sunlightLabel;
-  final String humidityLabel;
-  final List<PlaceDetailFriendItem> friends;
-  final List<PlaceDetailPlantItem> plants;
-
-  _PlaceDetailData applySummary(PlaceSummary summary) {
-    return _PlaceDetailData(
-      role: role,
-      name: summary.name,
-      address: summary.address ?? address,
-      sunlightLabel: sunlightLabel,
-      humidityLabel: humidityLabel,
-      friends: friends,
-      plants: plants,
-    );
-  }
-
-  static _PlaceDetailData mock(String placeId, {PlaceDetailRole? role}) {
-    final effectiveRole = role ?? _roleFromPlaceId(placeId);
-
-    return _PlaceDetailData(
-      role: effectiveRole,
-      name: '스윗 홈_거실',
-      address: '서울시 노원구 광운로 20',
-      sunlightLabel: '9.3 / 5',
-      humidityLabel: '69%',
-      friends: const [
-        PlaceDetailFriendItem(
-          id: 'me',
-          name: '나',
-          imageAsset: AppImageAssets.placeDetailAvatarMe,
-          isOwner: true,
-        ),
-        PlaceDetailFriendItem(
-          id: 'common-mom',
-          name: '커먼맘',
-          imageAsset: AppImageAssets.placeDetailAvatarCommonMom,
-        ),
-        PlaceDetailFriendItem(id: 'common-papa', name: '커먼 파파'),
-      ],
-      plants: const [
-        PlaceDetailPlantItem(
-          id: 'plant-1',
-          name: '몬테',
-          species: '몬스테라',
-          description: '일주일에 x번 물주는 거 잊지 않기',
-          dDayLabel: 'D-3',
-          dateLabel: '2022.11.20',
-          canWater: true,
-        ),
-        PlaceDetailPlantItem(
-          id: 'plant-2',
-          name: '몬테',
-          species: '몬스테라',
-          description: '일주일에 x번 물주는 거 잊지 않기',
-          dDayLabel: 'D-5',
-          dateLabel: '2022.11.20',
-        ),
-        PlaceDetailPlantItem(
-          id: 'plant-3',
-          name: '몬테',
-          species: '몬스테라',
-          description: '일주일에 x번 물주는 거 잊지 않기',
-          dDayLabel: 'D-5',
-          dateLabel: '2022.11.20',
-        ),
-        PlaceDetailPlantItem(
-          id: 'plant-4',
-          name: '몬테',
-          species: '몬스테라',
-          description: '일주일에 x번 물주는 거 잊지 않기',
-          dDayLabel: 'D-5',
-          dateLabel: '2022.11.20',
-        ),
-      ],
-    );
-  }
-
-  static PlaceDetailRole _roleFromPlaceId(String placeId) {
-    final normalized = placeId.toLowerCase();
-
-    if (normalized.contains('member') || normalized.contains('team')) {
-      return PlaceDetailRole.member;
-    }
-
-    return PlaceDetailRole.leader;
   }
 }

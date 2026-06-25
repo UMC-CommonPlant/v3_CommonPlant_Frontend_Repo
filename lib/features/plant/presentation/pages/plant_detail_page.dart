@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
-import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
+import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_detail_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_delete_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_widgets.dart';
@@ -101,7 +101,7 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final mockDetail = _PlantDetailData.mock(placeCode: widget.placeId);
+    final mockDetail = plantDetailFixture(placeCode: widget.placeId);
 
     if (!ref.watch(useRemoteApiProvider)) {
       return _buildScaffold(context, mockDetail);
@@ -168,7 +168,7 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
     ).showSnackBar(SnackBar(content: Text(errorMessage)));
   }
 
-  Widget _buildScaffold(BuildContext context, _PlantDetailData detail) {
+  Widget _buildScaffold(BuildContext context, PlantDetailFixtureData detail) {
     return CommonScaffold(
       title: 'My plant',
       navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
@@ -209,88 +209,6 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
 
   bool _isEmptyRemoteDetail(PlantDetail detail) {
     return detail.name.trim().isEmpty;
-  }
-}
-
-class _PlantDetailData {
-  const _PlantDetailData({
-    required this.placeCode,
-    required this.placeName,
-    required this.name,
-    required this.species,
-    required this.daysTogether,
-    required this.dDayLabel,
-    required this.startDate,
-    required this.lastWateredDate,
-    required this.wateringCycleLabel,
-    required this.memos,
-  });
-
-  final String? placeCode;
-  final String placeName;
-  final String name;
-  final String species;
-  final int daysTogether;
-  final String dDayLabel;
-  final String startDate;
-  final String lastWateredDate;
-  final String wateringCycleLabel;
-  final List<PlantDetailMemoItem> memos;
-
-  _PlantDetailData applyRemote(PlantDetail detail) {
-    return _PlantDetailData(
-      placeCode: detail.placeId ?? placeCode,
-      placeName: detail.placeName ?? placeName,
-      name: detail.name,
-      species: detail.species ?? species,
-      daysTogether: daysTogether,
-      dDayLabel: dDayLabel,
-      startDate: startDate,
-      lastWateredDate: detail.lastWateredDate ?? lastWateredDate,
-      wateringCycleLabel: wateringCycleLabel,
-      memos: memos,
-    );
-  }
-
-  static _PlantDetailData mock({String? placeCode}) {
-    return _PlantDetailData(
-      placeCode: placeCode,
-      placeName: '스윗홈_거실',
-      name: '몬테',
-      species: 'Monstera deliciosa',
-      daysTogether: 1,
-      dDayLabel: 'D-3',
-      startDate: '2022.11.24',
-      lastWateredDate: '2022.11.24',
-      wateringCycleLabel: '10 Day',
-      memos: const [
-        PlantDetailMemoItem(
-          author: '커먼플랜트',
-          content: '장마여서 물주는 날짜를 조금 늦춤 하지만 해는 맑구나 몬테랑 함께...',
-          dateLabel: '2022.11.20',
-          avatarAsset: AppImageAssets.placeDetailAvatarMe,
-          thumbnailAsset: AppImageAssets.placeDetailMonstera,
-        ),
-        PlantDetailMemoItem(
-          author: '커먼맘',
-          content: '오늘은 잎이 조금 시들하구나 커먼아 해결책은?',
-          dateLabel: '2022.11.20',
-          avatarAsset: AppImageAssets.placeDetailAvatarCommonMom,
-        ),
-        PlantDetailMemoItem(
-          author: '커먼맘',
-          content: '오늘은 잎의 상태가 매우 좋다 커먼아 앱에서 알려준 물주기의 주기...',
-          dateLabel: '2022.11.20',
-          avatarAsset: AppImageAssets.placeDetailAvatarCommonMom,
-          thumbnailAsset: AppImageAssets.plantEditMonstera,
-        ),
-        PlantDetailMemoItem(
-          author: '커먼 파파',
-          content: '오늘도 맑음',
-          dateLabel: '2022.11.20',
-        ),
-      ],
-    );
   }
 }
 
