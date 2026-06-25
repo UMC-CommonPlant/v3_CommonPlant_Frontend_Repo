@@ -125,6 +125,31 @@ lib/features/login/
 - 라우터는 인증 Provider의 결과만 보고 redirect하며, storage에 직접 접근하지 않습니다.
 - refresh 실패 또는 로그아웃 시 인증 상태를 unauthenticated로 전환합니다.
 
+### Auth state Provider 설계
+
+인증 상태는 token 문자열 자체보다 앱이 판단해야 하는 route 상태를 중심으로 표현합니다.
+
+| 상태 | 의미 | 라우터 처리 |
+| --- | --- | --- |
+| `checking` | 앱 시작 시 secure storage 또는 세션 복원 확인 중 | 현재 location 유지 |
+| `unauthenticated` | 유효한 로그인 세션이 없음 | 인증 필요 route를 `/login`으로 redirect |
+| `signupRequired` | 로그인은 성공했지만 신규 유저 프로필 설정이 필요함 | `profileSetup`, `terms` 외 route를 `/profile/setup`으로 redirect |
+| `authenticated` | 홈과 도메인 화면에 접근 가능한 세션 | 공개/회원가입 route 진입 시 `/` 또는 보존된 target으로 redirect |
+
+Provider 책임은 아래처럼 나눕니다.
+
+| 대상 | 책임 |
+| --- | --- |
+| `AuthTokenStore` | access token, refresh token의 저장/읽기/삭제만 담당합니다. UI나 라우터 상태를 알지 않습니다. |
+| `AuthInterceptor` | 요청 직전 access token을 `Authorization: Bearer ...` header에 첨부합니다. redirect를 직접 수행하지 않습니다. |
+| `authStateProvider` | token store와 로그인/회원가입 결과를 바탕으로 앱 인증 상태를 노출합니다. |
+| 로그인/회원가입 Controller | repository 호출, token 저장, `signupRequired` 또는 `authenticated` 전환을 담당합니다. |
+| 로그아웃 Controller | 로컬 token clear 후 `unauthenticated`로 전환합니다. 서버 로그아웃 API는 `TOKEN-02` 답변 후 추가합니다. |
+
+`authStateProvider`는 테스트에서 override할 수 있어야 하며, router test는 `unauthenticated`, `signupRequired`, `authenticated` 상태별 redirect를 직접 검증합니다.
+
+`TOKEN-01` refresh API가 확정되기 전까지 access token 만료 자동 복구는 구현하지 않습니다. 401 응답을 받은 뒤 token을 갱신하는 interceptor 재시도 정책은 백엔드 endpoint와 error code가 확정된 뒤 별도 이슈에서 다룹니다.
+
 ## Provider 네이밍
 
 | 대상 | 예시 |

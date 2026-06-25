@@ -108,13 +108,42 @@ lib/app/router/
 
 인증 기능이 들어오면 아래 방향으로 확장합니다.
 
-1. 인증 상태 Provider를 `app_routerProvider`에서 watch합니다.
-2. 로그인 전 접근 가능한 route와 로그인 후 route를 `/login`, `/` 기준으로 분리합니다.
-3. 인증 토큰은 `flutter_secure_storage` 기반 저장소를 통해 관리합니다.
-4. access token 만료, refresh 실패, 로그아웃은 라우터 redirect에서 `/login`으로 이동시킵니다.
+1. 인증 상태 Provider를 `appRouterProvider`에서 watch합니다.
+2. 로그인 전 접근 가능한 route, 회원가입 진행 route, 로그인 후 route를 route policy로 분리합니다.
+3. 인증 토큰은 `flutter_secure_storage` 기반 저장소를 통해 관리하되, 라우터는 token storage에 직접 접근하지 않고 인증 Provider의 상태만 봅니다.
+4. access token 만료, refresh 실패, 로그아웃은 인증 Provider 상태를 `unauthenticated`로 바꾸고, 라우터 redirect에서 `/login`으로 이동시킵니다.
 5. 로그인 성공 후에는 사용자가 원래 접근하려던 위치로 복귀할 수 있도록 redirect target을 보존합니다.
 
 인증 판단을 개별 화면의 `initState`나 `build`에서 처리하지 않습니다.
+
+### Auth redirect Provider 설계
+
+현재 `appRouterProvider`는 `createAppRouter()`만 반환하며 인증 상태를 watch하지 않습니다. 인증 redirect 구현 PR에서는 아래 파일 경계를 목표로 둡니다.
+
+| 파일 | 역할 |
+| --- | --- |
+| `features/login/presentation/providers/auth_state_provider.dart` | 앱 전역 인증 상태를 `checking`, `unauthenticated`, `signupRequired`, `authenticated`처럼 표현합니다. |
+| `app/router/route_access_policy.dart` | route name별 접근 정책을 공개, 회원가입 진행, 인증 필요로 분류합니다. |
+| `app/router/redirect_notifier.dart` | 인증 Provider 변경을 `GoRouter.refreshListenable`로 연결합니다. |
+| `app/router/app_router.dart` | 인증 상태와 현재 location을 기준으로 redirect target을 계산합니다. |
+
+라우터 redirect는 아래 순서를 따릅니다.
+
+1. 인증 상태가 `checking`이면 현재 위치를 유지합니다.
+2. 공개 route는 인증 여부와 관계없이 진입을 허용합니다.
+3. `signupRequired` 상태에서는 `profileSetup`, `terms` route만 허용하고 그 외 route는 `/profile/setup`으로 보냅니다.
+4. `unauthenticated` 상태에서 공개 route가 아닌 route에 접근하면 `/login`으로 보내며, 원래 location은 redirect target으로 보존합니다.
+5. `authenticated` 상태에서 공개 route나 회원가입 진행 route에 접근하면 보존된 redirect target 또는 `/`로 보냅니다.
+
+초기 route policy는 아래처럼 둡니다.
+
+| 정책 | Route name |
+| --- | --- |
+| 공개 route | `onboarding`, `login` |
+| 회원가입 진행 route | `profileSetup`, `terms` |
+| 인증 필요 route | `home`, `placeInvitations`, `placeCreate`, `addressSearch`, `placeFriendAdd`, `placeEdit`, `placeDetail`, `friendManagement`, `plantSearch`, `plantCreateDetails`, `plantEdit`, `plantDetail`, `memoWrite`, `memoList` |
+
+`TOKEN-01`, `TOKEN-02`가 답변되기 전까지 refresh token 재발급과 서버 로그아웃 invalidation은 redirect 구현 범위에 넣지 않습니다. 그 전에는 토큰이 없거나 명시적으로 clear된 경우만 `unauthenticated`로 전환합니다.
 
 ## 화면 이동 기준
 
