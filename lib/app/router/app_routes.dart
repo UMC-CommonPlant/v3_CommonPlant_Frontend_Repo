@@ -9,6 +9,7 @@ import 'package:commonplant_frontend/features/login/presentation/pages/profile_s
 import 'package:commonplant_frontend/features/memo/presentation/pages/memo_list_page.dart';
 import 'package:commonplant_frontend/features/memo/presentation/pages/memo_write_page.dart';
 import 'package:commonplant_frontend/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/address_search_page.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/friend_management_page.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_detail_page.dart';
