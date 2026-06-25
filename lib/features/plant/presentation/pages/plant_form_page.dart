@@ -8,12 +8,10 @@ import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
-import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
-import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
-import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_card.dart';
@@ -47,12 +45,9 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
 
   late final TextEditingController _nameController;
   late final String _selectedPlantName;
-  late final FormSubmitController _submitController;
   String? _selectedPlaceId;
   String _initialEditPlantName = _defaultEditPlantName;
   bool _hasAppliedRemoteEditInfo = false;
-
-  bool get _isSubmitting => _submitController.state.isSubmitting;
 
   static const List<_PlantRegistrationPlace> _places = [
     _PlantRegistrationPlace(
@@ -84,24 +79,13 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     _nameController = TextEditingController(
       text: widget.isEdit ? _defaultEditPlantName : '',
     );
-    _submitController = FormSubmitController()
-      ..addListener(_handleSubmitStateChanged);
     _selectedPlaceId = widget.isEdit ? null : _places.first.id;
   }
 
   @override
   void dispose() {
-    _submitController
-      ..removeListener(_handleSubmitStateChanged)
-      ..dispose();
     _nameController.dispose();
     super.dispose();
-  }
-
-  void _handleSubmitStateChanged() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   @override
@@ -114,6 +98,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     final registrationPlaces = _registrationPlacesFromSummaries(
       remotePlaces.value ?? const [],
     );
+    final isSubmitting = ref.watch(plantFormControllerProvider).isSubmitting;
     final places = registrationPlaces.isEmpty ? _places : registrationPlaces;
     final selectedPlaceId = _effectiveSelectedPlaceId(places);
 
@@ -121,7 +106,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
       places: places,
       selectedPlaceId: selectedPlaceId,
       wateringDate: '2023. 01. 30',
-      isSubmitting: _isSubmitting,
+      isSubmitting: isSubmitting,
       onPlaceSelected: (place) => setState(() => _selectedPlaceId = place.id),
       onCancel: _cancelCreate,
       onSubmit: () => _submitCreate(),
@@ -167,16 +152,17 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   }
 
   Widget _buildEditScaffold() {
+    final isSubmitting = ref.watch(plantFormControllerProvider).isSubmitting;
     final trimmedName = _nameController.text.trim();
     final canSubmit =
         trimmedName.isNotEmpty &&
         trimmedName != _initialEditPlantName &&
-        !_isSubmitting;
+        !isSubmitting;
 
     return _PlantEditScaffold(
       nameController: _nameController,
       canSubmit: canSubmit,
-      isSubmitting: _isSubmitting,
+      isSubmitting: isSubmitting,
       onChanged: (_) => setState(() {}),
       onSubmit: () => _submitEdit(),
     );
@@ -252,7 +238,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   }
 
   Future<void> _submitCreate() async {
-    if (_isSubmitting) {
+    if (ref.read(plantFormControllerProvider).isSubmitting) {
       return;
     }
 
@@ -262,76 +248,64 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
       return;
     }
 
-    await _submitController.submit(() async {
-      if (ref.read(useRemoteApiProvider)) {
-        await ref
-            .read(plantRepositoryProvider)
-            .createPlant(
-              CreatePlantRequest(
-                placeCode: selectedPlace.id,
-                nickname: _selectedPlantName,
-                scientificNameKo: _selectedPlantName,
-              ),
-            );
-        ref.invalidate(remotePlantListProvider);
-      }
-
-      if (!mounted) {
-        return;
-      }
-
-      ref
-          .read(plantListProvider.notifier)
-          .addPlant(
-            name: _selectedPlantName,
+    final result = await ref
+        .read(plantFormControllerProvider.notifier)
+        .submit(
+          PlantFormSubmitInput.create(
+            plantName: _selectedPlantName,
             placeId: selectedPlace.id,
             placeName: selectedPlace.name,
-          );
+          ),
+        );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (result?.destination == PlantFormSubmitDestination.home) {
       context.go(AppRoutePaths.home);
-    }, failureMessage: '식물 등록에 실패했어요');
+      return;
+    }
 
     _showSubmitErrorIfNeeded();
   }
 
   Future<void> _submitEdit() async {
-    if (_isSubmitting) {
+    if (ref.read(plantFormControllerProvider).isSubmitting) {
       return;
     }
 
     final name = _nameController.text.trim();
+    final result = await ref
+        .read(plantFormControllerProvider.notifier)
+        .submit(
+          PlantFormSubmitInput.update(
+            plantId: widget.plantId!,
+            plantName: name,
+            placeId: widget.placeId,
+          ),
+        );
 
-    await _submitController.submit(() async {
-      if (ref.read(useRemoteApiProvider) && widget.placeId != null) {
-        await ref
-            .read(plantRepositoryProvider)
-            .updatePlant(
-              plantId: widget.plantId!,
-              placeCode: widget.placeId!,
-              request: UpdatePlantRequest(nickname: name),
-            );
-        ref.invalidate(remotePlantListProvider);
-      }
+    if (!mounted) {
+      return;
+    }
 
-      if (!mounted) {
-        return;
-      }
-
-      ref
-          .read(plantListProvider.notifier)
-          .updatePlant(id: widget.plantId!, name: name);
+    if (result?.destination == PlantFormSubmitDestination.plantDetail &&
+        result?.plantId != null) {
       context.go(
         AppRoutePaths.plantDetailLocation(
-          widget.plantId!,
-          placeId: widget.placeId,
+          result!.plantId!,
+          placeId: result.placeId,
         ),
       );
-    }, failureMessage: '식물 수정에 실패했어요');
+      return;
+    }
 
     _showSubmitErrorIfNeeded();
   }
 
   void _showSubmitErrorIfNeeded() {
-    final errorMessage = _submitController.state.errorMessage;
+    final errorMessage = ref.read(plantFormControllerProvider).errorMessage;
 
     if (!mounted || errorMessage == null) {
       return;
