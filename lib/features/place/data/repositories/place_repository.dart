@@ -2,6 +2,7 @@ import 'package:commonplant_frontend/core/network/api_client.dart';
 import 'package:commonplant_frontend/core/network/api_response_parser.dart';
 import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
 import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
+import 'package:commonplant_frontend/features/place/data/mappers/place_mapper.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,20 +60,4 @@ class PlaceRepository {
   Future<void> deletePlace(String code) {
     return _remoteDataSource.deletePlace(code);
   }
-}
-
-PlaceSummary placeSummaryFromJson(JsonMap json, {String? fallbackId}) {
-  return PlaceSummary(
-    id:
-        readOptionalString(json, const [
-          'id',
-          'placeId',
-          'code',
-          'placeCode',
-        ]) ??
-        fallbackId ??
-        readRequiredString(json, const ['nanoId'], '장소 ID'),
-    name: readRequiredString(json, const ['name', 'placeName'], '장소 이름'),
-    address: readOptionalString(json, const ['address', 'placeAddress']),
-  );
 }
