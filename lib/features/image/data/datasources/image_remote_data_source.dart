@@ -19,31 +19,27 @@ class ImageRemoteDataSource {
     }
   }
 
-  Future<Object?> uploadImages(List<MultipartFile> images) async {
+  Future<void> uploadImages(List<MultipartFile> images) async {
     try {
-      final response = await _dio.post<Object?>(
+      await _dio.post<Object?>(
         '/s3/images',
         data: FormData.fromMap({'images': images}),
       );
-
-      return response.data;
     } on DioException catch (error) {
       throw ApiException.fromDio(error);
     }
   }
 
-  Future<Object?> updateImage({
+  Future<void> updateImage({
     required String key,
     required MultipartFile image,
   }) async {
     try {
-      final response = await _dio.put<Object?>(
+      await _dio.put<Object?>(
         '/s3/images',
         queryParameters: {'key': key},
         data: FormData.fromMap({'image': image}),
       );
-
-      return response.data;
     } on DioException catch (error) {
       throw ApiException.fromDio(error);
     }

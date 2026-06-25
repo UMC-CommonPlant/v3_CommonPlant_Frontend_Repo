@@ -20,11 +20,11 @@ class ImageRepository {
     return _remoteDataSource.getDownloadUrl(key);
   }
 
-  Future<Object?> uploadImages(List<MultipartFile> images) {
+  Future<void> uploadImages(List<MultipartFile> images) {
     return _remoteDataSource.uploadImages(images);
   }
 
-  Future<Object?> updateImage({
+  Future<void> updateImage({
     required String key,
     required MultipartFile image,
   }) {
