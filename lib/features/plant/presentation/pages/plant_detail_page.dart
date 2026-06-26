@@ -2,15 +2,13 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
-import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_detail_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_delete_controller.dart';
-import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_view_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_widgets.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
@@ -101,17 +99,12 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final mockDetail = plantDetailFixture(placeCode: widget.placeId);
+    final request = (plantId: widget.plantId, placeCode: widget.placeId);
+    final detailState = ref.watch(plantDetailViewProvider(request));
 
-    if (!ref.watch(useRemoteApiProvider)) {
-      return _buildScaffold(context, mockDetail);
-    }
-
-    final remoteDetail = ref.watch(remotePlantDetailProvider(widget.plantId));
-
-    return remoteDetail.when(
+    return detailState.when(
       data: (detail) {
-        if (_isEmptyRemoteDetail(detail)) {
+        if (detail == null) {
           return const PlantStateScaffold(
             title: 'My plant',
             statusTitle: '식물 정보를 찾을 수 없어요',
@@ -119,15 +112,14 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
           );
         }
 
-        return _buildScaffold(context, mockDetail.applyRemote(detail));
+        return _buildScaffold(context, detail);
       },
       error: (error, stackTrace) => PlantStateScaffold(
         title: 'My plant',
         statusTitle: '식물 정보를 불러오지 못했어요',
         message: '잠시 후 다시 시도해 주세요',
         actionLabel: '다시 시도',
-        onAction: () =>
-            ref.invalidate(remotePlantDetailProvider(widget.plantId)),
+        onAction: () => invalidatePlantDetailView(ref, request),
       ),
       loading: () => const PlantStateScaffold(
         title: 'My plant',
@@ -205,10 +197,6 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
         ),
       ),
     );
-  }
-
-  bool _isEmptyRemoteDetail(PlantDetail detail) {
-    return detail.name.trim().isEmpty;
   }
 }
 
