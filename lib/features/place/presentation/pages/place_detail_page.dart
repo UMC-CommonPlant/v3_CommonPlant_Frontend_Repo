@@ -2,15 +2,14 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
-import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/place_detail_fixture.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_view_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_exit_controller.dart';
-import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_widgets.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
@@ -57,17 +56,12 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final mockDetail = placeDetailFixture(widget.placeId, role: widget.role);
+    final request = (placeId: widget.placeId, role: widget.role);
+    final detailState = ref.watch(placeDetailViewProvider(request));
 
-    if (!ref.watch(useRemoteApiProvider)) {
-      return _buildScaffold(context, mockDetail);
-    }
-
-    final remoteDetail = ref.watch(placeDetailProvider(widget.placeId));
-
-    return remoteDetail.when(
-      data: (summary) {
-        if (_isEmptyRemoteSummary(summary)) {
+    return detailState.when(
+      data: (detail) {
+        if (detail == null) {
           return _buildStatusScaffold(
             context,
             const _PlaceDetailStatusView(
@@ -79,7 +73,7 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
           );
         }
 
-        return _buildScaffold(context, mockDetail.applySummary(summary));
+        return _buildScaffold(context, detail);
       },
       error: (error, stackTrace) {
         return _buildStatusScaffold(
@@ -90,7 +84,7 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
             message: '잠시 후 다시 시도해 주세요',
             semanticsLabel: '장소 정보 오류',
             actionLabel: '다시 시도',
-            onAction: () => ref.invalidate(placeDetailProvider(widget.placeId)),
+            onAction: () => invalidatePlaceDetailView(ref, request),
           ),
         );
       },
@@ -192,10 +186,6 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
         ),
       ),
     );
-  }
-
-  bool _isEmptyRemoteSummary(PlaceSummary summary) {
-    return summary.name.trim().isEmpty;
   }
 }
 
