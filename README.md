@@ -188,16 +188,15 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 
 ## 진행해야 할 작업 내역
 
-남은 작업은 한 번에 묶지 않고 `이슈 생성 -> Project 10 등록 -> develop 기반 브랜치 생성 -> 작업 -> 검증 -> 커밋/푸시 -> PR 생성` 순서로 하나씩 진행합니다.
-세부 순서와 이슈/브랜치 단위는 [남은 작업 진행 계획](docs/remaining-work-plan.md)을 기준으로 관리합니다.
-계획된 작업 완료 후 새 이슈로 분리할 결정/확인 항목은 [후속 결정 체크리스트](docs/follow-up-decision-checklist.md)에서 관리합니다.
+기존 [남은 작업 진행 계획](docs/remaining-work-plan.md)의 0~15번 항목은 2026-06-28 기준 모두 완료되었습니다.
+완료된 항목은 작업 기록 보존용으로 남기고, 이후 새 작업은 아래 기준으로 범위를 다시 정합니다.
+
+- 후속 결정/확인 항목은 [후속 결정 체크리스트](docs/follow-up-decision-checklist.md)를 기준으로 새 이슈로 분리합니다.
+- 구조 개선 후보는 [lib 구조 리팩토링 개선 방향](docs/lib-refactoring-direction.md)의 남은 진단 항목을 기준으로 재평가합니다.
+- 새 작업도 `이슈 생성 -> Project 10 등록 -> develop 기반 브랜치 생성 -> 작업 -> 검증 -> 커밋/푸시 -> PR 생성` 순서로 진행합니다.
 
 우선순위:
 
-1. [ ] Figma frame map의 `확인 필요` node-id를 최신화합니다.
-2. [ ] 프로필 설정, 식물 검색, 메모 화면처럼 백엔드와 무관한 프론트 UX를 보강합니다.
-3. [ ] 장소/식물 상세 화면의 mock fallback과 loading/empty/error 상태를 정리합니다.
-4. [ ] 공통 form submit/loading/error 패턴을 재사용 가능한 형태로 정리합니다.
-5. [ ] User, Place, Plant, Image API 계층을 화면 Provider/Controller에 단계적으로 연결합니다.
-6. [ ] 백엔드 확인 필요 항목을 별도 이슈로 분리하고 Swagger 문서를 갱신합니다.
-7. [ ] Golden test, integration test, release/signing 정책처럼 아직 결정되지 않은 품질/배포 항목을 확정합니다.
+1. [x] 기존 남은 작업 계획 0~15번 완료 상태를 확인합니다.
+2. [ ] 다음 리팩토링/기능 라운드의 상위 범위를 새 이슈 또는 Epic으로 재정의합니다.
+3. [ ] 백엔드 확인, 테스트, 릴리즈처럼 결정이 필요한 항목을 개별 이슈로 분리합니다.
