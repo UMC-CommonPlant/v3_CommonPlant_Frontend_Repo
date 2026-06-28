@@ -1,16 +1,14 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
-import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
-import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_controller.dart';
-import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_edit_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
@@ -41,13 +39,11 @@ class PlantFormPage extends ConsumerStatefulWidget {
 }
 
 class _PlantFormPageState extends ConsumerState<PlantFormPage> {
-  static const String _defaultEditPlantName = '몬테';
-
   late final TextEditingController _nameController;
   late final String _selectedPlantName;
   String? _selectedPlaceId;
-  String _initialEditPlantName = _defaultEditPlantName;
-  bool _hasAppliedRemoteEditInfo = false;
+  String _initialEditPlantName = plantFormDefaultEditName;
+  bool _hasAppliedEditInfo = false;
 
   static const List<_PlantRegistrationPlace> _places = [
     _PlantRegistrationPlace(
@@ -77,7 +73,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     super.initState();
     _selectedPlantName = _normalizedInitialPlantName();
     _nameController = TextEditingController(
-      text: widget.isEdit ? _defaultEditPlantName : '',
+      text: widget.isEdit ? plantFormDefaultEditName : '',
     );
     _selectedPlaceId = widget.isEdit ? null : _places.first.id;
   }
@@ -114,16 +110,12 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   }
 
   Widget _buildEditMode() {
-    if (!ref.watch(useRemoteApiProvider)) {
-      return _buildEditScaffold();
-    }
-
     final plantId = widget.plantId!;
-    final editInfo = ref.watch(remotePlantEditInfoProvider(plantId));
+    final editInfo = ref.watch(plantFormEditInfoProvider(plantId));
 
     return editInfo.when(
       data: (info) {
-        if (_isEmptyRemoteEditInfo(info)) {
+        if (info == null) {
           return const PlantStateScaffold(
             title: '식물 수정',
             statusTitle: '식물 수정 정보를 찾을 수 없어요',
@@ -131,7 +123,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
           );
         }
 
-        _applyRemoteEditInfo(info);
+        _applyEditInfo(info);
 
         return _buildEditScaffold();
       },
@@ -140,7 +132,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
         statusTitle: '식물 수정 정보를 불러오지 못했어요',
         message: '잠시 후 다시 시도해 주세요',
         actionLabel: '다시 시도',
-        onAction: () => ref.invalidate(remotePlantEditInfoProvider(plantId)),
+        onAction: () => invalidatePlantFormEditInfo(ref, plantId),
       ),
       loading: () => const PlantStateScaffold(
         title: '식물 수정',
@@ -168,8 +160,8 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     );
   }
 
-  void _applyRemoteEditInfo(PlantEditInfo info) {
-    if (_hasAppliedRemoteEditInfo) {
+  void _applyEditInfo(PlantEditInfo info) {
+    if (_hasAppliedEditInfo) {
       return;
     }
 
@@ -178,11 +170,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     _initialEditPlantName = name;
     _nameController.text = name;
     _nameController.selection = TextSelection.collapsed(offset: name.length);
-    _hasAppliedRemoteEditInfo = true;
-  }
-
-  bool _isEmptyRemoteEditInfo(PlantEditInfo info) {
-    return info.name.trim().isEmpty;
+    _hasAppliedEditInfo = true;
   }
 
   String _normalizedInitialPlantName() {
