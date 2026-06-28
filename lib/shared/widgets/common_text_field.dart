@@ -118,37 +118,6 @@ class _CommonTextFieldState extends State<CommonTextField> {
     }
   }
 
-  bool _isEnabled(CommonTextFieldState state) {
-    return widget.enabled && state != CommonTextFieldState.disabled;
-  }
-
-  Color _lineColor(CommonTextFieldState state) {
-    switch (state) {
-      case CommonTextFieldState.error:
-        return AppColors.danger;
-      case CommonTextFieldState.success:
-        return AppColors.brandStrong;
-      case CommonTextFieldState.disabled:
-        return AppColors.textDisabled;
-      case CommonTextFieldState.normal:
-        return _usesFocusedDecoration
-            ? AppColors.textHeadline
-            : AppColors.textDisabled;
-    }
-  }
-
-  Color _helperColor(CommonTextFieldState state) {
-    switch (state) {
-      case CommonTextFieldState.error:
-        return AppColors.danger;
-      case CommonTextFieldState.success:
-        return AppColors.brandStrong;
-      case CommonTextFieldState.disabled:
-      case CommonTextFieldState.normal:
-        return AppColors.textBody;
-    }
-  }
-
   void _clearText() {
     _controller.clear();
     widget.onChanged?.call('');
@@ -193,35 +162,32 @@ class _CommonTextFieldState extends State<CommonTextField> {
   @override
   Widget build(BuildContext context) {
     final validation = _validation;
+    final fieldStyle = _CommonTextFieldStyle.resolve(
+      state: validation.state,
+      enabled: widget.enabled,
+      usesFocusedDecoration: _usesFocusedDecoration,
+    );
     final trailing = _buildTrailing();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: _lineColor(validation.state)),
-            ),
-          ),
+          decoration: fieldStyle.decoration,
           child: Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _controller,
                   focusNode: _focusNode,
-                  enabled: _isEnabled(validation.state),
+                  enabled: fieldStyle.enabled,
                   onChanged: widget.onChanged,
                   maxLength: widget.maxLength,
                   keyboardType: widget.keyboardType,
-                  style: AppTextStyles.size18Medium.copyWith(
-                    color: AppColors.textHeadline,
-                  ),
+                  style: fieldStyle.inputTextStyle,
                   decoration: InputDecoration(
                     hintText: widget.hintText,
-                    hintStyle: AppTextStyles.size18Medium.copyWith(
-                      color: AppColors.textDisabled,
-                    ),
+                    hintStyle: fieldStyle.hintTextStyle,
                     counterText: '',
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -240,15 +206,65 @@ class _CommonTextFieldState extends State<CommonTextField> {
         ),
         if (validation.helperText != null) ...[
           const SizedBox(height: AppSpacing.x8),
-          Text(
-            validation.helperText!,
-            style: AppTextStyles.size12Medium.copyWith(
-              color: _helperColor(validation.state),
-            ),
-          ),
+          Text(validation.helperText!, style: fieldStyle.helperTextStyle),
         ],
       ],
     );
+  }
+}
+
+class _CommonTextFieldStyle {
+  const _CommonTextFieldStyle({
+    required this.enabled,
+    required this.lineColor,
+    required this.helperColor,
+  });
+
+  final bool enabled;
+  final Color lineColor;
+  final Color helperColor;
+
+  static _CommonTextFieldStyle resolve({
+    required CommonTextFieldState state,
+    required bool enabled,
+    required bool usesFocusedDecoration,
+  }) {
+    return _CommonTextFieldStyle(
+      enabled: enabled && state != CommonTextFieldState.disabled,
+      lineColor: switch (state) {
+        CommonTextFieldState.error => AppColors.danger,
+        CommonTextFieldState.success => AppColors.brandStrong,
+        CommonTextFieldState.disabled => AppColors.textDisabled,
+        CommonTextFieldState.normal =>
+          usesFocusedDecoration
+              ? AppColors.textHeadline
+              : AppColors.textDisabled,
+      },
+      helperColor: switch (state) {
+        CommonTextFieldState.error => AppColors.danger,
+        CommonTextFieldState.success => AppColors.brandStrong,
+        CommonTextFieldState.disabled ||
+        CommonTextFieldState.normal => AppColors.textBody,
+      },
+    );
+  }
+
+  BoxDecoration get decoration {
+    return BoxDecoration(
+      border: Border(bottom: BorderSide(color: lineColor)),
+    );
+  }
+
+  TextStyle get inputTextStyle {
+    return AppTextStyles.size18Medium.copyWith(color: AppColors.textHeadline);
+  }
+
+  TextStyle get hintTextStyle {
+    return AppTextStyles.size18Medium.copyWith(color: AppColors.textDisabled);
+  }
+
+  TextStyle get helperTextStyle {
+    return AppTextStyles.size12Medium.copyWith(color: helperColor);
   }
 }
 
