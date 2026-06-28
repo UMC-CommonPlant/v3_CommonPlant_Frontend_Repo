@@ -8,6 +8,8 @@
 
 **Tech Stack:** Flutter `3.35.7`, Dart `3.9.2`, `flutter_riverpod`, `go_router`, `flutter_test`, `flutter_lints`
 
+**Status:** 2026-06-28 `develop` 기준 1차 라운드 Task 1~7 완료. 아래 실행 계획은 원래 작업 단위와 리뷰 기준을 기록으로 보존한다.
+
 ---
 
 ## 문서 목적
@@ -27,27 +29,40 @@
 - `docs/git-workflow.md`
 - `docs/lib-refactoring-direction.md`
 
-## 현재 코드 상태 요약
+## 1차 라운드 완료 요약
 
-2026-06-28 `develop` 기준 `lib`의 Dart 코드는 약 14,041줄이다. 이전 리팩토링으로 Place/Plant 상세 page는 많이 줄었지만, 일부 page와 전용 widget 파일은 여전히 여러 책임을 동시에 담고 있다.
+2026-06-28 `develop` 기준 `lib`의 Dart 코드는 약 14,358줄이다. 1차 라운드에서는 대형 route page와 feature 전용 widget 파일을 우선 분리했고, shared widget 스타일 계산과 Friend/Image raw 응답 경계까지 정리했다.
 
-| 파일 | 줄 수 | 읽기 어려운 지점 |
+완료된 작업 단위:
+
+| Task | 범위 | 이슈 | PR |
+| --- | --- | --- | --- |
+| Task 1 | Profile setup page 분해 | #129 | #130 |
+| Task 2 | Plant form page 분해 | #131 | #132 |
+| Task 3 | Home screen section 분해 | #133 | #134 |
+| Task 4 | Detail widget 파일 section 분해 | #135 | #136 |
+| Task 5 | Memo page interaction 분해 | #137 | #138 |
+| Task 6 | shared widget variant 분해 | #139 | #140 |
+| Task 7 | raw response 경계 축소 | #141 | #142 |
+
+주요 파일 상태:
+
+| 파일 | 현재 줄 수 | 상태 |
 | --- | ---: | --- |
-| `lib/features/login/presentation/pages/profile_setup_page.dart` | 852 | Figma 좌표 상수, page state, modal, dialog, avatar, nickname field, terms row, complete button이 한 파일에 있다. |
-| `lib/features/plant/presentation/pages/plant_form_page.dart` | 694 | 생성/수정 분기, remote place fallback, submit 결과 처리, create/edit scaffold, place picker가 한 파일에 섞여 있다. |
-| `lib/features/home/presentation/home_screen.dart` | 602 | hero, body 상태 분기, section header, place/plant 카드 조합, bottom tab bar가 한 파일 안의 private widget으로 이어진다. |
-| `lib/features/plant/presentation/widgets/plant_detail_widgets.dart` | 552 | hero, care summary, memo preview, info section, 내부 보조 widget이 하나의 전용 widget 파일에 몰려 있다. |
-| `lib/features/place/presentation/widgets/place_detail_widgets.dart` | 473 | header, metric strip, friend strip, plant list, FAB, 내부 보조 widget이 함께 있다. |
-| `lib/features/memo/presentation/pages/memo_list_page.dart` | 386 | 목록 화면, 삭제 dialog, empty state, local interaction이 한 page에 남아 있다. |
-| `lib/shared/widgets/common_button.dart` | 336 | 공용 버튼 variant와 스타일 분기가 커져 변경 영향 범위를 읽기 어렵다. |
-| `lib/shared/widgets/common_text_field.dart` | 314 | 공용 입력 필드의 label/helper/error/상태 스타일이 한 파일에 집중되어 있다. |
+| `lib/features/login/presentation/pages/profile_setup_page.dart` | 167 | page는 route/event 연결 중심으로 축소되었다. |
+| `lib/features/plant/presentation/pages/plant_form_page.dart` | 293 | create/edit shell과 입력 보조 widget이 분리되었다. |
+| `lib/features/home/presentation/home_screen.dart` | 26 | route-level shell만 남기고 section은 widget 파일로 이동했다. |
+| `lib/features/memo/presentation/pages/memo_list_page.dart` | 178 | dialog, empty view, list content가 page 밖으로 분리되었다. |
+| `lib/shared/widgets/common_button.dart` | 376 | public API를 유지하고 style/metrics 계산을 private helper로 분리했다. |
+| `lib/shared/widgets/common_text_field.dart` | 330 | 상태별 style resolution을 private helper로 분리했다. |
 
-추가 관찰:
+완료 후 상태:
 
-- `profile_setup_page.dart`에는 `_ProfileImageActionSheet`, `_ProfilePhotoPermissionDialog`, `_ProfileAvatar`, `_ProfileNicknameField`, `_TermsAgreementRow`, `_ProfileCompleteButton`처럼 테스트 가능한 전용 widget이 page 파일 안에 있다.
-- `plant_form_page.dart`에는 `_PlantEditScaffold`, `_PlantCreateScaffold`, `_PlantPlacePicker`, `_PlantWateringDateField`, `_PlantFormBottomActions`, `_PlantRegistrationPlace`가 page 내부에 있다.
-- `home_screen.dart`에는 `_HomeHero`, `_HomeBody`, `_HomeSectionHeader`, `_HomePlaceRequestButton`, `_HomeBottomTabBar`가 한 파일에 이어진다.
-- `Object?` raw response는 datasource와 일부 repository에 남아 있다. Swagger 응답이 확정되지 않은 API는 당장 무리하게 DTO를 만들지 않되, presentation으로 raw response가 넘어오지 않게 경계를 유지한다.
+- 500줄 이상 route page 파일이 없다.
+- 400줄 이상 feature 전용 widget 파일이 없다.
+- Place/Plant 상세 section widget은 파일 단위로 분리되었다.
+- Memo 목록의 dialog와 empty/list content는 page 밖으로 분리되었다.
+- Friend/Image의 schema 미확정 GET 응답은 `Raw` suffix로 경계를 명시하고, presentation 계층에서 직접 해석하지 않는다.
 
 ## 읽기 쉬운 코드의 기준
 
@@ -216,7 +231,9 @@ lib/features/<feature>/
 
 ## 실행 계획
 
-각 task는 별도 GitHub 이슈, Project 10 항목, 브랜치, PR로 분리한다. 브랜치는 항상 최신 `develop`에서 생성한다.
+각 task는 별도 GitHub 이슈, Project 10 항목, 브랜치, PR로 분리했다. 브랜치는 항상 최신 `develop`에서 생성한다.
+
+아래 Task 1~7은 2026-06-28 기준 모두 완료되었으며, 세부 step은 작업 기록과 향후 유사 리팩토링의 참고 기준으로 남긴다.
 
 ### Task 1: Profile setup page 분해
 
@@ -672,16 +689,16 @@ git commit -m "Refactor: API 응답 경계 정리 #이슈번호"
 
 가독성 리팩토링 라운드는 아래 조건을 만족하면 완료로 본다.
 
-- [ ] 500줄 이상 page 파일이 없다.
-- [ ] 400줄 이상 feature 전용 widget 파일이 없다.
-- [ ] `profile_setup_page.dart`, `plant_form_page.dart`, `home_screen.dart`의 route page 책임이 조립 중심으로 축소되었다.
-- [ ] Place/Plant 상세 section widget이 파일 단위로 분리되었다.
-- [ ] Memo 화면의 dialog와 empty/list content가 page 밖으로 분리되었다.
-- [ ] shared widget 변경 시 영향받는 variant를 테스트에서 바로 찾을 수 있다.
-- [ ] presentation 계층에서 raw API response를 직접 해석하지 않는다.
-- [ ] 전체 `fvm flutter test`가 통과한다.
+- [x] 500줄 이상 page 파일이 없다.
+- [x] 400줄 이상 feature 전용 widget 파일이 없다.
+- [x] `profile_setup_page.dart`, `plant_form_page.dart`, `home_screen.dart`의 route page 책임이 조립 중심으로 축소되었다.
+- [x] Place/Plant 상세 section widget이 파일 단위로 분리되었다.
+- [x] Memo 화면의 dialog와 empty/list content가 page 밖으로 분리되었다.
+- [x] shared widget 변경 시 영향받는 variant를 테스트에서 바로 찾을 수 있다.
+- [x] presentation 계층에서 raw API response를 직접 해석하지 않는다.
+- [x] 전체 `fvm flutter test`가 통과한다.
 
-## 후속 이슈 후보
+## 완료된 이슈
 
 - `[Task] Profile setup page 가독성 리팩토링`
 - `[Task] Plant form page 가독성 리팩토링`
@@ -690,3 +707,15 @@ git commit -m "Refactor: API 응답 경계 정리 #이슈번호"
 - `[Task] Memo 화면 interaction widget 분리`
 - `[Task] shared widget variant 구조 정리`
 - `[Task] raw API response 경계 축소`
+
+## 다음 구조 개선 후보
+
+다음 라운드는 [lib 구조 리팩토링 개선 방향](lib-refactoring-direction.md)의 남은 진단 항목을 기준으로 재평가한다.
+
+- `[Task] 라우트 파라미터 검증 헬퍼 추가`
+- `[Task] Place 폼 Controller 분리`
+- `[Task] Plant 폼 Controller 분리`
+- `[Task] 장소/식물 상세 액션 Controller 분리`
+- `[Task] 상세 화면 mock fixture 분리`
+- `[Task] API mapper 파일 분리`
+- `[Task] 인증 redirect Provider 설계`
