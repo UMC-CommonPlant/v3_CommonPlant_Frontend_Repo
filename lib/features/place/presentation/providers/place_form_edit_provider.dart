@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
+import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const String placeFormDefaultEditName = '스윗 홈_ 거실';

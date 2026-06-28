@@ -1,7 +1,7 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/place_detail_fixture.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
-import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 typedef PlaceDetailViewRequest = ({String placeId, PlaceDetailRole? role});
