@@ -17,7 +17,7 @@ class FriendRepository {
   final FriendRemoteDataSource _remoteDataSource;
 
   Future<Object?> fetchRequestsRaw() {
-    return _remoteDataSource.getRequests();
+    return _remoteDataSource.getRequestsRaw();
   }
 
   Future<void> sendRequest(SendFriendRequest request) {

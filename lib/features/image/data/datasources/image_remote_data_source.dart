@@ -6,7 +6,7 @@ class ImageRemoteDataSource {
 
   final Dio _dio;
 
-  Future<Object?> getDownloadUrl(String key) async {
+  Future<Object?> getDownloadUrlRaw(String key) async {
     try {
       final response = await _dio.get<Object?>(
         '/s3/images',

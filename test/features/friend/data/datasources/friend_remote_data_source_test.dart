@@ -11,7 +11,7 @@ void main() {
       final adapter = _CapturingAdapter();
       final dataSource = FriendRemoteDataSource(_dioWith(adapter));
 
-      await dataSource.getRequests();
+      await dataSource.getRequestsRaw();
 
       expect(adapter.latestOptions.method, 'GET');
       expect(adapter.latestOptions.path, '/friends/requests');
