@@ -101,37 +101,6 @@ class CommonButton extends StatelessWidget {
 
   VoidCallback? get _effectiveOnPressed => isLoading ? null : onPressed;
 
-  double get _height {
-    switch (size) {
-      case CommonButtonSize.large:
-        return AppSizes.buttonHeight;
-      case CommonButtonSize.medium:
-        return AppSizes.mediumButtonHeight;
-      case CommonButtonSize.small:
-        return AppSizes.smallButtonHeight;
-    }
-  }
-
-  double get _radius {
-    switch (size) {
-      case CommonButtonSize.large:
-      case CommonButtonSize.small:
-        return AppRadius.small;
-      case CommonButtonSize.medium:
-        return AppRadius.xSmall;
-    }
-  }
-
-  double? get _defaultWidth {
-    switch (size) {
-      case CommonButtonSize.small:
-        return AppSizes.smallButtonWidth;
-      case CommonButtonSize.medium:
-      case CommonButtonSize.large:
-        return null;
-    }
-  }
-
   Widget _buildChild(TextStyle textStyle) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -169,64 +138,12 @@ class CommonButton extends StatelessWidget {
     );
   }
 
-  TextStyle _buttonTextStyle(AppThemeTokens tokens) {
-    final baseStyle = switch (size) {
-      CommonButtonSize.large => AppTextStyles.size16Medium,
-      CommonButtonSize.medium => AppTextStyles.size14Medium,
-      CommonButtonSize.small => AppTextStyles.size14Medium,
-    };
-
-    final effectiveForegroundColor =
-        foregroundColor ??
-        switch (variant) {
-          CommonButtonVariant.primary || CommonButtonVariant.dark =>
-            _effectiveOnPressed == null ? tokens.textDisabled : tokens.onBrand,
-          CommonButtonVariant.secondary || CommonButtonVariant.text =>
-            _effectiveOnPressed == null
-                ? tokens.textDisabled
-                : tokens.brandAccent,
-          CommonButtonVariant.neutral =>
-            _effectiveOnPressed == null
-                ? tokens.textDisabled
-                : tokens.textStrong,
-        };
-
-    return baseStyle.copyWith(color: effectiveForegroundColor);
-  }
-
-  Color _backgroundColor(AppThemeTokens tokens) {
-    if (_effectiveOnPressed == null) {
-      return backgroundColor ?? tokens.surfaceDisabled;
-    }
-
-    return backgroundColor ??
-        switch (variant) {
-          CommonButtonVariant.primary => tokens.brandStrong,
-          CommonButtonVariant.secondary => tokens.surfaceBase,
-          CommonButtonVariant.dark => tokens.textStrong,
-          CommonButtonVariant.neutral => tokens.surfaceDisabled,
-          CommonButtonVariant.text => Colors.transparent,
-        };
-  }
-
-  Color _borderColor(AppThemeTokens tokens) {
-    return borderColor ?? Colors.transparent;
-  }
-
-  BorderSide get _borderSide {
-    if (borderColor == null) {
-      return BorderSide.none;
-    }
-
-    return const BorderSide(width: 1);
-  }
-
-  Widget _wrapWidth(Widget child) {
+  Widget _wrapWidth(_CommonButtonMetrics metrics, Widget child) {
     return SizedBox(
       width: fullWidth || (size == CommonButtonSize.large && width == null)
           ? double.infinity
-          : width ?? _defaultWidth,
-      height: _height,
+          : width ?? metrics.defaultWidth,
+      height: metrics.height,
       child: child,
     );
   }
@@ -235,102 +152,225 @@ class CommonButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens =
         Theme.of(context).extension<AppThemeTokens>() ?? AppThemeTokens.light;
-
-    final buttonShape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(_radius),
-      side: _borderSide.copyWith(color: _borderColor(tokens)),
+    final metrics = _CommonButtonMetrics.resolve(size, variant);
+    final buttonStyle = _CommonButtonStyle.resolve(
+      tokens: tokens,
+      variant: variant,
+      size: size,
+      enabled: _effectiveOnPressed != null,
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      borderColor: borderColor,
     );
-    final textStyle = _buttonTextStyle(tokens);
 
     switch (variant) {
       case CommonButtonVariant.primary:
         return _wrapWidth(
+          metrics,
           FilledButton(
             onPressed: _effectiveOnPressed,
-            style: FilledButton.styleFrom(
-              backgroundColor: _backgroundColor(tokens),
-              foregroundColor: textStyle.color,
-              minimumSize: Size(0, _height),
-              maximumSize: Size(double.infinity, _height),
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              shape: buttonShape,
-              textStyle: textStyle,
-            ),
-            child: _buildChild(textStyle),
+            style: buttonStyle.filledButtonStyle(metrics),
+            child: _buildChild(buttonStyle.textStyle),
           ),
         );
       case CommonButtonVariant.secondary:
         return _wrapWidth(
+          metrics,
           OutlinedButton(
             onPressed: _effectiveOnPressed,
-            style: OutlinedButton.styleFrom(
-              backgroundColor: _backgroundColor(tokens),
-              foregroundColor: textStyle.color,
-              minimumSize: Size(0, _height),
-              maximumSize: Size(double.infinity, _height),
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              side: _borderSide.copyWith(color: _borderColor(tokens)),
-              shape: buttonShape,
-              textStyle: textStyle,
-            ),
-            child: _buildChild(textStyle),
+            style: buttonStyle.outlinedButtonStyle(metrics),
+            child: _buildChild(buttonStyle.textStyle),
           ),
         );
       case CommonButtonVariant.dark:
         return _wrapWidth(
+          metrics,
           FilledButton(
             onPressed: _effectiveOnPressed,
-            style: FilledButton.styleFrom(
-              backgroundColor: _backgroundColor(tokens),
-              foregroundColor: textStyle.color,
-              minimumSize: Size(0, _height),
-              maximumSize: Size(double.infinity, _height),
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              elevation: 0,
-              shape: buttonShape,
-              textStyle: textStyle,
-            ),
-            child: _buildChild(textStyle),
+            style: buttonStyle.filledButtonStyle(metrics, elevation: 0),
+            child: _buildChild(buttonStyle.textStyle),
           ),
         );
       case CommonButtonVariant.neutral:
         return _wrapWidth(
+          metrics,
           FilledButton(
             onPressed: _effectiveOnPressed,
-            style: FilledButton.styleFrom(
-              backgroundColor: _backgroundColor(tokens),
-              foregroundColor: textStyle.color,
-              minimumSize: Size(0, _height),
-              maximumSize: Size(double.infinity, _height),
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              elevation: 0,
-              shape: buttonShape,
-              textStyle: textStyle,
-            ),
-            child: _buildChild(textStyle),
+            style: buttonStyle.filledButtonStyle(metrics, elevation: 0),
+            child: _buildChild(buttonStyle.textStyle),
           ),
         );
       case CommonButtonVariant.text:
         return _wrapWidth(
+          metrics,
           TextButton(
             onPressed: _effectiveOnPressed,
-            style: TextButton.styleFrom(
-              backgroundColor: _backgroundColor(tokens),
-              foregroundColor: textStyle.color,
-              minimumSize: Size(0, _height),
-              maximumSize: Size(double.infinity, _height),
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x12),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              shape: buttonShape,
-              textStyle: textStyle,
-            ),
-            child: _buildChild(textStyle),
+            style: buttonStyle.textButtonStyle(metrics),
+            child: _buildChild(buttonStyle.textStyle),
           ),
         );
     }
+  }
+}
+
+class _CommonButtonMetrics {
+  const _CommonButtonMetrics({
+    required this.height,
+    required this.radius,
+    required this.padding,
+    required this.baseTextStyle,
+    this.defaultWidth,
+  });
+
+  final double height;
+  final double radius;
+  final EdgeInsetsGeometry padding;
+  final TextStyle baseTextStyle;
+  final double? defaultWidth;
+
+  static _CommonButtonMetrics resolve(
+    CommonButtonSize size,
+    CommonButtonVariant variant,
+  ) {
+    return _CommonButtonMetrics(
+      height: switch (size) {
+        CommonButtonSize.large => AppSizes.buttonHeight,
+        CommonButtonSize.medium => AppSizes.mediumButtonHeight,
+        CommonButtonSize.small => AppSizes.smallButtonHeight,
+      },
+      radius: switch (size) {
+        CommonButtonSize.large || CommonButtonSize.small => AppRadius.small,
+        CommonButtonSize.medium => AppRadius.xSmall,
+      },
+      padding: EdgeInsets.symmetric(
+        horizontal: variant == CommonButtonVariant.text
+            ? AppSpacing.x12
+            : AppSpacing.x20,
+      ),
+      baseTextStyle: switch (size) {
+        CommonButtonSize.large => AppTextStyles.size16Medium,
+        CommonButtonSize.medium => AppTextStyles.size14Medium,
+        CommonButtonSize.small => AppTextStyles.size14Medium,
+      },
+      defaultWidth: switch (size) {
+        CommonButtonSize.small => AppSizes.smallButtonWidth,
+        CommonButtonSize.medium || CommonButtonSize.large => null,
+      },
+    );
+  }
+}
+
+class _CommonButtonStyle {
+  const _CommonButtonStyle({
+    required this.backgroundColor,
+    required this.foregroundColor,
+    required this.borderSide,
+    required this.textStyle,
+  });
+
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final BorderSide borderSide;
+  final TextStyle textStyle;
+
+  static _CommonButtonStyle resolve({
+    required AppThemeTokens tokens,
+    required CommonButtonVariant variant,
+    required CommonButtonSize size,
+    required bool enabled,
+    required Color? backgroundColor,
+    required Color? foregroundColor,
+    required Color? borderColor,
+  }) {
+    final metrics = _CommonButtonMetrics.resolve(size, variant);
+    final resolvedForegroundColor =
+        foregroundColor ??
+        switch (variant) {
+          CommonButtonVariant.primary || CommonButtonVariant.dark =>
+            enabled ? tokens.onBrand : tokens.textDisabled,
+          CommonButtonVariant.secondary || CommonButtonVariant.text =>
+            enabled ? tokens.brandAccent : tokens.textDisabled,
+          CommonButtonVariant.neutral =>
+            enabled ? tokens.textStrong : tokens.textDisabled,
+        };
+
+    return _CommonButtonStyle(
+      backgroundColor:
+          backgroundColor ?? _resolveBackgroundColor(tokens, variant, enabled),
+      foregroundColor: resolvedForegroundColor,
+      borderSide: borderColor == null
+          ? BorderSide.none
+          : BorderSide(width: 1, color: borderColor),
+      textStyle: metrics.baseTextStyle.copyWith(color: resolvedForegroundColor),
+    );
+  }
+
+  static Color _resolveBackgroundColor(
+    AppThemeTokens tokens,
+    CommonButtonVariant variant,
+    bool enabled,
+  ) {
+    if (!enabled) {
+      return tokens.surfaceDisabled;
+    }
+
+    return switch (variant) {
+      CommonButtonVariant.primary => tokens.brandStrong,
+      CommonButtonVariant.secondary => tokens.surfaceBase,
+      CommonButtonVariant.dark => tokens.textStrong,
+      CommonButtonVariant.neutral => tokens.surfaceDisabled,
+      CommonButtonVariant.text => Colors.transparent,
+    };
+  }
+
+  RoundedRectangleBorder shape(_CommonButtonMetrics metrics) {
+    return RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(metrics.radius),
+      side: borderSide,
+    );
+  }
+
+  ButtonStyle filledButtonStyle(
+    _CommonButtonMetrics metrics, {
+    double? elevation,
+  }) {
+    return FilledButton.styleFrom(
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      minimumSize: Size(0, metrics.height),
+      maximumSize: Size(double.infinity, metrics.height),
+      padding: metrics.padding,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      elevation: elevation,
+      shape: shape(metrics),
+      textStyle: textStyle,
+    );
+  }
+
+  ButtonStyle outlinedButtonStyle(_CommonButtonMetrics metrics) {
+    return OutlinedButton.styleFrom(
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      minimumSize: Size(0, metrics.height),
+      maximumSize: Size(double.infinity, metrics.height),
+      padding: metrics.padding,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      side: borderSide,
+      shape: shape(metrics),
+      textStyle: textStyle,
+    );
+  }
+
+  ButtonStyle textButtonStyle(_CommonButtonMetrics metrics) {
+    return TextButton.styleFrom(
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      minimumSize: Size(0, metrics.height),
+      maximumSize: Size(double.infinity, metrics.height),
+      padding: metrics.padding,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      shape: shape(metrics),
+      textStyle: textStyle,
+    );
   }
 }
