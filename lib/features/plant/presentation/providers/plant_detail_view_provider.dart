@@ -1,6 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_detail_fixture.dart';
-import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_remote_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 typedef PlantDetailViewRequest = ({String plantId, String? placeCode});

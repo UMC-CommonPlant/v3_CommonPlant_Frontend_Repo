@@ -1,6 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
-import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_summary.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,20 +21,6 @@ final plantSummariesProvider = Provider<AsyncValue<List<PlantSummary>>>((ref) {
 
   return AsyncData(ref.watch(plantListProvider));
 });
-
-final remotePlantDetailProvider = FutureProvider.family<PlantDetail, String>(
-  (ref, plantId) =>
-      ref.watch(plantRepositoryProvider).fetchPlant(plantId: plantId),
-  retry: (retryCount, error) => null,
-);
-
-final remotePlantEditInfoProvider =
-    FutureProvider.family<PlantEditInfo, String>(
-      (ref, plantId) => ref
-          .watch(plantRepositoryProvider)
-          .fetchPlantEditInfo(plantId: plantId),
-      retry: (retryCount, error) => null,
-    );
 
 class PlantListNotifier extends Notifier<List<PlantSummary>> {
   int _nextId = 1;

@@ -44,6 +44,23 @@ void main() {
       expect(repository.fetchCalls, 1);
     });
 
+    test('수정 정보 remote 조회를 repository에 위임한다', () async {
+      final repository = _StaticPlantRepository(
+        const PlantEditInfo(name: '필로덴드론', lastWateredDate: '2026.05.25'),
+      );
+      final container = ProviderContainer(
+        overrides: [plantRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+
+      final info = await container.read(
+        remotePlantEditInfoProvider('remote-plant').future,
+      );
+
+      expect(info.name, '필로덴드론');
+      expect(repository.lastPlantId, 'remote-plant');
+    });
+
     test('remote mode에서 빈 수정 정보는 null data로 표시한다', () async {
       final repository = _StaticPlantRepository(const PlantEditInfo(name: ''));
       final container = ProviderContainer(
@@ -71,10 +88,12 @@ class _StaticPlantRepository extends PlantRepository {
 
   final PlantEditInfo editInfo;
   int fetchCalls = 0;
+  String? lastPlantId;
 
   @override
   Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {
     fetchCalls++;
+    lastPlantId = plantId;
     return editInfo;
   }
 }
