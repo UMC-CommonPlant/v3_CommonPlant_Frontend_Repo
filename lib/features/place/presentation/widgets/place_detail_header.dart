@@ -1,16 +1,12 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
-import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_selection_widgets.dart';
-import 'package:commonplant_frontend/shared/widgets/common_fab.dart';
-import 'package:commonplant_frontend/shared/widgets/common_plant_card.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
-import 'package:commonplant_frontend/shared/widgets/common_watering_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -30,26 +26,6 @@ class PlaceDetailFriendItem {
   PlaceFriendProfile toProfile() {
     return PlaceFriendProfile(id: id, name: name, imageAsset: imageAsset);
   }
-}
-
-class PlaceDetailPlantItem {
-  const PlaceDetailPlantItem({
-    required this.id,
-    required this.name,
-    required this.species,
-    required this.description,
-    required this.dDayLabel,
-    required this.dateLabel,
-    this.canWater = false,
-  });
-
-  final String id;
-  final String name;
-  final String species;
-  final String description;
-  final String dDayLabel;
-  final String dateLabel;
-  final bool canWater;
 }
 
 class PlaceDetailHeader extends StatelessWidget {
@@ -109,118 +85,6 @@ class PlaceDetailHeader extends StatelessWidget {
             _PlaceFriendStrip(friends: friends, placeId: placeId),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class PlacePlantList extends StatelessWidget {
-  const PlacePlantList({
-    super.key,
-    required this.placeId,
-    required this.plants,
-  });
-
-  final String placeId;
-  final List<PlaceDetailPlantItem> plants;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.x20,
-        AppSpacing.x24,
-        AppSpacing.x20,
-        120,
-      ),
-      child: Column(
-        children: [
-          for (final plant in plants) ...[
-            CommonPlacePlantCard(
-              width: double.infinity,
-              name: plant.name,
-              species: plant.species,
-              description: plant.description,
-              imageProvider: const AssetImage(
-                AppImageAssets.placeDetailMonstera,
-              ),
-              action: CommonWateringButton(
-                onPressed: plant.canWater ? () {} : null,
-              ),
-              trailing: _PlantDueInfo(
-                dDayLabel: plant.dDayLabel,
-                dateLabel: plant.dateLabel,
-                isPrimary: plant.canWater,
-              ),
-              onTap: () => context.push(
-                AppRoutePaths.plantDetailLocation(plant.id, placeId: placeId),
-              ),
-            ),
-            if (plant != plants.last) const SizedBox(height: AppSpacing.x16),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class PlaceDetailFab extends StatelessWidget {
-  const PlaceDetailFab({
-    super.key,
-    required this.placeId,
-    required this.canEditPlace,
-    required this.onExit,
-  });
-
-  final String placeId;
-  final bool canEditPlace;
-  final VoidCallback onExit;
-
-  @override
-  Widget build(BuildContext context) {
-    return CommonFabDial(
-      actions: [
-        CommonFabDialAction(
-          label: '식물 추가하기',
-          icon: const CommonSvgIcon(
-            AppIconAssets.addPlant,
-            width: AppSizes.iconMedium,
-            height: AppSizes.iconMedium,
-            color: AppColors.textStrong,
-            semanticsLabel: '식물 추가',
-          ),
-          onPressed: () => context.push(AppRoutePaths.plantSearch),
-        ),
-        if (canEditPlace)
-          CommonFabDialAction(
-            label: '장소 수정하기',
-            icon: const CommonSvgIcon(
-              AppIconAssets.edit,
-              width: AppSizes.iconMedium,
-              height: AppSizes.iconMedium,
-              color: AppColors.textStrong,
-              semanticsLabel: '장소 수정',
-            ),
-            onPressed: () =>
-                context.push(AppRoutePaths.placeEditLocation(placeId)),
-          ),
-        CommonFabDialAction(
-          label: '장소 나가기',
-          icon: const CommonSvgIcon(
-            AppIconAssets.exit,
-            width: AppSizes.iconMedium,
-            height: AppSizes.iconMedium,
-            color: AppColors.textStrong,
-            semanticsLabel: '장소 나가기',
-          ),
-          onPressed: onExit,
-        ),
-      ],
-      child: const CommonSvgIcon(
-        AppIconAssets.shape,
-        width: 5,
-        height: 25,
-        semanticsLabel: '장소 상세 메뉴',
       ),
     );
   }
@@ -436,38 +300,6 @@ class _FriendManagementShortcut extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _PlantDueInfo extends StatelessWidget {
-  const _PlantDueInfo({
-    required this.dDayLabel,
-    required this.dateLabel,
-    required this.isPrimary,
-  });
-
-  final String dDayLabel;
-  final String dateLabel;
-  final bool isPrimary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          dDayLabel,
-          style: AppTextStyles.size16Bold.copyWith(
-            color: isPrimary ? AppColors.brandPrimary : AppColors.iconInactive,
-          ),
-        ),
-        Text(
-          dateLabel,
-          style: AppTextStyles.size12Medium.copyWith(color: AppColors.textBody),
-        ),
-      ],
     );
   }
 }

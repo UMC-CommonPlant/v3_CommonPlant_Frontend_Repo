@@ -1,7 +1,8 @@
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
-import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_widgets.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_header.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_plant_list.dart';
 
 class PlaceDetailFixtureData {
   const PlaceDetailFixtureData({

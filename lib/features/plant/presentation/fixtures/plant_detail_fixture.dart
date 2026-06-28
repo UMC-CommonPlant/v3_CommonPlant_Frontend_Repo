@@ -1,6 +1,6 @@
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
-import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_widgets.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_memo_preview_section.dart';
 
 class PlantDetailFixtureData {
   const PlantDetailFixtureData({
