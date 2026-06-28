@@ -1,6 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
-import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 export 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart'
@@ -32,3 +32,11 @@ void invalidatePlantFormEditInfo(WidgetRef ref, String plantId) {
   ref.invalidate(remotePlantEditInfoProvider(plantId));
   ref.invalidate(remotePlantFormEditInfoProvider(plantId));
 }
+
+final remotePlantEditInfoProvider =
+    FutureProvider.family<PlantEditInfo, String>(
+      (ref, plantId) => ref
+          .watch(plantRepositoryProvider)
+          .fetchPlantEditInfo(plantId: plantId),
+      retry: (retryCount, error) => null,
+    );
