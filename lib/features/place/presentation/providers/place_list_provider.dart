@@ -22,21 +22,6 @@ final placeSummariesProvider = Provider<AsyncValue<List<PlaceSummary>>>((ref) {
   return AsyncData(ref.watch(placeListProvider));
 });
 
-final plantRegistrationPlaceProvider = FutureProvider<List<PlaceSummary>>((
-  ref,
-) {
-  if (ref.watch(useRemoteApiProvider)) {
-    return ref.watch(placeRepositoryProvider).fetchUserPlaces();
-  }
-
-  return ref.watch(placeListProvider);
-});
-
-final placeDetailProvider = FutureProvider.family<PlaceSummary, String>(
-  (ref, code) => ref.watch(placeRepositoryProvider).fetchPlace(code),
-  retry: (retryCount, error) => null,
-);
-
 class PlaceListNotifier extends Notifier<List<PlaceSummary>> {
   int _nextId = 1;
 

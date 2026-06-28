@@ -6,7 +6,7 @@ import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/plant_registration_place_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_edit_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';

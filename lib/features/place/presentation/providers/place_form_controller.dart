@@ -1,7 +1,9 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
 import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/plant_registration_place_provider.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
