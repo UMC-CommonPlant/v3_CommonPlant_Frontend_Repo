@@ -16,8 +16,8 @@ class ImageRepository {
 
   final ImageRemoteDataSource _remoteDataSource;
 
-  Future<Object?> getDownloadUrl(String key) {
-    return _remoteDataSource.getDownloadUrl(key);
+  Future<Object?> getDownloadUrlRaw(String key) {
+    return _remoteDataSource.getDownloadUrlRaw(key);
   }
 
   Future<void> uploadImages(List<MultipartFile> images) {

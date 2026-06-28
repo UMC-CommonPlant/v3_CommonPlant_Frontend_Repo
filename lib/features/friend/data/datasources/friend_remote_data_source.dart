@@ -7,7 +7,7 @@ class FriendRemoteDataSource {
 
   final Dio _dio;
 
-  Future<Object?> getRequests() async {
+  Future<Object?> getRequestsRaw() async {
     try {
       final response = await _dio.get<Object?>('/friends/requests');
 

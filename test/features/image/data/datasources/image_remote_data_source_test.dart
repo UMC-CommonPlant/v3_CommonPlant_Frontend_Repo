@@ -10,7 +10,7 @@ void main() {
       final adapter = _CapturingAdapter();
       final dataSource = ImageRemoteDataSource(_dioWith(adapter));
 
-      await dataSource.getDownloadUrl('images/user-nano-id/monstera.png');
+      await dataSource.getDownloadUrlRaw('images/user-nano-id/monstera.png');
 
       expect(adapter.latestOptions.method, 'GET');
       expect(adapter.latestOptions.path, '/s3/images');
