@@ -1,4 +1,8 @@
-import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_widgets.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_care_summary.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_content_width.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_hero.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_info_section.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_memo_preview_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';

@@ -1,4 +1,6 @@
-import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_widgets.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_fab.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_header.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_plant_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';

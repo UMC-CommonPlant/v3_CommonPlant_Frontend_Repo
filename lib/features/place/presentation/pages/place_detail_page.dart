@@ -10,7 +10,9 @@ import 'package:commonplant_frontend/features/place/presentation/fixtures/place_
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_view_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_exit_controller.dart';
-import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_widgets.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_fab.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_header.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_plant_list.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
