@@ -1,7 +1,13 @@
-# 남은 작업 진행 계획
+# 남은 작업 완료 현황
 
-이 문서는 #47 API 연계 보강과 #49 폼 UX 보강이 `develop`에 병합된 뒤 남은 작업을 하나씩 진행하기 위한 실행 순서 문서이다.
-각 항목은 별도 GitHub 이슈, Project 10 항목, 브랜치, PR로 분리한다.
+이 문서는 #47 API 연계 보강과 #49 폼 UX 보강이 `develop`에 병합된 뒤 진행한 후속 작업의 완료 현황을 기록한다.
+각 항목은 별도 GitHub 이슈, Project 10 항목, 브랜치, PR로 분리해 진행했다.
+
+## 현재 상태
+
+- 2026-06-28 기준 아래 작업 순서의 0~15번 항목은 모두 완료되어 `develop`에 병합되었다.
+- 이 문서의 작업 순서 표는 신규 작업 큐가 아니라 완료 기록이다.
+- 이후 작업은 [후속 결정 체크리스트](follow-up-decision-checklist.md)와 [lib 구조 리팩토링 개선 방향](lib-refactoring-direction.md)을 기준으로 새 이슈 또는 상위 Epic 범위를 다시 정한 뒤 진행한다.
 
 ## 진행 규칙
 
@@ -18,24 +24,24 @@
 
 ## 작업 순서
 
-| 순서 | 이슈 제목 | 권장 브랜치 | Project category | 범위 | 완료 기준 |
-| --- | --- | --- | --- | --- | --- |
-| 0 | `[Task] 남은 작업 순서 문서화` | `docs/remaining-work-order-50` | Story | README의 진행 작업 항목과 이 문서 추가 | 문서가 병합되고 이후 작업 순서가 확인 가능 |
-| 1 | `[Task] Figma 프레임 매핑 최신화` | `docs/figma-frame-node-map` | Story | `docs/figma-frame-map.md`의 Home, Memo `확인 필요` node-id 정리 | Home/Memo node-id 또는 확인 불가 사유가 문서에 반영 |
-| 2 | `[Task] 프로필 설정 이미지 UX 보강` | `feature/profile-image-ux` | User | 프로필 설정 화면의 이미지 선택/삭제/상태 표시를 화면 내부 로컬 UX로 보강 | 이미지 선택 전/후/삭제 상태 widget test 통과 |
-| 3 | `[Task] 식물 검색 로컬 UX 보강` | `feature/plant-search-local-ux` | Plant | 식물 검색 화면의 정적 후보, 빈 결과, 선택 흐름을 정리 | 검색어 없음/결과 있음/결과 없음/선택 이동 테스트 통과 |
-| 4 | `[Task] 메모 화면 로컬 UX 보강` | `feature/memo-local-ux` | Memo | 메모 목록/작성 화면의 로컬 작성, 삭제, empty 상태를 정리 | 작성 후 목록 복귀, 삭제 후 empty 상태 테스트 통과 |
-| 5 | `[Task] 장소 상세 상태 UI 정리` | `feature/place-detail-state-ui` | Place | 장소 상세 화면의 mock fallback, remote loading, empty, error 표시 정리 | API mode별 상태 UI 테스트 통과 |
-| 6 | `[Task] 식물 상세 상태 UI 정리` | `feature/plant-detail-state-ui` | Plant | 식물 상세/수정 화면의 mock fallback, remote loading, empty, error 표시 정리 | 상세/수정 정보 상태 UI 테스트 통과 |
-| 7 | `[Task] 공통 폼 제출 상태 패턴 정리` | `refactor/form-submit-state` | Story | 중복된 submit/loading/error 처리 방식을 공통 helper 또는 controller 패턴으로 정리 | 장소/식물/프로필 폼 회귀 테스트 통과 |
-| 8 | `[Feature] User API 화면 연결` | `feature/user-api-ui-binding` | User | User 조회/수정/검색 repository를 프로필 또는 친구 검색 화면에 연결 | API mode provider 테스트와 화면 상태 테스트 통과 |
-| 9 | `[Task] 환경 flavor 전략 문서화` | `docs/flavor-env-strategy` | Story | flavor는 앱 정체성, API mode/base URL은 CI/CD 주입으로 분리하는 기준 정리 | release/API 문서에 하이브리드 전략 반영 |
-| 10 | `[Feature] Place API 화면 연결` | `feature/place-api-ui-binding` | Place | 장소 수정, 상세 조회, 삭제 흐름을 repository/provider에 연결 | Place create/update/detail/delete 관련 테스트 통과 |
-| 11 | `[Feature] Plant API 화면 연결` | `feature/plant-api-ui-binding` | Plant | 식물 상세, 수정 정보, 수정, 삭제 흐름을 repository/provider에 연결 | Plant detail/edit/update/delete 관련 테스트 통과 |
-| 12 | `[Feature] Image API 화면 연결` | `feature/image-api-ui-binding` | Story | 프로필, 장소, 식물, 메모 이미지 선택 흐름과 image repository 연결 가능 지점 정리 | 이미지 key/url 정책 확인 범위 내 테스트 통과 |
-| 13 | `[Task] 백엔드 확인 항목 이슈 분리` | `docs/backend-api-open-questions` | Story | `docs/api-swagger-reference.md`의 백엔드 확인 필요 항목을 질문 단위로 정리 | Auth/Friend/Image/Error/Token/검색/Memo 질문 목록 반영 |
-| 14 | `[Task] 테스트 전략 확정` | `docs/test-strategy-follow-up` | Story | Golden test, integration test 도입 범위와 실행 환경 결정 문서화 | 테스트 종류별 적용/보류 기준 문서화 |
-| 15 | `[Task] 릴리즈 정책 확정` | `docs/release-policy-follow-up` | Story | signing secret, store 계정, release 자동화 결정 항목 정리 | 배포 전 확인 항목과 보류 사유 문서화 |
+| 순서 | 상태 | 관련 이슈 | 이슈 제목 | 권장 브랜치 | Project category | 범위 | 완료 기준 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 완료 | #50 | `[Task] 남은 작업 순서 문서화` | `docs/remaining-work-order-50` | Story | README의 진행 작업 항목과 이 문서 추가 | 문서가 병합되고 이후 작업 순서가 확인 가능 |
+| 1 | 완료 | #52 | `[Task] Figma 프레임 매핑 최신화` | `docs/figma-frame-node-map` | Story | `docs/figma-frame-map.md`의 Home, Memo `확인 필요` node-id 정리 | Home/Memo node-id 또는 확인 불가 사유가 문서에 반영 |
+| 2 | 완료 | #54 | `[Task] 프로필 설정 이미지 UX 보강` | `feature/profile-image-ux` | User | 프로필 설정 화면의 이미지 선택/삭제/상태 표시를 화면 내부 로컬 UX로 보강 | 이미지 선택 전/후/삭제 상태 widget test 통과 |
+| 3 | 완료 | #56 | `[Task] 식물 검색 로컬 UX 보강` | `feature/plant-search-local-ux` | Plant | 식물 검색 화면의 정적 후보, 빈 결과, 선택 흐름을 정리 | 검색어 없음/결과 있음/결과 없음/선택 이동 테스트 통과 |
+| 4 | 완료 | #58 | `[Task] 메모 화면 로컬 UX 보강` | `feature/memo-local-ux` | Memo | 메모 목록/작성 화면의 로컬 작성, 삭제, empty 상태를 정리 | 작성 후 목록 복귀, 삭제 후 empty 상태 테스트 통과 |
+| 5 | 완료 | #60 | `[Task] 장소 상세 상태 UI 정리` | `feature/place-detail-state-ui` | Place | 장소 상세 화면의 mock fallback, remote loading, empty, error 표시 정리 | API mode별 상태 UI 테스트 통과 |
+| 6 | 완료 | #62 | `[Task] 식물 상세 상태 UI 정리` | `feature/plant-detail-state-ui` | Plant | 식물 상세/수정 화면의 mock fallback, remote loading, empty, error 표시 정리 | 상세/수정 정보 상태 UI 테스트 통과 |
+| 7 | 완료 | #64 | `[Task] 공통 폼 제출 상태 패턴 정리` | `refactor/form-submit-state` | Story | 중복된 submit/loading/error 처리 방식을 공통 helper 또는 controller 패턴으로 정리 | 장소/식물/프로필 폼 회귀 테스트 통과 |
+| 8 | 완료 | #66 | `[Feature] User API 화면 연결` | `feature/user-api-ui-binding` | User | User 조회/수정/검색 repository를 프로필 또는 친구 검색 화면에 연결 | API mode provider 테스트와 화면 상태 테스트 통과 |
+| 9 | 완료 | #68 | `[Task] 환경 flavor 전략 문서화` | `docs/flavor-env-strategy` | Story | flavor는 앱 정체성, API mode/base URL은 CI/CD 주입으로 분리하는 기준 정리 | release/API 문서에 하이브리드 전략 반영 |
+| 10 | 완료 | #70 | `[Feature] Place API 화면 연결` | `feature/place-api-ui-binding` | Place | 장소 수정, 상세 조회, 삭제 흐름을 repository/provider에 연결 | Place create/update/detail/delete 관련 테스트 통과 |
+| 11 | 완료 | #72 | `[Feature] Plant API 화면 연결` | `feature/plant-api-ui-binding` | Plant | 식물 상세, 수정 정보, 수정, 삭제 흐름을 repository/provider에 연결 | Plant detail/edit/update/delete 관련 테스트 통과 |
+| 12 | 완료 | #74 | `[Feature] Image API 화면 연결` | `feature/image-api-ui-binding` | Story | 프로필, 장소, 식물, 메모 이미지 선택 흐름과 image repository 연결 가능 지점 정리 | 이미지 key/url 정책 확인 범위 내 테스트 통과 |
+| 13 | 완료 | #76 | `[Task] 백엔드 확인 항목 이슈 분리` | `docs/backend-api-open-questions` | Story | `docs/api-swagger-reference.md`의 백엔드 확인 필요 항목을 질문 단위로 정리 | Auth/Friend/Image/Error/Token/검색/Memo 질문 목록 반영 |
+| 14 | 완료 | #78 | `[Task] 테스트 전략 확정` | `docs/test-strategy-follow-up` | Story | Golden test, integration test 도입 범위와 실행 환경 결정 문서화 | 테스트 종류별 적용/보류 기준 문서화 |
+| 15 | 완료 | #80 | `[Task] 릴리즈 정책 확정` | `docs/release-policy-follow-up` | Story | signing secret, store 계정, release 자동화 결정 항목 정리 | 배포 전 확인 항목과 보류 사유 문서화 |
 
 ## 백엔드 확인이 필요한 항목
 
@@ -54,5 +60,5 @@
 
 ## 다음 작업 후보
 
-순서 15번 `[Task] 릴리즈 정책 확정`까지 병합되면 이 문서의 남은 작업 순서는 완료된다.
+순서 15번 `[Task] 릴리즈 정책 확정`까지 병합되어 이 문서의 남은 작업 순서는 완료되었다.
 이후 작업은 [후속 결정 체크리스트](follow-up-decision-checklist.md)를 확인해 새 이슈 또는 상위 Epic 기준으로 범위를 다시 정리한 뒤 진행한다.
