@@ -1,12 +1,11 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
-import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_controller.dart';
-import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_form_edit_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_image_add_button.dart';
@@ -15,8 +14,6 @@ import 'package:commonplant_frontend/shared/widgets/common_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-const String _placeEditInitialName = '스윗 홈_ 거실';
 
 class PlaceFormPage extends ConsumerStatefulWidget {
   const PlaceFormPage({super.key, this.placeId});
@@ -34,12 +31,12 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   late String _initialName;
   String? _initialAddress;
   String? _address;
-  String? _remoteInitialPlaceId;
+  String? _appliedEditPlaceId;
 
   @override
   void initState() {
     super.initState();
-    _initialName = widget.isEdit ? _placeEditInitialName : '';
+    _initialName = widget.isEdit ? placeFormDefaultEditName : '';
     _initialAddress = null;
     _nameController = TextEditingController(text: _initialName);
     _address = _initialAddress;
@@ -53,11 +50,11 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isEdit && ref.watch(useRemoteApiProvider)) {
+    if (widget.isEdit) {
       final placeId = widget.placeId!;
-      final remoteDetail = ref.watch(placeDetailProvider(placeId));
+      final editInfo = ref.watch(placeFormEditInfoProvider(placeId));
 
-      return remoteDetail.when(
+      return editInfo.when(
         loading: () {
           return const _PlaceFormStatusScaffold(
             title: '장소 정보를 불러오고 있어요',
@@ -70,18 +67,18 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
             title: '장소 정보를 불러오지 못했어요',
             message: '잠시 후 다시 시도해 주세요',
             actionLabel: '다시 시도',
-            onAction: () => ref.invalidate(placeDetailProvider(placeId)),
+            onAction: () => invalidatePlaceFormEditInfo(ref, placeId),
           );
         },
-        data: (summary) {
-          if (summary.name.trim().isEmpty) {
+        data: (info) {
+          if (info == null) {
             return const _PlaceFormStatusScaffold(
               title: '장소 정보를 찾을 수 없어요',
               message: '다시 장소 목록에서 선택해 주세요',
             );
           }
 
-          _applyRemoteSummary(summary);
+          _applyEditInfo(info);
 
           return _buildForm(context);
         },
@@ -128,18 +125,18 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
     );
   }
 
-  void _applyRemoteSummary(PlaceSummary summary) {
+  void _applyEditInfo(PlaceFormEditInfo info) {
     final placeId = widget.placeId;
 
-    if (placeId == null || _remoteInitialPlaceId == placeId) {
+    if (placeId == null || _appliedEditPlaceId == placeId) {
       return;
     }
 
-    _remoteInitialPlaceId = placeId;
-    _initialName = summary.name;
-    _initialAddress = summary.address;
-    _address = summary.address;
-    _nameController.text = summary.name;
+    _appliedEditPlaceId = placeId;
+    _initialName = info.name;
+    _initialAddress = info.address;
+    _address = info.address;
+    _nameController.text = info.name;
   }
 
   Future<void> _submit() async {
