@@ -26,6 +26,16 @@ void main() {
     expect(requiredPathParameter(const {'placeId': '   '}, 'placeId'), isNull);
   });
 
+  test('선택 query parameter는 값이 있을 때 trim한 문자열을 반환한다', () {
+    expect(optionalQueryParameter(const {}, 'placeId'), isNull);
+    expect(optionalQueryParameter(const {'placeId': ''}, 'placeId'), isNull);
+    expect(optionalQueryParameter(const {'placeId': '   '}, 'placeId'), isNull);
+    expect(
+      optionalQueryParameter(const {'placeId': ' place-1 '}, 'placeId'),
+      'place-1',
+    );
+  });
+
   testWidgets('route parameter 오류 화면이 누락된 parameter와 route 정보를 표시한다', (
     WidgetTester tester,
   ) async {

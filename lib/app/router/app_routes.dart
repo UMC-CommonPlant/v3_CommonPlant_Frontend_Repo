@@ -180,12 +180,12 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
       parameterName: 'placeId',
       builder: (placeId) => PlaceDetailPage(
         placeId: placeId,
-        role: placeDetailRoleFromQuery(state.uri.queryParameters['role']),
+        role: placeDetailRoleFromQuery(_queryParameter(state, 'role')),
       ),
     ),
     AppRouteNames.plantSearch => const PlantSearchPage(),
     AppRouteNames.plantCreateDetails => PlantFormPage(
-      initialPlantName: state.uri.queryParameters['name'],
+      initialPlantName: _queryParameter(state, 'name'),
     ),
     AppRouteNames.plantEdit => _buildWithRequiredPathParameter(
       route: route,
@@ -193,7 +193,7 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
       parameterName: 'plantId',
       builder: (plantId) => PlantFormPage(
         plantId: plantId,
-        placeId: state.uri.queryParameters['placeId'],
+        placeId: _queryParameter(state, 'placeId'),
       ),
     ),
     AppRouteNames.memoWrite => _buildWithRequiredPathParameter(
@@ -214,7 +214,7 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
       parameterName: 'plantId',
       builder: (plantId) => PlantDetailPage(
         plantId: plantId,
-        placeId: state.uri.queryParameters['placeId'],
+        placeId: _queryParameter(state, 'placeId'),
       ),
     ),
     _ => RoutePlaceholderPage(
@@ -222,6 +222,10 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
       pathParameters: state.pathParameters,
     ),
   };
+}
+
+String? _queryParameter(GoRouterState state, String parameterName) {
+  return optionalQueryParameter(state.uri.queryParameters, parameterName);
 }
 
 Widget _buildWithRequiredPathParameter({
@@ -243,7 +247,7 @@ Widget _buildWithRequiredPathParameter({
 }
 
 TermsNextDestination _termsNextDestination(GoRouterState state) {
-  return switch (state.uri.queryParameters['next']) {
+  return switch (_queryParameter(state, 'next')) {
     'home' => TermsNextDestination.home,
     _ => TermsNextDestination.profile,
   };
