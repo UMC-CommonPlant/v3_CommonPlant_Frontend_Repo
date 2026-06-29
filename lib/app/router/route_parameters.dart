@@ -2,11 +2,22 @@ String? requiredPathParameter(
   Map<String, String> pathParameters,
   String parameterName,
 ) {
-  final value = pathParameters[parameterName]?.trim();
+  return _normalizedParameter(pathParameters[parameterName]);
+}
 
-  if (value == null || value.isEmpty) {
+String? optionalQueryParameter(
+  Map<String, String> queryParameters,
+  String parameterName,
+) {
+  return _normalizedParameter(queryParameters[parameterName]);
+}
+
+String? _normalizedParameter(String? value) {
+  final normalized = value?.trim();
+
+  if (normalized == null || normalized.isEmpty) {
     return null;
   }
 
-  return value;
+  return normalized;
 }
