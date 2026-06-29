@@ -711,6 +711,7 @@ git commit -m "Refactor: API 응답 경계 정리 #이슈번호"
 ## 다음 구조 개선 후보
 
 다음 라운드는 [lib 구조 리팩토링 개선 방향](lib-refactoring-direction.md)의 남은 진단 항목을 기준으로 재평가한다.
+재평가한 2차 작업 단위는 [코드 가독성 리팩토링 2차 계획](code-readability-refactoring-round-2-plan.md)에서 관리한다.
 
 - `[Task] 라우트 파라미터 검증 헬퍼 추가`
 - `[Task] Place 폼 Controller 분리`
