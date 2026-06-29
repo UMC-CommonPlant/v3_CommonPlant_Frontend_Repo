@@ -1,15 +1,15 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
-import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/presentation/fixtures/place_friend_fixture.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_bottom_actions.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_candidate_list.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_search_status_view.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_selected_strip.dart';
-import 'package:commonplant_frontend/features/user/domain/entities/user_profile.dart';
 import 'package:commonplant_frontend/features/user/presentation/providers/user_search_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
@@ -31,30 +31,6 @@ class _PlaceFriendAddPageState extends ConsumerState<PlaceFriendAddPage> {
   final Set<String> _selectedIds = <String>{};
   final Map<String, PlaceFriendProfile> _remoteSelectedFriends =
       <String, PlaceFriendProfile>{};
-
-  static const List<PlaceFriendProfile> _friends = [
-    PlaceFriendProfile(
-      id: 'friend-1',
-      name: '커먼맘',
-      imageAsset: AppImageAssets.placeFriendAddCommonMom,
-    ),
-    PlaceFriendProfile(
-      id: 'friend-2',
-      name: '커먼인척',
-      imageAsset: AppImageAssets.placeFriendAddCommonFake,
-    ),
-    PlaceFriendProfile(
-      id: 'friend-3',
-      name: '커먼일뻔',
-      imageAsset: AppImageAssets.placeFriendAddCommonAlmost,
-    ),
-    PlaceFriendProfile(
-      id: 'friend-4',
-      name: '커먼일지도',
-      imageAsset: AppImageAssets.placeFriendAddCommonMaybe,
-    ),
-    PlaceFriendProfile(id: 'friend-5', name: '커먼 파파'),
-  ];
 
   @override
   void dispose() {
@@ -106,10 +82,14 @@ class _PlaceFriendAddPageState extends ConsumerState<PlaceFriendAddPage> {
     final useRemoteApi = ref.watch(useRemoteApiProvider);
     final localResults = query.isEmpty
         ? const <PlaceFriendProfile>[]
-        : _friends.where((friend) => friend.name.contains(query)).toList();
+        : placeFriendFixture
+              .where((friend) => friend.name.contains(query))
+              .toList();
     final selectedFriends = useRemoteApi
         ? _remoteSelectedFriends.values.toList()
-        : _friends.where((friend) => _selectedIds.contains(friend.id)).toList();
+        : placeFriendFixture
+              .where((friend) => _selectedIds.contains(friend.id))
+              .toList();
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -184,10 +164,10 @@ class _RemoteFriendCandidateList extends ConsumerWidget {
 
     return users.when(
       data: (items) {
-        final friends = _friendsFromUsers(items);
+        final friends = placeFriendsFromUsers(items);
 
         if (friends.isEmpty) {
-          return const _FriendSearchStatusView(
+          return const PlaceFriendSearchStatusView(
             title: '검색 결과가 없어요',
             message: '다른 닉네임으로 검색해 주세요',
           );
@@ -202,85 +182,16 @@ class _RemoteFriendCandidateList extends ConsumerWidget {
           },
         );
       },
-      error: (error, stackTrace) => _FriendSearchStatusView(
+      error: (error, stackTrace) => PlaceFriendSearchStatusView(
         title: '사용자 검색에 실패했어요',
         message: '잠시 후 다시 시도해 주세요',
         actionLabel: '다시 시도',
         onAction: () => ref.invalidate(userSearchProvider(query)),
       ),
-      loading: () => const _FriendSearchStatusView(
+      loading: () => const PlaceFriendSearchStatusView(
         title: '사용자를 검색하고 있어요',
         message: '닉네임 검색 결과를 준비하고 있어요',
         isLoading: true,
-      ),
-    );
-  }
-
-  List<PlaceFriendProfile> _friendsFromUsers(List<UserProfile> users) {
-    return [
-      for (final user in users)
-        PlaceFriendProfile(id: user.id, name: user.name),
-    ];
-  }
-}
-
-class _FriendSearchStatusView extends StatelessWidget {
-  const _FriendSearchStatusView({
-    required this.title,
-    required this.message,
-    this.isLoading = false,
-    this.actionLabel,
-    this.onAction,
-  });
-
-  final String title;
-  final String message;
-  final bool isLoading;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isLoading) ...[
-              const SizedBox.square(
-                dimension: AppSizes.iconLarge,
-                child: CircularProgressIndicator(strokeWidth: 3),
-              ),
-              const SizedBox(height: AppSpacing.x16),
-            ],
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.size16Medium.copyWith(
-                color: AppColors.textStrong,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.x8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.size14Medium.copyWith(
-                color: AppColors.textBody,
-              ),
-            ),
-            if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: AppSpacing.x16),
-              SizedBox(
-                width: AppSizes.smallButtonWidth,
-                child: TextButton(
-                  onPressed: onAction,
-                  child: Text(actionLabel!),
-                ),
-              ),
-            ],
-          ],
-        ),
       ),
     );
   }
