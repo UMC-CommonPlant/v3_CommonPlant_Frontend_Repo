@@ -12,9 +12,9 @@ import 'package:commonplant_frontend/features/place/presentation/providers/place
 import 'package:commonplant_frontend/features/place/presentation/providers/place_exit_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_fab.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_header.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_exit_dialog.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_plant_list.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
-import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
@@ -35,23 +35,11 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
   void _showExitDialog(BuildContext context) {
     final isExiting = ref.read(placeExitControllerProvider).isSubmitting;
 
-    showCommonDialog<void>(
-      context: context,
-      child: CommonDialogCard(
-        title: '장소를 나가시겠어요?',
-        message: '나가면 더 이상 식물을 관리할 수 없어요.',
-        actions: [
-          CommonDialogActionButton(
-            label: '취소',
-            foregroundColor: AppColors.textBody,
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          CommonDialogActionButton.confirm(
-            label: '나가기',
-            foregroundColor: AppColors.danger,
-            onPressed: isExiting ? null : () => _confirmExit(context),
-          ),
-        ],
+    unawaited(
+      showPlaceExitDialog(
+        context: context,
+        isExiting: isExiting,
+        onConfirm: () => _handleExitConfirmed(context),
       ),
     );
   }
@@ -103,12 +91,12 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
     );
   }
 
-  void _confirmExit(BuildContext context) {
+  void _handleExitConfirmed(BuildContext context) {
     Navigator.of(context).pop();
-    unawaited(_exitPlace(context));
+    unawaited(_handleExitResult(context));
   }
 
-  Future<void> _exitPlace(BuildContext context) async {
+  Future<void> _handleExitResult(BuildContext context) async {
     final result = await ref
         .read(placeExitControllerProvider.notifier)
         .exit(widget.placeId);
