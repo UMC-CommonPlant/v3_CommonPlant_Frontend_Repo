@@ -43,7 +43,7 @@ void main() {
       addTearDown(container.dispose);
 
       final request = (plantId: 'remote-plant', placeCode: 'fallback-place');
-      await container.read(remotePlantDetailViewProvider(request).future);
+      await container.read(plantRemoteDetailViewProvider(request).future);
 
       final detail = container
           .read(plantDetailViewProvider(request))
@@ -70,7 +70,7 @@ void main() {
       addTearDown(container.dispose);
 
       final request = (plantId: 'empty-plant', placeCode: null);
-      await container.read(remotePlantDetailViewProvider(request).future);
+      await container.read(plantRemoteDetailViewProvider(request).future);
 
       expect(
         container.read(plantDetailViewProvider(request)).requireValue,

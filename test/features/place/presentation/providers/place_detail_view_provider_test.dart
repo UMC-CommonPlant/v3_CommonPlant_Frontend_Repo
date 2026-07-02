@@ -43,7 +43,7 @@ void main() {
       addTearDown(container.dispose);
 
       final request = (placeId: 'remote-place', role: PlaceDetailRole.leader);
-      await container.read(remotePlaceDetailViewProvider(request).future);
+      await container.read(placeRemoteDetailViewProvider(request).future);
 
       final detail = container
           .read(placeDetailViewProvider(request))
@@ -68,7 +68,7 @@ void main() {
       addTearDown(container.dispose);
 
       final request = (placeId: 'empty-place', role: null);
-      await container.read(remotePlaceDetailViewProvider(request).future);
+      await container.read(placeRemoteDetailViewProvider(request).future);
 
       expect(
         container.read(placeDetailViewProvider(request)).requireValue,
