@@ -1,24 +1,20 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/app/router/route_paths.dart';
-import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
-import 'package:commonplant_frontend/core/theme/app_sizes.dart';
-import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_detail_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_delete_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_view_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_care_summary.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_delete_dialog.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_content_width.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_menu_button.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_hero.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_info_section.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_memo_preview_section.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
-import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
-import 'package:commonplant_frontend/shared/widgets/common_edit_delete_popup.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
-import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -34,69 +30,14 @@ class PlantDetailPage extends ConsumerStatefulWidget {
 }
 
 class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
-  void _showPlantMenu(BuildContext context, String? placeCode) {
-    showGeneralDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: '식물 상세 메뉴 닫기',
-      barrierColor: Colors.black.withValues(alpha: 0.4),
-      transitionDuration: Duration.zero,
-      pageBuilder: (dialogContext, _, _) {
-        return Material(
-          type: MaterialType.transparency,
-          child: Stack(
-            children: [
-              Positioned(
-                top:
-                    MediaQuery.paddingOf(dialogContext).top +
-                    AppSizes.navigationBarHeight +
-                    AppSpacing.x8,
-                right: AppSpacing.x20,
-                child: CommonEditDeletePopup(
-                  onEdit: () {
-                    Navigator.of(dialogContext).pop();
-                    context.push(
-                      AppRoutePaths.plantEditLocation(
-                        widget.plantId,
-                        placeId: placeCode,
-                      ),
-                    );
-                  },
-                  onDelete: () {
-                    Navigator.of(dialogContext).pop();
-                    _showDeleteDialog(context, placeCode);
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   void _showDeleteDialog(BuildContext context, String? placeCode) {
     final isDeleting = ref.read(plantDeleteControllerProvider).isSubmitting;
 
-    showCommonDialog<void>(
-      context: context,
-      child: CommonDialogCard(
-        title: '식물을 삭제할까요?',
-        message: '삭제하면 기록된 메모도 함께 사라져요.',
-        actions: [
-          CommonDialogActionButton(
-            label: '취소',
-            foregroundColor: AppColors.textBody,
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          CommonDialogActionButton.confirm(
-            label: '삭제',
-            foregroundColor: AppColors.danger,
-            onPressed: isDeleting
-                ? null
-                : () => _confirmDelete(context, placeCode),
-          ),
-        ],
+    unawaited(
+      showPlantDeleteDialog(
+        context: context,
+        isDeleting: isDeleting,
+        onConfirm: () => _handleDeleteConfirmed(context, placeCode),
       ),
     );
   }
@@ -134,12 +75,15 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
     );
   }
 
-  void _confirmDelete(BuildContext context, String? placeCode) {
+  void _handleDeleteConfirmed(BuildContext context, String? placeCode) {
     Navigator.of(context).pop();
-    unawaited(_deletePlant(context, placeCode));
+    unawaited(_handleDeleteResult(context, placeCode));
   }
 
-  Future<void> _deletePlant(BuildContext context, String? placeCode) async {
+  Future<void> _handleDeleteResult(
+    BuildContext context,
+    String? placeCode,
+  ) async {
     final result = await ref
         .read(plantDeleteControllerProvider.notifier)
         .delete(plantId: widget.plantId, placeCode: placeCode);
@@ -171,8 +115,16 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
         color: AppColors.textStrong,
         fontWeight: FontWeight.w700,
       ),
-      trailing: _PlantDetailMenuButton(
-        onPressed: () => _showPlantMenu(context, detail.placeCode),
+      trailing: PlantDetailMenuButton(
+        onEdit: () {
+          context.push(
+            AppRoutePaths.plantEditLocation(
+              widget.plantId,
+              placeId: detail.placeCode,
+            ),
+          );
+        },
+        onDelete: () => _showDeleteDialog(context, detail.placeCode),
       ),
       bodyPadding: EdgeInsets.zero,
       child: SizedBox(
@@ -198,37 +150,6 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
             PlantInfoSection(wateringCycleLabel: detail.wateringCycleLabel),
             const SizedBox(height: 82),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PlantDetailMenuButton extends StatelessWidget {
-  const _PlantDetailMenuButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: '식물 상세 메뉴',
-      child: ExcludeSemantics(
-        child: IconButton(
-          tooltip: '식물 상세 메뉴',
-          onPressed: onPressed,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints.tightFor(
-            width: AppSizes.navigationBarSideWidth,
-            height: AppSizes.navigationBarHeight,
-          ),
-          icon: const CommonSvgIcon(
-            AppIconAssets.shape,
-            width: 4,
-            height: 20,
-            color: AppColors.textStrong,
-          ),
         ),
       ),
     );
