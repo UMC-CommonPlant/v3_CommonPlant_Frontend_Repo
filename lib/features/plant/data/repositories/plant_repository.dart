@@ -1,5 +1,4 @@
 import 'package:commonplant_frontend/core/network/api_client.dart';
-import 'package:commonplant_frontend/core/network/api_response_parser.dart';
 import 'package:commonplant_frontend/features/plant/data/datasources/plant_remote_data_source.dart';
 import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
 import 'package:commonplant_frontend/features/plant/data/mappers/plant_mapper.dart';
@@ -23,9 +22,8 @@ class PlantRepository {
 
   Future<List<PlantSummary>> fetchPlants({int page = 0, int size = 20}) async {
     final data = await _remoteDataSource.getPlants(page: page, size: size);
-    final items = jsonListFromResponse(data, context: '식물 목록 조회');
 
-    return [for (final item in items) plantSummaryFromJson(item)];
+    return plantSummariesFromResponse(data);
   }
 
   Future<void> createPlant(CreatePlantRequest request, {MultipartFile? image}) {
@@ -34,16 +32,14 @@ class PlantRepository {
 
   Future<PlantDetail> fetchPlant({required String plantId}) async {
     final data = await _remoteDataSource.getPlant(plantId: plantId);
-    final object = unwrapJsonObject(data, context: '식물 상세 조회');
 
-    return plantDetailFromJson(object, fallbackId: plantId);
+    return plantDetailFromResponse(data, fallbackId: plantId);
   }
 
   Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {
     final data = await _remoteDataSource.getPlantEditInfo(plantId: plantId);
-    final object = unwrapJsonObject(data, context: '식물 수정 정보 조회');
 
-    return plantEditInfoFromJson(object);
+    return plantEditInfoFromResponse(data);
   }
 
   Future<void> updatePlant({

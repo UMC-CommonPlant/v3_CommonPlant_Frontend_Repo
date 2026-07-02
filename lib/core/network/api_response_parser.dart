@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:commonplant_frontend/core/network/api_exception.dart';
 
+// Swagger response wrappers are still being finalized; keep this parser broad
+// and move domain-specific interpretation into feature mappers.
 typedef JsonMap = Map<String, Object?>;
 
 JsonMap jsonObjectFromResponse(Object? data, {required String context}) {
