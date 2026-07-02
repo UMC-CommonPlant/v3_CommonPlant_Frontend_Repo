@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_detail_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_remote_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,30 +12,45 @@ final plantDetailViewProvider =
       PlantDetailViewRequest
     >((ref, request) {
       if (!ref.watch(useRemoteApiProvider)) {
-        return AsyncData(plantDetailFixture(placeCode: request.placeCode));
+        return AsyncData(ref.watch(plantLocalDetailViewProvider(request)));
       }
 
-      return ref.watch(remotePlantDetailViewProvider(request));
+      return ref.watch(plantRemoteDetailViewProvider(request));
     });
 
-final remotePlantDetailViewProvider =
+final plantLocalDetailViewProvider =
+    Provider.family<PlantDetailFixtureData, PlantDetailViewRequest>((
+      ref,
+      request,
+    ) {
+      return plantDetailFixture(placeCode: request.placeCode);
+    });
+
+final plantRemoteDetailViewProvider =
     FutureProvider.family<PlantDetailFixtureData?, PlantDetailViewRequest>((
       ref,
       request,
     ) async {
-      final fixture = plantDetailFixture(placeCode: request.placeCode);
+      final fixture = ref.watch(plantLocalDetailViewProvider(request));
       final detail = await ref.watch(
         remotePlantDetailProvider(request.plantId).future,
       );
 
-      if (detail.name.trim().isEmpty) {
-        return null;
-      }
-
-      return fixture.applyRemote(detail);
+      return applyRemotePlantDetailToFixture(fixture: fixture, detail: detail);
     }, retry: (retryCount, error) => null);
+
+PlantDetailFixtureData? applyRemotePlantDetailToFixture({
+  required PlantDetailFixtureData fixture,
+  required PlantDetail detail,
+}) {
+  if (detail.name.trim().isEmpty) {
+    return null;
+  }
+
+  return fixture.applyRemote(detail);
+}
 
 void invalidatePlantDetailView(WidgetRef ref, PlantDetailViewRequest request) {
   ref.invalidate(remotePlantDetailProvider(request.plantId));
-  ref.invalidate(remotePlantDetailViewProvider(request));
+  ref.invalidate(plantRemoteDetailViewProvider(request));
 }
