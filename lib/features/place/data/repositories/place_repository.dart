@@ -1,5 +1,4 @@
 import 'package:commonplant_frontend/core/network/api_client.dart';
-import 'package:commonplant_frontend/core/network/api_response_parser.dart';
 import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
 import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
 import 'package:commonplant_frontend/features/place/data/mappers/place_mapper.dart';
@@ -22,23 +21,20 @@ class PlaceRepository {
 
   Future<List<PlaceSummary>> fetchMyGardenPlaces() async {
     final data = await _remoteDataSource.getMyGarden();
-    final items = jsonListFromResponse(data, context: '내 정원 조회');
 
-    return [for (final item in items) placeSummaryFromJson(item)];
+    return placeSummariesFromResponse(data);
   }
 
   Future<List<PlaceSummary>> fetchUserPlaces() async {
     final data = await _remoteDataSource.getUserPlaces();
-    final items = jsonListFromResponse(data, context: '소속 장소 조회');
 
-    return [for (final item in items) placeSummaryFromJson(item)];
+    return placeSummariesFromResponse(data);
   }
 
   Future<PlaceSummary> fetchPlace(String code) async {
     final data = await _remoteDataSource.getPlace(code);
-    final object = unwrapJsonObject(data, context: '장소 조회');
 
-    return placeSummaryFromJson(object, fallbackId: code);
+    return placeSummaryFromResponse(data, fallbackId: code);
   }
 
   Future<void> createPlace(CreatePlaceRequest request, {MultipartFile? image}) {
