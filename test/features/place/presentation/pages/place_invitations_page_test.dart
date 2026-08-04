@@ -1,6 +1,7 @@
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_invitations_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -57,6 +58,8 @@ Future<void> _pumpPage(WidgetTester tester) async {
   addTearDown(tester.view.resetDevicePixelRatio);
   addTearDown(tester.view.resetPhysicalSize);
 
-  await tester.pumpWidget(const MaterialApp(home: PlaceInvitationsPage()));
+  await tester.pumpWidget(
+    const ProviderScope(child: MaterialApp(home: PlaceInvitationsPage())),
+  );
   await tester.pumpAndSettle();
 }

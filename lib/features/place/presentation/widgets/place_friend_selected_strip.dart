@@ -31,7 +31,7 @@ class PlaceSelectedFriendMarkStrip extends StatelessWidget {
   });
 
   final List<PlaceFriendProfile> friends;
-  final ValueChanged<String> onRemove;
+  final ValueChanged<PlaceFriendProfile> onRemove;
   final EdgeInsetsGeometry padding;
   final double height;
   final double separatorWidth;
@@ -55,7 +55,7 @@ class PlaceSelectedFriendMarkStrip extends StatelessWidget {
               key: ValueKey('selected-friend-${friend.id}'),
               friend: friend,
               height: height,
-              onRemove: () => onRemove(friend.id),
+              onRemove: () => onRemove(friend),
             );
           },
         ),

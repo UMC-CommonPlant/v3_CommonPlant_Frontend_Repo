@@ -1,9 +1,9 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
-import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/friend_management_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_bottom_actions.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_candidate_list.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_selected_strip.dart';
@@ -11,56 +11,38 @@ import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 const double _friendManagementSelectedMarkHeight = 57;
 const double _friendManagementSelectedMarkGap = 4;
 
-class FriendManagementPage extends StatefulWidget {
+class FriendManagementPage extends ConsumerWidget {
   const FriendManagementPage({super.key, required this.placeId});
 
   final String placeId;
 
-  @override
-  State<FriendManagementPage> createState() => _FriendManagementPageState();
-}
-
-class _FriendManagementPageState extends State<FriendManagementPage> {
-  final TextEditingController _searchController = TextEditingController();
-  final Set<String> _selectedIds = <String>{'friend-1', 'friend-2'};
-
-  static const List<PlaceFriendProfile> _friends = [
-    PlaceFriendProfile(
-      id: 'friend-1',
-      name: '커먼맘',
-      imageAsset: AppImageAssets.placeFriendAddCommonMom,
-    ),
-    PlaceFriendProfile(id: 'friend-2', name: '커먼 파파'),
-  ];
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _toggleFriend(String friendId) {
-    final friend = _friends.firstWhere((friend) => friend.id == friendId);
-
-    if (_selectedIds.contains(friendId)) {
-      _showDeleteDialog(friend);
+  void _toggleFriend(
+    BuildContext context,
+    WidgetRef ref,
+    FriendManagementState state,
+    PlaceFriendProfile friend,
+  ) {
+    if (state.isSelected(friend.id)) {
+      _showDeleteDialog(context, ref, friend);
       return;
     }
 
-    setState(() => _selectedIds.add(friendId));
+    ref
+        .read(friendManagementControllerProvider(placeId).notifier)
+        .select(friend);
   }
 
-  void _removeFriend(String friendId) {
-    final friend = _friends.firstWhere((friend) => friend.id == friendId);
-    _showDeleteDialog(friend);
-  }
-
-  void _showDeleteDialog(PlaceFriendProfile friend) {
+  void _showDeleteDialog(
+    BuildContext context,
+    WidgetRef ref,
+    PlaceFriendProfile friend,
+  ) {
     showCommonDialog<void>(
       context: context,
       barrierColor: AppColors.textHeadline.withValues(alpha: 0.6),
@@ -76,7 +58,9 @@ class _FriendManagementPageState extends State<FriendManagementPage> {
           CommonDialogActionButton.confirm(
             label: '삭제',
             onPressed: () {
-              setState(() => _selectedIds.remove(friend.id));
+              ref
+                  .read(friendManagementControllerProvider(placeId).notifier)
+                  .remove(friend);
               Navigator.of(context).pop();
             },
           ),
@@ -85,7 +69,7 @@ class _FriendManagementPageState extends State<FriendManagementPage> {
     );
   }
 
-  void _leavePage() {
+  void _leavePage(BuildContext context) {
     final navigator = Navigator.of(context);
 
     if (navigator.canPop()) {
@@ -98,23 +82,19 @@ class _FriendManagementPageState extends State<FriendManagementPage> {
       return;
     }
 
-    if (widget.placeId.isEmpty) {
+    if (placeId.isEmpty) {
       router.go(AppRoutePaths.home);
       return;
     }
 
-    router.go(AppRoutePaths.placeDetailLocation(widget.placeId));
+    router.go(AppRoutePaths.placeDetailLocation(placeId));
   }
 
   @override
-  Widget build(BuildContext context) {
-    final query = _searchController.text.trim();
-    final results = query.isEmpty
-        ? _friends
-        : _friends.where((friend) => friend.name.contains(query)).toList();
-    final selectedFriends = _friends
-        .where((friend) => _selectedIds.contains(friend.id))
-        .toList();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = friendManagementControllerProvider(placeId);
+    final state = ref.watch(provider);
+    final controller = ref.read(provider.notifier);
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -131,10 +111,10 @@ class _FriendManagementPageState extends State<FriendManagementPage> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              if (selectedFriends.isNotEmpty)
+              if (state.selectedFriends.isNotEmpty)
                 PlaceSelectedFriendMarkStrip(
-                  friends: selectedFriends,
-                  onRemove: _removeFriend,
+                  friends: state.selectedFriends,
+                  onRemove: (friend) => _showDeleteDialog(context, ref, friend),
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.x20,
                     AppSpacing.x16,
@@ -145,22 +125,22 @@ class _FriendManagementPageState extends State<FriendManagementPage> {
                   separatorWidth: _friendManagementSelectedMarkGap,
                 ),
               CommonSearchTextField(
-                controller: _searchController,
                 hintText: '닉네임 검색',
                 horizontalPadding: AppSpacing.x16,
-                onChanged: (_) => setState(() {}),
+                onChanged: controller.updateQuery,
               ),
               Expanded(
                 child: PlaceFriendCandidateList(
-                  friends: results,
-                  selectedIds: _selectedIds,
+                  friends: state.results,
+                  selectedIds: state.selectedIds,
                   topPadding: 0,
-                  onToggle: _toggleFriend,
+                  onToggle: (friend) =>
+                      _toggleFriend(context, ref, state, friend),
                 ),
               ),
               PlaceFriendBottomActions(
-                onCancel: _leavePage,
-                onComplete: _leavePage,
+                onCancel: () => _leavePage(context),
+                onComplete: () => _leavePage(context),
               ),
             ],
           ),

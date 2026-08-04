@@ -1,6 +1,5 @@
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
-import 'package:commonplant_frontend/features/user/domain/entities/user_profile.dart';
 
 const List<PlaceFriendProfile> placeFriendFixture = <PlaceFriendProfile>[
   PlaceFriendProfile(
@@ -25,9 +24,3 @@ const List<PlaceFriendProfile> placeFriendFixture = <PlaceFriendProfile>[
   ),
   PlaceFriendProfile(id: 'friend-5', name: '커먼 파파'),
 ];
-
-List<PlaceFriendProfile> placeFriendsFromUsers(List<UserProfile> users) {
-  return [
-    for (final user in users) PlaceFriendProfile(id: user.id, name: user.name),
-  ];
-}
