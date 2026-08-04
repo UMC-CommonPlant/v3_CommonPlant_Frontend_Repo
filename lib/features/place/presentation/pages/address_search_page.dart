@@ -3,9 +3,12 @@ import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/address_search_result.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/address_search_controller.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/address_search_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
-import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const double _addressSearchResultHeight = 72;
 const double _addressSearchResultGap = 4;
@@ -14,85 +17,12 @@ const double _addressSearchButtonHeight = 36;
 const double _addressSearchResultVerticalPadding = AppSpacing.x10;
 const double _addressSearchResultTextWidth = 219;
 
-class AddressSearchPage extends StatefulWidget {
+class AddressSearchPage extends ConsumerWidget {
   const AddressSearchPage({super.key});
 
   @override
-  State<AddressSearchPage> createState() => _AddressSearchPageState();
-}
-
-class _AddressSearchPageState extends State<AddressSearchPage> {
-  final TextEditingController _searchController = TextEditingController(
-    text: '신도림역',
-  );
-
-  static const List<_AddressSearchResult> _addresses = [
-    _AddressSearchResult(
-      titlePrefix: '신도림역',
-      titleSuffix: '1호선',
-      address: '서울 구로구 경인로 688',
-    ),
-    _AddressSearchResult(
-      titlePrefix: '신도림역',
-      titleSuffix: '2호선',
-      address: '서울 구로구 새말로 지하 117-21',
-      highlighted: true,
-    ),
-    _AddressSearchResult(
-      titlePrefix: '신도림역',
-      titleSuffix: '2호선',
-      address: '서울 구로구 새말로 지하 117-21',
-    ),
-    _AddressSearchResult(
-      titlePrefix: '신도림역',
-      titleSuffix: '2호선',
-      address: '서울 구로구 새말로 지하 117-21',
-    ),
-    _AddressSearchResult(
-      titlePrefix: '신도림역',
-      titleSuffix: '2호선',
-      address: '서울 구로구 새말로 지하 117-21',
-    ),
-    _AddressSearchResult(
-      titlePrefix: '신도림역',
-      titleSuffix: '2호선',
-      address: '서울 구로구 새말로 지하 117-21',
-    ),
-    _AddressSearchResult(
-      titlePrefix: '신도림역',
-      titleSuffix: '2호선',
-      address: '서울 구로구 새말로 지하 117-21',
-    ),
-    _AddressSearchResult(
-      titlePrefix: '신도림역',
-      titleSuffix: '2호선',
-      address: '서울 구로구 새말로 지하 117-21',
-    ),
-    _AddressSearchResult(
-      titlePrefix: '신도림역',
-      titleSuffix: '2호선',
-      address: '서울 구로구 새말로 지하 117-21',
-    ),
-  ];
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final query = _searchController.text.trim();
-    final results = query.isEmpty
-        ? _addresses
-        : _addresses
-              .where(
-                (result) =>
-                    result.title.contains(query) ||
-                    result.address.contains(query),
-              )
-              .toList();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final searchState = ref.watch(addressSearchControllerProvider);
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -106,11 +36,11 @@ class _AddressSearchPageState extends State<AddressSearchPage> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            CommonSearchTextField(
-              controller: _searchController,
-              hintText: '주소를 입력해 주세요.',
-              horizontalPadding: AppSpacing.x20,
-              onChanged: (_) => setState(() {}),
+            AddressSearchField(
+              initialQuery: searchState.query,
+              onChanged: ref
+                  .read(addressSearchControllerProvider.notifier)
+                  .updateQuery,
             ),
             const SizedBox(height: _addressSearchResultGap),
             Expanded(
@@ -118,11 +48,11 @@ class _AddressSearchPageState extends State<AddressSearchPage> {
                 padding: const EdgeInsets.only(
                   bottom: AppSpacing.x40 + AppSizes.navigationBarHeight,
                 ),
-                itemCount: results.length,
+                itemCount: searchState.results.length,
                 separatorBuilder: (_, _) =>
                     const SizedBox(height: _addressSearchResultGap),
                 itemBuilder: (context, index) {
-                  final result = results[index];
+                  final result = searchState.results[index];
 
                   return _AddressSearchResultTile(
                     result: result,
@@ -144,7 +74,7 @@ class _AddressSearchResultTile extends StatelessWidget {
     required this.onSelect,
   });
 
-  final _AddressSearchResult result;
+  final AddressSearchResult result;
   final VoidCallback onSelect;
 
   @override
@@ -192,7 +122,7 @@ class _AddressSearchResultTile extends StatelessWidget {
 class _AddressSearchResultTitle extends StatelessWidget {
   const _AddressSearchResultTitle({required this.result});
 
-  final _AddressSearchResult result;
+  final AddressSearchResult result;
 
   @override
   Widget build(BuildContext context) {
@@ -251,20 +181,4 @@ class _AddressSearchSelectButton extends StatelessWidget {
       ),
     );
   }
-}
-
-class _AddressSearchResult {
-  const _AddressSearchResult({
-    required this.titlePrefix,
-    required this.titleSuffix,
-    required this.address,
-    this.highlighted = false,
-  });
-
-  final String titlePrefix;
-  final String titleSuffix;
-  final String address;
-  final bool highlighted;
-
-  String get title => '$titlePrefix $titleSuffix';
 }
