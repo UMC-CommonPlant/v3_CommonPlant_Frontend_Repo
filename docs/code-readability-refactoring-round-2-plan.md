@@ -8,7 +8,7 @@
 
 **Tech Stack:** Flutter `3.35.7`, Dart `3.9.2`, `flutter_riverpod`, `go_router`, `flutter_test`, `flutter_lints`
 
-**Status:** 2026-06-29 `develop` 기준 2차 라운드 후보 문서화. 각 task는 별도 GitHub 이슈와 PR로 진행한다.
+**Status:** 2026-08-04 `develop` 기준 Task 1~8 병합 완료. 후속 보류 후보는 별도 이슈에서 다룬다.
 
 ---
 
@@ -143,7 +143,7 @@ lib/app/router/
 - Test: `test/features/place/presentation/pages/place_form_page_test.dart`
 - Test: `test/features/place/presentation/providers/place_form_controller_test.dart`
 
-- [ ] **Step 1: 기존 테스트 기준선을 확인한다**
+- [x] **Step 1: 기존 테스트 기준선을 확인한다**
 
 ```bash
 fvm flutter test test/features/place/presentation/pages/place_form_page_test.dart test/features/place/presentation/providers/place_form_controller_test.dart
@@ -151,7 +151,7 @@ fvm flutter test test/features/place/presentation/pages/place_form_page_test.dar
 
 Expected: 장소 등록/수정 page 테스트와 submit controller 테스트가 모두 통과한다.
 
-- [ ] **Step 2: status scaffold를 별도 widget으로 이동한다**
+- [x] **Step 2: status scaffold를 별도 widget으로 이동한다**
 
 이동 대상:
 
@@ -167,7 +167,7 @@ class PlaceFormStatusScaffold extends StatelessWidget
 
 page 파일은 loading/error/empty 상태에서 `PlaceFormStatusScaffold`를 호출만 한다.
 
-- [ ] **Step 3: create/edit scaffold를 별도 widget으로 이동한다**
+- [x] **Step 3: create/edit scaffold를 별도 widget으로 이동한다**
 
 이동 대상:
 
@@ -185,7 +185,7 @@ class PlaceEditScaffold extends StatelessWidget
 
 두 scaffold는 기존 callback API를 유지한다.
 
-- [ ] **Step 4: page 책임을 route event 연결 중심으로 줄인다**
+- [x] **Step 4: page 책임을 route event 연결 중심으로 줄인다**
 
 `PlaceFormPage`에는 아래 책임만 남긴다.
 
@@ -195,7 +195,7 @@ class PlaceEditScaffold extends StatelessWidget
 - submit 결과에 따른 `context.go` 또는 `context.push`
 - submit 실패 snackbar 표시
 
-- [ ] **Step 5: 검증한다**
+- [x] **Step 5: 검증한다**
 
 ```bash
 fvm dart format --output=none --set-exit-if-changed .
@@ -205,7 +205,7 @@ fvm flutter test test/features/place/presentation/pages/place_form_page_test.dar
 
 Expected: 모든 명령이 exit code 0으로 종료한다.
 
-- [ ] **Step 6: 커밋한다**
+- [x] **Step 6: 커밋한다**
 
 ```bash
 git add lib/features/place/presentation/pages/place_form_page.dart lib/features/place/presentation/widgets/place_form_scaffold.dart lib/features/place/presentation/widgets/place_form_status_scaffold.dart test/features/place/presentation/pages/place_form_page_test.dart
@@ -220,7 +220,7 @@ git commit -m "Refactor: 장소 폼 위젯 분리 #이슈번호"
 - Modify: `lib/app/router/app_routes.dart`
 - Test: `test/app/router/app_router_test.dart`
 
-- [ ] **Step 1: 기존 router 테스트 기준선을 확인한다**
+- [x] **Step 1: 기존 router 테스트 기준선을 확인한다**
 
 ```bash
 fvm flutter test test/app/router/app_router_test.dart
@@ -228,7 +228,7 @@ fvm flutter test test/app/router/app_router_test.dart
 
 Expected: 기존 router 테스트가 모두 통과한다.
 
-- [ ] **Step 2: query parameter helper를 추가한다**
+- [x] **Step 2: query parameter helper를 추가한다**
 
 추가할 API:
 
@@ -245,7 +245,7 @@ String? optionalQueryParameter(
 - trim 후 빈 문자열이면 `null`
 - 값이 있으면 trim한 문자열 반환
 
-- [ ] **Step 3: required path parameter test를 유지하고 query parameter test를 추가한다**
+- [x] **Step 3: required path parameter test를 유지하고 query parameter test를 추가한다**
 
 추가 테스트 범위:
 
@@ -253,7 +253,7 @@ String? optionalQueryParameter(
 - `optionalQueryParameter(const {'placeId': ''}, 'placeId')`는 `null`
 - `optionalQueryParameter(const {'placeId': ' place-1 '}, 'placeId')`는 `place-1`
 
-- [ ] **Step 4: route builder에서 query parameter 직접 접근을 helper로 교체한다**
+- [x] **Step 4: route builder에서 query parameter 직접 접근을 helper로 교체한다**
 
 교체 대상:
 
@@ -262,7 +262,7 @@ String? optionalQueryParameter(
 - `state.uri.queryParameters['name']`
 - `state.uri.queryParameters['next']`
 
-- [ ] **Step 5: 검증한다**
+- [x] **Step 5: 검증한다**
 
 ```bash
 fvm dart format --output=none --set-exit-if-changed .
@@ -272,7 +272,7 @@ fvm flutter test test/app/router/app_router_test.dart
 
 Expected: 모든 명령이 exit code 0으로 종료한다.
 
-- [ ] **Step 6: 커밋한다**
+- [x] **Step 6: 커밋한다**
 
 ```bash
 git add lib/app/router/route_parameters.dart lib/app/router/app_routes.dart test/app/router/app_router_test.dart
@@ -291,7 +291,7 @@ git commit -m "Refactor: 라우트 파라미터 정리 #이슈번호"
 - Create: `lib/features/place/presentation/widgets/place_friend_bottom_actions.dart`
 - Test: `test/features/place/presentation/pages/place_friend_add_page_test.dart`
 
-- [ ] **Step 1: 기존 친구 추가 테스트 기준선을 확인한다**
+- [x] **Step 1: 기존 친구 추가 테스트 기준선을 확인한다**
 
 ```bash
 fvm flutter test test/features/place/presentation/pages/place_friend_add_page_test.dart
@@ -299,7 +299,7 @@ fvm flutter test test/features/place/presentation/pages/place_friend_add_page_te
 
 Expected: 친구 검색, 선택, 완료 흐름 테스트가 모두 통과한다.
 
-- [ ] **Step 2: `PlaceFriendProfile`을 model 파일로 이동한다**
+- [x] **Step 2: `PlaceFriendProfile`을 model 파일로 이동한다**
 
 새 파일:
 
@@ -323,7 +323,7 @@ class PlaceFriendProfile {
 }
 ```
 
-- [ ] **Step 3: avatar, selected strip, candidate list, bottom actions를 파일 단위로 나눈다**
+- [x] **Step 3: avatar, selected strip, candidate list, bottom actions를 파일 단위로 나눈다**
 
 분리 기준:
 
@@ -332,11 +332,11 @@ class PlaceFriendProfile {
 - `PlaceFriendCandidateList`는 검색 후보 list와 toggle callback만 담당한다.
 - `PlaceFriendBottomActions`는 cancel/complete button row만 담당한다.
 
-- [ ] **Step 4: 기존 barrel 파일을 만들지 않는다**
+- [x] **Step 4: 기존 barrel 파일을 만들지 않는다**
 
 각 page는 필요한 widget 파일을 직접 import한다. `widgets/place_friend_widgets.dart` 같은 barrel 파일은 만들지 않는다.
 
-- [ ] **Step 5: 검증한다**
+- [x] **Step 5: 검증한다**
 
 ```bash
 fvm dart format --output=none --set-exit-if-changed .
@@ -346,7 +346,7 @@ fvm flutter test test/features/place/presentation/pages/place_friend_add_page_te
 
 Expected: 모든 명령이 exit code 0으로 종료한다.
 
-- [ ] **Step 6: 커밋한다**
+- [x] **Step 6: 커밋한다**
 
 ```bash
 git add lib/features/place/presentation/models/place_friend_profile.dart lib/features/place/presentation/widgets/place_friend_*.dart lib/features/place/presentation/pages/place_friend_add_page.dart test/features/place/presentation/pages/place_friend_add_page_test.dart
@@ -362,7 +362,7 @@ git commit -m "Refactor: 친구 선택 위젯 분리 #이슈번호"
 - Create: `lib/features/place/presentation/widgets/place_friend_search_status_view.dart`
 - Test: `test/features/place/presentation/pages/place_friend_add_page_test.dart`
 
-- [ ] **Step 1: 기존 테스트 기준선을 확인한다**
+- [x] **Step 1: 기존 테스트 기준선을 확인한다**
 
 ```bash
 fvm flutter test test/features/place/presentation/pages/place_friend_add_page_test.dart
@@ -370,7 +370,7 @@ fvm flutter test test/features/place/presentation/pages/place_friend_add_page_te
 
 Expected: 기존 테스트가 모두 통과한다.
 
-- [ ] **Step 2: local friend fixture를 page 밖으로 이동한다**
+- [x] **Step 2: local friend fixture를 page 밖으로 이동한다**
 
 이동 대상:
 
@@ -408,7 +408,7 @@ const List<PlaceFriendProfile> placeFriendFixture = <PlaceFriendProfile>[
 
 page는 `placeFriendFixture`를 읽어 local search 결과를 만든다.
 
-- [ ] **Step 3: remote search status view를 별도 widget으로 이동한다**
+- [x] **Step 3: remote search status view를 별도 widget으로 이동한다**
 
 이동 대상:
 
@@ -422,7 +422,7 @@ _FriendSearchStatusView
 class PlaceFriendSearchStatusView extends StatelessWidget
 ```
 
-- [ ] **Step 4: remote user 변환 함수를 page 밖으로 이동한다**
+- [x] **Step 4: remote user 변환 함수를 page 밖으로 이동한다**
 
 추가할 함수:
 
@@ -432,7 +432,7 @@ List<PlaceFriendProfile> placeFriendsFromUsers(List<UserProfile> users)
 
 위치는 `place_friend_fixture.dart` 또는 별도 mapper 파일 중 하나로 둔다. 이 라운드에서는 API schema 변경 없이 `UserProfile.id`, `UserProfile.name`만 사용한다.
 
-- [ ] **Step 5: 검증한다**
+- [x] **Step 5: 검증한다**
 
 ```bash
 fvm dart format --output=none --set-exit-if-changed .
@@ -442,7 +442,7 @@ fvm flutter test test/features/place/presentation/pages/place_friend_add_page_te
 
 Expected: 모든 명령이 exit code 0으로 종료한다.
 
-- [ ] **Step 6: 커밋한다**
+- [x] **Step 6: 커밋한다**
 
 ```bash
 git add lib/features/place/presentation/pages/place_friend_add_page.dart lib/features/place/presentation/fixtures/place_friend_fixture.dart lib/features/place/presentation/widgets/place_friend_search_status_view.dart test/features/place/presentation/pages/place_friend_add_page_test.dart
@@ -459,7 +459,7 @@ git commit -m "Refactor: 친구 추가 경계 정리 #이슈번호"
 - Create: `lib/features/place/presentation/widgets/place_invitation_list_item.dart`
 - Test: `test/features/place/presentation/pages/place_invitations_page_test.dart`
 
-- [ ] **Step 1: 기존 테스트 기준선을 확인한다**
+- [x] **Step 1: 기존 테스트 기준선을 확인한다**
 
 ```bash
 fvm flutter test test/features/place/presentation/pages/place_invitations_page_test.dart
@@ -467,7 +467,7 @@ fvm flutter test test/features/place/presentation/pages/place_invitations_page_t
 
 Expected: 초대 수락/삭제 상태 테스트가 모두 통과한다.
 
-- [ ] **Step 2: invitation model과 fixture를 page 밖으로 이동한다**
+- [x] **Step 2: invitation model과 fixture를 page 밖으로 이동한다**
 
 이동 대상:
 
@@ -483,7 +483,7 @@ class PlaceInvitation
 const List<PlaceInvitation> placeInvitationFixture
 ```
 
-- [ ] **Step 3: invitation list item을 별도 widget으로 이동한다**
+- [x] **Step 3: invitation list item을 별도 widget으로 이동한다**
 
 이동 대상:
 
@@ -504,7 +504,7 @@ class PlaceInvitationListItem extends StatelessWidget
 
 나머지 하위 widget은 새 파일 안에서 private으로 유지한다.
 
-- [ ] **Step 4: page 책임을 action result state로 축소한다**
+- [x] **Step 4: page 책임을 action result state로 축소한다**
 
 `PlaceInvitationsPage`에는 아래 책임만 남긴다.
 
@@ -512,7 +512,7 @@ class PlaceInvitationListItem extends StatelessWidget
 - fixture 순회
 - accept/delete callback 연결
 
-- [ ] **Step 5: 검증한다**
+- [x] **Step 5: 검증한다**
 
 ```bash
 fvm dart format --output=none --set-exit-if-changed .
@@ -522,7 +522,7 @@ fvm flutter test test/features/place/presentation/pages/place_invitations_page_t
 
 Expected: 모든 명령이 exit code 0으로 종료한다.
 
-- [ ] **Step 6: 커밋한다**
+- [x] **Step 6: 커밋한다**
 
 ```bash
 git add lib/features/place/presentation/pages/place_invitations_page.dart lib/features/place/presentation/models/place_invitation.dart lib/features/place/presentation/fixtures/place_invitation_fixture.dart lib/features/place/presentation/widgets/place_invitation_list_item.dart test/features/place/presentation/pages/place_invitations_page_test.dart
@@ -543,7 +543,7 @@ git commit -m "Refactor: 초대 화면 위젯 분리 #이슈번호"
 - Test: `test/features/place/presentation/providers/place_exit_controller_test.dart`
 - Test: `test/features/plant/presentation/providers/plant_delete_controller_test.dart`
 
-- [ ] **Step 1: 기존 상세 화면 테스트 기준선을 확인한다**
+- [x] **Step 1: 기존 상세 화면 테스트 기준선을 확인한다**
 
 ```bash
 fvm flutter test test/features/place/presentation/pages/place_detail_page_test.dart test/features/plant/presentation/pages/plant_detail_page_test.dart test/features/place/presentation/providers/place_exit_controller_test.dart test/features/plant/presentation/providers/plant_delete_controller_test.dart
@@ -551,7 +551,7 @@ fvm flutter test test/features/place/presentation/pages/place_detail_page_test.d
 
 Expected: Place/Plant 상세 page와 action controller 테스트가 모두 통과한다.
 
-- [ ] **Step 2: Place exit dialog를 별도 widget으로 이동한다**
+- [x] **Step 2: Place exit dialog를 별도 widget으로 이동한다**
 
 새 public API:
 
@@ -565,7 +565,7 @@ Future<void> showPlaceExitDialog({
 
 page는 `isExiting`을 읽고 `onConfirm`만 넘긴다.
 
-- [ ] **Step 3: Plant menu button과 delete dialog를 별도 widget으로 이동한다**
+- [x] **Step 3: Plant menu button과 delete dialog를 별도 widget으로 이동한다**
 
 새 public API:
 
@@ -581,7 +581,7 @@ Future<void> showPlantDeleteDialog({
 
 page는 edit/delete callback 연결만 담당한다.
 
-- [ ] **Step 4: action result 처리 이름을 통일한다**
+- [x] **Step 4: action result 처리 이름을 통일한다**
 
 권장 private method 이름:
 
@@ -592,7 +592,7 @@ page는 edit/delete callback 연결만 담당한다.
 
 navigation과 snackbar는 page에 남긴다. controller에는 `BuildContext`를 넘기지 않는다.
 
-- [ ] **Step 5: 검증한다**
+- [x] **Step 5: 검증한다**
 
 ```bash
 fvm dart format --output=none --set-exit-if-changed .
@@ -602,7 +602,7 @@ fvm flutter test test/features/place/presentation/pages/place_detail_page_test.d
 
 Expected: 모든 명령이 exit code 0으로 종료한다.
 
-- [ ] **Step 6: 커밋한다**
+- [x] **Step 6: 커밋한다**
 
 ```bash
 git add lib/features/place/presentation/pages/place_detail_page.dart lib/features/place/presentation/widgets/place_exit_dialog.dart lib/features/plant/presentation/pages/plant_detail_page.dart lib/features/plant/presentation/widgets/plant_detail_menu_button.dart lib/features/plant/presentation/widgets/plant_delete_dialog.dart test/features/place/presentation/pages/place_detail_page_test.dart test/features/plant/presentation/pages/plant_detail_page_test.dart
@@ -618,7 +618,7 @@ git commit -m "Refactor: 상세 액션 UI 분리 #이슈번호"
 - Test: `test/features/place/presentation/providers/place_detail_view_provider_test.dart`
 - Test: `test/features/plant/presentation/providers/plant_detail_view_provider_test.dart`
 
-- [ ] **Step 1: 기존 provider 테스트 기준선을 확인한다**
+- [x] **Step 1: 기존 provider 테스트 기준선을 확인한다**
 
 ```bash
 fvm flutter test test/features/place/presentation/providers/place_detail_view_provider_test.dart test/features/plant/presentation/providers/plant_detail_view_provider_test.dart
@@ -626,7 +626,7 @@ fvm flutter test test/features/place/presentation/providers/place_detail_view_pr
 
 Expected: local fixture mode와 remote mode 테스트가 모두 통과한다.
 
-- [ ] **Step 2: local fixture provider와 remote view provider 이름을 명확히 한다**
+- [x] **Step 2: local fixture provider와 remote view provider 이름을 명확히 한다**
 
 권장 이름:
 
@@ -644,7 +644,7 @@ placeDetailViewProvider
 plantDetailViewProvider
 ```
 
-- [ ] **Step 3: remote detail apply 함수를 분리한다**
+- [x] **Step 3: remote detail apply 함수를 분리한다**
 
 권장 함수 이름:
 
@@ -662,7 +662,7 @@ PlantDetailFixtureData? applyRemotePlantDetailToFixture({
 
 함수는 provider 안의 inline 로직보다 이름으로 의도를 드러내는 것을 목표로 한다.
 
-- [ ] **Step 4: 검증한다**
+- [x] **Step 4: 검증한다**
 
 ```bash
 fvm dart format --output=none --set-exit-if-changed .
@@ -672,7 +672,7 @@ fvm flutter test test/features/place/presentation/providers/place_detail_view_pr
 
 Expected: 모든 명령이 exit code 0으로 종료한다.
 
-- [ ] **Step 5: 커밋한다**
+- [x] **Step 5: 커밋한다**
 
 ```bash
 git add lib/features/place/presentation/providers/place_detail_view_provider.dart lib/features/plant/presentation/providers/plant_detail_view_provider.dart test/features/place/presentation/providers/place_detail_view_provider_test.dart test/features/plant/presentation/providers/plant_detail_view_provider_test.dart
@@ -693,7 +693,7 @@ git commit -m "Refactor: 상세 뷰 경계 정리 #이슈번호"
 - Test: `test/features/plant/data/mappers/plant_mapper_test.dart`
 - Test: `test/features/plant/data/repositories/plant_repository_test.dart`
 
-- [ ] **Step 1: 기존 data 계층 테스트 기준선을 확인한다**
+- [x] **Step 1: 기존 data 계층 테스트 기준선을 확인한다**
 
 ```bash
 fvm flutter test test/features/place/data/mappers/place_mapper_test.dart test/features/place/data/repositories/place_repository_test.dart test/features/plant/data/mappers/plant_mapper_test.dart test/features/plant/data/repositories/plant_repository_test.dart
@@ -701,7 +701,7 @@ fvm flutter test test/features/place/data/mappers/place_mapper_test.dart test/fe
 
 Expected: mapper와 repository 테스트가 모두 통과한다.
 
-- [ ] **Step 2: Swagger 미확정 영역을 건드리지 않는다**
+- [x] **Step 2: Swagger 미확정 영역을 건드리지 않는다**
 
 이 task에서 하지 않는 것:
 
@@ -710,7 +710,7 @@ Expected: mapper와 repository 테스트가 모두 통과한다.
 - 백엔드 wrapper 이름 임의 확정
 - `jsonListFromResponse` fallback key 제거
 
-- [ ] **Step 3: repository에서 반복되는 list/detail unwrap 호출을 mapper 함수로 이동한다**
+- [x] **Step 3: repository에서 반복되는 list/detail unwrap 호출을 mapper 함수로 이동한다**
 
 권장 함수 이름:
 
@@ -723,7 +723,7 @@ PlantDetail plantDetailFromResponse(Object? data, {required String fallbackId})
 
 repository는 datasource 호출 후 위 mapper 함수만 호출한다.
 
-- [ ] **Step 4: parser helper의 소유권을 문서화한다**
+- [x] **Step 4: parser helper의 소유권을 문서화한다**
 
 `api_response_parser.dart` 상단에 짧은 주석을 추가한다.
 
@@ -732,7 +732,7 @@ repository는 datasource 호출 후 위 mapper 함수만 호출한다.
 // and move domain-specific interpretation into feature mappers.
 ```
 
-- [ ] **Step 5: 검증한다**
+- [x] **Step 5: 검증한다**
 
 ```bash
 fvm dart format --output=none --set-exit-if-changed .
@@ -742,27 +742,42 @@ fvm flutter test test/features/place/data/mappers/place_mapper_test.dart test/fe
 
 Expected: 모든 명령이 exit code 0으로 종료한다.
 
-- [ ] **Step 6: 커밋한다**
+- [x] **Step 6: 커밋한다**
 
 ```bash
 git add lib/core/network/api_response_parser.dart lib/features/place/data/mappers/place_mapper.dart lib/features/place/data/repositories/place_repository.dart lib/features/plant/data/mappers/plant_mapper.dart lib/features/plant/data/repositories/plant_repository.dart test/features/place/data/mappers/place_mapper_test.dart test/features/place/data/repositories/place_repository_test.dart test/features/plant/data/mappers/plant_mapper_test.dart test/features/plant/data/repositories/plant_repository_test.dart
 git commit -m "Refactor: API 매퍼 책임 정리 #이슈번호"
 ```
 
+## 완료 이력
+
+| Task | 이슈 | PR | 병합 커밋 |
+| --- | --- | --- | --- |
+| Place form page 분해 | #147 | #148 | `ebc3a88` |
+| route parameter helper 보강 | #149 | #150 | `b1ed8f9` |
+| Place friend selection widget 분해 | #151 | #152 | `f755fd1` |
+| Place friend add page 경계 정리 | #153 | #154 | `8ef7e4e` |
+| Place invitation page 경계 정리 | #155 | #156 | `89af8b3` |
+| detail action UI 경계 정리 | #157 | #158 | `074321b` |
+| detail fixture/remote view 경계 정리 | #159 | #160 | `ff095c1` |
+| mapper/parser 책임 재평가 | #161 | #162 | `5dd9c44` |
+
+각 task의 명시된 테스트와 마지막 PR의 전체 `fvm flutter test`는 병합 전 통과했다. PR #162의 GitHub Actions quality 검사도 통과했다.
+
 ## 완료 판단
 
 2차 라운드는 아래 조건을 만족하면 완료로 본다.
 
-- [ ] `place_form_page.dart`가 250줄 안팎의 route/event 연결 파일로 축소된다.
-- [ ] `place_friend_selection_widgets.dart`가 역할별 파일로 분리되거나 제거된다.
-- [ ] `place_friend_add_page.dart`에서 local fixture와 remote search status view가 분리된다.
-- [ ] `place_invitations_page.dart`에서 invitation fixture와 list item widget이 분리된다.
-- [ ] required/optional route parameter 규칙이 helper와 router test로 확인된다.
-- [ ] Place/Plant detail page의 dialog/menu UI가 page 밖으로 분리된다.
-- [ ] detail view provider에서 local fixture mode와 remote mode의 이름이 분명해진다.
-- [ ] repository의 response unwrap 책임이 feature mapper로 일부 이동한다.
-- [ ] 각 PR에서 해당 task에 명시된 `fvm flutter test` 명령이 통과한다.
-- [ ] 라운드 마지막 PR에서 전체 `fvm flutter test`가 통과한다.
+- [x] `place_form_page.dart`가 250줄 안팎의 route/event 연결 파일로 축소된다.
+- [x] `place_friend_selection_widgets.dart`가 역할별 파일로 분리되거나 제거된다.
+- [x] `place_friend_add_page.dart`에서 local fixture와 remote search status view가 분리된다.
+- [x] `place_invitations_page.dart`에서 invitation fixture와 list item widget이 분리된다.
+- [x] required/optional route parameter 규칙이 helper와 router test로 확인된다.
+- [x] Place/Plant detail page의 dialog/menu UI가 page 밖으로 분리된다.
+- [x] detail view provider에서 local fixture mode와 remote mode의 이름이 분명해진다.
+- [x] repository의 response unwrap 책임이 feature mapper로 일부 이동한다.
+- [x] 각 PR에서 해당 task에 명시된 `fvm flutter test` 명령이 통과한다.
+- [x] 라운드 마지막 PR에서 전체 `fvm flutter test`가 통과한다.
 
 ## 후속 보류 후보
 
