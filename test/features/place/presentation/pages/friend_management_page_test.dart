@@ -1,12 +1,15 @@
 import 'package:commonplant_frontend/features/place/presentation/pages/friend_management_page.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('친구 관리 기본 화면은 선택 친구와 검색 결과를 표시한다', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: FriendManagementPage(placeId: 'place-1')),
+      const ProviderScope(
+        child: MaterialApp(home: FriendManagementPage(placeId: 'place-1')),
+      ),
     );
 
     expect(find.text('친구 관리'), findsOneWidget);
@@ -21,7 +24,9 @@ void main() {
 
   testWidgets('선택 친구 삭제 버튼은 삭제 확인 알럿을 표시한다', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: FriendManagementPage(placeId: 'place-1')),
+      const ProviderScope(
+        child: MaterialApp(home: FriendManagementPage(placeId: 'place-1')),
+      ),
     );
 
     await tester.tap(
@@ -37,7 +42,9 @@ void main() {
 
   testWidgets('삭제 확인 후 친구 선택 상태를 해제한다', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: FriendManagementPage(placeId: 'place-1')),
+      const ProviderScope(
+        child: MaterialApp(home: FriendManagementPage(placeId: 'place-1')),
+      ),
     );
 
     await tester.tap(
@@ -60,7 +67,9 @@ void main() {
 
   testWidgets('닉네임 검색어로 친구 목록을 필터링한다', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: FriendManagementPage(placeId: 'place-1')),
+      const ProviderScope(
+        child: MaterialApp(home: FriendManagementPage(placeId: 'place-1')),
+      ),
     );
 
     await tester.enterText(find.byType(TextField), '파파');

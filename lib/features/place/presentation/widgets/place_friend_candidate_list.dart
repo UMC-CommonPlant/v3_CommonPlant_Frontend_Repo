@@ -20,7 +20,7 @@ class PlaceFriendCandidateList extends StatelessWidget {
 
   final List<PlaceFriendProfile> friends;
   final Set<String> selectedIds;
-  final ValueChanged<String> onToggle;
+  final ValueChanged<PlaceFriendProfile> onToggle;
   final double topPadding;
   final double bottomPadding;
 
@@ -41,7 +41,7 @@ class PlaceFriendCandidateList extends StatelessWidget {
         return _FriendCandidateTile(
           friend: friend,
           isSelected: isSelected,
-          onTap: () => onToggle(friend.id),
+          onTap: () => onToggle(friend),
         );
       },
     );
