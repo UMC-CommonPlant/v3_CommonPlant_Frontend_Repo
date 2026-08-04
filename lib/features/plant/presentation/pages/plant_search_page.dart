@@ -3,38 +3,20 @@ import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/plant/presentation/models/plant_candidate.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_search_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class PlantSearchPage extends StatefulWidget {
+class PlantSearchPage extends ConsumerWidget {
   const PlantSearchPage({super.key});
 
   @override
-  State<PlantSearchPage> createState() => _PlantSearchPageState();
-}
-
-class _PlantSearchPageState extends State<PlantSearchPage> {
-  final TextEditingController _searchController = TextEditingController();
-
-  static const List<_PlantCandidate> _plants = [
-    _PlantCandidate(name: '몬스테라 델리오사'),
-    _PlantCandidate(name: '몬스테라 알보 바리에가타'),
-    _PlantCandidate(name: '몬스테라 보르시지아나'),
-    _PlantCandidate(name: '무늬 몬스테라'),
-  ];
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final hasQuery = _normalize(_searchController.text).isNotEmpty;
-    final results = _matchingPlants(_searchController.text);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final searchState = ref.watch(plantSearchControllerProvider);
 
     return CommonScaffold(
       title: '식물 등록  (1/2)',
@@ -49,16 +31,17 @@ class _PlantSearchPageState extends State<PlantSearchPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             CommonSearchTextField(
-              controller: _searchController,
               hintText: '식물을 입력해 주세요.',
               horizontalPadding: AppSpacing.x20,
               iconTextSpacing: AppSpacing.x12,
-              onChanged: (_) => setState(() {}),
+              onChanged: ref
+                  .read(plantSearchControllerProvider.notifier)
+                  .updateQuery,
             ),
-            if (results.isNotEmpty) ...[
+            if (searchState.results.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.x8),
               _PlantSearchResultList(
-                plants: results,
+                plants: searchState.results,
                 onSelected: (plant) => context.push(
                   Uri(
                     path: AppRoutePaths.plantCreateDetails,
@@ -66,28 +49,12 @@ class _PlantSearchPageState extends State<PlantSearchPage> {
                   ).toString(),
                 ),
               ),
-            ] else if (hasQuery)
+            ] else if (searchState.hasQuery)
               const _PlantSearchEmptyState(),
           ],
         ),
       ),
     );
-  }
-
-  List<_PlantCandidate> _matchingPlants(String value) {
-    final query = _normalize(value);
-
-    if (query.isEmpty) {
-      return const [];
-    }
-
-    return _plants
-        .where((plant) => _normalize(plant.name).contains(query))
-        .toList(growable: false);
-  }
-
-  String _normalize(String value) {
-    return value.replaceAll(RegExp(r'\s+'), '').toLowerCase();
   }
 }
 
@@ -97,8 +64,8 @@ class _PlantSearchResultList extends StatelessWidget {
     required this.onSelected,
   });
 
-  final List<_PlantCandidate> plants;
-  final ValueChanged<_PlantCandidate> onSelected;
+  final List<PlantCandidate> plants;
+  final ValueChanged<PlantCandidate> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +89,7 @@ class _PlantSearchResultTile extends StatelessWidget {
     required this.onTap,
   });
 
-  final _PlantCandidate plant;
+  final PlantCandidate plant;
   final bool isHighlighted;
   final VoidCallback onTap;
 
@@ -188,10 +155,4 @@ class _PlantSearchEmptyState extends StatelessWidget {
       ),
     );
   }
-}
-
-class _PlantCandidate {
-  const _PlantCandidate({required this.name});
-
-  final String name;
 }
