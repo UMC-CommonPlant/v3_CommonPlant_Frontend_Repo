@@ -21,32 +21,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class PlaceDetailPage extends ConsumerStatefulWidget {
+class PlaceDetailPage extends ConsumerWidget {
   const PlaceDetailPage({super.key, required this.placeId, this.role});
 
   final String placeId;
   final PlaceDetailRole? role;
 
-  @override
-  ConsumerState<PlaceDetailPage> createState() => _PlaceDetailPageState();
-}
-
-class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
-  void _showExitDialog(BuildContext context) {
+  void _showExitDialog(BuildContext context, WidgetRef ref) {
     final isExiting = ref.read(placeExitControllerProvider).isSubmitting;
 
     unawaited(
       showPlaceExitDialog(
         context: context,
         isExiting: isExiting,
-        onConfirm: () => _handleExitConfirmed(context),
+        onConfirm: () => _handleExitConfirmed(context, ref),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final request = (placeId: widget.placeId, role: widget.role);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final request = (placeId: placeId, role: role);
     final detailState = ref.watch(placeDetailViewProvider(request));
 
     return detailState.when(
@@ -63,7 +58,7 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
           );
         }
 
-        return _buildScaffold(context, detail);
+        return _buildScaffold(context, ref, detail);
       },
       error: (error, stackTrace) {
         return _buildStatusScaffold(
@@ -91,17 +86,17 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
     );
   }
 
-  void _handleExitConfirmed(BuildContext context) {
+  void _handleExitConfirmed(BuildContext context, WidgetRef ref) {
     Navigator.of(context).pop();
-    unawaited(_handleExitResult(context));
+    unawaited(_handleExitResult(context, ref));
   }
 
-  Future<void> _handleExitResult(BuildContext context) async {
+  Future<void> _handleExitResult(BuildContext context, WidgetRef ref) async {
     final result = await ref
         .read(placeExitControllerProvider.notifier)
-        .exit(widget.placeId);
+        .exit(placeId);
 
-    if (!mounted || !context.mounted) {
+    if (!context.mounted) {
       return;
     }
 
@@ -121,7 +116,11 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
     ).showSnackBar(SnackBar(content: Text(errorMessage)));
   }
 
-  Widget _buildScaffold(BuildContext context, PlaceDetailFixtureData detail) {
+  Widget _buildScaffold(
+    BuildContext context,
+    WidgetRef ref,
+    PlaceDetailFixtureData detail,
+  ) {
     return CommonScaffold(
       title: 'My place',
       navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
@@ -130,9 +129,9 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
       ),
       bodyPadding: EdgeInsets.zero,
       floatingActionButton: PlaceDetailFab(
-        placeId: widget.placeId,
+        placeId: placeId,
         canEditPlace: detail.role == PlaceDetailRole.leader,
-        onExit: () => _showExitDialog(context),
+        onExit: () => _showExitDialog(context, ref),
       ),
       child: SizedBox(
         width: double.infinity,
@@ -142,14 +141,14 @@ class _PlaceDetailPageState extends ConsumerState<PlaceDetailPage> {
             child: Column(
               children: [
                 PlaceDetailHeader(
-                  placeId: widget.placeId,
+                  placeId: placeId,
                   name: detail.name,
                   address: detail.address,
                   sunlightLabel: detail.sunlightLabel,
                   humidityLabel: detail.humidityLabel,
                   friends: detail.friends,
                 ),
-                PlacePlantList(placeId: widget.placeId, plants: detail.plants),
+                PlacePlantList(placeId: placeId, plants: detail.plants),
               ],
             ),
           ),
