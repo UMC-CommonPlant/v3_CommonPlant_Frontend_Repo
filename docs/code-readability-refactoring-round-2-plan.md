@@ -789,3 +789,7 @@ git commit -m "Refactor: API 매퍼 책임 정리 #이슈번호"
 - 인증 redirect Provider 설계
 - shared widget public API 재설계
 - bottom navigation 도입 시 `ShellRoute` 적용 여부 결정
+
+## 다음 라운드
+
+2차 완료 후 남은 Stateful route page, Riverpod 화면 상태, fixture/view data, feature/repository 의존 경계는 [코드 가독성 리팩토링 3차 계획](code-readability-refactoring-round-3-plan.md)에서 관리한다.
