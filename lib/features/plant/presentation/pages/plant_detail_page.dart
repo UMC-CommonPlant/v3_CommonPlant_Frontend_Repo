@@ -19,32 +19,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class PlantDetailPage extends ConsumerStatefulWidget {
+class PlantDetailPage extends ConsumerWidget {
   const PlantDetailPage({super.key, required this.plantId, this.placeId});
 
   final String plantId;
   final String? placeId;
 
-  @override
-  ConsumerState<PlantDetailPage> createState() => _PlantDetailPageState();
-}
-
-class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
-  void _showDeleteDialog(BuildContext context, String? placeCode) {
+  void _showDeleteDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String? placeCode,
+  ) {
     final isDeleting = ref.read(plantDeleteControllerProvider).isSubmitting;
 
     unawaited(
       showPlantDeleteDialog(
         context: context,
         isDeleting: isDeleting,
-        onConfirm: () => _handleDeleteConfirmed(context, placeCode),
+        onConfirm: () => _handleDeleteConfirmed(context, ref, placeCode),
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final request = (plantId: widget.plantId, placeCode: widget.placeId);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final request = (plantId: plantId, placeCode: placeId);
     final detailState = ref.watch(plantDetailViewProvider(request));
 
     return detailState.when(
@@ -57,7 +56,7 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
           );
         }
 
-        return _buildScaffold(context, detail);
+        return _buildScaffold(context, ref, detail);
       },
       error: (error, stackTrace) => PlantStateScaffold(
         title: 'My plant',
@@ -75,20 +74,25 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
     );
   }
 
-  void _handleDeleteConfirmed(BuildContext context, String? placeCode) {
+  void _handleDeleteConfirmed(
+    BuildContext context,
+    WidgetRef ref,
+    String? placeCode,
+  ) {
     Navigator.of(context).pop();
-    unawaited(_handleDeleteResult(context, placeCode));
+    unawaited(_handleDeleteResult(context, ref, placeCode));
   }
 
   Future<void> _handleDeleteResult(
     BuildContext context,
+    WidgetRef ref,
     String? placeCode,
   ) async {
     final result = await ref
         .read(plantDeleteControllerProvider.notifier)
-        .delete(plantId: widget.plantId, placeCode: placeCode);
+        .delete(plantId: plantId, placeCode: placeCode);
 
-    if (!mounted || !context.mounted) {
+    if (!context.mounted) {
       return;
     }
 
@@ -108,7 +112,11 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
     ).showSnackBar(SnackBar(content: Text(errorMessage)));
   }
 
-  Widget _buildScaffold(BuildContext context, PlantDetailFixtureData detail) {
+  Widget _buildScaffold(
+    BuildContext context,
+    WidgetRef ref,
+    PlantDetailFixtureData detail,
+  ) {
     return CommonScaffold(
       title: 'My plant',
       navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
@@ -118,13 +126,10 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
       trailing: PlantDetailMenuButton(
         onEdit: () {
           context.push(
-            AppRoutePaths.plantEditLocation(
-              widget.plantId,
-              placeId: detail.placeCode,
-            ),
+            AppRoutePaths.plantEditLocation(plantId, placeId: detail.placeCode),
           );
         },
-        onDelete: () => _showDeleteDialog(context, detail.placeCode),
+        onDelete: () => _showDeleteDialog(context, ref, detail.placeCode),
       ),
       bodyPadding: EdgeInsets.zero,
       child: SizedBox(
@@ -146,7 +151,7 @@ class _PlantDetailPageState extends ConsumerState<PlantDetailPage> {
               startDate: detail.startDate,
               lastWateredDate: detail.lastWateredDate,
             ),
-            MemoPreviewSection(plantId: widget.plantId, memos: detail.memos),
+            MemoPreviewSection(plantId: plantId, memos: detail.memos),
             PlantInfoSection(wateringCycleLabel: detail.wateringCycleLabel),
             const SizedBox(height: 82),
           ],
