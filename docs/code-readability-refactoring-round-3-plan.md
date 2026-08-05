@@ -369,7 +369,7 @@ State와 Controller가 짧고 항상 함께 변경되는 경우 같은 파일에
 
 - `profile_setup_page.dart`
 - `profile_setup_state_provider.dart`
-- `shared/forms/form_submit_controller.dart`
+- `shared/forms/form_submit_state.dart`
 - profile setup/terms/controller test
 
 **작업:**

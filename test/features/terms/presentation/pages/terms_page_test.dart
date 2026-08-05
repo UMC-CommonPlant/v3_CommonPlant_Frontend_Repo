@@ -1,4 +1,4 @@
-import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_state_provider.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
 import 'package:commonplant_frontend/features/terms/presentation/pages/terms_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,7 +59,7 @@ void main() {
     await tester.pump();
 
     expect(
-      container.read(profileSetupStateProvider).isPrivacyTermsAccepted,
+      container.read(profileSetupControllerProvider).isPrivacyTermsAccepted,
       isTrue,
     );
     expect(find.bySemanticsLabel('동의합니다 선택됨'), findsOneWidget);

@@ -3,7 +3,7 @@ import 'package:commonplant_frontend/features/plant/data/repositories/plant_repo
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_edit_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
-import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
+import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final plantDeleteControllerProvider =

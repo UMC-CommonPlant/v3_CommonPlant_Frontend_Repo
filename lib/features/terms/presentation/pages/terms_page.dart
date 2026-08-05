@@ -5,7 +5,7 @@ import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_state_provider.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,7 +55,9 @@ class TermsPage extends ConsumerWidget {
   }
 
   void _confirmAgreement(BuildContext context, WidgetRef ref) {
-    ref.read(profileSetupStateProvider.notifier).setPrivacyTermsAccepted(true);
+    ref
+        .read(profileSetupControllerProvider.notifier)
+        .setPrivacyTermsAccepted(true);
 
     switch (nextDestination) {
       case TermsNextDestination.profile:
@@ -72,7 +74,9 @@ class TermsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAccepted = ref.watch(
-      profileSetupStateProvider.select((state) => state.isPrivacyTermsAccepted),
+      profileSetupControllerProvider.select(
+        (state) => state.isPrivacyTermsAccepted,
+      ),
     );
 
     return Scaffold(
@@ -161,7 +165,7 @@ class TermsPage extends ConsumerWidget {
                       _TermsConsentRow(
                         isAccepted: isAccepted,
                         onTap: () => ref
-                            .read(profileSetupStateProvider.notifier)
+                            .read(profileSetupControllerProvider.notifier)
                             .togglePrivacyTermsAccepted(),
                       ),
                       const SizedBox(height: AppSpacing.x16),

@@ -20,8 +20,7 @@ const double _bottomActionsTop = 626;
 
 class ProfileSetupLayout extends StatelessWidget {
   const ProfileSetupLayout({
-    required this.nicknameController,
-    required this.nicknameFocusNode,
+    required this.nickname,
     required this.hasImage,
     required this.isTermsAccepted,
     required this.isCompleteEnabled,
@@ -35,8 +34,7 @@ class ProfileSetupLayout extends StatelessWidget {
     super.key,
   });
 
-  final TextEditingController nicknameController;
-  final FocusNode nicknameFocusNode;
+  final String nickname;
   final bool hasImage;
   final bool isTermsAccepted;
   final bool isCompleteEnabled;
@@ -123,8 +121,7 @@ class ProfileSetupLayout extends StatelessWidget {
                     ProfileAvatar(hasImage: hasImage, onTap: onImagePressed),
                     const SizedBox(height: AppSpacing.x16),
                     ProfileNicknameField(
-                      controller: nicknameController,
-                      focusNode: nicknameFocusNode,
+                      nickname: nickname,
                       onChanged: onNicknameChanged,
                     ),
                   ],
