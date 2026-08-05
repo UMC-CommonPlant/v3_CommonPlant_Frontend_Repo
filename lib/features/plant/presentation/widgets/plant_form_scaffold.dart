@@ -4,16 +4,16 @@ import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_registration_place.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_edit_photo_button.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_form_bottom_actions.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_name_field.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_place_picker.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_watering_date_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
-import 'package:commonplant_frontend/shared/widgets/common_text_field.dart';
 import 'package:flutter/material.dart';
 
 class PlantEditScaffold extends StatelessWidget {
   const PlantEditScaffold({
-    required this.nameController,
+    required this.name,
     required this.canSubmit,
     required this.isSubmitting,
     required this.onChanged,
@@ -21,7 +21,7 @@ class PlantEditScaffold extends StatelessWidget {
     super.key,
   });
 
-  final TextEditingController nameController;
+  final String name;
   final bool canSubmit;
   final bool isSubmitting;
   final ValueChanged<String> onChanged;
@@ -56,12 +56,7 @@ class PlantEditScaffold extends StatelessWidget {
                     children: [
                       const PlantEditPhotoButton(),
                       const SizedBox(height: AppSpacing.x32),
-                      CommonTextField(
-                        controller: nameController,
-                        maxLength: 10,
-                        forceFocusedDecoration: true,
-                        onChanged: onChanged,
-                      ),
+                      PlantNameField(name: name, onChanged: onChanged),
                     ],
                   ),
                 ),
