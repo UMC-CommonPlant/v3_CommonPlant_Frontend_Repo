@@ -61,7 +61,9 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
 
     final remotePlaces = ref.watch(plantRegistrationPlaceProvider);
     final registrationPlaces = remotePlaces.value ?? const [];
-    final isSubmitting = ref.watch(plantFormControllerProvider).isSubmitting;
+    final isSubmitting = ref
+        .watch(legacyPlantFormControllerProvider)
+        .isSubmitting;
     final places = registrationPlaces.isEmpty
         ? plantRegistrationPlaceFallbacks
         : registrationPlaces;
@@ -113,7 +115,9 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   }
 
   Widget _buildEditScaffold() {
-    final isSubmitting = ref.watch(plantFormControllerProvider).isSubmitting;
+    final isSubmitting = ref
+        .watch(legacyPlantFormControllerProvider)
+        .isSubmitting;
     final trimmedName = _nameController.text.trim();
     final canSubmit =
         trimmedName.isNotEmpty &&
@@ -197,7 +201,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   }
 
   Future<void> _submitCreate() async {
-    if (ref.read(plantFormControllerProvider).isSubmitting) {
+    if (ref.read(legacyPlantFormControllerProvider).isSubmitting) {
       return;
     }
 
@@ -208,7 +212,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     }
 
     final result = await ref
-        .read(plantFormControllerProvider.notifier)
+        .read(legacyPlantFormControllerProvider.notifier)
         .submit(
           PlantFormSubmitInput.create(
             plantName: _selectedPlantName,
@@ -230,13 +234,13 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   }
 
   Future<void> _submitEdit() async {
-    if (ref.read(plantFormControllerProvider).isSubmitting) {
+    if (ref.read(legacyPlantFormControllerProvider).isSubmitting) {
       return;
     }
 
     final name = _nameController.text.trim();
     final result = await ref
-        .read(plantFormControllerProvider.notifier)
+        .read(legacyPlantFormControllerProvider.notifier)
         .submit(
           PlantFormSubmitInput.update(
             plantId: widget.plantId!,
@@ -264,7 +268,9 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
   }
 
   void _showSubmitErrorSnackBar() {
-    final errorMessage = ref.read(plantFormControllerProvider).errorMessage;
+    final errorMessage = ref
+        .read(legacyPlantFormControllerProvider)
+        .errorMessage;
 
     if (!mounted || errorMessage == null) {
       return;
