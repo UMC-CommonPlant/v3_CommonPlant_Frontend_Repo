@@ -42,8 +42,3 @@ final remotePlaceFormEditInfoProvider =
 
       return PlaceFormEditInfo.fromSummary(summary);
     }, retry: (retryCount, error) => null);
-
-void invalidatePlaceFormEditInfo(WidgetRef ref, String placeId) {
-  ref.invalidate(placeDetailProvider(placeId));
-  ref.invalidate(remotePlaceFormEditInfoProvider(placeId));
-}

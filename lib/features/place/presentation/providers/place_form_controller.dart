@@ -16,11 +16,6 @@ final placeFormControllerProvider = NotifierProvider.autoDispose
       PlaceFormController.new,
     );
 
-final legacyPlaceFormControllerProvider =
-    NotifierProvider<LegacyPlaceFormController, FormSubmitState>(
-      LegacyPlaceFormController.new,
-    );
-
 enum PlaceFormSubmitDestination { home, friendAdd }
 
 class PlaceFormSubmitResult {
@@ -158,103 +153,6 @@ class PlaceFormController extends Notifier<PlaceFormState> {
     final placeId = state.placeId!;
     final name = state.currentName.trim();
     final address = _normalizeAddress(state.currentAddress);
-
-    if (ref.read(useRemoteApiProvider)) {
-      final requiredAddress = _requiredAddress(address);
-
-      await ref
-          .read(placeRepositoryProvider)
-          .updatePlace(
-            code: placeId,
-            request: UpdatePlaceRequest(name: name, address: requiredAddress),
-          );
-      ref.invalidate(placeDetailProvider(placeId));
-      ref.invalidate(remotePlaceListProvider);
-      ref.invalidate(plantRegistrationPlaceProvider);
-    } else {
-      ref
-          .read(placeListProvider.notifier)
-          .updatePlace(id: placeId, name: name, address: address);
-    }
-
-    return const PlaceFormSubmitResult.home();
-  }
-}
-
-class PlaceFormSubmitInput {
-  const PlaceFormSubmitInput.create({required this.name, this.address})
-    : placeId = null;
-
-  const PlaceFormSubmitInput.update({
-    required this.placeId,
-    required this.name,
-    this.address,
-  });
-
-  final String? placeId;
-  final String name;
-  final String? address;
-
-  bool get isEdit => placeId != null;
-}
-
-class LegacyPlaceFormController extends Notifier<FormSubmitState> {
-  @override
-  FormSubmitState build() {
-    return const FormSubmitState.idle();
-  }
-
-  Future<PlaceFormSubmitResult?> submit(PlaceFormSubmitInput input) async {
-    if (state.isSubmitting) {
-      return null;
-    }
-
-    state = const FormSubmitState.submitting();
-
-    try {
-      final result = input.isEdit ? await _update(input) : await _create(input);
-      state = const FormSubmitState.idle();
-
-      return result;
-    } on _PlaceFormValidationException catch (error) {
-      state = FormSubmitState.failure(error.message);
-
-      return null;
-    } catch (_) {
-      state = FormSubmitState.failure(
-        input.isEdit ? '장소 수정에 실패했어요' : '장소 생성에 실패했어요',
-      );
-
-      return null;
-    }
-  }
-
-  Future<PlaceFormSubmitResult> _create(PlaceFormSubmitInput input) async {
-    final name = input.name.trim();
-    final address = _normalizeAddress(input.address);
-
-    if (ref.read(useRemoteApiProvider)) {
-      final requiredAddress = _requiredAddress(address);
-
-      await ref
-          .read(placeRepositoryProvider)
-          .createPlace(
-            CreatePlaceRequest(name: name, address: requiredAddress),
-          );
-      ref.invalidate(remotePlaceListProvider);
-    } else {
-      ref
-          .read(placeListProvider.notifier)
-          .addPlace(name: name, address: address);
-    }
-
-    return const PlaceFormSubmitResult.friendAdd();
-  }
-
-  Future<PlaceFormSubmitResult> _update(PlaceFormSubmitInput input) async {
-    final placeId = input.placeId!;
-    final name = input.name.trim();
-    final address = _normalizeAddress(input.address);
 
     if (ref.read(useRemoteApiProvider)) {
       final requiredAddress = _requiredAddress(address);
