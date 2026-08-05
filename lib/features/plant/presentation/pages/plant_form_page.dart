@@ -1,10 +1,9 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
-import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
-import 'package:commonplant_frontend/features/place/presentation/providers/plant_registration_place_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_registration_place.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_edit_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_registration_place_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_form_scaffold.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
 import 'package:flutter/material.dart';
@@ -61,9 +60,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     }
 
     final remotePlaces = ref.watch(plantRegistrationPlaceProvider);
-    final registrationPlaces = _registrationPlacesFromSummaries(
-      remotePlaces.value ?? const [],
-    );
+    final registrationPlaces = remotePlaces.value ?? const [];
     final isSubmitting = ref.watch(plantFormControllerProvider).isSubmitting;
     final places = registrationPlaces.isEmpty
         ? plantRegistrationPlaceFallbacks
@@ -157,7 +154,7 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
 
   PlantRegistrationPlace? get _selectedPlace {
     final remotePlaces = ref.read(plantRegistrationPlaceProvider).value;
-    final places = _registrationPlacesFromSummaries(remotePlaces ?? const []);
+    final places = remotePlaces ?? const [];
     final effectivePlaces = places.isEmpty
         ? plantRegistrationPlaceFallbacks
         : places;
@@ -276,18 +273,5 @@ class _PlantFormPageState extends ConsumerState<PlantFormPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(errorMessage)));
-  }
-
-  List<PlantRegistrationPlace> _registrationPlacesFromSummaries(
-    List<PlaceSummary> summaries,
-  ) {
-    return [
-      for (final place in summaries)
-        PlantRegistrationPlace(
-          id: place.id,
-          name: place.name,
-          imageAsset: AppImageAssets.placeEditLivingRoom,
-        ),
-    ];
   }
 }
