@@ -560,6 +560,8 @@ fvm flutter test
 
 Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행한 뒤 전체 test를 실행한다.
 
+여러 Task가 연속 병합된 중간 지점과 라운드 완료 전에는 [코드 가독성 리팩토링 검증 기준](code-readability-refactoring-validation.md)에 따라 구조 감사, 대상 회귀 테스트, 전체 품질 게이트, 플랫폼 빌드를 함께 실행한다.
+
 ## 리뷰 체크리스트
 
 - [ ] route page가 `ConsumerWidget`인가?
@@ -605,7 +607,8 @@ Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행�
 | Task 3. Place friend/invitation state 전환 | #172 | #173 | Done |
 | Task 4. Memo write state 전환 | #174 | #175 | Done |
 | Task 5. Profile setup state 통합 | #176 | #177 | Done |
-| Task 6. Place form state 통합 | #178 | #179 | In Review |
+| Task 6. Place form state 통합 | #178 | #179 | Done |
+| Task 1~6 중간 검증 | #180 | - | In Progress |
 | Task 7~11 | 각 Task 시작 시 생성 | - | Pending |
 
 각 Task 이슈를 만들 때 #165를 parent issue로 연결하고, Project 10의 category는 대상 domain을 우선한다. 여러 domain을 함께 다루는 공통 구조와 문서 Task는 `Story`로 지정한다.

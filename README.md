@@ -146,6 +146,7 @@ lib/
 | [코드 가독성 리팩토링 실행 계획](docs/code-readability-refactoring-plan.md) | 사람이 읽기 쉬운 코드로 개선하기 위한 파일 분해, 우선순위, PR 단위, 리뷰 기준 |
 | [코드 가독성 리팩토링 2차 계획](docs/code-readability-refactoring-round-2-plan.md) | 1차 완료 후 남은 Place 중심 대형 화면, 라우팅 파라미터, detail action, mapper 경계 개선 계획 |
 | [코드 가독성 리팩토링 3차 계획](docs/code-readability-refactoring-round-3-plan.md) | Riverpod-first 화면 상태, ViewData, feature/repository 경계를 정리하는 실행 계획 |
+| [코드 가독성 리팩토링 검증 기준](docs/code-readability-refactoring-validation.md) | 리팩토링 구조 감사, 회귀 테스트, 플랫폼 빌드, 실제 기기/API smoke 판정 기준과 검증 기록 |
 | [API Swagger 연계 참고 문서](docs/api-swagger-reference.md) | 서버 Swagger 변경사항, API 계층 반영 가능 항목, 백엔드 확인 필요 항목 |
 | [백엔드 API 확인 질문 목록](docs/backend-api-open-questions.md) | Swagger와 API 계층 기준으로 분리한 백엔드 확인 질문 목록 |
 | [후속 결정 체크리스트](docs/follow-up-decision-checklist.md) | 계획된 작업 완료 후 새 이슈로 분리할 결정/확인 항목 목록 |
