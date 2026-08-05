@@ -3,17 +3,17 @@ import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_name_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_image_add_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
-import 'package:commonplant_frontend/shared/widgets/common_text_field.dart';
 import 'package:flutter/material.dart';
 
 class PlaceCreateScaffold extends StatelessWidget {
   const PlaceCreateScaffold({
     super.key,
-    required this.nameController,
+    required this.name,
     required this.address,
     required this.canSubmit,
     required this.isSubmitting,
@@ -24,7 +24,7 @@ class PlaceCreateScaffold extends StatelessWidget {
     required this.onNext,
   });
 
-  final TextEditingController nameController;
+  final String name;
   final String? address;
   final bool canSubmit;
   final bool isSubmitting;
@@ -68,10 +68,9 @@ class PlaceCreateScaffold extends StatelessWidget {
                             child: CommonPlaceImageAddButton(onTap: onImageTap),
                           ),
                           const SizedBox(height: AppSpacing.x32),
-                          CommonTextField(
-                            controller: nameController,
+                          PlaceNameField(
+                            name: name,
                             hintText: '장소의 이름을 입력해 주세요',
-                            maxLength: 10,
                             onChanged: onNameChanged,
                           ),
                           const SizedBox(height: AppSpacing.x32),
@@ -108,7 +107,7 @@ class PlaceCreateScaffold extends StatelessWidget {
 class PlaceEditScaffold extends StatelessWidget {
   const PlaceEditScaffold({
     super.key,
-    required this.nameController,
+    required this.name,
     required this.address,
     required this.canSubmit,
     required this.isSubmitting,
@@ -119,7 +118,7 @@ class PlaceEditScaffold extends StatelessWidget {
     required this.onComplete,
   });
 
-  final TextEditingController nameController;
+  final String name;
   final String? address;
   final bool canSubmit;
   final bool isSubmitting;
@@ -167,10 +166,9 @@ class PlaceEditScaffold extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: AppSpacing.x32),
-                          CommonTextField(
-                            controller: nameController,
+                          PlaceNameField(
+                            name: name,
                             hintText: '장소 이름을 입력해 주세요',
-                            maxLength: 10,
                             forceFocusedDecoration: true,
                             onChanged: onNameChanged,
                           ),
