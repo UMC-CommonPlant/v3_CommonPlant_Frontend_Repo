@@ -1,5 +1,5 @@
 import 'package:commonplant_frontend/features/login/presentation/pages/profile_setup_page.dart';
-import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_state_provider.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -161,16 +161,17 @@ void main() {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
-    container
-        .read(profileSetupStateProvider.notifier)
-        .setPrivacyTermsAccepted(true);
-
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
         child: const MaterialApp(home: ProfileSetupPage()),
       ),
     );
+
+    container
+        .read(profileSetupControllerProvider.notifier)
+        .setPrivacyTermsAccepted(true);
+    await tester.pump();
 
     expect(find.bySemanticsLabel('개인정보 이용약관 동의됨'), findsOneWidget);
   });

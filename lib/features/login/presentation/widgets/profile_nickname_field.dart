@@ -6,31 +6,63 @@ import 'package:flutter/material.dart';
 const double _nicknameFieldHeight = 56;
 const double _nicknameFieldHeightWithHelper = 80;
 
-class ProfileNicknameField extends StatelessWidget {
+class ProfileNicknameField extends StatefulWidget {
   const ProfileNicknameField({
-    required this.controller,
-    required this.focusNode,
+    required this.nickname,
     required this.onChanged,
     super.key,
   });
 
-  final TextEditingController controller;
-  final FocusNode focusNode;
+  final String nickname;
   final ValueChanged<String> onChanged;
 
+  @override
+  State<ProfileNicknameField> createState() => _ProfileNicknameFieldState();
+}
+
+class _ProfileNicknameFieldState extends State<ProfileNicknameField> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.nickname);
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileNicknameField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.nickname != _controller.text) {
+      _controller.value = TextEditingValue(
+        text: widget.nickname,
+        selection: TextSelection.collapsed(offset: widget.nickname.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
   bool get _hasValidNickname {
-    final nickname = controller.text.trim();
+    final nickname = widget.nickname.trim();
     return nickname.length >= 2 && nickname.length <= 10;
   }
 
   bool get _hasNicknameError {
-    final nickname = controller.text.trim();
+    final nickname = widget.nickname.trim();
     return nickname.isNotEmpty && !_hasValidNickname;
   }
 
   @override
   Widget build(BuildContext context) {
-    final hasText = controller.text.isNotEmpty;
+    final hasText = widget.nickname.isNotEmpty;
     final hasValidNickname = _hasValidNickname;
     final hasNicknameError = _hasNicknameError;
     final lineColor = hasNicknameError
@@ -59,9 +91,9 @@ class ProfileNicknameField extends StatelessWidget {
                 children: [
                   Expanded(
                     child: TextField(
-                      controller: controller,
-                      focusNode: focusNode,
-                      onChanged: onChanged,
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      onChanged: widget.onChanged,
                       maxLength: 10,
                       style: AppTextStyles.size18Medium.copyWith(
                         color: AppColors.textHeadline,

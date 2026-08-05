@@ -2,7 +2,7 @@ import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
 import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_exit_controller.dart';
-import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
+import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

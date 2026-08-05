@@ -1,59 +1,21 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
-import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_state_provider.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_image_action_sheet.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_photo_permission_dialog.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_setup_layout.dart';
-import 'package:commonplant_frontend/shared/forms/form_submit_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class ProfileSetupPage extends ConsumerStatefulWidget {
+class ProfileSetupPage extends ConsumerWidget {
   const ProfileSetupPage({super.key});
 
-  @override
-  ConsumerState<ProfileSetupPage> createState() => _ProfileSetupPageState();
-}
-
-class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
-  final TextEditingController _nicknameController = TextEditingController();
-  final FocusNode _nicknameFocusNode = FocusNode();
-  late final FormSubmitController _submitController;
-  bool _hasImage = false;
-
-  bool get _hasValidNickname {
-    final nickname = _nicknameController.text.trim();
-    return nickname.length >= 2 && nickname.length <= 10;
-  }
-
-  bool get _isSubmitting => _submitController.state.isSubmitting;
-
-  @override
-  void initState() {
-    super.initState();
-    _submitController = FormSubmitController()
-      ..addListener(_handleSubmitStateChanged);
-  }
-
-  @override
-  void dispose() {
-    _submitController
-      ..removeListener(_handleSubmitStateChanged)
-      ..dispose();
-    _nicknameFocusNode.dispose();
-    _nicknameController.dispose();
-    super.dispose();
-  }
-
-  void _handleSubmitStateChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  Future<void> _openProfileImageSheet() async {
-    _nicknameFocusNode.unfocus();
+  Future<void> _openProfileImageSheet(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    FocusManager.instance.primaryFocus?.unfocus();
 
     final action = await showModalBottomSheet<ProfileImageSheetAction>(
       context: context,
@@ -63,40 +25,43 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
       builder: (context) => const ProfileImageActionSheet(),
     );
 
-    if (!mounted || action == null) {
+    if (!context.mounted || action == null) {
       return;
     }
 
     switch (action) {
       case ProfileImageSheetAction.selectFromAlbum:
-        await _openPhotoPermissionDialog();
+        await _openPhotoPermissionDialog(context, ref);
       case ProfileImageSheetAction.resetToDefault:
-        setState(() => _hasImage = false);
+        ref.read(profileSetupControllerProvider.notifier).resetProfileImage();
     }
   }
 
-  Future<void> _openPhotoPermissionDialog() async {
+  Future<void> _openPhotoPermissionDialog(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final action = await showDialog<ProfilePhotoPermissionAction>(
       context: context,
       barrierColor: AppColors.textHeadline.withValues(alpha: 0.6),
       builder: (context) => const ProfilePhotoPermissionDialog(),
     );
 
-    if (!mounted) {
+    if (!context.mounted) {
       return;
     }
 
     switch (action) {
       case ProfilePhotoPermissionAction.selectLimited:
       case ProfilePhotoPermissionAction.allowAll:
-        setState(() => _hasImage = true);
+        ref.read(profileSetupControllerProvider.notifier).selectProfileImage();
       case ProfilePhotoPermissionAction.deny:
       case null:
         break;
     }
   }
 
-  void _goBack() {
+  void _goBack(BuildContext context) {
     if (context.canPop()) {
       context.pop();
       return;
@@ -104,55 +69,60 @@ class _ProfileSetupPageState extends ConsumerState<ProfileSetupPage> {
     context.go(AppRoutePaths.login);
   }
 
-  void _openTerms(TermsReturnDestination destination) {
+  void _openTerms(BuildContext context, TermsReturnDestination destination) {
     context.push(AppRoutePaths.termsLocation(next: destination.queryValue));
   }
 
-  void _handleTermsCheck(bool isAccepted) {
+  void _handleTermsCheck(BuildContext context, WidgetRef ref, bool isAccepted) {
     if (isAccepted) {
       ref
-          .read(profileSetupStateProvider.notifier)
+          .read(profileSetupControllerProvider.notifier)
           .setPrivacyTermsAccepted(false);
       return;
     }
 
-    _openTerms(TermsReturnDestination.profile);
+    _openTerms(context, TermsReturnDestination.profile);
   }
 
-  Future<void> _handleComplete(bool isTermsAccepted) async {
-    await _submitController.submit(() async {
-      if (!mounted) {
-        return;
-      }
+  Future<void> _handleComplete(BuildContext context, WidgetRef ref) async {
+    final didSubmit = await ref
+        .read(profileSetupControllerProvider.notifier)
+        .submit();
 
-      if (isTermsAccepted) {
-        context.go(AppRoutePaths.home);
-        return;
-      }
+    if (!context.mounted || !didSubmit) {
+      return;
+    }
 
-      _openTerms(TermsReturnDestination.home);
-    });
+    final isTermsAccepted = ref
+        .read(profileSetupControllerProvider)
+        .isPrivacyTermsAccepted;
+    if (isTermsAccepted) {
+      context.go(AppRoutePaths.home);
+      return;
+    }
+
+    _openTerms(context, TermsReturnDestination.home);
   }
 
   @override
-  Widget build(BuildContext context) {
-    final isTermsAccepted = ref.watch(
-      profileSetupStateProvider.select((state) => state.isPrivacyTermsAccepted),
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(profileSetupControllerProvider);
+    final controller = ref.read(profileSetupControllerProvider.notifier);
 
     return ProfileSetupLayout(
-      nicknameController: _nicknameController,
-      nicknameFocusNode: _nicknameFocusNode,
-      hasImage: _hasImage,
-      isTermsAccepted: isTermsAccepted,
-      isCompleteEnabled: _hasValidNickname,
-      isSubmitting: _isSubmitting,
-      onBack: _goBack,
-      onImagePressed: _openProfileImageSheet,
-      onNicknameChanged: (_) => setState(() {}),
-      onTermsPressed: () => _handleTermsCheck(isTermsAccepted),
-      onTermsViewPressed: () => _openTerms(TermsReturnDestination.profile),
-      onComplete: () => _handleComplete(isTermsAccepted),
+      nickname: state.nickname,
+      hasImage: state.hasImage,
+      isTermsAccepted: state.isPrivacyTermsAccepted,
+      isCompleteEnabled: state.canSubmit,
+      isSubmitting: state.isSubmitting,
+      onBack: () => _goBack(context),
+      onImagePressed: () => _openProfileImageSheet(context, ref),
+      onNicknameChanged: controller.updateNickname,
+      onTermsPressed: () =>
+          _handleTermsCheck(context, ref, state.isPrivacyTermsAccepted),
+      onTermsViewPressed: () =>
+          _openTerms(context, TermsReturnDestination.profile),
+      onComplete: () => _handleComplete(context, ref),
     );
   }
 }
