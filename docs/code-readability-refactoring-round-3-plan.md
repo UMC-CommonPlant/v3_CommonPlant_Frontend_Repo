@@ -528,6 +528,20 @@ State와 Controller가 짧고 항상 함께 변경되는 경우 같은 파일에
 6. widget test가 렌더링과 route/feedback 동작을 유지하는지 확인한다.
 7. format, analyze, 전체 test를 실행한다.
 
+## 커밋 분리와 기록 기준
+
+각 Task는 구현 전에 이슈 본문에 커밋 계획을 작성한다. State, Controller, page/widget, 문서 갱신처럼 리뷰 가능한 책임을 기준으로 커밋을 나누고, 완료 전에 아래 커밋별 작업 이력 표를 갱신한다.
+
+기본 커밋 구성:
+
+1. 실행 계획 또는 작업 기준 문서
+2. State/model과 상태 계산 테스트
+3. Controller와 상태 전이 테스트
+4. page/widget 연결과 사용자 동작 테스트
+5. 전체 검증 결과와 작업 이력 문서
+
+작은 Task는 인접 단계를 합칠 수 있다. 다만 하나의 커밋에 문서, 상태 모델, Controller, 여러 page 변경을 모두 넣는 방식은 피하고, 각 구현 커밋은 가능한 범위에서 관련 테스트를 통과해야 한다. 세부 기준은 [Git 브랜치 및 커밋 전략](git-workflow.md)의 `작업 계획과 커밋별 이력`을 따른다.
+
 ## 검증 기준
 
 문서만 수정한 PR:
@@ -585,7 +599,26 @@ Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행�
 | Task | 이슈 | PR | 상태 |
 | --- | --- | --- | --- |
 | 3차 상위 Epic | #165 | - | In Progress |
-| 3차 계획 문서화 | #166 | - | In Progress |
-| Task 1~11 | 계획 문서 PR 이후 생성 | - | Pending |
+| 3차 계획 문서화 | #166 | #167 | Done |
+| Task 1. Detail route page stateless 전환 | #168 | #169 | Done |
+| Task 2. Search 화면 state Controller 전환 | #170 | #171 | Done |
+| Task 3. Place friend/invitation state 전환 | #172 | #173 | Done |
+| Task 4. Memo write state 전환 | #174 | #175 | Done |
+| Task 5. Profile setup state 통합 | #176 | #177 | Done |
+| Task 6. Place form state 통합 | #178 | - | In Progress |
+| Task 7~11 | 각 Task 시작 시 생성 | - | Pending |
 
 각 Task 이슈를 만들 때 #165를 parent issue로 연결하고, Project 10의 category는 대상 domain을 우선한다. 여러 domain을 함께 다루는 공통 구조와 문서 Task는 `Story`로 지정한다.
+
+## 커밋별 작업 이력
+
+| Task | 커밋 | 작업 범위 | 검증 |
+| --- | --- | --- | --- |
+| 3차 계획 | `c813ac1` | 3차 후보, 상태 소유권 원칙, Task 1~11 실행 계획 문서화 | `git diff --check` |
+| Task 1 | `909e677` | Place/Plant detail route page를 `ConsumerWidget`으로 전환 | 관련 detail page/controller test, 전체 test |
+| Task 2 | `6f5f44e` | 주소/식물 검색 상태를 Riverpod Controller로 이동 | 관련 search page/controller test, 전체 test |
+| Task 3 | `6a4b2ab` | Place 친구 선택·관리·초대 상태를 Riverpod Controller로 이동 | 관련 Place page/controller test, 전체 test |
+| Task 4 | `89288b8` | Memo 작성 draft와 사진·제출 상태를 Riverpod Controller로 이동 | 관련 Memo page/controller test, 전체 test |
+| Task 5 | `37e7f28` | Profile 설정 상태 통합과 ChangeNotifier 제출 Controller 제거 | 관련 Profile/Terms/controller test, 전체 test |
+
+Task 6부터는 구현 커밋을 책임별로 나누고 각 커밋을 별도 행으로 기록한다. 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
