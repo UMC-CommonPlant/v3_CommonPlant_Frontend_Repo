@@ -28,11 +28,6 @@ final remotePlantFormEditInfoProvider =
       return info;
     }, retry: (retryCount, error) => null);
 
-void invalidatePlantFormEditInfo(WidgetRef ref, String plantId) {
-  ref.invalidate(remotePlantEditInfoProvider(plantId));
-  ref.invalidate(remotePlantFormEditInfoProvider(plantId));
-}
-
 final remotePlantEditInfoProvider =
     FutureProvider.family<PlantEditInfo, String>(
       (ref, plantId) => ref
