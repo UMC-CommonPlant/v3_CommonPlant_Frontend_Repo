@@ -81,7 +81,7 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   }
 
   Widget _buildForm(BuildContext context) {
-    final submitState = ref.watch(placeFormControllerProvider);
+    final submitState = ref.watch(legacyPlaceFormControllerProvider);
     final isSubmitting = submitState.isSubmitting;
     final currentName = _nameController.text.trim();
     final hasChanges =
@@ -132,7 +132,7 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   }
 
   Future<void> _submit() async {
-    if (ref.read(placeFormControllerProvider).isSubmitting) {
+    if (ref.read(legacyPlaceFormControllerProvider).isSubmitting) {
       return;
     }
 
@@ -147,7 +147,7 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
       null => PlaceFormSubmitInput.create(name: name, address: address),
     };
     final result = await ref
-        .read(placeFormControllerProvider.notifier)
+        .read(legacyPlaceFormControllerProvider.notifier)
         .submit(input);
 
     if (!mounted) {
@@ -165,7 +165,9 @@ class _PlaceFormPageState extends ConsumerState<PlaceFormPage> {
   }
 
   void _showSubmitErrorIfNeeded() {
-    final errorMessage = ref.read(placeFormControllerProvider).errorMessage;
+    final errorMessage = ref
+        .read(legacyPlaceFormControllerProvider)
+        .errorMessage;
 
     if (!mounted || errorMessage == null) {
       return;
