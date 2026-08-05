@@ -605,7 +605,7 @@ Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행�
 | Task 3. Place friend/invitation state 전환 | #172 | #173 | Done |
 | Task 4. Memo write state 전환 | #174 | #175 | Done |
 | Task 5. Profile setup state 통합 | #176 | #177 | Done |
-| Task 6. Place form state 통합 | #178 | - | In Progress |
+| Task 6. Place form state 통합 | #178 | #179 | In Review |
 | Task 7~11 | 각 Task 시작 시 생성 | - | Pending |
 
 각 Task 이슈를 만들 때 #165를 parent issue로 연결하고, Project 10의 category는 대상 domain을 우선한다. 여러 domain을 함께 다루는 공통 구조와 문서 Task는 `Story`로 지정한다.
@@ -620,5 +620,10 @@ Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행�
 | Task 3 | `6a4b2ab` | Place 친구 선택·관리·초대 상태를 Riverpod Controller로 이동 | 관련 Place page/controller test, 전체 test |
 | Task 4 | `89288b8` | Memo 작성 draft와 사진·제출 상태를 Riverpod Controller로 이동 | 관련 Memo page/controller test, 전체 test |
 | Task 5 | `37e7f28` | Profile 설정 상태 통합과 ChangeNotifier 제출 Controller 제거 | 관련 Profile/Terms/controller test, 전체 test |
+| Task 6 | `172216f` | 작업 전 커밋 분리와 커밋별 이력 기록 기준 추가 | `git diff --check` |
+| Task 6 | `fb2d24c` | Place 폼 생성·수정·조회·제출 상태 모델과 계산 테스트 추가 | Place form state test 4개 |
+| Task 6 | `4117715` | Place 폼 draft, 조회, 제출 상태를 family Controller로 통합 | Place form controller/page test 8개 |
+| Task 6 | `ab2f014` | Place form page를 `ConsumerWidget`으로 전환하고 이름 입력 제어를 leaf widget으로 이동 | Place form 대상 test 15개 |
+| Task 6 | `4c7fe75` | Place form controller test의 중복 import 정리 | `fvm flutter analyze`, 전체 test 212개 |
 
 Task 6부터는 구현 커밋을 책임별로 나누고 각 커밋을 별도 행으로 기록한다. 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
