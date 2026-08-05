@@ -8,7 +8,7 @@
 
 **Tech Stack:** Flutter, Dart, Riverpod, go_router, flutter_test
 
-**Status:** 2026-08-04 `develop` 기준 계획 수립. 상위 Epic은 #165, 계획 문서 Task는 #166이다.
+**Status:** 2026-08-04 `develop` 기준 계획 수립. 상위 Epic은 #165, 계획 문서 Task는 #166이다. 2026-08-05 Task 7 구현과 전체 검증을 완료하고 PR #183에서 리뷰 중이다.
 
 ---
 
@@ -608,8 +608,12 @@ Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행�
 | Task 4. Memo write state 전환 | #174 | #175 | Done |
 | Task 5. Profile setup state 통합 | #176 | #177 | Done |
 | Task 6. Place form state 통합 | #178 | #179 | Done |
-| Task 1~6 중간 검증 | #180 | #181 | In Review |
-| Task 7~11 | 각 Task 시작 시 생성 | - | Pending |
+| Task 1~6 중간 검증 | #180 | #181 | Done |
+| Task 7. Plant form state와 Provider 소유권 정리 | #182 | #183 | In Review |
+| Task 8. Place/Plant detail ViewData 경계 정리 | 시작 시 생성 | - | Pending |
+| Task 9. Repository 계약과 local/remote 경계 정리 | 시작 시 생성 | - | Pending |
+| Task 10. 미사용 Phase 0 구조 정리 | 시작 시 생성 | - | Pending |
+| Task 11. Router/test helper 가독성 정리 | 시작 시 생성 | - | Pending |
 
 각 Task 이슈를 만들 때 #165를 parent issue로 연결하고, Project 10의 category는 대상 domain을 우선한다. 여러 domain을 함께 다루는 공통 구조와 문서 Task는 `Story`로 지정한다.
 
@@ -629,5 +633,10 @@ Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행�
 | Task 6 | `ab2f014` | Place form page를 `ConsumerWidget`으로 전환하고 이름 입력 제어를 leaf widget으로 이동 | Place form 대상 test 15개 |
 | Task 6 | `4c7fe75` | Place form controller test의 중복 import 정리 | `fvm flutter analyze`, 전체 test 212개 |
 | 중간 검증 | `5a6e2d0` | 구조 감사, 회귀 테스트, 플랫폼 빌드 검증 기준과 Task 1~6 결과 문서화 | 대상 test 83개, 전체 test 212개, analyze, iOS/Android debug build |
+| Task 7 | `96b5af7` | Plant 폼 생성·수정 상태 모델과 제출 가능 여부 계산 테스트 추가 | Plant form state test 5개 |
+| Task 7 | `42c26a9` | 사용자 장소 조회 facade와 Plant 등록 장소 Provider의 feature 소유권 분리 | Place/Plant Provider 및 폼 대상 test 16개 |
+| Task 7 | `1888adc` | Plant 폼 조회·선택·생성·수정·제출 상태를 family Controller로 통합 | Plant form controller/page test 11개 |
+| Task 7 | `64e9208` | Plant form page를 `ConsumerWidget`으로 전환하고 이름 입력 제어를 leaf widget으로 이동 | Plant 폼 및 router 대상 test 39개 |
+| Task 7 | `7c7093c` | Provider facade와 Controller test의 불필요한 import 정리 | format, analyze, 전체 test 218개 |
 
 Task 6부터는 구현 커밋을 책임별로 나누고 각 커밋을 별도 행으로 기록한다. 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
