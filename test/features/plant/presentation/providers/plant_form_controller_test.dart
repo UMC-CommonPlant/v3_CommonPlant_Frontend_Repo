@@ -2,7 +2,6 @@ import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/plant/data/datasources/plant_remote_data_source.dart';
 import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
 import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
-import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_edit_provider.dart';
