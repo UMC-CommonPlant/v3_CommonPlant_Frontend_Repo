@@ -5,7 +5,9 @@ import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/memo/presentation/providers/memo_list_provider.dart';
+import 'package:commonplant_frontend/features/memo/presentation/providers/memo_write_controller.dart';
+import 'package:commonplant_frontend/features/memo/presentation/providers/memo_write_state.dart';
+import 'package:commonplant_frontend/features/memo/presentation/widgets/memo_content_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_photo_add_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
@@ -13,62 +15,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class MemoWritePage extends ConsumerStatefulWidget {
+class MemoWritePage extends ConsumerWidget {
   const MemoWritePage({super.key, required this.plantId});
 
   final String plantId;
 
-  @override
-  ConsumerState<MemoWritePage> createState() => _MemoWritePageState();
-}
+  void _submit(BuildContext context, WidgetRef ref) {
+    final provider = memoWriteControllerProvider(plantId);
+    final didSubmit = ref.read(provider.notifier).submit();
 
-class _MemoWritePageState extends ConsumerState<MemoWritePage> {
-  static const int _maxMemoLength = 200;
-  static const int _maxPhotoCount = 1;
+    if (didSubmit) {
+      context.go(AppRoutePaths.memoListLocation(plantId));
+      return;
+    }
 
-  final TextEditingController _memoController = TextEditingController();
-  bool _hasPhoto = false;
-
-  bool get _canSubmit => _memoController.text.trim().isNotEmpty;
-
-  @override
-  void initState() {
-    super.initState();
-    _memoController.addListener(_handleInputChanged);
+    final errorMessage = ref.read(provider).errorMessage;
+    if (errorMessage != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    }
   }
 
   @override
-  void dispose() {
-    _memoController.removeListener(_handleInputChanged);
-    _memoController.dispose();
-    super.dispose();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = memoWriteControllerProvider(plantId);
+    final state = ref.watch(provider);
+    final controller = ref.read(provider.notifier);
 
-  void _handleInputChanged() {
-    setState(() {});
-  }
-
-  void _selectPhoto() {
-    setState(() => _hasPhoto = true);
-  }
-
-  void _removePhoto() {
-    setState(() => _hasPhoto = false);
-  }
-
-  void _submit() {
-    ref
-        .read(memoListProvider.notifier)
-        .addMemo(
-          plantId: widget.plantId,
-          content: _memoController.text.trim(),
-          hasPhoto: _hasPhoto,
-        );
-    context.go(AppRoutePaths.memoListLocation(widget.plantId));
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
@@ -96,14 +70,15 @@ class _MemoWritePageState extends ConsumerState<MemoWritePage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _MemoPhotoSection(
-                        hasPhoto: _hasPhoto,
-                        onAddPhoto: _selectPhoto,
-                        onRemovePhoto: _removePhoto,
+                        hasPhoto: state.hasPhoto,
+                        onAddPhoto: controller.selectPhoto,
+                        onRemovePhoto: controller.removePhoto,
                       ),
                       const SizedBox(height: AppSpacing.x32),
-                      _MemoContentField(
-                        controller: _memoController,
-                        maxLength: _maxMemoLength,
+                      MemoContentField(
+                        content: state.content,
+                        maxLength: memoWriteMaxContentLength,
+                        onChanged: controller.updateContent,
                       ),
                     ],
                   ),
@@ -118,7 +93,10 @@ class _MemoWritePageState extends ConsumerState<MemoWritePage> {
                 ),
                 child: CommonButton(
                   label: '완료',
-                  onPressed: _canSubmit ? _submit : null,
+                  isLoading: state.isSubmitting,
+                  onPressed: state.canSubmit
+                      ? () => _submit(context, ref)
+                      : null,
                 ),
               ),
             ],
@@ -151,7 +129,7 @@ class _MemoPhotoSection extends StatelessWidget {
             padding: const EdgeInsets.only(top: AppSpacing.x4),
             child: CommonPhotoAddButton(
               currentCount: hasPhoto ? 1 : 0,
-              maxCount: _MemoWritePageState._maxPhotoCount,
+              maxCount: memoWriteMaxPhotoCount,
               backgroundColor: hasPhoto ? AppColors.surfaceDisabled : null,
               onTap: hasPhoto ? null : onAddPhoto,
             ),
@@ -217,68 +195,6 @@ class _MemoSelectedPhoto extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _MemoContentField extends StatelessWidget {
-  const _MemoContentField({required this.controller, required this.maxLength});
-
-  final TextEditingController controller;
-  final int maxLength;
-
-  @override
-  Widget build(BuildContext context) {
-    final currentLength = controller.text.characters.length;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        DecoratedBox(
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: AppColors.borderDefault)),
-          ),
-          child: TextField(
-            controller: controller,
-            maxLength: maxLength,
-            minLines: 1,
-            maxLines: 6,
-            keyboardType: TextInputType.multiline,
-            style: AppTextStyles.size16Medium.copyWith(
-              color: AppColors.textStrong,
-            ),
-            decoration: InputDecoration(
-              hintText: '메모 내용을 입력해 주세요',
-              hintStyle: AppTextStyles.size18Medium.copyWith(
-                color: AppColors.textDisabled,
-              ),
-              counterText: '',
-              border: InputBorder.none,
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: AppSpacing.x16,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.x8),
-        RichText(
-          text: TextSpan(
-            style: AppTextStyles.size14Medium.copyWith(
-              color: AppColors.textBody,
-            ),
-            children: [
-              TextSpan(
-                text: '$currentLength',
-                style: AppTextStyles.size14Bold.copyWith(
-                  color: AppColors.textBody,
-                ),
-              ),
-              TextSpan(text: '/$maxLength'),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
