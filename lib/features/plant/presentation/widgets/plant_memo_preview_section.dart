@@ -4,28 +4,13 @@ import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/plant/presentation/models/plant_detail_view_data.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_memo_card.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-class PlantDetailMemoItem {
-  const PlantDetailMemoItem({
-    required this.author,
-    required this.content,
-    required this.dateLabel,
-    this.avatarAsset,
-    this.thumbnailAsset,
-  });
-
-  final String author;
-  final String content;
-  final String dateLabel;
-  final String? avatarAsset;
-  final String? thumbnailAsset;
-}
 
 class MemoPreviewSection extends StatelessWidget {
   const MemoPreviewSection({

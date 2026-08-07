@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_detail_fixture.dart';
+import 'package:commonplant_frontend/features/plant/presentation/models/plant_detail_view_data.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_delete_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_view_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_care_summary.dart';
@@ -115,7 +115,7 @@ class PlantDetailPage extends ConsumerWidget {
   Widget _buildScaffold(
     BuildContext context,
     WidgetRef ref,
-    PlantDetailFixtureData detail,
+    PlantDetailViewData detail,
   ) {
     return CommonScaffold(
       title: 'My plant',
