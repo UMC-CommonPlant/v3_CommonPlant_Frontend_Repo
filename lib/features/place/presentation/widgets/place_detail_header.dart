@@ -5,29 +5,12 @@ import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/place_detail_view_data.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_avatar.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-class PlaceDetailFriendItem {
-  const PlaceDetailFriendItem({
-    required this.id,
-    required this.name,
-    this.imageAsset,
-    this.isOwner = false,
-  });
-
-  final String id;
-  final String name;
-  final String? imageAsset;
-  final bool isOwner;
-
-  PlaceFriendProfile toProfile() {
-    return PlaceFriendProfile(id: id, name: name, imageAsset: imageAsset);
-  }
-}
 
 class PlaceDetailHeader extends StatelessWidget {
   const PlaceDetailHeader({

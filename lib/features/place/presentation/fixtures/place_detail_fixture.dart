@@ -1,48 +1,14 @@
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
-import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
-import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_header.dart';
-import 'package:commonplant_frontend/features/place/presentation/widgets/place_plant_list.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/place_detail_view_data.dart';
 
-class PlaceDetailFixtureData {
-  const PlaceDetailFixtureData({
-    required this.role,
-    required this.name,
-    required this.address,
-    required this.sunlightLabel,
-    required this.humidityLabel,
-    required this.friends,
-    required this.plants,
-  });
-
-  final PlaceDetailRole role;
-  final String name;
-  final String address;
-  final String sunlightLabel;
-  final String humidityLabel;
-  final List<PlaceDetailFriendItem> friends;
-  final List<PlaceDetailPlantItem> plants;
-
-  PlaceDetailFixtureData applySummary(PlaceSummary summary) {
-    return PlaceDetailFixtureData(
-      role: role,
-      name: summary.name,
-      address: summary.address ?? address,
-      sunlightLabel: sunlightLabel,
-      humidityLabel: humidityLabel,
-      friends: friends,
-      plants: plants,
-    );
-  }
-}
-
-PlaceDetailFixtureData placeDetailFixture(
+PlaceDetailViewData placeDetailFixture(
   String placeId, {
   PlaceDetailRole? role,
 }) {
   final effectiveRole = role ?? _roleFromPlaceId(placeId);
 
-  return PlaceDetailFixtureData(
+  return PlaceDetailViewData(
     role: effectiveRole,
     name: '스윗 홈_거실',
     address: '서울시 노원구 광운로 20',
