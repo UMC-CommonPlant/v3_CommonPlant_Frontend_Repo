@@ -1,12 +1,10 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
-import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
-import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
+import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_form_page.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -96,10 +94,8 @@ void main() {
 
     expect(repository.updateCalls, 1);
     expect(repository.latestUpdateCode, 'place-1');
-    expect(repository.latestUpdateRequest?.toJson(), {
-      'name': '루프탑 정원',
-      'address': '서울시 성북구',
-    });
+    expect(repository.latestUpdateName, '루프탑 정원');
+    expect(repository.latestUpdateAddress, '서울시 성북구');
     expect(find.text('홈'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -127,26 +123,25 @@ Widget _remotePlaceEditApp(PlaceRepository repository) {
   );
 }
 
-class _PendingPlaceRepository extends PlaceRepository {
-  _PendingPlaceRepository() : super(PlaceRemoteDataSource(Dio()));
-
+class _PendingPlaceRepository extends Fake implements PlaceRepository {
   final Completer<void> _completer = Completer<void>();
   int createCalls = 0;
 
   @override
-  Future<void> createPlace(CreatePlaceRequest request, {MultipartFile? image}) {
+  Future<void> createPlace({required String name, required String address}) {
     createCalls++;
     return _completer.future;
   }
 }
 
-class _EditablePlaceRepository extends PlaceRepository {
-  _EditablePlaceRepository(this.summary) : super(PlaceRemoteDataSource(Dio()));
+class _EditablePlaceRepository extends Fake implements PlaceRepository {
+  _EditablePlaceRepository(this.summary);
 
   final PlaceSummary summary;
   int updateCalls = 0;
   String? latestUpdateCode;
-  UpdatePlaceRequest? latestUpdateRequest;
+  String? latestUpdateName;
+  String? latestUpdateAddress;
 
   @override
   Future<PlaceSummary> fetchPlace(String code) async {
@@ -156,11 +151,13 @@ class _EditablePlaceRepository extends PlaceRepository {
   @override
   Future<void> updatePlace({
     required String code,
-    required UpdatePlaceRequest request,
-    MultipartFile? image,
+    required String name,
+    required String address,
+    String? imageKey,
   }) async {
     updateCalls++;
     latestUpdateCode = code;
-    latestUpdateRequest = request;
+    latestUpdateName = name;
+    latestUpdateAddress = address;
   }
 }

@@ -1,9 +1,8 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
-import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
+import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_feature_provider.dart';
-import 'package:dio/dio.dart';
+import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -30,8 +29,8 @@ void main() {
   });
 }
 
-class _StaticPlaceRepository extends PlaceRepository {
-  _StaticPlaceRepository(this.places) : super(PlaceRemoteDataSource(Dio()));
+class _StaticPlaceRepository extends Fake implements PlaceRepository {
+  _StaticPlaceRepository(this.places);
 
   final List<PlaceSummary> places;
   int fetchUserPlacesCalls = 0;

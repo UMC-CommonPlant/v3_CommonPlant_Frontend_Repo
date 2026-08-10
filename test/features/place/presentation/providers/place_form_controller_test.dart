@@ -1,13 +1,11 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
-import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
-import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_edit_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_state.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -141,22 +139,20 @@ void main() {
       expect(result?.destination, PlaceFormSubmitDestination.home);
       expect(repository.updateCalls, 1);
       expect(repository.latestUpdateCode, 'place-1');
-      expect(repository.latestUpdateRequest?.toJson(), {
-        'name': '루프탑',
-        'address': '서울시 성북구',
-      });
+      expect(repository.latestUpdateName, '루프탑');
+      expect(repository.latestUpdateAddress, '서울시 성북구');
     });
   });
 }
 
-class _RecordingPlaceRepository extends PlaceRepository {
-  _RecordingPlaceRepository() : super(PlaceRemoteDataSource(Dio()));
-
+class _RecordingPlaceRepository extends Fake implements PlaceRepository {
   int createCalls = 0;
   int updateCalls = 0;
   String? latestUpdateCode;
-  CreatePlaceRequest? latestCreateRequest;
-  UpdatePlaceRequest? latestUpdateRequest;
+  String? latestCreateName;
+  String? latestCreateAddress;
+  String? latestUpdateName;
+  String? latestUpdateAddress;
 
   @override
   Future<PlaceSummary> fetchPlace(String code) async {
@@ -164,22 +160,25 @@ class _RecordingPlaceRepository extends PlaceRepository {
   }
 
   @override
-  Future<void> createPlace(
-    CreatePlaceRequest request, {
-    MultipartFile? image,
+  Future<void> createPlace({
+    required String name,
+    required String address,
   }) async {
     createCalls++;
-    latestCreateRequest = request;
+    latestCreateName = name;
+    latestCreateAddress = address;
   }
 
   @override
   Future<void> updatePlace({
     required String code,
-    required UpdatePlaceRequest request,
-    MultipartFile? image,
+    required String name,
+    required String address,
+    String? imageKey,
   }) async {
     updateCalls++;
     latestUpdateCode = code;
-    latestUpdateRequest = request;
+    latestUpdateName = name;
+    latestUpdateAddress = address;
   }
 }

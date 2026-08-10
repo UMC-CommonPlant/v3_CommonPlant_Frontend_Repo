@@ -1,6 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_feature_provider.dart';
+import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';

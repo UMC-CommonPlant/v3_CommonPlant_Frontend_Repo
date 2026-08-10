@@ -4,11 +4,30 @@ import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
 import 'package:dio/dio.dart';
 
-class PlaceRemoteDataSource {
-  const PlaceRemoteDataSource(this._dio);
+abstract interface class PlaceRemoteDataSource {
+  Future<Object?> getMyGarden();
+
+  Future<Object?> getUserPlaces();
+
+  Future<Object?> getPlace(String code);
+
+  Future<void> createPlace(CreatePlaceRequest request, {MultipartFile? image});
+
+  Future<void> updatePlace({
+    required String code,
+    required UpdatePlaceRequest request,
+    MultipartFile? image,
+  });
+
+  Future<void> deletePlace(String code);
+}
+
+class DioPlaceRemoteDataSource implements PlaceRemoteDataSource {
+  const DioPlaceRemoteDataSource(this._dio);
 
   final Dio _dio;
 
+  @override
   Future<Object?> getMyGarden() async {
     try {
       final response = await _dio.get<Object?>('/place/myGarden');
@@ -19,6 +38,7 @@ class PlaceRemoteDataSource {
     }
   }
 
+  @override
   Future<Object?> getUserPlaces() async {
     try {
       final response = await _dio.get<Object?>('/place/user');
@@ -29,6 +49,7 @@ class PlaceRemoteDataSource {
     }
   }
 
+  @override
   Future<Object?> getPlace(String code) async {
     try {
       final response = await _dio.get<Object?>('/place/$code');
@@ -39,6 +60,7 @@ class PlaceRemoteDataSource {
     }
   }
 
+  @override
   Future<void> createPlace(
     CreatePlaceRequest request, {
     MultipartFile? image,
@@ -59,6 +81,7 @@ class PlaceRemoteDataSource {
     }
   }
 
+  @override
   Future<void> updatePlace({
     required String code,
     required UpdatePlaceRequest request,
@@ -80,6 +103,7 @@ class PlaceRemoteDataSource {
     }
   }
 
+  @override
   Future<void> deletePlace(String code) async {
     try {
       await _dio.delete<Object?>('/place/delete/$code');

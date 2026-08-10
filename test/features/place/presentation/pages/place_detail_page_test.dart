@@ -1,12 +1,11 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
-import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
+import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_detail_page.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -179,9 +178,7 @@ Widget _remotePlaceDetailApp(PlaceRepository repository) {
   );
 }
 
-class _PendingPlaceRepository extends PlaceRepository {
-  _PendingPlaceRepository() : super(PlaceRemoteDataSource(Dio()));
-
+class _PendingPlaceRepository extends Fake implements PlaceRepository {
   final Completer<PlaceSummary> _completer = Completer<PlaceSummary>();
 
   @override
@@ -190,8 +187,8 @@ class _PendingPlaceRepository extends PlaceRepository {
   }
 }
 
-class _StaticPlaceRepository extends PlaceRepository {
-  _StaticPlaceRepository(this.summary) : super(PlaceRemoteDataSource(Dio()));
+class _StaticPlaceRepository extends Fake implements PlaceRepository {
+  _StaticPlaceRepository(this.summary);
 
   final PlaceSummary summary;
 
@@ -201,9 +198,7 @@ class _StaticPlaceRepository extends PlaceRepository {
   }
 }
 
-class _RetryPlaceRepository extends PlaceRepository {
-  _RetryPlaceRepository() : super(PlaceRemoteDataSource(Dio()));
-
+class _RetryPlaceRepository extends Fake implements PlaceRepository {
   int fetchCalls = 0;
 
   @override
@@ -222,8 +217,8 @@ class _RetryPlaceRepository extends PlaceRepository {
   }
 }
 
-class _DeletablePlaceRepository extends PlaceRepository {
-  _DeletablePlaceRepository(this.summary) : super(PlaceRemoteDataSource(Dio()));
+class _DeletablePlaceRepository extends Fake implements PlaceRepository {
+  _DeletablePlaceRepository(this.summary);
 
   final PlaceSummary summary;
   int deleteCalls = 0;
