@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/features/plant/presentation/models/plant_detail_view_data.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_care_summary.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_content_width.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_hero.dart';

@@ -6,8 +6,8 @@ import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/place/presentation/fixtures/place_detail_fixture.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/place_detail_view_data.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_view_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_exit_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_fab.dart';
@@ -119,7 +119,7 @@ class PlaceDetailPage extends ConsumerWidget {
   Widget _buildScaffold(
     BuildContext context,
     WidgetRef ref,
-    PlaceDetailFixtureData detail,
+    PlaceDetailViewData detail,
   ) {
     return CommonScaffold(
       title: 'My place',

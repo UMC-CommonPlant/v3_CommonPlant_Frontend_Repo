@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/features/place/presentation/models/place_detail_view_data.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_fab.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_header.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_plant_list.dart';

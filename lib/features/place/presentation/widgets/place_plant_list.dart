@@ -3,30 +3,11 @@ import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/place_detail_view_data.dart';
 import 'package:commonplant_frontend/shared/widgets/common_plant_card.dart';
 import 'package:commonplant_frontend/shared/widgets/common_watering_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-class PlaceDetailPlantItem {
-  const PlaceDetailPlantItem({
-    required this.id,
-    required this.name,
-    required this.species,
-    required this.description,
-    required this.dDayLabel,
-    required this.dateLabel,
-    this.canWater = false,
-  });
-
-  final String id;
-  final String name;
-  final String species;
-  final String description;
-  final String dDayLabel;
-  final String dateLabel;
-  final bool canWater;
-}
 
 class PlacePlantList extends StatelessWidget {
   const PlacePlantList({

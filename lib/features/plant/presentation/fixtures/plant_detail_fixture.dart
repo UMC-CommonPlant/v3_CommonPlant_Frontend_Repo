@@ -1,50 +1,8 @@
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
-import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
-import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_memo_preview_section.dart';
+import 'package:commonplant_frontend/features/plant/presentation/models/plant_detail_view_data.dart';
 
-class PlantDetailFixtureData {
-  const PlantDetailFixtureData({
-    required this.placeCode,
-    required this.placeName,
-    required this.name,
-    required this.species,
-    required this.daysTogether,
-    required this.dDayLabel,
-    required this.startDate,
-    required this.lastWateredDate,
-    required this.wateringCycleLabel,
-    required this.memos,
-  });
-
-  final String? placeCode;
-  final String placeName;
-  final String name;
-  final String species;
-  final int daysTogether;
-  final String dDayLabel;
-  final String startDate;
-  final String lastWateredDate;
-  final String wateringCycleLabel;
-  final List<PlantDetailMemoItem> memos;
-
-  PlantDetailFixtureData applyRemote(PlantDetail detail) {
-    return PlantDetailFixtureData(
-      placeCode: detail.placeId ?? placeCode,
-      placeName: detail.placeName ?? placeName,
-      name: detail.name,
-      species: detail.species ?? species,
-      daysTogether: daysTogether,
-      dDayLabel: dDayLabel,
-      startDate: startDate,
-      lastWateredDate: detail.lastWateredDate ?? lastWateredDate,
-      wateringCycleLabel: wateringCycleLabel,
-      memos: memos,
-    );
-  }
-}
-
-PlantDetailFixtureData plantDetailFixture({String? placeCode}) {
-  return PlantDetailFixtureData(
+PlantDetailViewData plantDetailFixture({String? placeCode}) {
+  return PlantDetailViewData(
     placeCode: placeCode,
     placeName: '스윗홈_거실',
     name: '몬테',
