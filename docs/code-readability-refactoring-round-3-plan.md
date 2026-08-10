@@ -8,7 +8,7 @@
 
 **Tech Stack:** Flutter, Dart, Riverpod, go_router, flutter_test
 
-**Status:** 2026-08-04 `develop` 기준 계획 수립. 상위 Epic은 #165, 계획 문서 Task는 #166이다. 2026-08-07 Task 7까지 병합됐고, Task 8은 로컬 구현과 전체 검증을 완료했으나 GitHub 저장소 쓰기 권한 403으로 push와 PR 생성이 대기 중이다.
+**Status:** 2026-08-04 `develop` 기준 계획 수립. 상위 Epic은 #165, 계획 문서 Task는 #166이다. 2026-08-10 Task 7까지 병합됐고, Task 8 구현과 전체 검증을 완료해 PR #187에서 리뷰 중이다.
 
 ---
 
@@ -610,7 +610,7 @@ Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행�
 | Task 6. Place form state 통합 | #178 | #179 | Done |
 | Task 1~6 중간 검증 | #180 | #181 | Done |
 | Task 7. Plant form state와 Provider 소유권 정리 | #182 | #183 | Done |
-| Task 8. Place/Plant detail ViewData 경계 정리 | #184 | - | In Progress (push blocked) |
+| Task 8. Place/Plant detail ViewData 경계 정리 | #184 | #187 | In Review |
 | Task 9. Repository 계약과 local/remote 경계 정리 | 시작 시 생성 | - | Pending |
 | Task 10. 미사용 Phase 0 구조 정리 | 시작 시 생성 | - | Pending |
 | Task 11. Router/test helper 가독성 정리 | 시작 시 생성 | - | Pending |
