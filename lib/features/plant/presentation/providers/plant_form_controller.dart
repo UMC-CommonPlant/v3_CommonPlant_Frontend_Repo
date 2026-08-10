@@ -1,6 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
-import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_registration_place.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_edit_provider.dart';
@@ -163,11 +162,9 @@ class PlantFormController extends Notifier<PlantFormState> {
       await ref
           .read(plantRepositoryProvider)
           .createPlant(
-            CreatePlantRequest(
-              placeCode: selectedPlace.id,
-              nickname: plantName,
-              scientificNameKo: plantName,
-            ),
+            placeCode: selectedPlace.id,
+            nickname: plantName,
+            scientificNameKo: plantName,
           );
       ref.invalidate(remotePlantListProvider);
     }
@@ -194,7 +191,7 @@ class PlantFormController extends Notifier<PlantFormState> {
           .updatePlant(
             plantId: plantId,
             placeCode: placeId,
-            request: UpdatePlantRequest(nickname: plantName),
+            nickname: plantName,
           );
       ref.invalidate(remotePlantListProvider);
     }

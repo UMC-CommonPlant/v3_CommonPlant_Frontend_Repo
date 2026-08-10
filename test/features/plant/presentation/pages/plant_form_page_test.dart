@@ -1,12 +1,10 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/plant/data/datasources/plant_remote_data_source.dart';
-import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
-import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
+import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -173,9 +171,7 @@ void main() {
   });
 }
 
-class _PendingPlantRepository extends PlantRepository {
-  _PendingPlantRepository() : super(PlantRemoteDataSource(Dio()));
-
+class _PendingPlantRepository extends Fake implements PlantRepository {
   final Completer<void> _completer = Completer<void>();
   int updateCalls = 0;
 
@@ -183,8 +179,9 @@ class _PendingPlantRepository extends PlantRepository {
   Future<void> updatePlant({
     required String plantId,
     required String placeCode,
-    required UpdatePlantRequest request,
-    MultipartFile? image,
+    String? imageKey,
+    String? nickname,
+    String? lastWateredDate,
   }) {
     updateCalls++;
     return _completer.future;
@@ -196,17 +193,16 @@ class _PendingPlantRepository extends PlantRepository {
   }
 }
 
-class _FailingPlantUpdateRepository extends PlantRepository {
-  _FailingPlantUpdateRepository() : super(PlantRemoteDataSource(Dio()));
-
+class _FailingPlantUpdateRepository extends Fake implements PlantRepository {
   int updateCalls = 0;
 
   @override
   Future<void> updatePlant({
     required String plantId,
     required String placeCode,
-    required UpdatePlantRequest request,
-    MultipartFile? image,
+    String? imageKey,
+    String? nickname,
+    String? lastWateredDate,
   }) async {
     updateCalls++;
     throw StateError('raw failure');
@@ -218,9 +214,7 @@ class _FailingPlantUpdateRepository extends PlantRepository {
   }
 }
 
-class _PendingEditInfoPlantRepository extends PlantRepository {
-  _PendingEditInfoPlantRepository() : super(PlantRemoteDataSource(Dio()));
-
+class _PendingEditInfoPlantRepository extends Fake implements PlantRepository {
   final Completer<PlantEditInfo> _completer = Completer<PlantEditInfo>();
 
   @override
@@ -229,9 +223,8 @@ class _PendingEditInfoPlantRepository extends PlantRepository {
   }
 }
 
-class _StaticEditInfoPlantRepository extends PlantRepository {
-  _StaticEditInfoPlantRepository(this.editInfo)
-    : super(PlantRemoteDataSource(Dio()));
+class _StaticEditInfoPlantRepository extends Fake implements PlantRepository {
+  _StaticEditInfoPlantRepository(this.editInfo);
 
   final PlantEditInfo editInfo;
 
@@ -241,9 +234,7 @@ class _StaticEditInfoPlantRepository extends PlantRepository {
   }
 }
 
-class _RetryEditInfoPlantRepository extends PlantRepository {
-  _RetryEditInfoPlantRepository() : super(PlantRemoteDataSource(Dio()));
-
+class _RetryEditInfoPlantRepository extends Fake implements PlantRepository {
   int editInfoFetchCalls = 0;
 
   @override

@@ -4,11 +4,34 @@ import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
 import 'package:dio/dio.dart';
 
-class PlantRemoteDataSource {
-  const PlantRemoteDataSource(this._dio);
+abstract interface class PlantRemoteDataSource {
+  Future<Object?> getPlants({int page = 0, int size = 20});
+
+  Future<void> createPlant(CreatePlantRequest request, {MultipartFile? image});
+
+  Future<Object?> getPlant({required String plantId});
+
+  Future<Object?> getPlantEditInfo({required String plantId});
+
+  Future<void> updatePlant({
+    required String plantId,
+    required String placeCode,
+    required UpdatePlantRequest request,
+    MultipartFile? image,
+  });
+
+  Future<void> deletePlant({
+    required String plantId,
+    required String placeCode,
+  });
+}
+
+class DioPlantRemoteDataSource implements PlantRemoteDataSource {
+  const DioPlantRemoteDataSource(this._dio);
 
   final Dio _dio;
 
+  @override
   Future<Object?> getPlants({int page = 0, int size = 20}) async {
     try {
       final response = await _dio.get<Object?>(
@@ -22,6 +45,7 @@ class PlantRemoteDataSource {
     }
   }
 
+  @override
   Future<void> createPlant(
     CreatePlantRequest request, {
     MultipartFile? image,
@@ -42,6 +66,7 @@ class PlantRemoteDataSource {
     }
   }
 
+  @override
   Future<Object?> getPlant({required String plantId}) async {
     try {
       final response = await _dio.get<Object?>('/plants/$plantId');
@@ -52,6 +77,7 @@ class PlantRemoteDataSource {
     }
   }
 
+  @override
   Future<Object?> getPlantEditInfo({required String plantId}) async {
     try {
       final response = await _dio.get<Object?>('/plants/$plantId/edit');
@@ -62,6 +88,7 @@ class PlantRemoteDataSource {
     }
   }
 
+  @override
   Future<void> updatePlant({
     required String plantId,
     required String placeCode,
@@ -85,6 +112,7 @@ class PlantRemoteDataSource {
     }
   }
 
+  @override
   Future<void> deletePlant({
     required String plantId,
     required String placeCode,

@@ -9,7 +9,7 @@ void main() {
   group('PlantRemoteDataSource', () {
     test('식물 상세 조회는 place query 없이 plantId path만 보낸다', () async {
       final adapter = _CapturingAdapter();
-      final dataSource = PlantRemoteDataSource(_dioWith(adapter));
+      final dataSource = DioPlantRemoteDataSource(_dioWith(adapter));
 
       await dataSource.getPlant(plantId: '1');
 
@@ -19,7 +19,7 @@ void main() {
 
     test('식물 수정 정보 조회는 place query 없이 plantId path만 보낸다', () async {
       final adapter = _CapturingAdapter();
-      final dataSource = PlantRemoteDataSource(_dioWith(adapter));
+      final dataSource = DioPlantRemoteDataSource(_dioWith(adapter));
 
       await dataSource.getPlantEditInfo(plantId: '1');
 
@@ -29,7 +29,7 @@ void main() {
 
     test('식물 수정은 placeCode query를 보낸다', () async {
       final adapter = _CapturingAdapter();
-      final dataSource = PlantRemoteDataSource(_dioWith(adapter));
+      final dataSource = DioPlantRemoteDataSource(_dioWith(adapter));
 
       await dataSource.updatePlant(
         plantId: '1',
@@ -43,7 +43,7 @@ void main() {
 
     test('식물 생성은 optional image part를 multipart에 포함한다', () async {
       final adapter = _CapturingAdapter();
-      final dataSource = PlantRemoteDataSource(_dioWith(adapter));
+      final dataSource = DioPlantRemoteDataSource(_dioWith(adapter));
 
       await dataSource.createPlant(
         const CreatePlantRequest(placeCode: 'Abc123', nickname: '몬스테라'),
@@ -59,7 +59,7 @@ void main() {
 
     test('식물 수정은 optional image part를 multipart에 포함한다', () async {
       final adapter = _CapturingAdapter();
-      final dataSource = PlantRemoteDataSource(_dioWith(adapter));
+      final dataSource = DioPlantRemoteDataSource(_dioWith(adapter));
 
       await dataSource.updatePlant(
         plantId: '1',
@@ -77,7 +77,7 @@ void main() {
 
     test('식물 삭제는 placeCode query를 보낸다', () async {
       final adapter = _CapturingAdapter();
-      final dataSource = PlantRemoteDataSource(_dioWith(adapter));
+      final dataSource = DioPlantRemoteDataSource(_dioWith(adapter));
 
       await dataSource.deletePlant(plantId: '1', placeCode: 'Abc123');
 
