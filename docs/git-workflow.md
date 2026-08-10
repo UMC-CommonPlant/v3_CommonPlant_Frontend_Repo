@@ -48,13 +48,21 @@ git switch -c feature/place-list
 
 코드, 문서, 설정 등 저장소 변경이 필요한 요구사항은 GitHub 이슈를 기준으로 추적합니다. 단순 질의, 현황 확인, 명시적으로 보류된 요청은 이슈 생성 없이 답변할 수 있습니다.
 
+### GitHub 작업 도구 기준
+
+- 이슈, PR, 코멘트, Project 생성 및 수정은 인증된 `gh` CLI를 기본으로 사용합니다.
+- 이슈와 PR 생성은 각각 `gh issue create`, `gh pr create`를 우선합니다.
+- assignee와 milestone은 `gh issue edit`, `gh pr edit`로 설정하고, Project 필드와 Issue Type, parent issue는 `gh project`, `gh api`로 갱신합니다.
+- GitHub 앱이나 connector는 기본 생성 경로로 사용하지 않습니다. `gh`가 해당 작업을 지원하지 않거나 사용자가 명시적으로 요청한 경우에만 대체 도구로 검토합니다.
+- GitHub 쓰기 작업 전에는 `gh auth status`와 저장소 권한을 확인합니다. 권한 오류가 발생하면 다른 인증 수단이나 GitHub 앱으로 우회하지 않고 필요한 권한을 보고합니다.
+
 작업 전 이슈 생성 기준:
 
 - 요구사항 분석 후 `[Epic]`, `[Feature]`, `[Task]`, `[Bug]` 중 하나로 시작하는 제목을 작성합니다.
 - 제목 타입과 같은 의미의 GitHub Issue Type을 입력합니다.
 - 본문에는 작업 개요, 목표, 완료 조건, 검증 기준을 포함합니다.
 - 관련 도메인이나 작업 유형에 맞는 라벨을 지정합니다.
-- 신규 일반 이슈는 `allmanLee`, `ywkim95`, `bbielo`를 assignees로 지정합니다.
+- 신규 일반 이슈는 `ywkim95`, `bbielo`를 assignees로 지정합니다.
 - 신규 일반 이슈는 `v1.0.0 - MVP (핵심 기능 개발)` milestone을 지정합니다.
 - 상위 범위가 있으면 parent issue를 연결합니다.
 - 기존 이슈가 같은 범위를 이미 다루고 있으면 새 이슈를 만들지 않고 기존 이슈를 사용합니다.
@@ -245,7 +253,7 @@ CLI 권한이 부족하면 GitHub UI의 PR 우측 `Projects` 영역에서 위 Pr
 | --- | --- |
 | Title | 이슈는 `[Epic]`, `[Feature]`, `[Task]`, `[Bug]` prefix를 사용합니다. |
 | Issue Type | 제목 prefix와 같은 의미로 `Epic`, `Feature`, `Task`, `Bug` 중 선택합니다. |
-| Assignees | 신규 일반 이슈와 PR은 `allmanLee`, `ywkim95`, `bbielo`를 지정합니다. |
+| Assignees | 신규 일반 이슈와 PR은 `ywkim95`, `bbielo`를 지정합니다. |
 | Milestone | 신규 일반 이슈와 PR은 `v1.0.0 - MVP (핵심 기능 개발)`을 지정합니다. |
 | Status | 작업 시작은 `In Progress`, PR 생성 후는 `In Review`, 완료 후는 `Done`입니다. |
 | Category | 도메인 기준으로 `User`, `Place`, `Plant`, `Memo`, `Info`, `Story`, `Calendar` 중 선택합니다. |
@@ -261,7 +269,7 @@ CLI 권한이 부족하면 GitHub UI의 PR 우측 `Projects` 영역에서 위 Pr
 - [ ] 일반 작업 PR의 base가 `develop`인가?
 - [ ] 배포 PR의 base가 `main`이고 head가 `release/*`인가?
 - [ ] PR이 CommonPlant GitHub Project 10에 연결되었는가?
-- [ ] 이슈와 PR의 assignees가 `allmanLee`, `ywkim95`, `bbielo`로 지정되었는가?
+- [ ] 이슈와 PR의 assignees가 `ywkim95`, `bbielo`로 지정되었는가?
 - [ ] 이슈와 PR의 milestone이 지정되었는가?
 - [ ] Project 10의 category와 status가 최신 상태인가?
 - [ ] 이슈 제목 prefix와 GitHub Issue Type이 일치하는가?
