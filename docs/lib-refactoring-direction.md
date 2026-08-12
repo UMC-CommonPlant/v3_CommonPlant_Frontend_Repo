@@ -124,15 +124,16 @@
 - `api_response_parser.dart`의 fallback key 정책은 임시 호환 전략으로 유지하되, Swagger 응답이 확정된 API부터 명시적 DTO로 교체합니다.
 - `ApiException`은 status/code별 사용자 메시지 매핑이 필요한 시점에 공통 error model로 확장합니다.
 
-### 6. shared와 features/common의 기준이 흐려질 수 있음
+### 6. shared와 feature 내부 위젯의 경계
 
-`shared/widgets`에는 공용 버튼, 입력창, 카드, dialog, scaffold 등 실제로 재사용 가치가 있는 컴포넌트가 많습니다. 동시에 일부 컴포넌트는 특정 화면의 Figma 조합에 강하게 묶일 가능성이 있습니다.
+`shared/widgets`에는 공용 버튼, 입력창, 카드, dialog, scaffold 등 실제로 재사용 가치가 있는 컴포넌트가 많습니다. 일부 컴포넌트는 특정 화면의 Figma 조합에 강하게 묶일 가능성이 있으므로 사용처가 생길 때 소유권을 다시 확인합니다.
 
 개선 방향:
 
 - 두 개 이상의 feature에서 같은 의미와 상호작용으로 쓰이는 것만 `shared/widgets`에 둡니다.
 - 도메인 용어가 들어가거나 한 화면의 조합에 가까운 위젯은 feature 내부 `presentation/widgets`로 내립니다.
-- `features/common/presentation/widgets/phase0_widgets.dart`는 phase 0 보조 위젯이라는 임시 성격이 강하므로, 계속 쓸 컴포넌트와 제거할 컴포넌트를 분리합니다.
+- 사용처가 없던 `features/common/presentation/widgets/phase0_widgets.dart`와 빈 feature 구조는 3차 가독성 리팩토링 Task 10에서 제거했습니다.
+- `features/common`을 범용 보관소로 다시 만들지 않고, 공용 UI는 `shared/widgets`, 도메인 UI는 각 feature에 둡니다.
 - 공용 위젯 파일이 300줄을 넘는 경우 variant, style, primitive를 분리할지 검토합니다.
 
 ### 7. 테스트는 넓게 있으나 controller 단위 테스트가 부족해질 가능성이 큼

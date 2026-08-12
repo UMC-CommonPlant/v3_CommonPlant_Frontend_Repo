@@ -282,16 +282,21 @@ const CommonSvgIcon(
 
 ## 소유권 감사 결과
 
-2026-06-25 기준 `lib/shared/widgets`와 `lib/features/common/presentation/widgets`를 확인한 결과입니다. 이 표는 즉시 파일을 이동하기 위한 목록이 아니라, 이후 화면 분해나 공용 위젯 추가 PR에서 소유권을 판단하는 기준입니다.
+2026-08-12 기준 `lib/shared/widgets`의 production/test 사용처를 다시 확인한 결과입니다. 사용처가 없던 `features/common`의 Phase 0 보조 위젯은 제거했으며, 공용 UI는 `shared/widgets`, 도메인 UI는 각 feature의 `presentation/widgets`에서 소유합니다.
 
 | 분류 | 대상 | 판단 |
 | --- | --- | --- |
-| 공용 control로 유지 | `CommonButton`, `CommonScaffold`, `CommonNavigationBar`, `CommonSvgIcon`, `CommonTextField`, `CommonSearchTextField`, `CommonAddressOrPlaceField`, `CommonDialogCard`, `CommonDialogActionButton`, `CommonEditDeletePopup`, `CommonFab`, `CommonFabDial`, `CommonPlusIconButton` | 여러 feature에서 같은 의미와 상호작용으로 쓰이고 도메인 정책을 알지 않으므로 `shared/widgets`에 둡니다. |
-| 공용 primitive로 유지 | `CommonPlusMark`, `CommonSectionHeader` | 도메인 의존성은 없지만 직접 사용처가 적습니다. 공용 위젯 내부 primitive 또는 반복 섹션 헤더로만 확장하고, 화면별 조합 로직은 넣지 않습니다. |
+| 공용 control로 유지 | `CommonButton`, `CommonScaffold`, `CommonNavigationBar`, `CommonSvgIcon`, `CommonTextField`, `CommonSearchTextField`, `CommonAddressOrPlaceField`, `CommonDialogCard`, `CommonDialogActionButton`, `CommonEditDeletePopup`, `CommonFab`, `CommonFabDial` | 여러 feature에서 같은 의미와 상호작용으로 쓰이고 도메인 정책을 알지 않으므로 `shared/widgets`에 둡니다. |
+| 공용 primitive로 유지 | `CommonPlusMark` | `CommonPlusIconButton` 내부 primitive로만 사용합니다. 화면별 조합 로직은 넣지 않습니다. |
 | 공용 image input 후보 | `CommonCircleImageBox`, `CommonPhotoAddButton`, `CommonPlaceImageAddButton` | 이미지 선택 UI라는 공통성이 있습니다. 다만 `CommonPlaceImageAddButton`처럼 특정 도메인 이름이 들어간 위젯은 다른 feature로 확장하기 전에 generic variant 추가 또는 feature 내부 이동을 먼저 검토합니다. |
 | 공용 display 후보 | `CommonPlaceCard`, `CommonPlantCard`, `CommonPlacePlantCard`, `CommonMemoCard`, `CommonWateringButton` | Home, Place, Plant, Memo 사이에서 같은 카드 표현을 공유할 가능성이 있어 당장은 유지합니다. API 상태, route 이동, 권한 정책이 들어가기 시작하면 feature 내부 widget으로 내리거나 domain-agnostic display model을 주입하는 방식으로 정리합니다. |
-| feature 내부 이동 후보 | `CommonAddTile`, `CommonPlaceGuideBanner` | 장소/식물 Figma 조합이나 안내 배너 성격이 강하고 현재 직접 사용처가 적습니다. 다음 화면 분해 PR에서 실제 사용 화면이 하나로 좁혀지면 해당 feature의 `presentation/widgets`로 이동하거나 제거를 검토합니다. |
-| Phase 0 임시 위젯 | `Phase0Section`, `Phase0Surface`, `Phase0Chip`, `Phase0EmptyState`, `Phase0UserAvatar`, `Phase0InfoRow` | `features/common`의 Phase 0 보조 위젯입니다. 새 화면에서 확대 사용하지 않고, 실제 반복 사용처가 생기면 `shared/widgets` 승격 또는 feature 내부 이동을 별도 PR로 결정합니다. |
+| 신규 사용 전 재검토 | `CommonAddTile`, `CommonPlaceGuideBanner`, `CommonPlusIconButton`, `CommonSectionHeader` | 2026-08-12 감사 기준 production/test 직접 사용처가 없습니다. 새 사용처에 바로 연결하지 않고 도메인 전용이면 feature로 이동하며, 반복 사용 근거가 없으면 제거를 검토합니다. |
+
+### Phase 0 구조 정리 결과
+
+- `Phase0Section`, `Phase0Surface`, `Phase0Chip`, `Phase0EmptyState`, `Phase0UserAvatar`, `Phase0InfoRow`는 production/test 사용처가 없어 제거했습니다.
+- 위 위젯만 소유하던 `lib/features/common` 빈 구조도 제거했습니다.
+- 이후 feature 공통처럼 보이는 UI도 먼저 실제 재사용 주체를 확인하고 `shared/widgets` 또는 도메인 feature에 배치합니다.
 
 ### 이동 판단 기준
 

@@ -40,7 +40,7 @@ lib/
         pages/
 ```
 
-현재 `phase 0` 화면 퍼블리싱은 feature별 `presentation/pages`에 배치되어 있습니다. API 연동 전까지 화면 상태는 page 내부의 임시 상태로만 유지하고, 여러 feature에서 공유되는 퍼블리싱 보조 위젯은 `features/common/presentation/widgets`에 둡니다.
+화면은 feature별 `presentation/pages`에 배치합니다. 두 개 이상의 feature에서 같은 의미와 상호작용으로 재사용되는 UI는 `shared/widgets`에 두고, 특정 도메인이나 화면 조합에 가까운 위젯은 해당 feature의 `presentation/widgets`에 둡니다. 소유권이 불분명한 코드를 모으기 위한 `features/common`은 만들지 않습니다.
 
 ## 기본 원칙
 
