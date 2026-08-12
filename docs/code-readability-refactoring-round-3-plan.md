@@ -8,7 +8,7 @@
 
 **Tech Stack:** Flutter, Dart, Riverpod, go_router, flutter_test
 
-**Status:** 2026-08-04 `develop` 기준 계획 수립. 상위 Epic은 #165, 계획 문서 Task는 #166이다. 2026-08-10 Task 8까지 병합됐고, Task 9 구현과 전체 검증을 완료해 PR #189에서 리뷰 중이다.
+**Status:** 2026-08-04 `develop` 기준 계획 수립. 상위 Epic은 #165, 계획 문서 Task는 #166이다. 2026-08-12 Task 9까지 병합됐고, Task 10 구현과 전체 검증을 완료해 PR #191에서 리뷰 중이다.
 
 ---
 
@@ -591,7 +591,7 @@ Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행�
 - [x] fixture가 widget 파일에 정의된 item model을 import하지 않는다.
 - [x] feature 간 presentation Provider 직접 의존이 줄어든다.
 - [x] page가 `useRemoteApiProvider`, request DTO, repository 구현을 직접 알지 않는다.
-- [ ] 사용처 없는 Phase 0 위젯이 제거된다.
+- [x] 사용처 없는 Phase 0 위젯이 제거된다.
 - [ ] router test가 책임별로 분리된다.
 - [ ] README와 상태관리/테스트/shared widget 문서가 실제 구조를 반영한다.
 - [x] 전체 `fvm flutter test`가 통과한다.
@@ -611,8 +611,8 @@ Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행�
 | Task 1~6 중간 검증 | #180 | #181 | Done |
 | Task 7. Plant form state와 Provider 소유권 정리 | #182 | #183 | Done |
 | Task 8. Place/Plant detail ViewData 경계 정리 | #184 | #187 | Done |
-| Task 9. Repository 계약과 local/remote 경계 정리 | #188 | #189 | In Review |
-| Task 10. 미사용 Phase 0 구조 정리 | 시작 시 생성 | - | Pending |
+| Task 9. Repository 계약과 local/remote 경계 정리 | #188 | #189 | Done |
+| Task 10. 미사용 Phase 0 구조 정리 | #190 | #191 | In Review |
 | Task 11. Router/test helper 가독성 정리 | 시작 시 생성 | - | Pending |
 
 각 Task 이슈를 만들 때 #165를 parent issue로 연결하고, Project 10의 category는 대상 domain을 우선한다. 여러 domain을 함께 다루는 공통 구조와 문서 Task는 `Story`로 지정한다.
@@ -644,5 +644,8 @@ Controller가 추가된 Task는 대상 controller test를 먼저 단독 실행�
 | Task 9 | `1dbe513` | Place repository domain 계약, data 구현체, feature 의존 조립 경계를 분리하고 테스트 fake의 Dio 의존 제거 | Place 대상 test 71개, analyze |
 | Task 9 | `689e1ef` | Plant repository domain 계약, data 구현체, feature 의존 조립 경계를 분리하고 테스트 fake의 Dio 의존 제거 | Plant 대상 test 63개, analyze |
 | Task 9 | - | Place/Plant presentation의 data 계층 의존과 concrete fake 상속을 구조 감사하고 Task 8·9 상태 및 작업 이력 갱신 | 구조 감사, format, analyze, 전체 test 218개 |
+| Task 10 | `71d888b` | 사용처 없는 Phase 0 보조 위젯 6종과 `features/common` 빈 구조 제거 | 참조 구조 감사, analyze |
+| Task 10 | `76e2110` | 공용 UI와 feature UI 소유권 기준 및 미사용 shared 위젯 재검토 목록 갱신 | 사용처 감사, `git diff --check` |
+| Task 10 | - | Phase 0 코드와 빈 feature 구조 제거를 감사하고 Task 9·10 상태 및 작업 이력 갱신 | 구조 감사, format, analyze, 전체 test 218개 |
 
 Task 6부터는 구현 커밋을 책임별로 나누고 각 커밋을 별도 행으로 기록한다. 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
