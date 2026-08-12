@@ -21,6 +21,7 @@
 | Font/asset | Pretendard 4종과 앱 asset이 저장소 및 `pubspec.yaml`에 등록됨 | Golden 재현성의 기본 조건 충족 |
 | Integration test | SDK 의존성, `integration_test/`, 실행 script 없음 | 로컬 smoke scaffold부터 별도 도입 가능 |
 | GitHub Actions | Ubuntu에서 `flutter analyze`, `flutter test` 실행 | device 기반 workflow는 없음 |
+| 기본 품질 게이트 | format 252개 파일, analyze, unit/widget test 218개 통과 | 현재 필수 게이트 정상 |
 | Remote API 환경 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 주입 지점만 존재 | staging URL, 계정, 데이터 격리 정책은 Blocked |
 
 ## 의존관계를 반영한 작업 순서
@@ -116,6 +117,6 @@ Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게
 
 | ID | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- | --- |
-| QA-01 | - | QA 필수 viewport/device profile, 후속 작업 순서, Ready/Blocked 경계 문서화 | `git diff --check` 예정 |
+| QA-01 | `3e01a12` | QA 필수 viewport/device profile, 후속 작업 순서, Ready/Blocked 경계 문서화 | `git diff --check`, format 252개 파일, analyze, unit/widget test 218개 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
