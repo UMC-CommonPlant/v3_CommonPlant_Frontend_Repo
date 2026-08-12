@@ -10,10 +10,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../helpers/test_app.dart';
+
 void main() {
   testWidgets('식물 상세는 Figma 주요 정보와 더보기 메뉴를 표시한다', (tester) async {
     await tester.pumpWidget(
-      _buildPlantDetailApp(const PlantDetailPage(plantId: 'plant-1')),
+      buildPageTestApp(const PlantDetailPage(plantId: 'plant-1')),
     );
     await tester.pumpAndSettle();
 
@@ -55,7 +57,7 @@ void main() {
 
   testWidgets('식물 삭제 메뉴는 확인 dialog를 표시한다', (tester) async {
     await tester.pumpWidget(
-      _buildPlantDetailApp(const PlantDetailPage(plantId: 'plant-1')),
+      buildPageTestApp(const PlantDetailPage(plantId: 'plant-1')),
     );
     await tester.pumpAndSettle();
 
@@ -159,10 +161,6 @@ void main() {
     expect(find.text('홈'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-}
-
-Widget _buildPlantDetailApp(Widget home) {
-  return ProviderScope(child: MaterialApp(home: home));
 }
 
 Widget _remotePlantDetailApp(PlantRepository repository) {

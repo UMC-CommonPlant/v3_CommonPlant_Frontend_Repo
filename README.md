@@ -30,7 +30,7 @@
 
 ## 현재 개발 범위
 
-이 저장소는 커먼플랜트 Flutter 프론트엔드 앱 저장소입니다. 현재 단계에서는 Android/iOS 기반의 공통 개발환경, 테마 토큰, 공용 위젯 베이스를 우선 정리합니다.
+이 저장소는 커먼플랜트 Flutter 프론트엔드 앱 저장소입니다. Android/iOS 공통 개발환경 위에서 인증, 장소, 식물, 메모 도메인의 화면·상태관리·API 경계를 구현하고 있습니다.
 
 ## 프로젝트 개요
 
@@ -99,12 +99,23 @@ lib/
     router/
   core/
     assets/
+    config/
+    network/
     theme/
   shared/
+    forms/
     widgets/
   features/
-    home/
+    <feature>/
+      data/
+      domain/
       presentation/
+test/
+  app/router/
+  core/
+  features/
+  helpers/
+  shared/widgets/
 ```
 
 ## 공통 작업 규칙
@@ -193,13 +204,13 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 ## 진행해야 할 작업 내역
 
 기존 [남은 작업 진행 계획](docs/remaining-work-plan.md)의 0~15번 항목은 2026-06-28 기준 모두 완료되었습니다.
-완료된 항목은 작업 기록 보존용으로 남기고, 코드 가독성 리팩토링 1차 라운드는 [코드 가독성 리팩토링 실행 계획](docs/code-readability-refactoring-plan.md)의 Task 1~7 기준으로 완료되었습니다. 2차 라운드도 2026-08-04에 [코드 가독성 리팩토링 2차 계획](docs/code-readability-refactoring-round-2-plan.md)의 Task 1~8 기준으로 완료되었습니다. 3차 라운드는 [코드 가독성 리팩토링 3차 계획](docs/code-readability-refactoring-round-3-plan.md)에 따라 Riverpod-first 화면 상태 경계를 정리합니다.
+완료된 항목은 작업 기록 보존용으로 남기고, 코드 가독성 리팩토링 1차 라운드는 [코드 가독성 리팩토링 실행 계획](docs/code-readability-refactoring-plan.md)의 Task 1~7 기준으로 완료되었습니다. 2차 라운드도 2026-08-04에 [코드 가독성 리팩토링 2차 계획](docs/code-readability-refactoring-round-2-plan.md)의 Task 1~8 기준으로 완료되었습니다. 3차 라운드는 Task 1~10이 병합됐고, 마지막 Task 11의 구현과 코드 수준 검증을 완료해 [#193](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/193)에서 검토 중입니다.
 
 이후 새 작업은 아래 기준으로 범위를 다시 정합니다.
 
 - 후속 결정/확인 항목은 [후속 결정 체크리스트](docs/follow-up-decision-checklist.md)를 기준으로 새 이슈로 분리합니다.
 - 구조 개선 후보는 [lib 구조 리팩토링 개선 방향](docs/lib-refactoring-direction.md)의 남은 진단 항목을 기준으로 재평가합니다.
-- 3차 가독성 리팩토링은 route page의 Stateful 상태를 Riverpod Controller로 옮기고 ViewData와 feature 의존 경계를 정리합니다.
+- 3차 가독성 리팩토링은 마지막 PR 병합 후 계획 문서와 Project 상태를 `Done`으로 닫습니다.
 - 새 작업도 `이슈 생성 -> Project 10 등록 -> develop 기반 브랜치 생성 -> 작업 -> 검증 -> 커밋/푸시 -> PR 생성` 순서로 진행합니다.
 
 우선순위:
@@ -207,5 +218,5 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 1. [x] 기존 남은 작업 계획 0~15번 완료 상태를 확인합니다.
 2. [x] 코드 가독성 리팩토링 1차 라운드의 상위 범위와 완료 기준을 문서화합니다.
 3. [x] 코드 가독성 리팩토링 2차 라운드 Task 1~8을 완료합니다.
-4. [ ] 코드 가독성 리팩토링 3차 Task 1~11을 진행합니다.
+4. [ ] 코드 가독성 리팩토링 3차 Task 11 PR을 검토하고 병합합니다.
 5. [ ] 백엔드 확인, 테스트, 릴리즈처럼 결정이 필요한 항목을 개별 이슈로 분리합니다.
