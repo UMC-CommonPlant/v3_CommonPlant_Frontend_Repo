@@ -13,9 +13,9 @@
 
 | 체크 | ID | 결정 항목 | 출처 | 다음 액션 | 상태 |
 | --- | --- | --- | --- | --- | --- |
-| [ ] | QA-01 | Figma 기준 해상도 외 QA 필수 디바이스 목록 | `docs/screen-publishing-rules.md`, `docs/testing-guide.md` | QA 기준 디바이스와 화면 폭을 정리한다. | Open |
-| [ ] | TEST-01 | full-screen golden test 기준 크기 | `docs/testing-guide.md` | QA 디바이스 목록 확정 후 full-screen golden 범위를 정한다. | Open |
-| [ ] | TEST-02 | integration test 실행 환경과 workflow 연결 방식 | `docs/testing-guide.md` | staging API, 테스트 계정, runner 준비 여부를 확인한다. | Open |
+| [x] | QA-01 | Figma 기준 해상도 외 QA 필수 디바이스 목록 | `docs/screen-publishing-rules.md`, `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | `320×568`, `375×812`, `430×932` 자동 검증 viewport와 Android/iOS 수동 QA profile을 적용한다. | Decided |
+| [ ] | TEST-01 | full-screen golden test 기준 크기 | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | `375×812` pilot을 기준으로 대상 화면, DPR, baseline 갱신 규칙을 별도 이슈에서 확정한다. | Ready |
+| [ ] | TEST-02 | integration test 실행 환경과 workflow 연결 방식 | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | API 비사용 smoke/runner는 로컬 범위로 분리하고 staging URL, 테스트 계정, seed/cleanup이 필요한 remote workflow는 보류한다. | Blocked |
 
 ## 릴리즈와 환경
 

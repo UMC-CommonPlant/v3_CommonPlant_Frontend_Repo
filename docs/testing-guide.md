@@ -101,6 +101,23 @@ await tester.pumpWidget(
 
 UI가 없어도 검증 가능한 로직은 widget test로 우회하지 않습니다.
 
+## QA viewport와 디바이스 기준
+
+화면 테스트와 수동 QA는 `docs/quality-testing-follow-up-plan.md`의 QA-01 profile을 공통 입력값으로 사용합니다.
+
+| 구분 | Logical viewport | 기본 용도 |
+| --- | --- | --- |
+| Compact | `320×568` | 작은 폭, 짧은 높이, 긴 문구, keyboard/CTA overflow |
+| Reference | `375×812` | Figma 및 `AppSizes.mobileWidth`/`mobileHeight` 기준 |
+| Wide | `430×932` | 넓은 휴대폰의 card/grid 정렬과 최대 너비 |
+
+- 모든 신규 화면 widget test는 Reference를 기본으로 사용합니다.
+- form, 긴 문구, 가로 배치, 하단 CTA가 있으면 Compact를 추가합니다.
+- grid, card list, 좌우 정렬 변화가 있으면 Wide를 추가합니다.
+- 화면 구조가 바뀐 PR은 Android와 iOS에서 각각 한 개 이상의 필수 profile로 smoke QA를 수행합니다.
+- release candidate는 QA-01의 Android 2개, iOS 2개 profile을 모두 확인합니다.
+- layout 비교용 widget test는 DPR 1을 사용합니다. Golden baseline DPR은 TEST-01에서 별도로 확정합니다.
+
 ## Golden test 기준
 
 Golden test는 MVP 기본 필수 항목이 아닙니다. 아래 조건 중 하나 이상을 만족하고, baseline 관리 비용보다 회귀 방지 효과가 클 때 추가합니다.
@@ -113,7 +130,8 @@ Golden test를 추가할 때는 아래 기준을 따릅니다.
 
 - 테스트 파일은 대상 위치와 맞춰 `test/shared/widgets/common_button_golden_test.dart`처럼 둡니다.
 - 기준 폭은 `AppSizes.mobileWidth`와 같은 375 logical pixel을 우선 사용합니다.
-- full-screen golden은 QA 필수 디바이스 목록이 확정된 뒤 추가하고, 그 전에는 컴포넌트 단위 golden을 우선합니다.
+- full-screen golden의 기본 후보 viewport는 QA-01의 Reference인 `375×812`입니다.
+- 실제 대상 화면, baseline DPR, Compact/Wide 추가 범위는 TEST-01 이슈에서 확정하며, 그 전에는 full-screen baseline을 추가하지 않습니다.
 - Pretendard font와 asset 로딩이 CI에서 재현 가능해야 합니다.
 - baseline 갱신은 의도한 디자인 변경이 있는 PR에서만 `fvm flutter test --update-goldens`로 수행합니다.
 
@@ -143,7 +161,9 @@ fvm flutter test integration_test \
   --dart-define=COMMONPLANT_API_BASE_URL=<staging-api-url>
 ```
 
-staging API와 runner가 준비되기 전에는 integration test를 PR CI에 연결하지 않습니다. 준비 전 회귀 검증은 unit/widget test와 feature별 Provider override를 사용합니다.
+remote API를 사용하지 않는 앱 시작/route smoke와 device runner 검토는 로컬 준비 범위로 분리할 수 있습니다. staging API, 테스트 계정, seed/cleanup 정책이 필요한 end-to-end flow는 준비 전까지 `Blocked`입니다.
+
+staging API와 runner가 준비되기 전에는 remote integration test를 PR CI에 연결하지 않습니다. 준비 전 회귀 검증은 unit/widget test와 feature별 Provider override를 사용합니다.
 
 ## 테스트 파일 네이밍
 
@@ -191,5 +211,6 @@ GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter anal
 
 ## 후속 결정 필요
 
-- QA 필수 디바이스 목록이 확정되면 full-screen golden 기준 크기를 추가합니다.
-- staging API, 테스트 계정, runner가 준비되면 integration test workflow를 release 검증 또는 별도 CI job으로 연결합니다.
+- TEST-01에서 QA-01의 `375×812`를 기준으로 full-screen golden 대상 화면, DPR, baseline 갱신 규칙을 확정합니다.
+- TEST-02의 API 비사용 smoke와 runner 검토는 로컬 범위로 진행할 수 있습니다.
+- staging API, 테스트 계정, seed/cleanup이 준비되면 remote integration test workflow를 release 검증 또는 별도 CI job으로 연결합니다.
