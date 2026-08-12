@@ -123,11 +123,11 @@ Task 1~6의 상태 소유권 이동과 기존 사용자 동작에서 회귀는 �
 
 ### 2026-08-12: 3차 Task 1~11 최종 검증
 
-대상 기준점: `develop`의 PR #191 병합 상태와 Task 11 PR #193의 구현 커밋 `015b120`
+대상 기준점: `develop`의 Task 11 PR #193 병합 커밋 `fbad0e5`
 
 | 구분 | 결과 |
 | --- | --- |
-| GitHub | Task 1~10 PR 병합, Task 10 이슈/PR Project status `Done`, Task 11 이슈 #192와 PR #193 `In Review` |
+| GitHub | Task 1~11 PR 병합, 하위 이슈 13개 종료, Task 11 이슈 #192와 PR #193 Project status `Done`, quality check 2개 통과 |
 | Route page | `features/**/pages`의 `StatefulWidget`, `ConsumerStatefulWidget`, 화면 동작 목적 `setState` 0건 |
 | Page 의존 경계 | feature page의 `useRemoteApiProvider`, request DTO, repository 직접 참조 0건 |
 | Provider UI 의존 | presentation Provider의 controller/focus/context/navigation 직접 참조 0건 |
@@ -144,4 +144,4 @@ Task 1~6의 상태 소유권 이동과 기존 사용자 동작에서 회귀는 �
 
 **판정:** `Code-level Pass / Smoke Pending`
 
-3차 Task 1~11의 상태 소유권, 의존 방향, 테스트 책임 분리에서 코드 수준 회귀는 발견되지 않았다. PR #193 병합 후 3차 Epic과 문서 상태를 `Done`으로 닫고, 실제 기기/API smoke는 [테스트 작성 기준](testing-guide.md)의 integration test 준비 조건이 충족된 뒤 별도 이슈로 진행한다.
+3차 Task 1~11의 상태 소유권, 의존 방향, 테스트 책임 분리에서 코드 수준 회귀는 발견되지 않았다. 3차 라운드는 코드 수준에서 완료했으며, 실제 기기/API smoke는 [테스트 작성 기준](testing-guide.md)의 integration test 준비 조건이 충족된 뒤 별도 이슈로 진행한다.
