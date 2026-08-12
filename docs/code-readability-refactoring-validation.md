@@ -120,3 +120,28 @@ fvm flutter build apk --debug
 **판정:** `Code-level Pass / Smoke Pending`
 
 Task 1~6의 상태 소유권 이동과 기존 사용자 동작에서 회귀는 발견되지 않았다. 다음 구현 범위는 계획대로 Task 7이며, 실제 기기/API smoke는 [테스트 작성 기준](testing-guide.md)의 integration test 준비 조건이 충족된 뒤 실행한다.
+
+### 2026-08-12: 3차 Task 1~11 최종 검증
+
+대상 기준점: `develop`의 PR #191 병합 상태와 Task 11 PR #193의 구현 커밋 `015b120`
+
+| 구분 | 결과 |
+| --- | --- |
+| GitHub | Task 1~10 PR 병합, Task 10 이슈/PR Project status `Done`, Task 11 이슈 #192와 PR #193 `In Review` |
+| Route page | `features/**/pages`의 `StatefulWidget`, `ConsumerStatefulWidget`, 화면 동작 목적 `setState` 0건 |
+| Page 의존 경계 | feature page의 `useRemoteApiProvider`, request DTO, repository 직접 참조 0건 |
+| Provider UI 의존 | presentation Provider의 controller/focus/context/navigation 직접 참조 0건 |
+| 상태관리 혼용 | `FormSubmitController`, `ChangeNotifierProvider`, `ChangeNotifier` 0건 |
+| Router test | 491줄 단일 파일을 계약, 진입, 가입, Place, Plant/Memo 5개 파일의 17개 test로 분리 |
+| Test helper | router test의 직접 `ProviderScope` 조립 0건, production/page 앱 조립 helper 6개 test file에서 사용 |
+| 문서 | README와 테스트 가이드를 갱신하고 상태관리/shared widget 가이드의 현재 구조 반영 상태 확인 |
+| Format | 252개 file 검사, 변경 필요 0건 |
+| Analyze | `No issues found` |
+| 전체 테스트 | 218개 test 통과 |
+| iOS debug build | `build/ios/iphoneos/Runner.app` 생성 성공 |
+| Android debug build | `build/app/outputs/flutter-apk/app-debug.apk` 생성 성공 |
+| 실제 기기/API smoke | staging API, 테스트 계정, 데이터 정리 정책 미확정으로 미실행 |
+
+**판정:** `Code-level Pass / Smoke Pending`
+
+3차 Task 1~11의 상태 소유권, 의존 방향, 테스트 책임 분리에서 코드 수준 회귀는 발견되지 않았다. PR #193 병합 후 3차 Epic과 문서 상태를 `Done`으로 닫고, 실제 기기/API smoke는 [테스트 작성 기준](testing-guide.md)의 integration test 준비 조건이 충족된 뒤 별도 이슈로 진행한다.

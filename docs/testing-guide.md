@@ -8,6 +8,13 @@ MVP 단계의 필수 검증은 `fvm dart format --output=none --set-exit-if-chan
 
 ```text
 test/
+  app/router/                 # route 계약, 진입, 도메인별 사용자 흐름
+  core/                       # 공통 파서와 기반 로직
+  features/<feature>/
+    data/                     # datasource, DTO, mapper, repository
+    presentation/             # page, provider, widget, fixture, mapper
+  helpers/                    # 여러 테스트에서 공유하는 앱 조립과 fixture
+  shared/widgets/             # 공용 위젯
   widget_test.dart
 ```
 
@@ -71,6 +78,15 @@ await tester.pumpWidget(
   ),
 );
 ```
+
+여러 파일에서 같은 앱 껍데기를 반복할 때는 `test/helpers/test_app.dart`의 앱 조립 helper를 사용합니다. helper는 `ProviderScope`와 `MaterialApp` 또는 production router 앱 조립까지만 담당하며, 아래 내용은 테스트 본문에 남깁니다.
+
+- 초기 route와 테스트별 repository override
+- `pump`, `pumpAndSettle` 시점과 router 수명 관리
+- 사용자 입력과 tap 같은 행동
+- 화면 상태와 repository 호출 검증
+
+특정 fake repository 조합이 한 테스트 파일에서만 의미가 있다면 로컬 helper로 유지합니다. 공용 helper가 Given/When/Then을 숨기거나 서로 다른 테스트 조건을 하나의 옵션 집합으로 만들지 않습니다.
 
 ## Unit test 기준
 
@@ -145,7 +161,7 @@ feature 구조와 test 구조를 비슷하게 맞추면 찾기 쉽습니다.
 ## 테스트 데이터 기준
 
 - 테스트 데이터는 테스트 파일 안에서 읽기 쉬운 fixture로 둡니다.
-- 여러 테스트에서 반복되는 도메인 fixture는 `test/helpers`로 분리합니다.
+- 여러 테스트 파일에서 반복되는 도메인 fixture와 앱 조립만 `test/helpers`로 분리합니다.
 - 실제 API 응답 샘플이 필요한 경우 JSON fixture를 사용합니다.
 - 테스트에서 네트워크를 직접 호출하지 않습니다.
 
