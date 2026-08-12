@@ -1,11 +1,10 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/plant/data/datasources/plant_remote_data_source.dart';
-import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
+import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_detail_page.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -190,9 +189,7 @@ Widget _remotePlantDetailApp(PlantRepository repository) {
   );
 }
 
-class _PendingPlantRepository extends PlantRepository {
-  _PendingPlantRepository() : super(PlantRemoteDataSource(Dio()));
-
+class _PendingPlantRepository extends Fake implements PlantRepository {
   final Completer<PlantDetail> _detailCompleter = Completer<PlantDetail>();
 
   @override
@@ -201,9 +198,8 @@ class _PendingPlantRepository extends PlantRepository {
   }
 }
 
-class _StaticPlantRepository extends PlantRepository {
-  _StaticPlantRepository({required this.detail})
-    : super(PlantRemoteDataSource(Dio()));
+class _StaticPlantRepository extends Fake implements PlantRepository {
+  _StaticPlantRepository({required this.detail});
 
   final PlantDetail detail;
 
@@ -213,9 +209,7 @@ class _StaticPlantRepository extends PlantRepository {
   }
 }
 
-class _RetryPlantRepository extends PlantRepository {
-  _RetryPlantRepository() : super(PlantRemoteDataSource(Dio()));
-
+class _RetryPlantRepository extends Fake implements PlantRepository {
   int detailFetchCalls = 0;
 
   @override
@@ -236,8 +230,8 @@ class _RetryPlantRepository extends PlantRepository {
   }
 }
 
-class _DeletablePlantRepository extends PlantRepository {
-  _DeletablePlantRepository(this.detail) : super(PlantRemoteDataSource(Dio()));
+class _DeletablePlantRepository extends Fake implements PlantRepository {
+  _DeletablePlantRepository(this.detail);
 
   final PlantDetail detail;
   int deleteCalls = 0;

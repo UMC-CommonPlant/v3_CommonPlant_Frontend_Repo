@@ -1,7 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
-import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_feature_provider.dart';
+import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_edit_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_state.dart';
@@ -136,9 +135,7 @@ class PlaceFormController extends Notifier<PlaceFormState> {
 
       await ref
           .read(placeRepositoryProvider)
-          .createPlace(
-            CreatePlaceRequest(name: name, address: requiredAddress),
-          );
+          .createPlace(name: name, address: requiredAddress);
       ref.invalidate(remotePlaceListProvider);
     } else {
       ref
@@ -159,10 +156,7 @@ class PlaceFormController extends Notifier<PlaceFormState> {
 
       await ref
           .read(placeRepositoryProvider)
-          .updatePlace(
-            code: placeId,
-            request: UpdatePlaceRequest(name: name, address: requiredAddress),
-          );
+          .updatePlace(code: placeId, name: name, address: requiredAddress);
       ref.invalidate(placeDetailProvider(placeId));
       ref.invalidate(remotePlaceListProvider);
       ref.invalidate(userPlaceSummariesProvider);

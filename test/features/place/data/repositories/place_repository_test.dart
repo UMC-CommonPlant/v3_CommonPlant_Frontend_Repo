@@ -8,23 +8,28 @@ void main() {
   group('PlaceRepository', () {
     test('장소 생성은 선택된 이미지 파일을 datasource에 전달한다', () async {
       final dataSource = _ImagePlaceRemoteDataSource();
-      final repository = PlaceRepository(dataSource);
+      final repository = PlaceRepositoryImpl(dataSource);
       final image = MultipartFile.fromString(
         'image-bytes',
         filename: 'place.png',
       );
 
       await repository.createPlace(
-        const CreatePlaceRequest(name: '거실', address: '서울시 성북구'),
+        name: '거실',
+        address: '서울시 성북구',
         image: image,
       );
 
       expect(dataSource.latestCreateImage, same(image));
+      expect(dataSource.latestCreateRequest?.toJson(), {
+        'name': '거실',
+        'address': '서울시 성북구',
+      });
     });
 
     test('장소 수정은 선택된 이미지 파일을 datasource에 전달한다', () async {
       final dataSource = _ImagePlaceRemoteDataSource();
-      final repository = PlaceRepository(dataSource);
+      final repository = PlaceRepositoryImpl(dataSource);
       final image = MultipartFile.fromString(
         'image-bytes',
         filename: 'place.png',
@@ -32,18 +37,24 @@ void main() {
 
       await repository.updatePlace(
         code: 'place-1',
-        request: const UpdatePlaceRequest(name: '거실', address: '서울시 성북구'),
+        name: '거실',
+        address: '서울시 성북구',
         image: image,
       );
 
       expect(dataSource.latestUpdateImage, same(image));
+      expect(dataSource.latestUpdateRequest?.toJson(), {
+        'name': '거실',
+        'address': '서울시 성북구',
+      });
     });
   });
 }
 
-class _ImagePlaceRemoteDataSource extends PlaceRemoteDataSource {
-  _ImagePlaceRemoteDataSource() : super(Dio());
-
+class _ImagePlaceRemoteDataSource extends Fake
+    implements PlaceRemoteDataSource {
+  CreatePlaceRequest? latestCreateRequest;
+  UpdatePlaceRequest? latestUpdateRequest;
   MultipartFile? latestCreateImage;
   MultipartFile? latestUpdateImage;
 
@@ -52,6 +63,7 @@ class _ImagePlaceRemoteDataSource extends PlaceRemoteDataSource {
     CreatePlaceRequest request, {
     MultipartFile? image,
   }) async {
+    latestCreateRequest = request;
     latestCreateImage = image;
   }
 
@@ -61,6 +73,7 @@ class _ImagePlaceRemoteDataSource extends PlaceRemoteDataSource {
     required UpdatePlaceRequest request,
     MultipartFile? image,
   }) async {
+    latestUpdateRequest = request;
     latestUpdateImage = image;
   }
 }

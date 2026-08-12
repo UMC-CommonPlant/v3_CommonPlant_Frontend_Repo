@@ -9,7 +9,7 @@ void main() {
   group('PlaceRemoteDataSource', () {
     test('장소 수정은 multipart PUT /place/update/{code}로 요청한다', () async {
       final adapter = _CapturingAdapter();
-      final dataSource = PlaceRemoteDataSource(_dioWith(adapter));
+      final dataSource = DioPlaceRemoteDataSource(_dioWith(adapter));
 
       await dataSource.updatePlace(
         code: 'Abc123',
@@ -30,7 +30,7 @@ void main() {
 
     test('장소 생성은 optional image part를 multipart에 포함한다', () async {
       final adapter = _CapturingAdapter();
-      final dataSource = PlaceRemoteDataSource(_dioWith(adapter));
+      final dataSource = DioPlaceRemoteDataSource(_dioWith(adapter));
 
       await dataSource.createPlace(
         const CreatePlaceRequest(name: '정원', address: '서울특별시'),
@@ -46,7 +46,7 @@ void main() {
 
     test('장소 수정은 optional image part를 multipart에 포함한다', () async {
       final adapter = _CapturingAdapter();
-      final dataSource = PlaceRemoteDataSource(_dioWith(adapter));
+      final dataSource = DioPlaceRemoteDataSource(_dioWith(adapter));
 
       await dataSource.updatePlace(
         code: 'Abc123',

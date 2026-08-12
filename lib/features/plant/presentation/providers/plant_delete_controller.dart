@@ -1,5 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_edit_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';

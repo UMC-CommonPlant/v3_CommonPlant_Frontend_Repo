@@ -1,7 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/plant/data/datasources/plant_remote_data_source.dart';
-import 'package:commonplant_frontend/features/plant/data/dtos/plant_requests.dart';
-import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_edit_provider.dart';
@@ -9,7 +8,6 @@ import 'package:commonplant_frontend/features/plant/presentation/providers/plant
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_registration_place_provider.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -75,11 +73,9 @@ void main() {
 
       expect(result?.destination, PlantFormSubmitDestination.home);
       expect(repository.createCalls, 1);
-      expect(repository.latestCreateRequest?.toJson(), {
-        'placeCode': 'place-1',
-        'nickname': '몬스테라',
-        'scientificNameKo': '몬스테라',
-      });
+      expect(repository.latestCreatePlaceCode, 'place-1');
+      expect(repository.latestCreateNickname, '몬스테라');
+      expect(repository.latestCreateScientificNameKo, '몬스테라');
       expect(plants.single.name, '몬스테라');
     });
 
@@ -151,20 +147,20 @@ void main() {
       expect(repository.updateCalls, 1);
       expect(repository.latestUpdatePlantId, 'plant-1');
       expect(repository.latestUpdatePlaceCode, 'place-1');
-      expect(repository.latestUpdateRequest?.toJson(), {'nickname': '몬테라'});
+      expect(repository.latestUpdateNickname, '몬테라');
     });
   });
 }
 
-class _RecordingPlantRepository extends PlantRepository {
-  _RecordingPlantRepository() : super(PlantRemoteDataSource(Dio()));
-
+class _RecordingPlantRepository extends Fake implements PlantRepository {
   int createCalls = 0;
   int updateCalls = 0;
   String? latestUpdatePlantId;
   String? latestUpdatePlaceCode;
-  CreatePlantRequest? latestCreateRequest;
-  UpdatePlantRequest? latestUpdateRequest;
+  String? latestCreatePlaceCode;
+  String? latestCreateNickname;
+  String? latestCreateScientificNameKo;
+  String? latestUpdateNickname;
 
   @override
   Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {
@@ -172,24 +168,31 @@ class _RecordingPlantRepository extends PlantRepository {
   }
 
   @override
-  Future<void> createPlant(
-    CreatePlantRequest request, {
-    MultipartFile? image,
+  Future<void> createPlant({
+    required String placeCode,
+    required String nickname,
+    String? scientificNameKo,
+    String? scientificNameEn,
+    String? lastWateredDate,
+    String? description,
   }) async {
     createCalls++;
-    latestCreateRequest = request;
+    latestCreatePlaceCode = placeCode;
+    latestCreateNickname = nickname;
+    latestCreateScientificNameKo = scientificNameKo;
   }
 
   @override
   Future<void> updatePlant({
     required String plantId,
     required String placeCode,
-    required UpdatePlantRequest request,
-    MultipartFile? image,
+    String? imageKey,
+    String? nickname,
+    String? lastWateredDate,
   }) async {
     updateCalls++;
     latestUpdatePlantId = plantId;
     latestUpdatePlaceCode = placeCode;
-    latestUpdateRequest = request;
+    latestUpdateNickname = nickname;
   }
 }

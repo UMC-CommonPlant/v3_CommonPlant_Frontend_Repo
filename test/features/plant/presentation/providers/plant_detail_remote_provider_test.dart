@@ -1,8 +1,7 @@
-import 'package:commonplant_frontend/features/plant/data/datasources/plant_remote_data_source.dart';
-import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
+import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_remote_provider.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -28,8 +27,8 @@ void main() {
   });
 }
 
-class _StaticPlantRepository extends PlantRepository {
-  _StaticPlantRepository(this.detail) : super(PlantRemoteDataSource(Dio()));
+class _StaticPlantRepository extends Fake implements PlantRepository {
+  _StaticPlantRepository(this.detail);
 
   final PlantDetail detail;
   String? lastPlantId;

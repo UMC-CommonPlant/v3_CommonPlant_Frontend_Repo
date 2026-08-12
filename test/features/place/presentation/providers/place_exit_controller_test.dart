@@ -1,9 +1,8 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
-import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_exit_controller.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -78,9 +77,7 @@ void main() {
   });
 }
 
-class _RecordingPlaceRepository extends PlaceRepository {
-  _RecordingPlaceRepository() : super(PlaceRemoteDataSource(Dio()));
-
+class _RecordingPlaceRepository extends Fake implements PlaceRepository {
   int deleteCalls = 0;
   String? latestDeleteCode;
 
@@ -91,9 +88,7 @@ class _RecordingPlaceRepository extends PlaceRepository {
   }
 }
 
-class _FailingPlaceRepository extends PlaceRepository {
-  _FailingPlaceRepository() : super(PlaceRemoteDataSource(Dio()));
-
+class _FailingPlaceRepository extends Fake implements PlaceRepository {
   int deleteCalls = 0;
 
   @override

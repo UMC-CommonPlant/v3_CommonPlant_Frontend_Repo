@@ -1,9 +1,8 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/plant/data/datasources/plant_remote_data_source.dart';
-import 'package:commonplant_frontend/features/plant/data/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
+import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_delete_controller.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -105,9 +104,7 @@ void main() {
   });
 }
 
-class _RecordingPlantRepository extends PlantRepository {
-  _RecordingPlantRepository() : super(PlantRemoteDataSource(Dio()));
-
+class _RecordingPlantRepository extends Fake implements PlantRepository {
   int deleteCalls = 0;
   String? latestDeletedPlantId;
   String? latestDeletedPlaceCode;
@@ -123,9 +120,7 @@ class _RecordingPlantRepository extends PlantRepository {
   }
 }
 
-class _FailingPlantRepository extends PlantRepository {
-  _FailingPlantRepository() : super(PlantRemoteDataSource(Dio()));
-
+class _FailingPlantRepository extends Fake implements PlantRepository {
   int deleteCalls = 0;
 
   @override
