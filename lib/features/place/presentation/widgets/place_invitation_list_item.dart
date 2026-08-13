@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 
 const double _invitationContentGap = 14;
 const double _invitationButtonGap = 8;
+const double _invitationActionsWidth =
+    AppSizes.placeInvitationActionButtonWidth * 2 + _invitationButtonGap;
 
 class PlaceInvitationListItem extends StatelessWidget {
   const PlaceInvitationListItem({
@@ -180,24 +182,40 @@ class _InvitationActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _InvitationActionButton(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useFlexibleButtons =
+            constraints.maxWidth < _invitationActionsWidth;
+
+        final acceptButton = _InvitationActionButton(
           label: '확인',
           semanticsLabel: '${invitation.placeName} 확인',
           backgroundColor: AppColors.brandPrimary,
           foregroundColor: AppColors.white,
           onPressed: onAccept,
-        ),
-        const SizedBox(width: _invitationButtonGap),
-        _InvitationActionButton(
+        );
+        final deleteButton = _InvitationActionButton(
           label: '삭제',
           semanticsLabel: '${invitation.placeName} 삭제',
           backgroundColor: AppColors.borderDefault,
           foregroundColor: AppColors.textStrong,
           onPressed: onDelete,
-        ),
-      ],
+        );
+
+        return Row(
+          children: [
+            if (useFlexibleButtons)
+              Expanded(child: acceptButton)
+            else
+              acceptButton,
+            const SizedBox(width: _invitationButtonGap),
+            if (useFlexibleButtons)
+              Expanded(child: deleteButton)
+            else
+              deleteButton,
+          ],
+        );
+      },
     );
   }
 }

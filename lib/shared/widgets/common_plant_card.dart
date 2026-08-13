@@ -135,126 +135,140 @@ class CommonPlacePlantCard extends StatelessWidget {
       child: SizedBox(
         width: width,
         height: height,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSizes.placePlantCardPadding),
-          child: Row(
-            children: [
-              Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppRadius.medium),
-                  child: SizedBox(
-                    width: AppSizes.placePlantCardImageWidth,
-                    height: AppSizes.placePlantCardImageHeight,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: tokens.surfaceMuted,
-                        image: imageProvider != null
-                            ? DecorationImage(
-                                image: imageProvider!,
-                                fit: BoxFit.cover,
-                              )
-                            : null,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final useCompactThumbnail =
+                constraints.maxWidth < AppSizes.placePlantCardWidth;
+            final imageWidth = useCompactThumbnail
+                ? AppSizes.plantThumbnailSize
+                : AppSizes.placePlantCardImageWidth;
+            final imageHeight = useCompactThumbnail
+                ? AppSizes.plantThumbnailSize
+                : AppSizes.placePlantCardImageHeight;
+
+            return Padding(
+              padding: const EdgeInsets.all(AppSizes.placePlantCardPadding),
+              child: Row(
+                children: [
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadius.medium),
+                      child: SizedBox(
+                        width: imageWidth,
+                        height: imageHeight,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: tokens.surfaceMuted,
+                            image: imageProvider != null
+                                ? DecorationImage(
+                                    image: imageProvider!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: imageProvider == null
+                              ? placeholder ??
+                                    ColoredBox(
+                                      color: tokens.surfaceAlt,
+                                      child: Center(
+                                        child: CommonSvgIcon(
+                                          AppIconAssets.plantEmpty,
+                                          height: AppSizes.plantEmptyIconHeight,
+                                          semanticsLabel: '식물 기본 이미지',
+                                        ),
+                                      ),
+                                    )
+                              : null,
+                        ),
                       ),
-                      child: imageProvider == null
-                          ? placeholder ??
-                                ColoredBox(
-                                  color: tokens.surfaceAlt,
-                                  child: Center(
-                                    child: CommonSvgIcon(
-                                      AppIconAssets.plantEmpty,
-                                      height: AppSizes.plantEmptyIconHeight,
-                                      semanticsLabel: '식물 기본 이미지',
-                                    ),
-                                  ),
-                                )
-                          : null,
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.x8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
+                  const SizedBox(width: AppSpacing.x8),
+                  Expanded(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.size16Bold.copyWith(
-                            color: AppColors.textBody,
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.size16Bold.copyWith(
+                                color: AppColors.textBody,
+                              ),
+                            ),
+                            Text(
+                              species,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.size12Medium.copyWith(
+                                color: AppColors.textBody,
+                              ),
+                            ),
+                            Text(
+                              description,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.size12Medium.copyWith(
+                                color: AppColors.textBody,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          species,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.size12Medium.copyWith(
-                            color: AppColors.textBody,
-                          ),
-                        ),
-                        Text(
-                          description,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.size12Medium.copyWith(
-                            color: AppColors.textBody,
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (action != null) ...[
+                              action!,
+                              const SizedBox(width: AppSpacing.x8),
+                            ],
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.bottomRight,
+                                child:
+                                    trailing ??
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        if (dDayLabel != null)
+                                          Text(
+                                            dDayLabel!,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.size16Medium
+                                                .copyWith(
+                                                  color: AppColors.brandPrimary,
+                                                ),
+                                          ),
+                                        if (dateLabel != null)
+                                          Text(
+                                            dateLabel!,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.size12Medium
+                                                .copyWith(
+                                                  color: AppColors.textBody,
+                                                ),
+                                          ),
+                                      ],
+                                    ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        if (action != null) ...[
-                          action!,
-                          const SizedBox(width: AppSpacing.x8),
-                        ],
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.bottomRight,
-                            child:
-                                trailing ??
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    if (dDayLabel != null)
-                                      Text(
-                                        dDayLabel!,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.size16Medium
-                                            .copyWith(
-                                              color: AppColors.brandPrimary,
-                                            ),
-                                      ),
-                                    if (dateLabel != null)
-                                      Text(
-                                        dateLabel!,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppTextStyles.size12Medium
-                                            .copyWith(
-                                              color: AppColors.textBody,
-                                            ),
-                                      ),
-                                  ],
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
