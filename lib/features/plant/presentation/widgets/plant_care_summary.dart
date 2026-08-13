@@ -7,7 +7,7 @@ import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_d
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 
-const double _plantDateSummaryGap = 34;
+const double _plantDateSummaryMaxGap = 34;
 
 class PlantCareSummary extends StatelessWidget {
   const PlantCareSummary({
@@ -108,9 +108,11 @@ class _PlantDateSummary extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final gap = constraints.maxWidth < AppSizes.mobileWidth
-            ? AppSpacing.x8
-            : _plantDateSummaryGap;
+        final availableGap =
+            AppSpacing.x8 + constraints.maxWidth - AppSizes.compactMobileWidth;
+        final gap = availableGap
+            .clamp(AppSpacing.x8, _plantDateSummaryMaxGap)
+            .toDouble();
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -123,7 +125,7 @@ class _PlantDateSummary extends StatelessWidget {
                 Text('마지막으로 물 준 날짜', style: textStyle),
               ],
             ),
-            SizedBox(width: gap),
+            SizedBox(key: const ValueKey('plant-date-summary-gap'), width: gap),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

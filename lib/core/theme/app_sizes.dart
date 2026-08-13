@@ -3,6 +3,7 @@ abstract final class AppSizes {
 
   static const double mobileWidth = 375;
   static const double mobileHeight = 812;
+  static const double compactMobileWidth = 320;
 
   static const double iconSmall = 20;
   static const double iconMedium = 24;
@@ -48,9 +49,10 @@ abstract final class AppSizes {
   static const double placePlantCardWidth = 335;
   static const double placePlantCardHeight = 136;
   static const double placePlantCardPadding = 10;
-  static const double placePlantCardImageWidth = 136;
-  static const double placePlantCardImageHeight = 108;
-  static const double plantThumbnailSize = 96;
+  static const double placePlantCardImageMinSize = 96;
+  static const double placePlantCardImageMaxWidth = 136;
+  static const double placePlantCardImageMaxHeight = 108;
+  static const double placePlantCardDetailsMinWidth = 156;
   static const double plantEmptyIconHeight = 60;
   static const double plantCardFadeHeight = 28;
   static const double plantCardFadeBottom = 8;
@@ -77,6 +79,7 @@ abstract final class AppSizes {
   static const double placeImageCameraBoxSize = 40;
   static const double placeImageCameraIconSize = 27;
   static const double placeInvitationAvatarSize = 80;
-  static const double placeInvitationActionButtonWidth = 114;
+  static const double placeInvitationActionButtonMinWidth = 72;
+  static const double placeInvitationActionButtonMaxWidth = 114;
   static const double placeInvitationActionButtonHeight = 36;
 }

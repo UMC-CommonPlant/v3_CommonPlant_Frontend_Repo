@@ -71,15 +71,29 @@ void main() {
     expect(find.text('삭제하면 기록된 메모도 함께 사라져요.'), findsOneWidget);
   });
 
-  testWidgets('compact 폭에서도 날짜 요약을 overflow 없이 표시한다', (tester) async {
-    configureTestViewport(tester, TestViewports.compactWidth);
-    await tester.pumpWidget(
-      buildPageTestApp(const PlantDetailPage(plantId: 'plant-1')),
-    );
-    await tester.pumpAndSettle();
+  testWidgets('날짜 요약 간격은 viewport 사이에서 최소·최대 범위로 변한다', (tester) async {
+    final cases = <({Size viewport, double gap})>[
+      (viewport: TestViewports.compactWidth, gap: 8),
+      (viewport: const Size(333, 800), gap: 21),
+      (viewport: TestViewports.reference, gap: 34),
+    ];
 
-    expect(find.text('마지막으로 물 준 날짜'), findsOneWidget);
-    expect(tester.takeException(), isNull);
+    for (final testCase in cases) {
+      configureTestViewport(tester, testCase.viewport);
+      await tester.pumpWidget(
+        buildPageTestApp(const PlantDetailPage(plantId: 'plant-1')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('마지막으로 물 준 날짜'), findsOneWidget);
+      expect(tester.takeException(), isNull, reason: '${testCase.viewport}');
+      expect(
+        tester
+            .getSize(find.byKey(const ValueKey('plant-date-summary-gap')))
+            .width,
+        testCase.gap,
+      );
+    }
   });
 
   testWidgets('remote loading 상태는 식물 상세 대신 로딩 안내를 표시한다', (tester) async {

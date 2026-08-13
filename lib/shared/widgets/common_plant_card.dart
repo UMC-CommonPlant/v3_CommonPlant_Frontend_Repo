@@ -137,14 +137,23 @@ class CommonPlacePlantCard extends StatelessWidget {
         height: height,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final useCompactThumbnail =
-                constraints.maxWidth < AppSizes.placePlantCardWidth;
-            final imageWidth = useCompactThumbnail
-                ? AppSizes.plantThumbnailSize
-                : AppSizes.placePlantCardImageWidth;
-            final imageHeight = useCompactThumbnail
-                ? AppSizes.plantThumbnailSize
-                : AppSizes.placePlantCardImageHeight;
+            final availableImageWidth =
+                constraints.maxWidth -
+                (AppSizes.placePlantCardPadding * 2) -
+                AppSpacing.x8 -
+                AppSizes.placePlantCardDetailsMinWidth;
+            final imageWidth = availableImageWidth
+                .clamp(
+                  AppSizes.placePlantCardImageMinSize,
+                  AppSizes.placePlantCardImageMaxWidth,
+                )
+                .toDouble();
+            final imageHeight = imageWidth
+                .clamp(
+                  AppSizes.placePlantCardImageMinSize,
+                  AppSizes.placePlantCardImageMaxHeight,
+                )
+                .toDouble();
 
             return Padding(
               padding: const EdgeInsets.all(AppSizes.placePlantCardPadding),
@@ -154,6 +163,7 @@ class CommonPlacePlantCard extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadius.medium),
                       child: SizedBox(
+                        key: const ValueKey('place-plant-card-thumbnail'),
                         width: imageWidth,
                         height: imageHeight,
                         child: DecoratedBox(

@@ -47,15 +47,29 @@ void main() {
     expect(find.text('장소 나가기'), findsOneWidget);
   });
 
-  testWidgets('compact 폭에서도 장소 식물 카드를 overflow 없이 표시한다', (tester) async {
-    configureTestViewport(tester, TestViewports.compactWidth);
-    await tester.pumpWidget(
-      buildPageTestApp(const PlaceDetailPage(placeId: 'place-1')),
-    );
-    await tester.pumpAndSettle();
+  testWidgets('장소 식물 카드 이미지는 viewport 사이에서 최소·최대 범위로 변한다', (tester) async {
+    final cases = <({Size viewport, Size thumbnail})>[
+      (viewport: TestViewports.compactWidth, thumbnail: const Size(96, 96)),
+      (viewport: const Size(340, 800), thumbnail: const Size(116, 108)),
+      (viewport: TestViewports.reference, thumbnail: const Size(136, 108)),
+    ];
 
-    expect(find.text('몬테'), findsWidgets);
-    expect(tester.takeException(), isNull);
+    for (final testCase in cases) {
+      configureTestViewport(tester, testCase.viewport);
+      await tester.pumpWidget(
+        buildPageTestApp(const PlaceDetailPage(placeId: 'place-1')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('몬테'), findsWidgets);
+      expect(tester.takeException(), isNull, reason: '${testCase.viewport}');
+      expect(
+        tester.getSize(
+          find.byKey(const ValueKey('place-plant-card-thumbnail')).first,
+        ),
+        testCase.thumbnail,
+      );
+    }
   });
 
   testWidgets('장소 나가기는 확인 dialog를 표시한다', (tester) async {

@@ -26,7 +26,7 @@ void main() {
     expect(
       tester.getSize(find.bySemanticsLabel('스윗홈_욕실 확인')),
       const Size(
-        AppSizes.placeInvitationActionButtonWidth,
+        AppSizes.placeInvitationActionButtonMaxWidth,
         AppSizes.placeInvitationActionButtonHeight,
       ),
     );
@@ -56,15 +56,26 @@ void main() {
   testWidgets('compact 폭에서도 초대 action button을 overflow 없이 표시한다', (
     WidgetTester tester,
   ) async {
+    final buttonWidths = <double>[];
+
     for (final viewport in [TestViewports.compactWidth, const Size(360, 800)]) {
       await _pumpPage(tester, viewport: viewport);
 
       expect(tester.takeException(), isNull, reason: '$viewport viewport');
+      final buttonWidth = tester
+          .getSize(find.bySemanticsLabel('스윗홈_욕실 확인'))
+          .width;
+      buttonWidths.add(buttonWidth);
       expect(
-        tester.getSize(find.bySemanticsLabel('스윗홈_욕실 확인')).width,
-        lessThanOrEqualTo(AppSizes.placeInvitationActionButtonWidth),
+        buttonWidth,
+        inInclusiveRange(
+          AppSizes.placeInvitationActionButtonMinWidth,
+          AppSizes.placeInvitationActionButtonMaxWidth,
+        ),
       );
     }
+
+    expect(buttonWidths.first, lessThan(buttonWidths.last));
   });
 }
 

@@ -8,8 +8,6 @@ import 'package:flutter/material.dart';
 
 const double _invitationContentGap = 14;
 const double _invitationButtonGap = 8;
-const double _invitationActionsWidth =
-    AppSizes.placeInvitationActionButtonWidth * 2 + _invitationButtonGap;
 
 class PlaceInvitationListItem extends StatelessWidget {
   const PlaceInvitationListItem({
@@ -184,8 +182,14 @@ class _InvitationActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final useFlexibleButtons =
-            constraints.maxWidth < _invitationActionsWidth;
+        final availableButtonWidth =
+            (constraints.maxWidth - _invitationButtonGap) / 2;
+        final buttonWidth = availableButtonWidth
+            .clamp(
+              AppSizes.placeInvitationActionButtonMinWidth,
+              AppSizes.placeInvitationActionButtonMaxWidth,
+            )
+            .toDouble();
 
         final acceptButton = _InvitationActionButton(
           label: '확인',
@@ -193,6 +197,7 @@ class _InvitationActions extends StatelessWidget {
           backgroundColor: AppColors.brandPrimary,
           foregroundColor: AppColors.white,
           onPressed: onAccept,
+          width: buttonWidth,
         );
         final deleteButton = _InvitationActionButton(
           label: '삭제',
@@ -200,19 +205,15 @@ class _InvitationActions extends StatelessWidget {
           backgroundColor: AppColors.borderDefault,
           foregroundColor: AppColors.textStrong,
           onPressed: onDelete,
+          width: buttonWidth,
         );
 
         return Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (useFlexibleButtons)
-              Expanded(child: acceptButton)
-            else
-              acceptButton,
+            acceptButton,
             const SizedBox(width: _invitationButtonGap),
-            if (useFlexibleButtons)
-              Expanded(child: deleteButton)
-            else
-              deleteButton,
+            deleteButton,
           ],
         );
       },
@@ -227,6 +228,7 @@ class _InvitationActionButton extends StatelessWidget {
     required this.backgroundColor,
     required this.foregroundColor,
     required this.onPressed,
+    required this.width,
   });
 
   final String label;
@@ -234,6 +236,7 @@ class _InvitationActionButton extends StatelessWidget {
   final Color backgroundColor;
   final Color foregroundColor;
   final VoidCallback onPressed;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -249,7 +252,7 @@ class _InvitationActionButton extends StatelessWidget {
             onTap: onPressed,
             borderRadius: BorderRadius.circular(AppRadius.small),
             child: SizedBox(
-              width: AppSizes.placeInvitationActionButtonWidth,
+              width: width,
               height: AppSizes.placeInvitationActionButtonHeight,
               child: Center(
                 child: Text(
