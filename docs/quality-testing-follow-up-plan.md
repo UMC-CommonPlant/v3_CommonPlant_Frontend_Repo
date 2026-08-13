@@ -10,18 +10,18 @@
 - 새 테스트 종류를 PR 필수 게이트로 올리기 전 재현 가능한 로컬 실행 방법과 CI runner를 먼저 확보한다.
 - 각 항목은 별도 GitHub 이슈와 `develop` 기반 브랜치에서 진행한다.
 
-## 2026-08-12 현재 상태
+## 2026-08-13 현재 상태
 
 | 점검 항목 | 현재 상태 | 판단 |
 | --- | --- | --- |
-| 기준 브랜치 | `develop@f001561` | 코드 가독성 리팩토링 3차 병합 완료 |
+| 기준 브랜치 | `develop@c230237` | QA-01 기준 정리 #195, PR #196 병합 완료 |
 | 화면 기준 크기 | `AppSizes.mobileWidth` 375, `AppSizes.mobileHeight` 812 | Figma 기준 viewport로 유지 |
-| Widget test viewport | 일부 화면 테스트가 `320×640`, `375×812`, `430×812`, DPR 1을 파일별로 직접 설정 | 공통 QA profile/helper는 없음 |
+| Widget test viewport | `test/helpers/test_viewport.dart`에서 네 QA profile과 DPR 1 설정을 제공하고 compact gap 대상 화면에 적용 | 기존 raw viewport 설정은 관련 화면 수정 시 점진적으로 helper로 전환 |
 | Golden test | test, baseline image, 공통 font loader 없음 | TEST-01에서 첫 도입 범위 결정 필요 |
 | Font/asset | Pretendard 4종과 앱 asset이 저장소 및 `pubspec.yaml`에 등록됨 | Golden 재현성의 기본 조건 충족 |
 | Integration test | SDK 의존성, `integration_test/`, 실행 script 없음 | 로컬 smoke scaffold부터 별도 도입 가능 |
 | GitHub Actions | Ubuntu에서 `flutter analyze`, `flutter test` 실행 | device 기반 workflow는 없음 |
-| 기본 품질 게이트 | format 252개 파일, analyze, unit/widget test 218개 통과 | 현재 필수 게이트 정상 |
+| 기본 품질 게이트 | format 253개 파일, analyze, unit/widget test 222개 통과 | #197 compact 회귀 테스트 포함, 현재 필수 게이트 정상 |
 | Remote API 환경 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 주입 지점만 존재 | staging URL, 계정, 데이터 격리 정책은 Blocked |
 
 ## 의존관계를 반영한 작업 순서
@@ -29,8 +29,8 @@
 | 순서 | ID | 범위 | 선행 조건 | 현재 상태 |
 | --- | --- | --- | --- | --- |
 | 1 | QA-01 | QA 필수 디바이스와 viewport 기준 확정 | 없음 | Decided (#195) |
-| 2 | QA-01 적용 후속 | compact-width overflow 수정과 viewport 회귀 테스트 추가 | QA-01 | Ready. 별도 Bug 이슈 필요 |
-| 3 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | QA-01 적용 후속 | Open. 선행 작업 완료 후 Ready |
+| 2 | QA-01 적용 후속 | compact-width overflow 수정과 viewport 회귀 테스트 추가 | QA-01 | Done (#197) |
+| 3 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | QA-01 적용 후속 | Ready |
 | 4 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 로컬 실행 환경 검토 | 없음. 우선순위상 TEST-01 다음 | Ready |
 | 5 | TEST-02-B | staging API 기반 integration workflow와 핵심 CRUD flow 연결 | staging URL, 테스트 계정, seed/cleanup, secret 정책 | Blocked |
 
@@ -76,12 +76,12 @@ Flutter test의 `tester.view`에는 physical pixel이 아니라 아래 logical v
 
 | 화면 | 확인된 문제 | 처리 기준 |
 | --- | --- | --- |
-| Place 초대 | action button Row가 320에서 50px, 360에서 10px 가로 overflow | 별도 Bug 이슈에서 반응형 action 배치와 회귀 테스트 추가 |
-| 주소 검색 | 결과 Row가 320에서 12px 가로 overflow | 별도 Bug 이슈에서 text/button 제약과 회귀 테스트 추가 |
-| Place 상세 | 공용 Plant card 내부 세로 overflow | 별도 Bug 이슈에서 card compact layout과 회귀 테스트 추가 |
-| Plant 상세 | 날짜 요약 Row가 320에서 22px 가로 overflow | 별도 Bug 이슈에서 날짜 요약 반응형 배치와 회귀 테스트 추가 |
+| Place 초대 | action button Row가 320에서 50px, 360에서 10px 가로 overflow | #197에서 가용 폭에 맞는 동일 비율 버튼과 `320×640`, `360×800` 회귀 테스트 적용 |
+| 주소 검색 | 결과 Row가 320에서 12px 가로 overflow | #197에서 가변 text 영역과 `320×640` 회귀 테스트 적용 |
+| Place 상세 | 공용 Plant card 내부 세로 overflow | #197에서 compact thumbnail과 `320×640` 회귀 테스트 적용 |
+| Plant 상세 | 날짜 요약 Row가 320에서 22px 가로 overflow | #197에서 compact 간격과 `320×640` 회귀 테스트 적용 |
 
-QA-01은 정책 결정 상태인 `Decided`로 유지한다. 위 gap은 정책을 현재 화면에 적용하는 구현 작업이므로 #195와 PR #196에 코드 수정으로 포함하지 않는다.
+QA-01은 정책 결정 상태인 `Decided`로 유지한다. 위 gap은 #197에서 정책 적용과 회귀 테스트를 완료했으며, TEST-01의 선행 조건은 해소되었다.
 
 ### 수동 QA 필수 디바이스 profile
 
@@ -111,14 +111,13 @@ QA-01은 정책 결정 상태인 `Decided`로 유지한다. 위 gap은 정책을
 
 ## TEST-01 다음 작업 범위
 
-TEST-01은 아래 순서로 별도 이슈화한다.
+Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료했다. TEST-01은 아래 남은 범위로 별도 이슈화한다.
 
-1. Compact width 적용 gap과 대상 화면의 viewport 회귀 테스트를 먼저 해결한다.
-2. Pretendard와 asset을 명시적으로 로드하는 golden test helper를 만든다.
-3. remote API와 시간, locale에 의존하지 않는 `OnboardingPage`를 `375×812` full-screen pilot으로 사용한다.
-4. baseline 파일명, 저장 위치, DPR, 허용 오차, `--update-goldens` 리뷰 규칙을 정한다.
-5. Compact width, Short height, Wide baseline은 pilot 화면에 일괄 추가하지 않고 레이아웃 위험과 회귀 효과를 확인해 대상 화면별로 선택한다.
-6. 로컬과 Ubuntu CI에서 같은 baseline이 재현된 뒤 일반 `fvm flutter test`에 포함한다.
+1. Pretendard와 asset을 명시적으로 로드하는 golden test helper를 만든다.
+2. remote API와 시간, locale에 의존하지 않는 `OnboardingPage`를 `375×812` full-screen pilot으로 사용한다.
+3. baseline 파일명, 저장 위치, DPR, 허용 오차, `--update-goldens` 리뷰 규칙을 정한다.
+4. Compact width, Short height, Wide baseline은 pilot 화면에 일괄 추가하지 않고 레이아웃 위험과 회귀 효과를 확인해 대상 화면별로 선택한다.
+5. 로컬과 Ubuntu CI에서 같은 baseline이 재현된 뒤 일반 `fvm flutter test`에 포함한다.
 
 ## TEST-02 Ready와 Blocked 경계
 
@@ -151,5 +150,7 @@ Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게
 | --- | --- | --- | --- |
 | QA-01 | `3e01a12` | QA 필수 viewport/device profile, 후속 작업 순서, Ready/Blocked 경계 문서화 | `git diff --check`, format 252개 파일, analyze, unit/widget test 218개 |
 | QA-01 검증 | `7e82774` | 144개 route/viewport 조합 검증, Compact/Short height 분리, 적용 gap과 후속 순서 보완 | 임시 route-level viewport 진단, `git diff --check` |
+| QA-01 적용 | `b09e6a7` | Place 초대, 주소 검색, Place 상세, Plant 상세 compact 반응형 레이아웃 수정 | 대상 화면 test 21개, `fvm flutter analyze` |
+| QA-01 회귀 | `20a1ed5` | 공통 viewport helper와 compact 회귀 widget test 4개 추가 | format 253개 파일, `fvm flutter analyze`, unit/widget test 222개 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
