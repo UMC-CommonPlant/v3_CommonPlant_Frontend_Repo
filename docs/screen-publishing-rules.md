@@ -76,10 +76,16 @@
 ## 반응형 기준
 
 - 기준 시안 폭은 `AppSizes.mobileWidth` 값인 375입니다.
+- 자동 레이아웃 검증은 logical viewport `320×640`, `375×667`, `375×812`, `430×932` 중 화면 위험에 맞는 profile을 사용합니다.
+- 모든 신규 화면은 `375×812`를 기본으로 확인하고, form, 긴 문구, 가로 배치가 있으면 Compact width `320×640`을 추가합니다.
+- 키보드, 하단 CTA, 고정 세로 배치가 있으면 Short height `375×667`을 추가합니다.
+- grid, card list, 좌우 정렬 변화가 있으면 `430×932`를 추가합니다.
 - 고정 카드나 버튼은 `AppSizes`로 관리합니다.
 - 리스트와 form은 가능한 `Expanded`, `Flexible`, `Wrap`, `SingleChildScrollView`를 사용해 overflow를 방지합니다.
 - 키보드가 올라오는 입력 화면은 스크롤 가능해야 합니다.
 - SafeArea를 고려하지 않은 절대 배치는 피합니다.
+
+수동 QA의 Android/iOS 필수 profile과 release candidate matrix는 `docs/quality-testing-follow-up-plan.md`를 따릅니다. 가로 모드, tablet, foldable은 제품 지원 범위가 확정되기 전까지 필수 matrix에 임의로 포함하지 않습니다.
 
 ## 공용화 판단 기준
 
@@ -109,5 +115,4 @@
 
 ## 결정 필요
 
-- Figma 기준 해상도 외에 QA 필수 디바이스 목록이 필요합니다.
 - Splash, onboarding, bottom navigation의 최종 UX 정책은 화면 범위 확정 후 별도 문서로 분리할 수 있습니다.
