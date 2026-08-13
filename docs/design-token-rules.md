@@ -116,6 +116,28 @@ static const double placeCardHeight = 156;
 static const double searchTextFieldHeight = 64;
 ```
 
+### 가변 크기의 최소·최대 기준
+
+화면 폭에 따라 크기가 변해야 하는 요소는 단일 퍼센트나 이진 breakpoint보다 `가용 공간 계산 -> 최소·최대 제한 -> 남은 영역 배치` 순서를 우선합니다.
+
+1. 텍스트, action, padding처럼 먼저 보호할 영역의 최소 크기를 정합니다.
+2. `LayoutBuilder`의 실제 `constraints`에서 보호 영역과 간격을 제외해 가용 크기를 계산합니다.
+3. 계산값을 `clamp(min, max)`로 제한해 compact에서 지나치게 작아지거나 wide에서 과도하게 커지지 않게 합니다.
+4. 최소·최대값이 공용 컴포넌트 규격이나 둘 이상의 파일에서 사용되면 `AppSizes`에 `Min`/`Max` 의미가 드러나는 이름으로 정의합니다.
+5. 최소, 중간, 최대 viewport에서 실제 값과 overflow 여부를 widget test로 확인합니다.
+
+```dart
+final availableWidth = constraints.maxWidth - protectedContentWidth;
+final responsiveWidth = availableWidth
+    .clamp(AppSizes.componentMinWidth, AppSizes.componentMaxWidth)
+    .toDouble();
+```
+
+- 버튼 높이와 최소 터치 영역, 아이콘 glyph처럼 접근성·조작성을 보장하는 값은 임의로 비율 축소하지 않습니다.
+- 텍스트는 우선 `Expanded`/`Flexible`로 남은 공간을 사용하고 `maxLines`와 overflow 정책을 함께 지정합니다.
+- spacing은 토큰을 기본으로 하며, 가변 spacing이 필요한 경우에도 최소·최대값은 기존 spacing token 또는 명시적 component token으로 제한합니다.
+- 화면 전체 폭의 고정 비율만 사용하면 내부 콘텐츠의 최소 폭을 보장하기 어려우므로, component constraint를 근거로 계산합니다.
+
 ## 그라디언트 규칙
 
 그라디언트는 `AppGradients`에 정의합니다.

@@ -217,10 +217,19 @@ CommonAddressOrPlaceField(
 
 - 크기: 335x136
 - padding: 10
-- 이미지: 136x108
+- 이미지: Reference에서 최대 136x108, compact에서 최소 96x96
+- 이미지 폭은 카드에서 padding, 간격, 정보 영역 최소 156을 제외한 값으로 계산하고 96~136 사이로 제한
+- 이미지 높이는 계산된 폭을 따르되 96~108 사이로 제한
 - name: 16/700
 - species/description/date: 12/500
 - D-day: 16/500, SeaGreen/Dark2
+
+가변 크기 요소를 추가하거나 변경할 때는 아래 순서로 검토합니다.
+
+1. 텍스트, action, 터치 영역의 최소 크기를 먼저 보존합니다.
+2. 남은 가용 공간에서 시각 요소 크기를 계산합니다.
+3. 공용 `AppSizes`의 최소·최대 범위로 `clamp`합니다.
+4. Compact, 중간 폭, Reference에서 크기가 연속적으로 변하고 overflow가 없는지 테스트합니다.
 
 ### CommonMemoCard
 

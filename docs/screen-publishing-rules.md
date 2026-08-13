@@ -82,6 +82,9 @@
 - grid, card list, 좌우 정렬 변화가 있으면 `430×932`를 추가합니다.
 - 고정 카드나 버튼은 `AppSizes`로 관리합니다.
 - 리스트와 form은 가능한 `Expanded`, `Flexible`, `Wrap`, `SingleChildScrollView`를 사용해 overflow를 방지합니다.
+- 화면 폭에 따라 크기를 조정할 때는 단일 퍼센트보다 `LayoutBuilder`의 가용 공간을 기준으로 계산하고, `AppSizes`의 최소·최대값 사이로 제한합니다.
+- 가변 크기 적용 순서는 `보호할 text/action 최소 영역 결정 -> padding/spacing 제외 -> 가용 크기 계산 -> clamp(min, max) -> 최소/중간/최대 viewport 검증`입니다.
+- 버튼 높이와 최소 터치 영역은 비율로 축소하지 않고, 텍스트는 `Expanded`/`Flexible`과 overflow 정책으로 남은 공간을 사용합니다.
 - 키보드가 올라오는 입력 화면은 스크롤 가능해야 합니다.
 - SafeArea를 고려하지 않은 절대 배치는 피합니다.
 
@@ -104,6 +107,7 @@
 - [ ] 공용 위젯으로 대체 가능한 UI를 새로 만들지 않았는가?
 - [ ] loading, empty, error 상태를 고려했는가?
 - [ ] 긴 한글 문구와 작은 화면에서 overflow가 없는가?
+- [ ] 가변 크기를 사용했다면 최소·중간·최대 viewport에서 범위와 연속 변화를 확인했는가?
 - [ ] 키보드 노출 시 입력 필드와 CTA가 가려지지 않는가?
 - [ ] 터치 영역이 충분한가?
 - [ ] `fvm flutter analyze`를 통과하는가?
