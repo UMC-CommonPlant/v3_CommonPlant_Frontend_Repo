@@ -150,6 +150,6 @@ Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게
 | ID | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- | --- |
 | QA-01 | `3e01a12` | QA 필수 viewport/device profile, 후속 작업 순서, Ready/Blocked 경계 문서화 | `git diff --check`, format 252개 파일, analyze, unit/widget test 218개 |
-| QA-01 검증 | - | 144개 route/viewport 조합 검증, Compact/Short height 분리, 적용 gap과 후속 순서 보완 | 임시 route-level viewport 진단, `git diff --check` 예정 |
+| QA-01 검증 | `7e82774` | 144개 route/viewport 조합 검증, Compact/Short height 분리, 적용 gap과 후속 순서 보완 | 임시 route-level viewport 진단, `git diff --check` |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
