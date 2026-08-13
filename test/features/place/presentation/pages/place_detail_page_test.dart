@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../helpers/test_app.dart';
+import '../../../../helpers/test_viewport.dart';
 
 void main() {
   testWidgets('리더는 FAB에서 장소 수정 액션을 확인할 수 있다', (tester) async {
@@ -44,6 +45,17 @@ void main() {
     expect(find.text('식물 추가하기'), findsOneWidget);
     expect(find.text('장소 수정하기'), findsNothing);
     expect(find.text('장소 나가기'), findsOneWidget);
+  });
+
+  testWidgets('compact 폭에서도 장소 식물 카드를 overflow 없이 표시한다', (tester) async {
+    configureTestViewport(tester, TestViewports.compactWidth);
+    await tester.pumpWidget(
+      buildPageTestApp(const PlaceDetailPage(placeId: 'place-1')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('몬테'), findsWidgets);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('장소 나가기는 확인 dialog를 표시한다', (tester) async {

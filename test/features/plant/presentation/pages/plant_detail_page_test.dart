@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../helpers/test_app.dart';
+import '../../../../helpers/test_viewport.dart';
 
 void main() {
   testWidgets('식물 상세는 Figma 주요 정보와 더보기 메뉴를 표시한다', (tester) async {
@@ -68,6 +69,17 @@ void main() {
 
     expect(find.text('식물을 삭제할까요?'), findsOneWidget);
     expect(find.text('삭제하면 기록된 메모도 함께 사라져요.'), findsOneWidget);
+  });
+
+  testWidgets('compact 폭에서도 날짜 요약을 overflow 없이 표시한다', (tester) async {
+    configureTestViewport(tester, TestViewports.compactWidth);
+    await tester.pumpWidget(
+      buildPageTestApp(const PlantDetailPage(plantId: 'plant-1')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('마지막으로 물 준 날짜'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('remote loading 상태는 식물 상세 대신 로딩 안내를 표시한다', (tester) async {
