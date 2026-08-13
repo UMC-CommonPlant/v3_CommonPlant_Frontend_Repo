@@ -76,8 +76,9 @@
 ## 반응형 기준
 
 - 기준 시안 폭은 `AppSizes.mobileWidth` 값인 375입니다.
-- 자동 레이아웃 검증은 logical viewport `320×568`, `375×812`, `430×932` 중 화면 위험에 맞는 profile을 사용합니다.
-- 모든 신규 화면은 `375×812`를 기본으로 확인하고, form, 긴 문구, 가로 배치, 하단 CTA가 있으면 `320×568`을 추가합니다.
+- 자동 레이아웃 검증은 logical viewport `320×640`, `375×667`, `375×812`, `430×932` 중 화면 위험에 맞는 profile을 사용합니다.
+- 모든 신규 화면은 `375×812`를 기본으로 확인하고, form, 긴 문구, 가로 배치가 있으면 Compact width `320×640`을 추가합니다.
+- 키보드, 하단 CTA, 고정 세로 배치가 있으면 Short height `375×667`을 추가합니다.
 - grid, card list, 좌우 정렬 변화가 있으면 `430×932`를 추가합니다.
 - 고정 카드나 버튼은 `AppSizes`로 관리합니다.
 - 리스트와 form은 가능한 `Expanded`, `Flexible`, `Wrap`, `SingleChildScrollView`를 사용해 overflow를 방지합니다.

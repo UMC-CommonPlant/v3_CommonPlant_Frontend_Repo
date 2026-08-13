@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | 기준 브랜치 | `develop@f001561` | 코드 가독성 리팩토링 3차 병합 완료 |
 | 화면 기준 크기 | `AppSizes.mobileWidth` 375, `AppSizes.mobileHeight` 812 | Figma 기준 viewport로 유지 |
-| Widget test viewport | 일부 화면 테스트가 `375×812`, DPR 1을 파일별로 직접 설정 | 공통 QA profile/helper는 없음 |
+| Widget test viewport | 일부 화면 테스트가 `320×640`, `375×812`, `430×812`, DPR 1을 파일별로 직접 설정 | 공통 QA profile/helper는 없음 |
 | Golden test | test, baseline image, 공통 font loader 없음 | TEST-01에서 첫 도입 범위 결정 필요 |
 | Font/asset | Pretendard 4종과 앱 asset이 저장소 및 `pubspec.yaml`에 등록됨 | Golden 재현성의 기본 조건 충족 |
 | Integration test | SDK 의존성, `integration_test/`, 실행 script 없음 | 로컬 smoke scaffold부터 별도 도입 가능 |
@@ -29,11 +29,12 @@
 | 순서 | ID | 범위 | 선행 조건 | 현재 상태 |
 | --- | --- | --- | --- | --- |
 | 1 | QA-01 | QA 필수 디바이스와 viewport 기준 확정 | 없음 | Decided (#195) |
-| 2 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | QA-01 | Ready |
-| 3 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 로컬 실행 환경 검토 | 없음. 우선순위상 TEST-01 다음 | Ready |
-| 4 | TEST-02-B | staging API 기반 integration workflow와 핵심 CRUD flow 연결 | staging URL, 테스트 계정, seed/cleanup, secret 정책 | Blocked |
+| 2 | QA-01 적용 후속 | compact-width overflow 수정과 viewport 회귀 테스트 추가 | QA-01 | Ready. 별도 Bug 이슈 필요 |
+| 3 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | QA-01 적용 후속 | Open. 선행 작업 완료 후 Ready |
+| 4 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 로컬 실행 환경 검토 | 없음. 우선순위상 TEST-01 다음 | Ready |
+| 5 | TEST-02-B | staging API 기반 integration workflow와 핵심 CRUD flow 연결 | staging URL, 테스트 계정, seed/cleanup, secret 정책 | Blocked |
 
-TEST-01과 TEST-02-A 사이에 기술적 의존은 없지만 테스트 도입 범위를 한 번에 넓히지 않도록 QA-01, TEST-01, TEST-02 순서를 유지한다. TEST-02-B의 외부 조건이 준비되지 않아도 TEST-02-A의 API 비사용 smoke와 runner 검토는 별도 이슈로 진행할 수 있다.
+TEST-01과 TEST-02-A 사이에 기술적 의존은 없지만 테스트 도입 범위를 한 번에 넓히지 않도록 QA-01, compact-width 회귀 수정, TEST-01, TEST-02 순서를 유지한다. TEST-02-B의 외부 조건이 준비되지 않아도 TEST-02-A의 API 비사용 smoke와 runner 검토는 별도 이슈로 진행할 수 있다.
 
 ## QA-01 필수 기준
 
@@ -43,14 +44,44 @@ Flutter test의 `tester.view`에는 physical pixel이 아니라 아래 logical v
 
 | Profile | Logical viewport | 용도 | 적용 기준 |
 | --- | --- | --- | --- |
-| Compact | `320×568` | 작은 휴대폰의 가로 overflow와 짧은 세로 공간 확인 | form, 긴 문구, 가로 배치, 하단 CTA가 있는 화면 |
+| Compact width | `320×640` | 작은 휴대폰의 가로 overflow 확인 | form, 긴 문구, 가로 배치가 있는 화면 |
+| Short height | `375×667` | 짧은 세로 공간과 하단 CTA 확인 | 키보드, 하단 CTA, 고정 세로 배치가 있는 화면 |
 | Reference | `375×812` | Figma와 현재 `AppSizes` 기준 회귀 확인 | 모든 신규 화면의 기본 widget test |
 | Wide | `430×932` | 넓고 긴 휴대폰에서 정렬, 최대 너비, 여백 확인 | grid, card list, 좌우 정렬 변화가 있는 화면 |
 
-- `320` logical pixel은 Android의 small phone 기준을 하한 회귀 폭으로 사용한다.
+- `320` logical pixel은 Android의 small phone 기준을 하한 회귀 폭으로 사용하고, 기존 낮은 높이 화면 테스트와 일치하는 `320×640`으로 관리한다.
+- `375×667`은 폭과 높이 위험을 한 profile에 섞지 않고 짧은 높이 회귀를 독립적으로 확인할 때 사용한다.
 - `375×812`는 디자인 비교와 향후 full-screen golden의 기본 후보 크기다.
-- 세 프로필을 모든 테스트에 기계적으로 반복하지 않는다. Reference는 기본으로 사용하고 Compact/Wide는 레이아웃 위험이 있는 화면에 추가한다.
+- 네 profile을 모든 테스트에 기계적으로 반복하지 않는다. Reference는 기본으로 사용하고 Compact width, Short height, Wide는 레이아웃 위험이 있는 화면에 추가한다.
 - DPR 차이는 layout 검증 기준과 분리한다. Golden baseline의 DPR은 TEST-01에서 확정한다.
+
+### 2026-08-13 viewport 검증 결과
+
+임시 진단 테스트로 route-level 화면 18개를 8개 viewport에서 초기 렌더링해 총 144개 조합을 확인했다. 진단 파일은 결과 확인 후 제거했으며 저장소 테스트에는 포함하지 않았다.
+
+| Logical viewport | 결과 |
+| --- | --- |
+| `320×568` | Place 초대, 주소 검색, Place 상세, Plant 상세에서 overflow |
+| `320×640` | `320×568`과 같은 4개 route에서 overflow |
+| `360×800` | Place 초대에서 overflow |
+| `375×667` | 18개 route 통과 |
+| `375×812` | 18개 route 통과 |
+| `412×915` | 18개 route 통과 |
+| `430×812` | 18개 route 통과 |
+| `430×932` | 18개 route 통과 |
+
+`320×568`과 `320×640`이 같은 width 문제를 검출했으므로 기존 테스트와 정렬되는 `320×640`을 Compact width로 채택한다. 짧은 높이 검증은 전체 route가 통과한 `375×667`로 분리한다. 이 검증은 DPR 1과 system inset이 없는 widget 환경의 초기 렌더링 검사이므로 키보드, SafeArea, system back은 수동 QA로 계속 확인한다.
+
+### 확인된 적용 gap
+
+| 화면 | 확인된 문제 | 처리 기준 |
+| --- | --- | --- |
+| Place 초대 | action button Row가 320에서 50px, 360에서 10px 가로 overflow | 별도 Bug 이슈에서 반응형 action 배치와 회귀 테스트 추가 |
+| 주소 검색 | 결과 Row가 320에서 12px 가로 overflow | 별도 Bug 이슈에서 text/button 제약과 회귀 테스트 추가 |
+| Place 상세 | 공용 Plant card 내부 세로 overflow | 별도 Bug 이슈에서 card compact layout과 회귀 테스트 추가 |
+| Plant 상세 | 날짜 요약 Row가 320에서 22px 가로 overflow | 별도 Bug 이슈에서 날짜 요약 반응형 배치와 회귀 테스트 추가 |
+
+QA-01은 정책 결정 상태인 `Decided`로 유지한다. 위 gap은 정책을 현재 화면에 적용하는 구현 작업이므로 #195와 PR #196에 코드 수정으로 포함하지 않는다.
 
 ### 수동 QA 필수 디바이스 profile
 
@@ -63,7 +94,7 @@ Flutter test의 `tester.view`에는 physical pixel이 아니라 아래 logical v
 | iOS | Compact-height simulator | `375×667` | 짧은 높이, 키보드, safe area, navigation 전환 |
 | iOS | Reference-height simulator | `375×812` | Figma 기준 정렬, notch 계열 safe area, 기본 사용자 흐름 |
 
-- 화면 PR은 Reference widget test를 기본으로 하고 레이아웃 위험에 따라 Compact 또는 Wide를 추가한다.
+- 화면 PR은 Reference widget test를 기본으로 하고 레이아웃 위험에 따라 Compact width, Short height, Wide를 추가한다.
 - 화면 구조가 바뀐 PR은 Android와 iOS에서 각각 한 개 이상의 필수 profile로 smoke QA를 수행한다.
 - release candidate QA에서는 네 profile을 모두 확인한다.
 - 실제 기기는 같은 역할과 같거나 더 작은 사용 가능 viewport를 제공하면 해당 profile을 대체할 수 있다. PR 또는 QA 기록에 기기, OS, 사용 가능 viewport를 남긴다.
@@ -82,11 +113,12 @@ Flutter test의 `tester.view`에는 physical pixel이 아니라 아래 logical v
 
 TEST-01은 아래 순서로 별도 이슈화한다.
 
-1. Pretendard와 asset을 명시적으로 로드하는 golden test helper를 만든다.
-2. remote API와 시간, locale에 의존하지 않는 화면 한 개를 `375×812` full-screen pilot으로 선정한다.
-3. baseline 파일명, 저장 위치, DPR, 허용 오차, `--update-goldens` 리뷰 규칙을 정한다.
-4. Compact/Wide baseline은 pilot 화면에 일괄 추가하지 않고 레이아웃 위험과 회귀 효과를 확인해 대상 화면별로 선택한다.
-5. 로컬과 Ubuntu CI에서 같은 baseline이 재현된 뒤 일반 `fvm flutter test`에 포함한다.
+1. Compact width 적용 gap과 대상 화면의 viewport 회귀 테스트를 먼저 해결한다.
+2. Pretendard와 asset을 명시적으로 로드하는 golden test helper를 만든다.
+3. remote API와 시간, locale에 의존하지 않는 `OnboardingPage`를 `375×812` full-screen pilot으로 사용한다.
+4. baseline 파일명, 저장 위치, DPR, 허용 오차, `--update-goldens` 리뷰 규칙을 정한다.
+5. Compact width, Short height, Wide baseline은 pilot 화면에 일괄 추가하지 않고 레이아웃 위험과 회귀 효과를 확인해 대상 화면별로 선택한다.
+6. 로컬과 Ubuntu CI에서 같은 baseline이 재현된 뒤 일반 `fvm flutter test`에 포함한다.
 
 ## TEST-02 Ready와 Blocked 경계
 
@@ -118,5 +150,6 @@ Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게
 | ID | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- | --- |
 | QA-01 | `3e01a12` | QA 필수 viewport/device profile, 후속 작업 순서, Ready/Blocked 경계 문서화 | `git diff --check`, format 252개 파일, analyze, unit/widget test 218개 |
+| QA-01 검증 | - | 144개 route/viewport 조합 검증, Compact/Short height 분리, 적용 gap과 후속 순서 보완 | 임시 route-level viewport 진단, `git diff --check` 예정 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
