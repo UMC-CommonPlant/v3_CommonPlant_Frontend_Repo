@@ -1,10 +1,14 @@
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
+
+const double _plantDateSummaryMinGap = AppSpacing.x8;
+const double _plantDateSummaryMaxGap = 34;
 
 class PlantCareSummary extends StatelessWidget {
   const PlantCareSummary({
@@ -103,26 +107,39 @@ class _PlantDateSummary extends StatelessWidget {
       color: AppColors.iconInactive,
     );
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('처음 함께한 날', style: textStyle),
-            Text('마지막으로 물 준 날짜', style: textStyle),
-          ],
-        ),
-        const SizedBox(width: 34),
-        Column(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final widthProgress =
+            ((constraints.maxWidth - AppSizes.compactMobileWidth) /
+                    (AppSizes.mobileWidth - AppSizes.compactMobileWidth))
+                .clamp(0.0, 1.0)
+                .toDouble();
+        final gap =
+            _plantDateSummaryMinGap +
+            (_plantDateSummaryMaxGap - _plantDateSummaryMinGap) * widthProgress;
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(startDate, style: textStyle),
-            Text(lastWateredDate, style: textStyle),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('처음 함께한 날', style: textStyle),
+                Text('마지막으로 물 준 날짜', style: textStyle),
+              ],
+            ),
+            SizedBox(key: const ValueKey('plant-date-summary-gap'), width: gap),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(startDate, style: textStyle),
+                Text(lastWateredDate, style: textStyle),
+              ],
+            ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }

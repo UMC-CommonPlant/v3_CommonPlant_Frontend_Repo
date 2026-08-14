@@ -180,24 +180,43 @@ class _InvitationActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _InvitationActionButton(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableButtonWidth =
+            (constraints.maxWidth - _invitationButtonGap) / 2;
+        final buttonWidth = availableButtonWidth
+            .clamp(
+              AppSizes.placeInvitationActionButtonMinWidth,
+              AppSizes.placeInvitationActionButtonMaxWidth,
+            )
+            .toDouble();
+
+        final acceptButton = _InvitationActionButton(
           label: '확인',
           semanticsLabel: '${invitation.placeName} 확인',
           backgroundColor: AppColors.brandPrimary,
           foregroundColor: AppColors.white,
           onPressed: onAccept,
-        ),
-        const SizedBox(width: _invitationButtonGap),
-        _InvitationActionButton(
+          width: buttonWidth,
+        );
+        final deleteButton = _InvitationActionButton(
           label: '삭제',
           semanticsLabel: '${invitation.placeName} 삭제',
           backgroundColor: AppColors.borderDefault,
           foregroundColor: AppColors.textStrong,
           onPressed: onDelete,
-        ),
-      ],
+          width: buttonWidth,
+        );
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            acceptButton,
+            const SizedBox(width: _invitationButtonGap),
+            deleteButton,
+          ],
+        );
+      },
     );
   }
 }
@@ -209,6 +228,7 @@ class _InvitationActionButton extends StatelessWidget {
     required this.backgroundColor,
     required this.foregroundColor,
     required this.onPressed,
+    required this.width,
   });
 
   final String label;
@@ -216,6 +236,7 @@ class _InvitationActionButton extends StatelessWidget {
   final Color backgroundColor;
   final Color foregroundColor;
   final VoidCallback onPressed;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -231,7 +252,7 @@ class _InvitationActionButton extends StatelessWidget {
             onTap: onPressed,
             borderRadius: BorderRadius.circular(AppRadius.small),
             child: SizedBox(
-              width: AppSizes.placeInvitationActionButtonWidth,
+              width: width,
               height: AppSizes.placeInvitationActionButtonHeight,
               child: Center(
                 child: Text(

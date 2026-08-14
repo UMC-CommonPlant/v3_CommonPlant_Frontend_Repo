@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/test_viewport.dart';
+
 void main() {
   testWidgets('장소 친구 요청 기본 화면을 Figma 항목과 버튼으로 표시한다', (
     WidgetTester tester,
@@ -24,7 +26,7 @@ void main() {
     expect(
       tester.getSize(find.bySemanticsLabel('스윗홈_욕실 확인')),
       const Size(
-        AppSizes.placeInvitationActionButtonWidth,
+        AppSizes.placeInvitationActionButtonMaxWidth,
         AppSizes.placeInvitationActionButtonHeight,
       ),
     );
@@ -50,13 +52,38 @@ void main() {
     expect(find.text('확인'), findsOneWidget);
     expect(find.text('삭제'), findsOneWidget);
   });
+
+  testWidgets('compact 폭에서도 초대 action button을 overflow 없이 표시한다', (
+    WidgetTester tester,
+  ) async {
+    final buttonWidths = <double>[];
+
+    for (final viewport in [TestViewports.compactWidth, const Size(360, 800)]) {
+      await _pumpPage(tester, viewport: viewport);
+
+      expect(tester.takeException(), isNull, reason: '$viewport viewport');
+      final buttonWidth = tester
+          .getSize(find.bySemanticsLabel('스윗홈_욕실 확인'))
+          .width;
+      buttonWidths.add(buttonWidth);
+      expect(
+        buttonWidth,
+        inInclusiveRange(
+          AppSizes.placeInvitationActionButtonMinWidth,
+          AppSizes.placeInvitationActionButtonMaxWidth,
+        ),
+      );
+    }
+
+    expect(buttonWidths.first, lessThan(buttonWidths.last));
+  });
 }
 
-Future<void> _pumpPage(WidgetTester tester) async {
-  tester.view.devicePixelRatio = 1;
-  tester.view.physicalSize = const Size(375, 812);
-  addTearDown(tester.view.resetDevicePixelRatio);
-  addTearDown(tester.view.resetPhysicalSize);
+Future<void> _pumpPage(
+  WidgetTester tester, {
+  Size viewport = TestViewports.reference,
+}) async {
+  configureTestViewport(tester, viewport);
 
   await tester.pumpWidget(
     const ProviderScope(child: MaterialApp(home: PlaceInvitationsPage())),

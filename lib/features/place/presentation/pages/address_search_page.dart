@@ -90,26 +90,33 @@ class _AddressSearchResultTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              SizedBox(
-                width: _addressSearchResultTextWidth,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _AddressSearchResultTitle(result: result),
-                    const SizedBox(height: AppSpacing.x4),
-                    Text(
-                      result.address,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.size14Medium.copyWith(
-                        color: AppColors.textBody,
-                      ),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: _addressSearchResultTextWidth,
                     ),
-                  ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _AddressSearchResultTitle(result: result),
+                        const SizedBox(height: AppSpacing.x4),
+                        Text(
+                          result.address,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.size14Medium.copyWith(
+                            color: AppColors.textBody,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: AppSpacing.x8),
               _AddressSearchSelectButton(onPressed: onSelect),
             ],
           ),

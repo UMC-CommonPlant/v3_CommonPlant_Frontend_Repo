@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../helpers/test_app.dart';
+import '../../../../helpers/test_viewport.dart';
 
 void main() {
   testWidgets('리더는 FAB에서 장소 수정 액션을 확인할 수 있다', (tester) async {
@@ -44,6 +46,69 @@ void main() {
     expect(find.text('식물 추가하기'), findsOneWidget);
     expect(find.text('장소 수정하기'), findsNothing);
     expect(find.text('장소 나가기'), findsOneWidget);
+  });
+
+  testWidgets('장소 식물 카드 이미지는 viewport 사이에서 최소·최대 범위로 변한다', (tester) async {
+    final thumbnailSizes = <Size>[];
+    final viewports = <Size>[
+      TestViewports.compactWidth,
+      const Size(340, 800),
+      TestViewports.reference,
+    ];
+
+    for (final viewport in viewports) {
+      configureTestViewport(tester, viewport);
+      await tester.pumpWidget(
+        buildPageTestApp(const PlaceDetailPage(placeId: 'place-1')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('몬테'), findsWidgets);
+      expect(tester.takeException(), isNull, reason: '$viewport');
+      final thumbnailSize = tester.getSize(
+        find.byKey(const ValueKey('place-plant-card-thumbnail')).first,
+      );
+      thumbnailSizes.add(thumbnailSize);
+      expect(
+        thumbnailSize.width,
+        inInclusiveRange(
+          AppSizes.placePlantCardImageMinSize,
+          AppSizes.placePlantCardImageMaxWidth,
+        ),
+      );
+      expect(
+        thumbnailSize.height,
+        inInclusiveRange(
+          AppSizes.placePlantCardImageMinSize,
+          AppSizes.placePlantCardImageMaxHeight,
+        ),
+      );
+    }
+
+    expect(
+      thumbnailSizes.first,
+      const Size(
+        AppSizes.placePlantCardImageMinSize,
+        AppSizes.placePlantCardImageMinSize,
+      ),
+    );
+    expect(
+      thumbnailSizes.last,
+      const Size(
+        AppSizes.placePlantCardImageMaxWidth,
+        AppSizes.placePlantCardImageMaxHeight,
+      ),
+    );
+    expect(thumbnailSizes[0].width, lessThan(thumbnailSizes[1].width));
+    expect(thumbnailSizes[1].width, lessThan(thumbnailSizes[2].width));
+    expect(
+      thumbnailSizes[0].height,
+      lessThanOrEqualTo(thumbnailSizes[1].height),
+    );
+    expect(
+      thumbnailSizes[1].height,
+      lessThanOrEqualTo(thumbnailSizes[2].height),
+    );
   });
 
   testWidgets('장소 나가기는 확인 dialog를 표시한다', (tester) async {

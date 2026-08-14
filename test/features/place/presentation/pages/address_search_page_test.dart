@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/test_viewport.dart';
+
 void main() {
   testWidgets('주소 검색 화면은 Figma 기준 검색어와 결과 목록을 표시한다', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: AddressSearchPage())),
-    );
+    await _pumpPage(tester);
 
     expect(find.text('주소 검색'), findsOneWidget);
     expect(find.text('신도림역'), findsOneWidget);
@@ -21,6 +21,16 @@ void main() {
     await tester.drag(find.byType(ListView), const Offset(0, -260));
     await tester.pumpAndSettle();
 
+    expect(find.text('선택'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('compact 폭에서도 주소와 선택 버튼을 overflow 없이 표시한다', (
+    WidgetTester tester,
+  ) async {
+    await _pumpPage(tester, viewport: TestViewports.compactWidth);
+
+    expect(find.text('신도림역 1호선', findRichText: true), findsOneWidget);
     expect(find.text('선택'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
@@ -61,4 +71,15 @@ void main() {
     expect(find.text('주소 검색 열기'), findsOneWidget);
     expect(navigatorKey.currentState?.canPop(), isFalse);
   });
+}
+
+Future<void> _pumpPage(
+  WidgetTester tester, {
+  Size viewport = TestViewports.reference,
+}) async {
+  configureTestViewport(tester, viewport);
+  await tester.pumpWidget(
+    const ProviderScope(child: MaterialApp(home: AddressSearchPage())),
+  );
+  await tester.pumpAndSettle();
 }
