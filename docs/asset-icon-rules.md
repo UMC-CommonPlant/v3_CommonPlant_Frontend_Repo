@@ -86,7 +86,7 @@ const CommonSvgIcon(
 
 - 출처는 [공식 Pretendard v1.3.9 release](https://github.com/orioncactus/pretendard/releases/tag/v1.3.9)의 static OTF입니다.
 - 원본 `Pretendard-1.3.9.zip` SHA-256은 `04be351a74d6bf7d60c480a3087e51d185485d35a52023142af1df19eb8c428a`입니다.
-- 라이선스는 SIL Open Font License 1.1이며 `assets/fonts/pretendard_ofl.txt`에 보존합니다.
+- 라이선스는 SIL Open Font License 1.1이며 `assets/fonts/pretendard_ofl.txt`에 보존하고 runtime asset으로 등록해 Android/iOS 배포물에 함께 포함합니다.
 - `Pretendard Std`는 라틴/그리스/키릴 전용이므로 한글 앱의 기본 font asset으로 사용하지 않습니다.
 - 폰트 교체 시 내부 family가 `Pretendard`인지, weight가 `400/500/600/700`에 대응하는지, Hangul syllable `AC00-D7A3` 범위를 포함하는지 확인합니다.
 - 폰트 asset 변경은 앱 전체 text metrics와 bundle 크기에 영향을 주므로 Android/iOS build와 전체 widget test를 함께 검증합니다.

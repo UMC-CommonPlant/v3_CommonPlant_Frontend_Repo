@@ -156,5 +156,6 @@ Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게
 | QA-01 가변 범위 | `fe0f5fc` | 초대 버튼, 장소 식물 카드 image, 식물 날짜 간격을 최소·최대 범위의 연속 계산으로 보완 | 대상 화면 test 21개, 최소·중간·최대 viewport 값 검증 |
 | QA-01 가변 기준 정리 | `a80d3ae` | 위젯 전용 보호값을 private 상수로 이동하고 날짜 간격을 정규화 보간하며 중간값 테스트를 범위·단조성 기준으로 완화 | Place/Plant 상세 test 15개, `git diff --check` |
 | TEST-01 폰트 선행 | `cc93a5c` | Latin 전용 Pretendard Std를 한글 포함 공식 Pretendard v1.3.9 OTF 4종으로 교체하고 OFL 보존 | Hangul `AC00-D7A3`, 임시 Flutter render, format 253개, analyze, unit/widget test 222개, Android/iOS debug build |
+| TEST-01 폰트 라이선스 | `befcb93` | OFL 저작권·라이선스 본문을 runtime asset으로 등록해 Android/iOS 배포물에 포함 | APK와 Runner.app의 `flutter_assets/assets/fonts` packaging 확인 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
