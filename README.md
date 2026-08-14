@@ -136,7 +136,7 @@ test/
 - API 모델은 `freezed`와 `json_serializable` 기반 생성을 기본 방향으로 삼되, 실제 패키지 추가는 첫 API 연동 PR에서 함께 진행합니다.
 - 인증 토큰은 `flutter_secure_storage` 기반 보관을 기본 방향으로 합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
-- Golden test와 integration test 도입 범위는 아직 미정입니다.
+- Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 도입했으며, integration test 범위는 아직 미정입니다.
 
 ## 프로젝트 문서
 

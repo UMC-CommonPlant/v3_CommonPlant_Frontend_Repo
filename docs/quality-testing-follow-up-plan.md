@@ -14,14 +14,14 @@
 
 | 점검 항목 | 현재 상태 | 판단 |
 | --- | --- | --- |
-| 기준 브랜치 | `develop@64d296a` | QA-01 적용 후속 #197, PR #198 병합 완료 |
+| 기준 브랜치 | `develop@48f9cd7` | TEST-01 폰트 선행 #200, PR #201 병합 완료 |
 | 화면 기준 크기 | `AppSizes.mobileWidth` 375, `AppSizes.mobileHeight` 812 | Figma 기준 viewport로 유지 |
 | Widget test viewport | `test/helpers/test_viewport.dart`에서 네 QA profile과 DPR 1 설정을 제공하고 compact gap 대상 화면에 적용 | 기존 raw viewport 설정은 관련 화면 수정 시 점진적으로 helper로 전환 |
-| Golden test | #199 이슈 생성, test/baseline image/font loader 없음 | 한글 font 선행 조건이 해소되어 `OnboardingPage` pilot 재개 가능 |
+| Golden test | #199에서 `OnboardingPage` `375×812`, DPR 1 baseline과 Pretendard helper 구현 | Ubuntu canonical renderer에서 Flutter 기본 exact comparator 사용 |
 | Font/asset | 한글 포함 Pretendard v1.3.9 static OTF 4종과 OFL을 `pubspec.yaml` 및 저장소에 등록 | #200에서 Hangul glyph와 Android/iOS packaging 검증 완료 |
 | Integration test | SDK 의존성, `integration_test/`, 실행 script 없음 | 로컬 smoke scaffold부터 별도 도입 가능 |
-| GitHub Actions | Ubuntu에서 `flutter analyze`, `flutter test` 실행 | device 기반 workflow는 없음 |
-| 기본 품질 게이트 | format 253개 파일, analyze, unit/widget test 222개 통과 | #197 compact 회귀 테스트 포함, 현재 필수 게이트 정상 |
+| GitHub Actions | Ubuntu에서 `flutter analyze`, unit/widget/golden test 실행, 수동 `Golden Baseline` workflow 제공 | golden 실패 diff artifact를 7일 보존, device 기반 workflow는 없음 |
+| 기본 품질 게이트 | macOS에서 unit/widget 222개 통과와 golden 1개 skip, Ubuntu에서 golden 포함 223개 통과 | non-Linux font rasterization 차이는 skip하고 Ubuntu exact 결과를 필수 판정으로 사용 |
 | Remote API 환경 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 주입 지점만 존재 | staging URL, 계정, 데이터 격리 정책은 Blocked |
 
 ## 의존관계를 반영한 작업 순서
@@ -31,7 +31,7 @@
 | 1 | QA-01 | QA 필수 디바이스와 viewport 기준 확정 | 없음 | Decided (#195) |
 | 2 | QA-01 적용 후속 | compact-width overflow 수정과 viewport 회귀 테스트 추가 | QA-01 | Done (#197) |
 | 3 | TEST-01 폰트 선행 | 한글 Pretendard asset과 라이선스 정리 | QA-01 적용 후속 | Done (#200) |
-| 4 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | TEST-01 폰트 선행 | Ready (#199) |
+| 4 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | TEST-01 폰트 선행 | In Review (#199) |
 | 5 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 로컬 실행 환경 검토 | 없음. 우선순위상 TEST-01 다음 | Ready |
 | 6 | TEST-02-B | staging API 기반 integration workflow와 핵심 CRUD flow 연결 | staging URL, 테스트 계정, seed/cleanup, secret 정책 | Blocked |
 
@@ -110,15 +110,22 @@ QA-01은 정책 결정 상태인 `Decided`로 유지한다. 위 gap은 #197에�
 - 화면 하단 CTA와 FAB의 접근 가능성
 - RenderFlex overflow와 잘린 텍스트가 없는지
 
-## TEST-01 다음 작업 범위
+## TEST-01 확정 기준
 
-Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료했다. TEST-01은 아래 남은 범위로 별도 이슈화한다.
+Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료했다. TEST-01은 #199에서 아래 범위로 확정했다.
 
-1. #200에서 등록한 한글 Pretendard OTF와 asset을 명시적으로 로드하는 golden test helper를 만든다.
-2. remote API와 시간, locale에 의존하지 않는 `OnboardingPage`를 `375×812` full-screen pilot으로 사용한다.
-3. baseline 파일명, 저장 위치, DPR, 허용 오차, `--update-goldens` 리뷰 규칙을 정한다.
+1. #200에서 등록한 한글 Pretendard OTF 4개 weight와 asset을 `test/helpers/golden_test_helper.dart`에서 명시적으로 로드한다.
+2. remote API와 시간, locale에 의존하지 않는 `OnboardingPage`를 `375×812`, DPR 1 full-screen pilot으로 사용한다.
+3. baseline은 대상 test 옆 `goldens/onboarding_page_375x812.png`에 두고 Ubuntu에서 Flutter 기본 exact comparator로 비교한다.
 4. Compact width, Short height, Wide baseline은 pilot 화면에 일괄 추가하지 않고 레이아웃 위험과 회귀 효과를 확인해 대상 화면별로 선택한다.
-5. 로컬과 Ubuntu CI에서 같은 baseline이 재현된 뒤 일반 `fvm flutter test`에 포함한다.
+5. non-Linux 로컬에서는 golden만 skip하고 기존 unit/widget test를 유지한다. Ubuntu CI에서는 golden을 일반 `flutter test`에 포함한다.
+6. baseline 갱신은 수동 `Golden Baseline` workflow가 Ubuntu에서 생성한 artifact만 사용하고, 의도한 디자인 변경과 함께 리뷰한다.
+
+### Ubuntu canonical renderer 결정 근거
+
+첫 baseline은 macOS와 Ubuntu에서 Flutter `3.35.7`, `375×812`, DPR 1, 같은 Pretendard OTF와 SVG를 사용했다. macOS에서는 exact 비교가 통과했지만 Ubuntu run `31806673835`에서는 `1.03%`, `3,122px` 차이로 실패했다. CI failure artifact의 isolated diff를 확인한 결과 제목과 버튼 라벨의 글자 경계만 달랐고 SVG, 배경, 크기와 배치는 일치했다. OS별 font rasterization과 anti-aliasing 차이로 판정한다.
+
+1~2%의 전체 이미지 허용 오차는 작은 위치·색상·크기 회귀를 숨길 수 있으므로 도입하지 않는다. Ubuntu runner를 canonical renderer로 고정해 0% exact 비교를 유지하고, 같은 픽셀을 보장할 수 없는 non-Linux 환경에서는 golden만 skip한다. Ubuntu canonical baseline을 반영한 run `31807337886`에서 analyzer와 전체 unit/widget/golden test가 통과했다.
 
 ## TEST-02 Ready와 Blocked 경계
 
@@ -157,5 +164,8 @@ Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게
 | QA-01 가변 기준 정리 | `a80d3ae` | 위젯 전용 보호값을 private 상수로 이동하고 날짜 간격을 정규화 보간하며 중간값 테스트를 범위·단조성 기준으로 완화 | Place/Plant 상세 test 15개, `git diff --check` |
 | TEST-01 폰트 선행 | `cc93a5c` | Latin 전용 Pretendard Std를 한글 포함 공식 Pretendard v1.3.9 OTF 4종으로 교체하고 OFL 보존 | Hangul `AC00-D7A3`, 임시 Flutter render, format 253개, analyze, unit/widget test 222개, Android/iOS debug build |
 | TEST-01 폰트 라이선스 | `befcb93` | OFL 저작권·라이선스 본문을 runtime asset으로 등록해 Android/iOS 배포물에 포함 | APK와 Runner.app의 `flutter_assets/assets/fonts` packaging 확인 |
+| TEST-01 pilot | `c97beaa` | Pretendard 4개 weight와 Theme을 준비하는 helper, Onboarding full-screen test와 375×812 baseline 추가 | macOS target exact test, `fvm flutter analyze` |
+| TEST-01 canonical 환경 | `874dfb3` | non-Linux golden skip, Ubuntu baseline 생성 workflow, CI failure artifact 업로드 추가 | macOS unit/widget 222개 통과, golden 1개 skip, Ubuntu diff artifact 확인 |
+| TEST-01 Ubuntu baseline | `2c1907b` | Ubuntu test image를 canonical baseline으로 반영 | GitHub Actions run `31807337886` analyzer와 unit/widget/golden 223개 통과 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
