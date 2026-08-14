@@ -121,8 +121,8 @@ UI가 없어도 검증 가능한 로직은 widget test로 우회하지 않습니
 - layout 비교용 widget test는 DPR 1을 사용합니다. Golden baseline DPR은 TEST-01에서 별도로 확정합니다.
 - 공통 profile과 DPR 설정은 `test/helpers/test_viewport.dart`의 `TestViewports`와 `configureTestViewport`를 사용합니다.
 - 기존 테스트의 raw viewport 설정은 해당 화면을 수정할 때 공통 helper로 점진적으로 전환합니다.
-- `clamp(min, max)` 기반 가변 크기는 Compact와 Reference만 확인하지 않고 중간 viewport도 추가해 값이 갑자기 변하지 않는지 검증합니다.
-- 최소 viewport에서는 min 이상 유지와 overflow 부재, 중간 viewport에서는 연속 변화, Reference 또는 Wide에서는 max 이하 유지 여부를 확인합니다.
+- 제한형 가변 크기는 Compact와 Reference만 확인하지 않고 중간 viewport도 추가해 값이 갑자기 변하지 않는지 검증합니다.
+- 최소·최대 viewport에서는 확정된 계약값과 overflow 부재를 확인하고, 중간 viewport에서는 정확한 픽셀값보다 최소·최대 범위와 단조 변화를 검증합니다.
 - 버튼 높이와 최소 터치 영역처럼 고정해야 하는 값은 viewport별로 유지되는지도 함께 검증합니다.
 
 ## Golden test 기준

@@ -78,8 +78,8 @@ Flutter test의 `tester.view`에는 physical pixel이 아니라 아래 logical v
 | --- | --- | --- |
 | Place 초대 | action button Row가 320에서 50px, 360에서 10px 가로 overflow | #197에서 버튼 폭을 72~114로 제한하고 `320×640`, `360×800` 연속 변화와 overflow 부재 검증 |
 | 주소 검색 | 결과 Row가 320에서 12px 가로 overflow | #197에서 가변 text 영역과 `320×640` 회귀 테스트 적용 |
-| Place 상세 | 공용 Plant card 내부 세로 overflow | #197에서 image를 96~136 폭과 96~108 높이로 제한하고 320/340/375 폭 검증 |
-| Plant 상세 | 날짜 요약 Row가 320에서 22px 가로 overflow | #197에서 간격을 8~34로 제한하고 320/333/375 폭 검증 |
+| Place 상세 | 공용 Plant card 내부 세로 overflow | #197에서 image를 96~136 폭과 96~108 높이로 제한하고 320/340/375 폭의 끝값·범위·단조성 검증 |
+| Plant 상세 | 날짜 요약 Row가 320에서 22px 가로 overflow | #197에서 320~375 폭의 진행률로 간격을 8~34 사이 보간하고 최소/중간/최대 폭의 끝값·범위·단조성 검증 |
 
 QA-01은 정책 결정 상태인 `Decided`로 유지한다. 위 gap은 #197에서 정책 적용과 회귀 테스트를 완료했으며, TEST-01의 선행 조건은 해소되었다.
 
@@ -153,5 +153,6 @@ Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게
 | QA-01 적용 | `b09e6a7` | Place 초대, 주소 검색, Place 상세, Plant 상세 compact 반응형 레이아웃 수정 | 대상 화면 test 21개, `fvm flutter analyze` |
 | QA-01 회귀 | `20a1ed5` | 공통 viewport helper와 compact 회귀 widget test 4개 추가 | format 253개 파일, `fvm flutter analyze`, unit/widget test 222개 |
 | QA-01 가변 범위 | `fe0f5fc` | 초대 버튼, 장소 식물 카드 image, 식물 날짜 간격을 최소·최대 범위의 연속 계산으로 보완 | 대상 화면 test 21개, 최소·중간·최대 viewport 값 검증 |
+| QA-01 가변 기준 정리 | `a80d3ae` | 위젯 전용 보호값을 private 상수로 이동하고 날짜 간격을 정규화 보간하며 중간값 테스트를 범위·단조성 기준으로 완화 | Place/Plant 상세 test 15개, `git diff --check` |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
