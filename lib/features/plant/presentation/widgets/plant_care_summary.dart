@@ -7,6 +7,7 @@ import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_d
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 
+const double _plantDateSummaryMinGap = AppSpacing.x8;
 const double _plantDateSummaryMaxGap = 34;
 
 class PlantCareSummary extends StatelessWidget {
@@ -108,11 +109,14 @@ class _PlantDateSummary extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final availableGap =
-            AppSpacing.x8 + constraints.maxWidth - AppSizes.compactMobileWidth;
-        final gap = availableGap
-            .clamp(AppSpacing.x8, _plantDateSummaryMaxGap)
-            .toDouble();
+        final widthProgress =
+            ((constraints.maxWidth - AppSizes.compactMobileWidth) /
+                    (AppSizes.mobileWidth - AppSizes.compactMobileWidth))
+                .clamp(0.0, 1.0)
+                .toDouble();
+        final gap =
+            _plantDateSummaryMinGap +
+            (_plantDateSummaryMaxGap - _plantDateSummaryMinGap) * widthProgress;
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,

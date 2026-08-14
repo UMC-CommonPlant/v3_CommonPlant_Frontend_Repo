@@ -52,7 +52,6 @@ abstract final class AppSizes {
   static const double placePlantCardImageMinSize = 96;
   static const double placePlantCardImageMaxWidth = 136;
   static const double placePlantCardImageMaxHeight = 108;
-  static const double placePlantCardDetailsMinWidth = 156;
   static const double plantEmptyIconHeight = 60;
   static const double plantCardFadeHeight = 28;
   static const double plantCardFadeBottom = 8;

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
@@ -72,28 +73,34 @@ void main() {
   });
 
   testWidgets('날짜 요약 간격은 viewport 사이에서 최소·최대 범위로 변한다', (tester) async {
-    final cases = <({Size viewport, double gap})>[
-      (viewport: TestViewports.compactWidth, gap: 8),
-      (viewport: const Size(333, 800), gap: 21),
-      (viewport: TestViewports.reference, gap: 34),
+    const maxGap = 34.0;
+    final gaps = <double>[];
+    final viewports = <Size>[
+      TestViewports.compactWidth,
+      const Size(333, 800),
+      TestViewports.reference,
     ];
 
-    for (final testCase in cases) {
-      configureTestViewport(tester, testCase.viewport);
+    for (final viewport in viewports) {
+      configureTestViewport(tester, viewport);
       await tester.pumpWidget(
         buildPageTestApp(const PlantDetailPage(plantId: 'plant-1')),
       );
       await tester.pumpAndSettle();
 
       expect(find.text('마지막으로 물 준 날짜'), findsOneWidget);
-      expect(tester.takeException(), isNull, reason: '${testCase.viewport}');
-      expect(
-        tester
-            .getSize(find.byKey(const ValueKey('plant-date-summary-gap')))
-            .width,
-        testCase.gap,
-      );
+      expect(tester.takeException(), isNull, reason: '$viewport');
+      final gap = tester
+          .getSize(find.byKey(const ValueKey('plant-date-summary-gap')))
+          .width;
+      gaps.add(gap);
+      expect(gap, inInclusiveRange(AppSpacing.x8, maxGap));
     }
+
+    expect(gaps.first, AppSpacing.x8);
+    expect(gaps.last, maxGap);
+    expect(gaps[0], lessThan(gaps[1]));
+    expect(gaps[1], lessThan(gaps[2]));
   });
 
   testWidgets('remote loading 상태는 식물 상세 대신 로딩 안내를 표시한다', (tester) async {

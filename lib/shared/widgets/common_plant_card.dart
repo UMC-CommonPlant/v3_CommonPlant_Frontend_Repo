@@ -8,6 +8,8 @@ import 'package:commonplant_frontend/core/theme/app_theme_tokens.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 
+const double _placePlantCardDetailsMinWidth = 156;
+
 class CommonPlantCard extends StatelessWidget {
   const CommonPlantCard({
     super.key,
@@ -141,7 +143,7 @@ class CommonPlacePlantCard extends StatelessWidget {
                 constraints.maxWidth -
                 (AppSizes.placePlantCardPadding * 2) -
                 AppSpacing.x8 -
-                AppSizes.placePlantCardDetailsMinWidth;
+                _placePlantCardDetailsMinWidth;
             final imageWidth = availableImageWidth
                 .clamp(
                   AppSizes.placePlantCardImageMinSize,
