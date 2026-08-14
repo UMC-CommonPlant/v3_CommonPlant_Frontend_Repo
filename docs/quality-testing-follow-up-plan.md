@@ -14,11 +14,11 @@
 
 | 점검 항목 | 현재 상태 | 판단 |
 | --- | --- | --- |
-| 기준 브랜치 | `develop@c230237` | QA-01 기준 정리 #195, PR #196 병합 완료 |
+| 기준 브랜치 | `develop@64d296a` | QA-01 적용 후속 #197, PR #198 병합 완료 |
 | 화면 기준 크기 | `AppSizes.mobileWidth` 375, `AppSizes.mobileHeight` 812 | Figma 기준 viewport로 유지 |
 | Widget test viewport | `test/helpers/test_viewport.dart`에서 네 QA profile과 DPR 1 설정을 제공하고 compact gap 대상 화면에 적용 | 기존 raw viewport 설정은 관련 화면 수정 시 점진적으로 helper로 전환 |
-| Golden test | test, baseline image, 공통 font loader 없음 | TEST-01에서 첫 도입 범위 결정 필요 |
-| Font/asset | Pretendard 4종과 앱 asset이 저장소 및 `pubspec.yaml`에 등록됨 | Golden 재현성의 기본 조건 충족 |
+| Golden test | #199 이슈 생성, test/baseline image/font loader 없음 | 한글 font 선행 조건이 해소되어 `OnboardingPage` pilot 재개 가능 |
+| Font/asset | 한글 포함 Pretendard v1.3.9 static OTF 4종과 OFL을 `pubspec.yaml` 및 저장소에 등록 | #200에서 Hangul glyph와 Android/iOS packaging 검증 완료 |
 | Integration test | SDK 의존성, `integration_test/`, 실행 script 없음 | 로컬 smoke scaffold부터 별도 도입 가능 |
 | GitHub Actions | Ubuntu에서 `flutter analyze`, `flutter test` 실행 | device 기반 workflow는 없음 |
 | 기본 품질 게이트 | format 253개 파일, analyze, unit/widget test 222개 통과 | #197 compact 회귀 테스트 포함, 현재 필수 게이트 정상 |
@@ -30,9 +30,10 @@
 | --- | --- | --- | --- | --- |
 | 1 | QA-01 | QA 필수 디바이스와 viewport 기준 확정 | 없음 | Decided (#195) |
 | 2 | QA-01 적용 후속 | compact-width overflow 수정과 viewport 회귀 테스트 추가 | QA-01 | Done (#197) |
-| 3 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | QA-01 적용 후속 | Ready |
-| 4 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 로컬 실행 환경 검토 | 없음. 우선순위상 TEST-01 다음 | Ready |
-| 5 | TEST-02-B | staging API 기반 integration workflow와 핵심 CRUD flow 연결 | staging URL, 테스트 계정, seed/cleanup, secret 정책 | Blocked |
+| 3 | TEST-01 폰트 선행 | 한글 Pretendard asset과 라이선스 정리 | QA-01 적용 후속 | Done (#200) |
+| 4 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | TEST-01 폰트 선행 | Ready (#199) |
+| 5 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 로컬 실행 환경 검토 | 없음. 우선순위상 TEST-01 다음 | Ready |
+| 6 | TEST-02-B | staging API 기반 integration workflow와 핵심 CRUD flow 연결 | staging URL, 테스트 계정, seed/cleanup, secret 정책 | Blocked |
 
 TEST-01과 TEST-02-A 사이에 기술적 의존은 없지만 테스트 도입 범위를 한 번에 넓히지 않도록 QA-01, compact-width 회귀 수정, TEST-01, TEST-02 순서를 유지한다. TEST-02-B의 외부 조건이 준비되지 않아도 TEST-02-A의 API 비사용 smoke와 runner 검토는 별도 이슈로 진행할 수 있다.
 
@@ -113,7 +114,7 @@ QA-01은 정책 결정 상태인 `Decided`로 유지한다. 위 gap은 #197에�
 
 Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료했다. TEST-01은 아래 남은 범위로 별도 이슈화한다.
 
-1. Pretendard와 asset을 명시적으로 로드하는 golden test helper를 만든다.
+1. #200에서 등록한 한글 Pretendard OTF와 asset을 명시적으로 로드하는 golden test helper를 만든다.
 2. remote API와 시간, locale에 의존하지 않는 `OnboardingPage`를 `375×812` full-screen pilot으로 사용한다.
 3. baseline 파일명, 저장 위치, DPR, 허용 오차, `--update-goldens` 리뷰 규칙을 정한다.
 4. Compact width, Short height, Wide baseline은 pilot 화면에 일괄 추가하지 않고 레이아웃 위험과 회귀 효과를 확인해 대상 화면별로 선택한다.
@@ -154,5 +155,7 @@ Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게
 | QA-01 회귀 | `20a1ed5` | 공통 viewport helper와 compact 회귀 widget test 4개 추가 | format 253개 파일, `fvm flutter analyze`, unit/widget test 222개 |
 | QA-01 가변 범위 | `fe0f5fc` | 초대 버튼, 장소 식물 카드 image, 식물 날짜 간격을 최소·최대 범위의 연속 계산으로 보완 | 대상 화면 test 21개, 최소·중간·최대 viewport 값 검증 |
 | QA-01 가변 기준 정리 | `a80d3ae` | 위젯 전용 보호값을 private 상수로 이동하고 날짜 간격을 정규화 보간하며 중간값 테스트를 범위·단조성 기준으로 완화 | Place/Plant 상세 test 15개, `git diff --check` |
+| TEST-01 폰트 선행 | `cc93a5c` | Latin 전용 Pretendard Std를 한글 포함 공식 Pretendard v1.3.9 OTF 4종으로 교체하고 OFL 보존 | Hangul `AC00-D7A3`, 임시 Flutter render, format 253개, analyze, unit/widget test 222개, Android/iOS debug build |
+| TEST-01 폰트 라이선스 | `befcb93` | OFL 저작권·라이선스 본문을 runtime asset으로 등록해 Android/iOS 배포물에 포함 | APK와 Runner.app의 `flutter_assets/assets/fonts` packaging 확인 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.

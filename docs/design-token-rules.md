@@ -58,6 +58,8 @@ final tokens =
 
 폰트 패밀리는 `Pretendard`를 사용합니다.
 
+`pubspec.yaml`에는 한글 glyph를 포함한 공식 Pretendard `v1.3.9` static OTF의 Regular 400, Medium 500, SemiBold 600, Bold 700을 등록합니다. font 파일 출처와 라이선스, 교체 검증 기준은 `docs/asset-icon-rules.md`를 따릅니다.
+
 현재 기본 텍스트 weight는 Figma의 `AppleSDGothicNeoM00` 기준에 맞춰 `500`으로 정의합니다. 굵게 보여야 하는 부분만 `700` 토큰을 사용합니다.
 
 | 토큰 | 크기 | Weight | Line height |

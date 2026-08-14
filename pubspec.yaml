@@ -65,17 +65,18 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/fonts/pretendard_ofl.txt
 
   fonts:
     - family: Pretendard
       fonts:
-        - asset: assets/fonts/PretendardStd-Regular.ttf
+        - asset: assets/fonts/pretendard_regular.otf
           weight: 400
-        - asset: assets/fonts/PretendardStd-Medium.ttf
+        - asset: assets/fonts/pretendard_medium.otf
           weight: 500
-        - asset: assets/fonts/PretendardStd-SemiBold.ttf
+        - asset: assets/fonts/pretendard_semibold.otf
           weight: 600
-        - asset: assets/fonts/PretendardStd-Bold.ttf
+        - asset: assets/fonts/pretendard_bold.otf
           weight: 700
 
   # To add assets to your application, add an assets section, like this:
