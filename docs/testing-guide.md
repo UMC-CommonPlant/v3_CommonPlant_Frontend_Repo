@@ -118,7 +118,7 @@ UI가 없어도 검증 가능한 로직은 widget test로 우회하지 않습니
 - grid, card list, 좌우 정렬 변화가 있으면 Wide를 추가합니다.
 - 화면 구조가 바뀐 PR은 Android와 iOS에서 각각 한 개 이상의 필수 profile로 smoke QA를 수행합니다.
 - release candidate는 QA-01의 Android 2개, iOS 2개 profile을 모두 확인합니다.
-- layout 비교용 widget test는 DPR 1을 사용합니다. Golden baseline DPR은 TEST-01에서 별도로 확정합니다.
+- layout 비교용 widget test와 full-screen golden baseline은 DPR 1을 사용합니다.
 - 공통 profile과 DPR 설정은 `test/helpers/test_viewport.dart`의 `TestViewports`와 `configureTestViewport`를 사용합니다.
 - 기존 테스트의 raw viewport 설정은 해당 화면을 수정할 때 공통 helper로 점진적으로 전환합니다.
 - 제한형 가변 크기는 Compact와 Reference만 확인하지 않고 중간 viewport도 추가해 값이 갑자기 변하지 않는지 검증합니다.
@@ -137,12 +137,37 @@ Golden test를 추가할 때는 아래 기준을 따릅니다.
 
 - 테스트 파일은 대상 위치와 맞춰 `test/shared/widgets/common_button_golden_test.dart`처럼 둡니다.
 - 기준 폭은 `AppSizes.mobileWidth`와 같은 375 logical pixel을 우선 사용합니다.
-- full-screen golden의 기본 후보 viewport는 QA-01의 Reference인 `375×812`입니다.
-- 실제 대상 화면, baseline DPR, Compact width/Short height/Wide 추가 범위는 TEST-01 이슈에서 확정하며, 그 전에는 full-screen baseline을 추가하지 않습니다.
-- Pretendard font와 asset 로딩이 CI에서 재현 가능해야 합니다.
-- baseline 갱신은 의도한 디자인 변경이 있는 PR에서만 `fvm flutter test --update-goldens`로 수행합니다.
+- full-screen golden의 기본 viewport는 QA-01 Reference인 `375×812`, DPR 1입니다.
+- 첫 pilot은 remote API, 시간, locale에 의존하지 않는 `OnboardingPage`입니다. Compact width, Short height, Wide baseline은 일괄 추가하지 않고 대상 화면의 레이아웃 위험에 따라 별도 결정합니다.
+- `test/helpers/golden_test_helper.dart`로 viewport, 앱 Theme, Pretendard 400/500/600/700과 asset 렌더링을 준비합니다. helper 파일명은 test runner가 독립 테스트로 오인하지 않도록 `_test.dart`로 끝내지 않습니다.
+- baseline은 테스트 파일과 같은 경로의 `goldens/` 아래에 `<화면>_<logical width>x<logical height>.png` 형식으로 둡니다.
+- Ubuntu `ubuntu-latest`를 canonical renderer로 사용하며 Flutter 기본 exact comparator, 즉 허용 오차 0%를 유지합니다.
+- Linux가 아닌 로컬 환경에서는 full-screen golden만 skip합니다. 기존 unit/widget test는 그대로 실행하며 golden이 동작 검증을 대체하지 않습니다.
 
-Golden test가 저장소에 추가된 뒤에는 일반 `fvm flutter test`에 포함되므로, 불안정한 baseline은 커밋하지 않습니다.
+### Ubuntu를 canonical renderer로 사용하는 이유
+
+2026-08-14 Flutter `3.35.7` 검증에서 macOS가 생성한 `OnboardingPage` baseline은 같은 viewport, DPR, Pretendard OTF, SVG asset을 사용했음에도 Ubuntu exact 비교에서 `1.03%`, `3,122px` 차이가 발생했습니다. isolated diff는 제목과 버튼 라벨의 글자 경계에 집중됐고 SVG, 배경, 크기와 배치는 일치했습니다. 따라서 원인은 화면 구조가 아니라 OS별 font rasterization과 anti-aliasing 차이로 판단합니다.
+
+전체 이미지에 1~2% 허용 오차를 주면 작은 위치, 색상, 크기 회귀까지 함께 통과시킬 수 있으므로 채택하지 않습니다. PR 필수 CI가 실행되는 Ubuntu를 하나의 canonical 환경으로 고정하고 그 환경에서는 0% exact 비교를 유지합니다. macOS를 포함한 non-Linux 환경은 같은 픽셀을 보장할 수 없으므로 golden만 skip합니다.
+
+### Baseline 생성과 리뷰
+
+baseline은 의도한 디자인 변경이 있는 PR에서만 갱신합니다.
+
+1. GitHub Actions에서 `Golden Baseline` workflow를 대상 브랜치로 수동 실행합니다.
+2. workflow가 Ubuntu에서 대상 test를 `--update-goldens`로 실행하고 `onboarding-golden-<commit SHA>` artifact를 생성합니다.
+3. artifact의 PNG를 같은 이름의 저장소 baseline에 반영합니다.
+4. 변경된 화면 코드, 기존 baseline, 새 baseline을 함께 리뷰합니다. CI를 통과시키기 위한 이유만으로 baseline을 갱신하지 않습니다.
+5. PR의 Ubuntu `Flutter CI`가 일반 `flutter test`에서 exact 비교를 통과하는지 확인합니다.
+
+```bash
+gh workflow run golden_baseline.yml --ref <작업-브랜치>
+gh run list --workflow golden_baseline.yml --branch <작업-브랜치> --limit 1
+gh run watch <run-id>
+gh run download <run-id>
+```
+
+Golden 실패 시 `Flutter CI`는 `test/**/failures/`의 master, test, isolated diff, masked diff를 7일간 artifact로 보존합니다. diff를 먼저 확인하고 의도한 변경이 아니면 화면 코드나 재현 환경을 수정합니다.
 
 ## Integration test 기준
 
@@ -202,7 +227,7 @@ feature 구조와 test 구조를 비슷하게 맞추면 찾기 쉽습니다.
 
 로컬에 `.fvmrc`와 FVM이 있으면 lefthook도 `fvm` 명령을 우선 사용합니다.
 
-GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter analyze`, `flutter test`를 실행합니다. Golden test가 저장소에 들어오면 `flutter test`에 포함되고, integration test는 실행 환경이 준비된 뒤 별도 workflow 또는 release candidate 검증으로 연결합니다.
+GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter analyze`, `flutter test`를 실행합니다. Ubuntu에서는 Golden test가 일반 `flutter test`에 포함되고 non-Linux 로컬에서는 golden만 skip됩니다. Integration test는 실행 환경이 준비된 뒤 별도 workflow 또는 release candidate 검증으로 연결합니다.
 
 ## 체크리스트
 
@@ -218,6 +243,6 @@ GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter anal
 
 ## 후속 결정 필요
 
-- Compact width 적용 gap과 대상 회귀 테스트는 #197에서 완료했습니다. 다음 TEST-01에서 `OnboardingPage`의 `375×812`를 기준으로 full-screen golden DPR과 baseline 갱신 규칙을 확정합니다.
+- TEST-01 pilot은 #199에서 `OnboardingPage`, `375×812`, DPR 1, Ubuntu canonical, exact comparator로 확정했습니다. 추가 화면과 viewport baseline은 회귀 위험과 유지 비용을 확인해 별도 이슈로 확장합니다.
 - TEST-02의 API 비사용 smoke와 runner 검토는 로컬 범위로 진행할 수 있습니다.
 - staging API, 테스트 계정, seed/cleanup이 준비되면 remote integration test workflow를 release 검증 또는 별도 CI job으로 연결합니다.

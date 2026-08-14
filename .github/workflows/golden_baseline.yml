@@ -1,0 +1,39 @@
+name: Golden Baseline
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  onboarding:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.35.7
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate onboarding baseline
+        run: >-
+          flutter test
+          test/features/onboarding/presentation/pages/onboarding_page_golden_test.dart
+          --update-goldens
+
+      - name: Upload onboarding baseline
+        uses: actions/upload-artifact@v4
+        with:
+          name: onboarding-golden-${{ github.sha }}
+          path: test/features/onboarding/presentation/pages/goldens/onboarding_page_375x812.png
+          if-no-files-found: error
+          retention-days: 14
