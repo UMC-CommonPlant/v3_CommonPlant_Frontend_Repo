@@ -173,5 +173,6 @@ Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게
 | TEST-01 Ubuntu baseline | `2c1907b` | Ubuntu test image를 canonical baseline으로 반영 | GitHub Actions run `31807337886` analyzer와 unit/widget/golden 223개 통과 |
 | TEST-02-A smoke | `61fd571` | `integration_test` 의존성과 API 비사용 Home → 장소 친구 요청 실제 앱 smoke 추가 | Android API 36.1 `emulator-5554` target test, `fvm flutter analyze` 통과 |
 | TEST-02-A runner | `fb1e7fd` | Android API 35 emulator 기반 수동 integration smoke workflow 추가 | workflow YAML parse 통과 |
+| TEST-02-A action | `92bd778` | 새 Android workflow의 checkout과 Java setup을 Node.js 24 기반 현재 major로 갱신 | 공식 release 확인, workflow YAML parse 통과 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
