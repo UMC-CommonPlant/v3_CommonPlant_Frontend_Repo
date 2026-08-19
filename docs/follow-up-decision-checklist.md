@@ -32,7 +32,7 @@
 
 | 체크 | ID | 결정 항목 | 출처 | 다음 액션 | 상태 |
 | --- | --- | --- | --- | --- | --- |
-| [ ] | FIGMA-01 | Home/Memo Figma frame의 실제 node-id | `docs/figma-frame-map.md` | Figma node-specific URL 또는 metadata를 확보해 frame map을 갱신한다. | Open |
+| [x] | FIGMA-01 | Home/Memo Figma frame의 실제 node-id | `docs/figma-frame-map.md` | #205에서 Home 기본 `1:2332`, Memo 기본 `1:3749`, 메뉴 `1:3852`, 삭제 alert `1:3964`를 Figma 원본 metadata와 screenshot으로 확인해 반영했다. | Decided |
 | [ ] | ASSET-01 | Figma export 시 SVG 최적화 도구 사용 여부 | `docs/asset-icon-rules.md` | SVGO 등 최적화 도구 도입 여부와 설정 기준을 정한다. | Open |
 
 ## UX와 공통 구조
