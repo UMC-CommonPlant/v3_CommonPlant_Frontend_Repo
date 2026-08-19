@@ -50,7 +50,7 @@ CI는 GitHub Actions에서 Flutter `3.35.7`을 설치한 뒤 `flutter pub get`, 
 | Unit test | validator, DTO/entity mapper, repository 에러 매핑, Provider/Controller 분기 로직은 필수 |
 | Widget test | 새 화면, 상태 UI, form validation, 버튼 활성/비활성, route parameter 처리는 필수 |
 | Golden test | 공용 컴포넌트 또는 반복 화면에서 디자인 회귀 위험이 높을 때만 추가 |
-| Integration test | staging API, 테스트 계정, 실행 runner, 데이터 초기화 정책이 준비된 핵심 플로우에만 추가 |
+| Integration test | API 비사용 앱 시작/route smoke는 디바이스 runner로 먼저 검증하고, remote flow는 staging API, 테스트 계정, 데이터 초기화 정책이 준비된 핵심 플로우에만 추가 |
 
 MVP에서 새 기능을 만들 때 unit/widget test로 검증 가능한 동작을 golden 또는 integration test로 대체하지 않습니다. Golden test는 시각 회귀를 보강하는 용도이고, integration test는 여러 화면과 실제 실행 환경을 통과하는 흐름을 확인하는 용도입니다.
 
@@ -171,7 +171,51 @@ Golden 실패 시 `Flutter CI`는 `test/**/failures/`의 master, test, isolated 
 
 ## Integration test 기준
 
-Integration test는 MVP 기본 PR 필수 게이트가 아닙니다. 아래 조건이 준비된 뒤 핵심 사용자 흐름부터 추가합니다.
+Integration test는 MVP 기본 PR 필수 게이트가 아닙니다. 백엔드 준비 여부에 따라 API 비사용 smoke와 remote API end-to-end를 분리합니다.
+
+### TEST-02-A API 비사용 smoke
+
+첫 pilot인 `integration_test/app_smoke_test.dart`는 production `main()`으로 실제 앱을 시작하고 아래 계약을 확인합니다.
+
+- `COMMONPLANT_USE_API=false`를 명시하고 테스트 안에서도 remote API가 꺼져 있는지 확인합니다.
+- Home의 `My place`, `My plant`, `장소 요청 3건`을 확인합니다.
+- `장소 요청 3건`을 탭해 장소 친구 요청 화면과 요청 항목이 노출되는지 확인합니다.
+- 네트워크, 계정, seed 데이터에 의존하지 않으며 기존 unit/widget test를 대체하지 않습니다.
+
+로컬 Android 실행은 연결된 기기의 ID를 명시합니다.
+
+```bash
+fvm flutter devices
+fvm flutter test integration_test/app_smoke_test.dart \
+  -d <android-device-id> \
+  --dart-define=COMMONPLANT_USE_API=false
+```
+
+Android emulator가 필요하면 `fvm flutter emulators`로 ID를 확인한 뒤 `fvm flutter emulators --launch <emulator-id>`로 시작합니다. Flutter wrapper로 기동 상태를 확인하기 어려운 환경에서는 Android SDK의 공식 emulator CLI로 같은 AVD를 실행할 수 있습니다.
+
+`.github/workflows/android_integration_smoke.yml`은 Ubuntu의 Android API 35 Google APIs x86_64 Pixel 6 emulator에서 같은 테스트를 실행하는 수동 workflow입니다.
+
+```bash
+gh workflow run android_integration_smoke.yml --ref <작업-브랜치>
+gh run list --workflow android_integration_smoke.yml --branch <작업-브랜치> --limit 1
+gh run watch <run-id>
+gh run view <run-id> --log
+```
+
+`workflow_dispatch`로 새로 추가한 workflow는 파일이 기본 브랜치에 병합된 뒤 실행할 수 있습니다. 따라서 첫 병합 직후 `develop`을 대상으로 smoke를 실행하고 결과를 #203에 남깁니다.
+
+앱 build, 설치, 시작 또는 테스트 assertion 실패는 smoke 실패입니다. emulator provisioning 같은 runner 인프라 실패는 로그에서 테스트 실패와 분리하고 한 번 재실행할 수 있지만, assertion 실패를 이유 없이 재실행해 통과로 바꾸지 않습니다.
+
+다음 조건을 모두 충족하기 전에는 PR 필수 게이트로 승격하지 않습니다.
+
+1. `develop` 수동 실행이 assertion 실패나 재시도 없이 연속 3회 성공합니다.
+2. 실패 원인을 앱과 runner 인프라로 구분할 수 있는 로그가 안정적으로 남습니다.
+3. 실행 시간과 GitHub Actions 비용이 팀이 수용할 수 있는 범위입니다.
+4. 팀이 required check 승격에 동의합니다.
+
+### TEST-02-B remote API end-to-end
+
+remote API를 사용하는 핵심 사용자 흐름은 아래 조건이 준비된 뒤 추가합니다.
 
 - staging 또는 테스트용 API base URL이 확정되어 있습니다.
 - 테스트 전용 계정과 seed 데이터 또는 테스트 후 정리 방식이 준비되어 있습니다.
@@ -193,9 +237,7 @@ fvm flutter test integration_test \
   --dart-define=COMMONPLANT_API_BASE_URL=<staging-api-url>
 ```
 
-remote API를 사용하지 않는 앱 시작/route smoke와 device runner 검토는 로컬 준비 범위로 분리할 수 있습니다. staging API, 테스트 계정, seed/cleanup 정책이 필요한 end-to-end flow는 준비 전까지 `Blocked`입니다.
-
-staging API와 runner가 준비되기 전에는 remote integration test를 PR CI에 연결하지 않습니다. 준비 전 회귀 검증은 unit/widget test와 feature별 Provider override를 사용합니다.
+staging API, 테스트 계정, seed/cleanup 정책이 필요한 end-to-end flow는 준비 전까지 `Blocked`입니다. 준비 전 회귀 검증은 unit/widget test와 feature별 Provider override를 사용합니다.
 
 ## 테스트 파일 네이밍
 
@@ -227,7 +269,7 @@ feature 구조와 test 구조를 비슷하게 맞추면 찾기 쉽습니다.
 
 로컬에 `.fvmrc`와 FVM이 있으면 lefthook도 `fvm` 명령을 우선 사용합니다.
 
-GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter analyze`, `flutter test`를 실행합니다. Ubuntu에서는 Golden test가 일반 `flutter test`에 포함되고 non-Linux 로컬에서는 golden만 skip됩니다. Integration test는 실행 환경이 준비된 뒤 별도 workflow 또는 release candidate 검증으로 연결합니다.
+GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter analyze`, `flutter test`를 실행합니다. Ubuntu에서는 Golden test가 일반 `flutter test`에 포함되고 non-Linux 로컬에서는 golden만 skip됩니다. API 비사용 Android integration smoke는 별도 수동 workflow로 검증하며 승격 조건을 충족하기 전에는 required check가 아닙니다. Remote integration test는 백엔드 실행 환경이 준비된 뒤 release candidate 검증 또는 별도 CI job으로 연결합니다.
 
 ## 체크리스트
 
@@ -244,5 +286,5 @@ GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter anal
 ## 후속 결정 필요
 
 - TEST-01 pilot은 #199에서 `OnboardingPage`, `375×812`, DPR 1, Ubuntu canonical, exact comparator로 확정했습니다. 추가 화면과 viewport baseline은 회귀 위험과 유지 비용을 확인해 별도 이슈로 확장합니다.
-- TEST-02의 API 비사용 smoke와 runner 검토는 로컬 범위로 진행할 수 있습니다.
-- staging API, 테스트 계정, seed/cleanup이 준비되면 remote integration test workflow를 release 검증 또는 별도 CI job으로 연결합니다.
+- TEST-02-A는 #203에서 API 비사용 Home → 장소 친구 요청 Android smoke와 수동 workflow로 도입했습니다. 병합 후 `develop` 수동 실행을 검증하고 연속 성공 기준을 충족하기 전에는 PR 필수 게이트로 승격하지 않습니다.
+- TEST-02-B는 staging API, 테스트 계정, seed/cleanup이 준비되면 remote integration test workflow를 release 검증 또는 별도 CI job으로 연결합니다. 준비 전 상태는 `Blocked`입니다.

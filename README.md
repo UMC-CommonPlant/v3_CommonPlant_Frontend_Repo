@@ -87,6 +87,7 @@ fvm flutter pub get
 | 이름 | 버전 | 목적 |
 | --- | --- | --- |
 | `flutter_test` | `sdk:flutter` | 위젯 테스트 및 기본 테스트 러너 |
+| `integration_test` | `sdk:flutter` | 실제 앱과 디바이스 기반 integration smoke 실행 |
 | `flutter_lints` | `^5.0.0` | 정적 분석 및 공통 린트 규칙 |
 | `lefthook` | 외부 도구 | pre-commit 품질 게이트 실행 |
 
@@ -116,6 +117,8 @@ test/
   features/
   helpers/
   shared/widgets/
+integration_test/
+  app_smoke_test.dart
 ```
 
 ## 공통 작업 규칙
@@ -136,7 +139,8 @@ test/
 - API 모델은 `freezed`와 `json_serializable` 기반 생성을 기본 방향으로 삼되, 실제 패키지 추가는 첫 API 연동 PR에서 함께 진행합니다.
 - 인증 토큰은 `flutter_secure_storage` 기반 보관을 기본 방향으로 합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
-- Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 도입했으며, integration test 범위는 아직 미정입니다.
+- Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 사용합니다.
+- Integration test는 remote API를 사용하지 않는 Home 진입과 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. staging API, 테스트 계정, seed/cleanup이 필요한 end-to-end 범위는 준비 전까지 `Blocked`입니다.
 
 ## 프로젝트 문서
 
@@ -201,6 +205,8 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 - `flutter pub get`
 - `flutter analyze`
 - `flutter test`
+
+`Android Integration Smoke`는 Android emulator에서 API 비사용 앱 시작과 route 이동을 확인하는 수동 workflow입니다. 안정성과 실행 비용을 확인하는 pilot 동안에는 PR 필수 게이트와 분리합니다.
 
 ## 진행해야 할 작업 내역
 
