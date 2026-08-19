@@ -101,6 +101,20 @@ await tester.pumpWidget(
 
 UI가 없어도 검증 가능한 로직은 widget test로 우회하지 않습니다.
 
+## SVG asset 회귀 테스트
+
+`test/core/assets/svg_assets_test.dart`는 `assets/icons`, `assets/images`의 모든 SVG를 현재 lockfile의 `flutter_svg` parser로 읽고 picture rasterize까지 실행합니다. 신규 또는 변경 SVG는 아래 검사를 통과해야 합니다.
+
+```bash
+fvm flutter test test/core/assets/svg_assets_test.dart
+```
+
+- 파일을 읽을 수 있고 SVG parser가 지원하는 구조여야 합니다.
+- `viewBox`에서 계산된 width와 height가 0보다 커야 합니다.
+- picture를 실제 image로 rasterize할 수 있어야 합니다.
+- parser/rasterize 성공은 픽셀 동일성을 뜻하지 않습니다. 영향 화면에서 실제 최소·최대 표시 크기와 필요한 중간 크기를 확인하고, 기존 golden 대상이면 baseline 비교도 함께 수행합니다.
+- SVG 최적화 도구와 후보 검증 순서는 `docs/asset-icon-rules.md`를 따릅니다.
+
 ## QA viewport와 디바이스 기준
 
 화면 테스트와 수동 QA는 `docs/quality-testing-follow-up-plan.md`의 QA-01 profile을 공통 입력값으로 사용합니다.

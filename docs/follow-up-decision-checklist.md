@@ -33,7 +33,7 @@
 | 체크 | ID | 결정 항목 | 출처 | 다음 액션 | 상태 |
 | --- | --- | --- | --- | --- | --- |
 | [x] | FIGMA-01 | Home/Memo Figma frame의 실제 node-id | `docs/figma-frame-map.md` | #205에서 Home 기본 `1:2332`, Memo 기본 `1:3749`, 메뉴 `1:3852`, 삭제 alert `1:3964`를 Figma 원본 metadata와 screenshot으로 확인해 반영했다. | Decided |
-| [ ] | ASSET-01 | Figma export 시 SVG 최적화 도구 사용 여부 | `docs/asset-icon-rules.md` | SVGO 등 최적화 도구 도입 여부와 설정 기준을 정한다. | Open |
+| [x] | ASSET-01 | Figma export 시 SVG 최적화 도구 사용 여부 | `docs/asset-icon-rules.md` | #207에서 SVGO `4.0.1` 보수 allowlist, 신규/변경 SVG 후보 우선 적용, 기존 asset 일괄 변경 금지와 parse/rasterize·최소/최대 표시 크기 검증을 확정했다. | Decided |
 
 ## UX와 공통 구조
 

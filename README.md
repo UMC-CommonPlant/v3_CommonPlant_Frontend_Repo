@@ -119,6 +119,8 @@ test/
   shared/widgets/
 integration_test/
   app_smoke_test.dart
+tool/
+  svg/                         # SVG 최적화 보수 설정
 ```
 
 ## 공통 작업 규칙
