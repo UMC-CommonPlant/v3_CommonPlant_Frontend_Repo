@@ -1,4 +1,4 @@
-package com.commonplant.commonplant_frontend
+package com.plant.common
 
 import io.flutter.embedding.android.FlutterActivity
 
