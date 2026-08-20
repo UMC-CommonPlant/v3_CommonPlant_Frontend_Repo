@@ -9,15 +9,15 @@
 | 기본 브랜치 | `develop` |
 | 배포 브랜치 | `main` |
 | CI | `.github/workflows/flutter_ci.yml`에서 analyze/test 실행 |
-| Android 배포 자동화 | 보류: signing secret, Play Console 계정, package name 확정 후 도입 |
-| iOS 배포 자동화 | 보류: Apple 계정, signing asset, bundle id 확정 후 도입 |
+| Android 배포 자동화 | 보류: signing secret과 Play Console 계정 준비 후 도입 |
+| iOS 배포 자동화 | 보류: Apple 계정과 signing asset 준비 후 도입 |
 | Store 계정/secret | 저장소에 커밋하지 않고 GitHub Secrets/Environments에만 등록 |
 | 환경값 주입 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL`을 `dart-define` 또는 CI/CD에서 주입 |
-| Flavor 전략 | 앱 정체성은 flavor, 환경값은 CI/CD 주입으로 분리 |
+| Flavor 전략 | MVP는 flavor 없는 단일 prod 앱으로 운영하고 환경값은 CI/CD로 주입 |
 
 ## MVP 릴리즈 정책
 
-MVP 릴리즈는 자동 업로드보다 재현 가능한 빌드와 승인 흐름을 우선합니다. signing secret, store 계정, bundle/package id가 준비되지 않은 상태에서는 실패하는 workflow를 추가하지 않고 문서와 수동 체크리스트로 보류 사유를 남깁니다.
+MVP 릴리즈는 자동 업로드보다 재현 가능한 빌드와 승인 흐름을 우선합니다. signing secret과 store 계정이 준비되지 않은 상태에서는 실패하는 workflow를 추가하지 않고 문서와 수동 체크리스트로 보류 사유를 남깁니다.
 
 | 항목 | 확정 정책 |
 | --- | --- |
@@ -33,10 +33,10 @@ MVP 릴리즈는 자동 업로드보다 재현 가능한 빌드와 승인 흐름
 
 | 항목 | 보류 사유 | 재개 조건 |
 | --- | --- | --- |
-| Android store upload | Play Console 앱, service account, signing key가 준비되지 않음 | package name, tester group, Play service account, signing secret 확정 |
-| iOS TestFlight upload | Apple Developer/App Store Connect 계정과 signing asset이 준비되지 않음 | bundle id, Team ID, certificate, provisioning profile, ASC API key 확정 |
+| Android store upload | Play Console 앱, service account, signing key가 준비되지 않음 | tester group, Play service account, signing secret 확정 |
+| iOS TestFlight upload | Apple Developer/App Store Connect 계정과 signing asset이 준비되지 않음 | Team ID, certificate, provisioning profile, ASC API key 확정 |
 | production 자동 제출 | 심사 승인, rollback, release note 승인 흐름이 아직 없음 | 내부 테스트 배포가 안정화되고 manual approval 기준 확정 |
-| flavor별 앱 분리 | 앱명, application id, bundle id, 아이콘, Firebase 설정이 확정되지 않음 | dev/staging/prod 앱 정체성이 실제로 분리되어야 하는 시점 |
+| flavor별 앱 분리 | MVP에서 별도 설치·배포할 dev/staging 앱이 필요하지 않음 | 동시 설치, 별도 배포 채널, 환경별 Firebase 중 하나가 실제로 필요해지는 시점 |
 
 store 계정이 준비되면 Android는 Google Play Internal testing을 우선 검토하고, Play Console 준비가 지연될 때만 Firebase App Distribution을 대체 경로로 검토합니다. iOS는 TestFlight를 내부 테스트 배포 기준으로 사용합니다.
 
@@ -127,21 +127,39 @@ main
 
 ## 환경과 flavor 전략
 
-커먼플랜트는 flavor와 환경값 주입을 분리하는 하이브리드 방식을 기준으로 합니다.
-flavor는 앱의 정체성을 구분하고, API 사용 여부와 base URL 같은 실행 환경값은 `dart-define` 또는 CI/CD variables/secrets로 주입합니다.
+커먼플랜트는 앱 정체성과 실행 환경값을 분리합니다. MVP에서는 별도 Flutter flavor를 만들지 않고 기본 빌드를 단일 prod 앱으로 사용합니다. API 사용 여부와 base URL 같은 실행 환경값은 `dart-define` 또는 CI/CD variables/secrets로 주입합니다.
+
+### MVP 앱 정체성
+
+RELEASE-01은 #209에서 아래와 같이 확정했습니다.
+
+| 항목 | MVP 기준 |
+| --- | --- |
+| 운영 형태 | 별도 flavor 없는 단일 prod 앱 |
+| 사용자 표시 이름 | `커먼플랜트` |
+| Android namespace/application id | `com.plant.common` |
+| iOS Runner bundle identifier | `com.plant.common` |
+| iOS RunnerTests bundle identifier | `com.plant.common.RunnerTests` |
+| 앱 아이콘 | v1/v2에서 사용한 집·새싹 브랜드 아이콘 재사용 |
+| Firebase | 현재 패키지와 설정 파일이 없고 MVP 요구 기능도 없어 `Not needed` |
+
+아이콘 원본은 같은 GitHub organization의 [v2 iOS appstore 아이콘](https://raw.githubusercontent.com/UMC-CommonPlant/v2_CommonPlant-iOS-refactoring/develop/CommonPlant/CommonPlant/Resource/Assets.xcassets/AppIcon.appiconset/appstore.png)을 사용합니다. 내려받은 원본의 SHA-256은 `c9248b746382f311801fac16808a68a6bd9dae68b41507ebad966df2887135c6`이고, iOS용 알파 채널을 제거한 1024px 기준 파일의 SHA-256은 `35ba51f6505f5e88be39f0019ea65fda50fe841ad299a67a759282c4397424c2`입니다.
+
+dev/staging 앱명과 식별자 suffix는 미리 정하지 않습니다. 별도 설치, 별도 배포 채널, 환경별 Firebase 설정 중 하나가 실제 요구사항이 되면 Android product flavor와 iOS scheme/configuration을 같은 작업에서 도입하고 식별값을 다시 결정합니다.
 
 | 구분 | 관리 대상 | 관리 방식 | 기준 |
 | --- | --- | --- | --- |
-| Flutter flavor | `dev`, `staging`, `prod` 앱 구분, 앱 이름, application id, bundle id, 아이콘, Firebase 설정 | Android/iOS flavor 설정 | 앱이 설치/배포 채널별로 분리되어야 할 때 도입 |
+| Flutter flavor | dev/staging/prod 앱 구분, 앱 이름, application id, bundle id, 아이콘, Firebase 설정 | Android/iOS flavor 설정 | 앱이 설치/배포 채널별로 분리되어야 할 때만 도입 |
 | `dart-define` 환경값 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` | 로컬 실행 명령 또는 CI/CD variables/secrets | 실행 시점마다 바뀌는 값으로 관리 |
 | 민감 정보 | signing key, store token, 비공개 API key | GitHub Secrets 또는 배포 도구 secret 저장소 | 저장소에 커밋하지 않음 |
 
 ### Flavor 역할
 
-- `dev`, `staging`, `prod` flavor는 별도 앱 설치, 앱명, bundle id, application id, 아이콘, Firebase 설정이 필요해질 때 추가합니다.
+- 현재 기본 빌드는 단일 prod 앱이며 Flutter flavor를 사용하지 않습니다.
+- dev/staging 앱은 별도 설치, 배포 채널, 아이콘 또는 Firebase 설정이 필요해질 때만 추가합니다.
 - flavor 안에 API base URL을 직접 하드코딩하지 않습니다.
-- 운영 배포용 `prod` flavor는 `release/*`, `main`, `v*` 태그 기반 workflow에서만 사용합니다.
-- flavor가 아직 없는 현재 단계에서는 `dart-define` 주입만으로 remote API 모드를 켭니다.
+- 명시적인 `prod` flavor를 도입한 뒤에는 `release/*`, `main`, `v*` 태그 기반 workflow에서 사용합니다.
+- flavor가 없는 현재 단계에서는 `dart-define` 주입만으로 remote API 모드를 켭니다.
 
 ### 환경값 주입
 
@@ -165,12 +183,12 @@ fvm flutter build appbundle --release \
 
 ```bash
 fvm flutter run --dart-define-from-file=env/local.api.json
-fvm flutter build appbundle --flavor prod --dart-define-from-file=env/prod.json
+fvm flutter build appbundle --release --dart-define-from-file=env/prod.json
 ```
 
 ### 단계별 도입
 
-1. 현재 단계에서는 `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 주입 기준을 유지합니다.
+1. 현재 단계에서는 단일 prod 앱 정체성과 `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 주입 기준을 유지합니다.
 2. release workflow를 만들 때 GitHub Environment별 variables/secrets로 환경값을 주입합니다.
 3. 별도 앱 설치나 스토어 채널 분리가 필요해지면 Android/iOS `dev`, `staging`, `prod` flavor를 추가합니다.
 4. flavor가 추가된 뒤에도 API base URL과 API mode는 CI/CD 주입값을 우선합니다.
@@ -279,7 +297,7 @@ secret이 준비되기 전에는 release workflow를 추가하지 않습니다. 
 - [ ] 릴리즈 노트를 작성했는가?
 - [ ] `fvm flutter analyze`를 통과했는가?
 - [ ] `fvm flutter test`를 통과했는가?
-- [ ] release flavor 또는 환경값 주입 경로가 의도한 대상인가?
+- [ ] 단일 prod 앱 정체성 또는 도입된 flavor와 환경값 주입 경로가 의도한 대상인가?
 - [ ] 운영 배포에서 `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 값이 CI/CD로 주입되는가?
 - [ ] Android release build가 생성되거나, signing/store 준비 전 보류 사유가 기록되었는가?
 - [ ] iOS archive가 생성되거나, signing/store 준비 전 보류 사유가 기록되었는가?
@@ -291,8 +309,16 @@ secret이 준비되기 전에는 release workflow를 추가하지 않습니다. 
 
 ## 후속 결정 필요
 
-- `dev`, `staging`, `prod` flavor의 앱명, application id, bundle id, 아이콘, Firebase 설정값을 정해야 합니다.
+- 별도 설치, 배포 채널, 환경별 Firebase가 필요해지면 dev/staging flavor와 식별값을 새 작업에서 정해야 합니다.
 - staging/prod 서버 full base URL과 API versioning 정책을 정해야 합니다.
 - 앱 버전과 build number 자동 증가 방식을 정해야 합니다.
 - Android Play Console과 Apple Developer/App Store Connect 계정 준비 여부를 확인해야 합니다.
 - 내부 테스트 배포 안정화 후 production 제출 자동화 범위를 다시 판단합니다.
+
+## RELEASE-01 작업 이력
+
+| 이슈 | 커밋 | 변경 범위 | 검증 |
+| --- | --- | --- | --- |
+| #209 | `07c2477` | Android/iOS 표시 이름과 prod application/bundle identifier 적용 | Android debug APK와 iOS simulator app 빌드, 산출물 식별값 확인 |
+| #209 | `83945d7` | 기존 v1/v2 브랜드 앱 아이콘을 Android/iOS 전체 규격에 적용 | 20개 파일 크기와 알파 채널 확인, 1024px 원본 시각 검토 |
+| #209 | - | 단일 prod 운영, flavor 도입 조건, Firebase `Not needed`와 보류 경계 문서화 | `git diff --check`, format, analyze, 전체 test, Android/iOS debug build |

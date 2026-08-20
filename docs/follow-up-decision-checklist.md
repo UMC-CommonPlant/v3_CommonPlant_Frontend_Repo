@@ -22,7 +22,7 @@
 
 | 체크 | ID | 결정 항목 | 출처 | 다음 액션 | 상태 |
 | --- | --- | --- | --- | --- | --- |
-| [ ] | RELEASE-01 | `dev`, `staging`, `prod` flavor별 앱명, application id, bundle id, 아이콘, Firebase 설정값 | `docs/release-workflow.md` | flavor가 실제로 필요한 배포 시점과 앱 식별값을 확정한다. | Open |
+| [x] | RELEASE-01 | MVP 앱명, application id, bundle id, 아이콘, flavor와 Firebase 범위 | `docs/release-workflow.md` | #209에서 단일 prod 앱, `커먼플랜트`, `com.plant.common`, 기존 브랜드 아이콘을 적용했다. dev/staging flavor와 Firebase는 실제 분리 요구가 생길 때 도입한다. | Decided |
 | [ ] | RELEASE-02 | 앱 버전과 build number 자동 증가 방식 | `docs/release-workflow.md` | 수동 증가, GitHub run number, 별도 versioning action 중 선택한다. | Open |
 | [ ] | RELEASE-03 | Android Play Console과 Apple Developer/App Store Connect 계정 준비 여부 | `docs/release-workflow.md` | 계정, 앱 등록, 권한, secret 등록 가능 여부를 확인한다. | Open |
 | [ ] | RELEASE-04 | 내부 테스트 배포 안정화 후 production 제출 자동화 범위 | `docs/release-workflow.md` | manual approval 유지 범위와 자동 제출 허용 범위를 정한다. | Open |
