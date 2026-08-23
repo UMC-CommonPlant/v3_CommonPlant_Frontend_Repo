@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:commonplant_frontend/features/login/data/datasources/auth_remote_data_source.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
@@ -34,8 +35,11 @@ class AuthRepository {
     return result;
   }
 
-  Future<AuthResult> register(RegisterRequest request) async {
-    final data = await _remoteDataSource.register(request);
+  Future<AuthResult> register(
+    RegisterRequest request, {
+    MultipartFile? image,
+  }) async {
+    final data = await _remoteDataSource.register(request, image: image);
     final result = authResultFromJson(
       jsonObjectFromResponse(data, context: '회원가입'),
     );

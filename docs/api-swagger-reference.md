@@ -50,7 +50,7 @@
 | 실행 환경 | dev origin과 `/api/v1` base URL 제공 | 로컬 remote API 실행 시 명시적 `dart-define` 주입 가능 |
 | API 문서 | Swagger UI, OpenAPI JSON/config 공개 접근 가능 | live spec 확인과 문서 대조 가능 |
 | Place | `GET /place/{code}/members` 추가 | 친구 관리 화면 후보지만 성공 response schema가 없어 mapper 구현 보류 |
-| Auth register | request/response가 `RegisterRequest`/`RegisterResponse`로 분리 | 기존 request schema 충돌 해소, multipart datasource 반영은 별도 작업 |
+| Auth register | request/response가 `RegisterRequest`/`RegisterResponse`로 분리 | #216에서 JSON part와 optional image multipart datasource 반영 |
 | Multipart encoding | Auth/User/Plant JSON part에 `application/json` 명시 | 해당 도메인 전송 기준 확인, Place는 encoding 미표기로 추가 확인 유지 |
 
 아래의 추가/삭제/변경 표는 2026-05-25 상세 비교 기록이며, 위 표는 2026-08-23 재확인에서 달라진 항목입니다.
@@ -181,7 +181,9 @@
 - 기존의 request/response `Register` schema 충돌은 해소됐다.
 - 프로필 이미지는 `RegisterMultipartRequest.image` optional part이며 request JSON에는 `imgUrl`이 없다.
 - 성공 example의 `isNewUser`와 schema의 `newUser` 명칭은 여전히 일치하지 않으므로 response DTO는 schema와 실제 응답을 함께 확인한다.
-- 현재 `AuthRemoteDataSource.register`는 JSON body를 보내므로 multipart 전환은 별도 구현 이슈에서 진행한다.
+- #216에서 `AuthRemoteDataSource.register`를 `register` JSON part와 optional `image` part를 보내는 multipart 요청으로 전환했다.
+- `RegisterRequest`에서는 명세에 없는 `imgUrl`을 제거했다.
+- repository까지 optional `MultipartFile` 전달 경계를 열었으며 실제 profile image 파일 생성과 화면 연결은 별도 UI 작업으로 진행한다.
 
 ### User
 
@@ -513,7 +515,7 @@
 
 | 화면 | Route | 새로 연결 가능한 API | 판단 |
 | --- | --- | --- | --- |
-| 프로필 설정 | `/profile/setup` | `POST /auth/register` | request schema는 확인됐으며 현재 JSON datasource를 multipart로 바꾸는 별도 구현 필요 |
+| 프로필 설정 | `/profile/setup` | `POST /auth/register` | #216에서 multipart datasource/repository 반영 완료, 실제 image picker 파일과 submit 연결은 별도 구현 필요 |
 | 프로필 설정 또는 마이페이지 | 미정 | `PUT /users` | User 수정 request/response schema가 보강되어 반영 가능 |
 | 친구 추가 | `/places/new/friends` | `GET /users/{keyword}` | 사용자 이름 검색 DTO 반영 가능 |
 | 친구 추가 | `/places/new/friends` | `POST /friends/request` | 요청 전송은 가능하나 response schema와 화면 성공 정책 확인 필요 |
@@ -592,7 +594,7 @@
 
 현재 보류 범위:
 
-- 프로필 설정의 회원가입 request schema 충돌은 해소됐지만 현재 datasource가 JSON body를 사용하므로 multipart 전환과 이미지 part 연결은 별도 구현으로 진행한다.
+- 프로필 설정의 회원가입 multipart datasource/repository는 #216에서 반영했으며 실제 image picker 파일과 submit 연결은 별도 UI 작업으로 진행한다.
 - 장소/식물 화면은 도메인 multipart `image` part 전달 경계까지만 열어두고, 실제 파일 선택기 도입은 별도 UI 작업에서 진행한다.
 - 메모 화면은 아직 Memo API가 없어 로컬 사진 상태만 유지한다.
 - `/s3/images` 다운로드 URL 조회는 성공 response의 URL 필드 또는 wrapper 구조가 확정된 뒤 화면 fallback 정책과 함께 연결한다.
@@ -616,7 +618,7 @@
 
 ## 첫 API 연계 보강 우선순위 제안
 
-1. Auth register request schema 충돌은 해소됐으므로 multipart datasource 전환과 profile image part 연결을 별도 구현 이슈로 진행한다.
+1. Auth register multipart datasource/repository는 #216에서 반영했다. profile image 파일 생성과 화면 submit 연결은 별도 구현 이슈로 진행한다.
 2. User 조회/검색/수정 datasource는 추가됐으므로, 화면 적용 시 상태 Provider와 UI 성공/실패 정책을 별도 작업으로 연결한다.
 3. Place update는 multipart 전송까지만 추가했으므로, response schema가 확정될 때까지 mapper는 넓히지 않는다.
 4. Friend API는 transport만 추가했으므로, 목록 response schema 확인 후 초대 요청 화면에 연결한다.
@@ -627,5 +629,6 @@
 | 이슈 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- | --- |
 | #213 | `6a9fbc9` | dev origin/API base, Swagger UI/OpenAPI/config, 현재 endpoint 차이와 환경별 Ready/Blocked 경계 문서화 | endpoint HTTP status, OpenAPI metadata, 19 paths·27 operations와 schema 대조, `git diff --check` |
+| #216 | `ae134d0` | Auth register JSON part와 optional image multipart datasource/repository, Swagger request DTO 반영 | Auth unit test 5개, macOS 전체 263개와 Ubuntu golden 포함 264개, format 260개 파일, analyze |
 
 작업 이력만 갱신하는 후속 문서 커밋은 자기 자신의 해시를 생략할 수 있다.

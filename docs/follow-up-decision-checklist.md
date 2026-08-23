@@ -53,7 +53,7 @@
 
 | 체크 | ID | 범위 | 관련 질문 ID | 현재 막힌 작업 | 상태 |
 | --- | --- | --- | --- | --- | --- |
-| [x] | API-AUTH | Auth 회원가입 전송 정책 | AUTH-01, AUTH-02 | dev Swagger의 `RegisterRequest`와 image optional multipart 기준으로 datasource 구현을 분리한다. | Ready |
+| [x] | API-AUTH | Auth 회원가입 전송 정책 | AUTH-01, AUTH-02 | #216에서 `RegisterRequest` JSON part와 optional image multipart datasource/repository를 반영했다. 실제 파일 생성과 화면 submit은 별도 구현으로 분리한다. | Done |
 | [ ] | API-MULTIPART | Place multipart JSON part 정책 | MULTIPART-01 | Auth/User/Plant의 `application/json` encoding은 확인됐고 Place encoding은 백엔드 확인이 필요하다. | Open |
 | [ ] | API-PLACE | Place response와 식별자 정책 | PLACE-01, PLACE-02, PLACE-03, PLACE-04 | 장소 목록/상세/멤버/생성/수정/삭제 실데이터 연결 | Open |
 | [ ] | API-FRIEND | Friend 요청 목록과 액션 정책 | FRIEND-01, FRIEND-02, FRIEND-03, FRIEND-04 | 장소 친구 요청/추가 화면 API 연결 | Open |
