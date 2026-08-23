@@ -14,6 +14,7 @@
 | Store 계정/secret | 저장소에 커밋하지 않고 GitHub Secrets/Environments에만 등록 |
 | 환경값 주입 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL`을 `dart-define` 또는 CI/CD에서 주입 |
 | Flavor 전략 | MVP는 flavor 없는 단일 prod 앱으로 운영하고 환경값은 CI/CD로 주입 |
+| Version 전략 | `pubspec.yaml`의 `X.Y.Z+N`을 공통 원본으로 두고 release 브랜치에서 수동 증가 |
 
 ## MVP 릴리즈 정책
 
@@ -23,7 +24,7 @@ MVP 릴리즈는 자동 업로드보다 재현 가능한 빌드와 승인 흐름
 | --- | --- |
 | release branch | 배포 후보는 항상 최신 `develop`에서 `release/x.y.z`로 생성합니다. |
 | publish branch | `main`은 실제 배포 가능한 코드만 유지하며 일반 작업을 직접 커밋하지 않습니다. |
-| version/tag | release 브랜치에서 `pubspec.yaml` 버전을 올리고, `main` 병합 후 `vX.Y.Z` 태그를 생성합니다. |
+| version/tag | release 브랜치에서 `pubspec.yaml`의 version과 build number를 올리고, `main` 병합 후 version과 같은 `vX.Y.Z` 태그를 생성합니다. |
 | production approval | production 업로드는 자동 제출하지 않고 GitHub Environment manual approval 또는 수동 승인 단계를 둡니다. |
 | secret 관리 | signing key, store token, API key는 GitHub Secrets/Environments에만 저장하고 저장소에는 커밋하지 않습니다. |
 | store 계정 | Android/iOS store 계정과 앱 등록이 확인되기 전에는 store upload workflow를 만들지 않습니다. |
@@ -74,7 +75,7 @@ main
 1. 일반 작업은 `develop`에서 브랜치를 생성합니다.
 2. PR을 통해 `develop`에 병합합니다.
 3. 배포 후보가 준비되면 `develop`에서 `release/x.y.z` 브랜치를 생성합니다.
-4. `release/x.y.z`에서 버전, 빌드번호, 릴리즈 노트, 스토어 메타데이터를 정리합니다.
+4. `release/x.y.z`에서 version, 배포 candidate build number, 릴리즈 노트, 스토어 메타데이터를 정리합니다.
 5. QA가 끝나면 `release/x.y.z`를 `main`으로 PR 보냅니다.
 6. `main`에 병합한 뒤 `vX.Y.Z` 태그를 생성합니다.
 7. 태그 또는 `main` push를 기준으로 스토어 배포 workflow를 실행합니다.
@@ -195,22 +196,80 @@ fvm flutter build appbundle --release --dart-define-from-file=env/prod.json
 
 ## 버전 전략
 
-`pubspec.yaml`의 버전은 아래 형식을 따릅니다.
+RELEASE-02는 #211에서 `pubspec.yaml`을 Android/iOS 공통 단일 원본으로 사용하는 수동 증가 정책으로 확정했습니다.
+
+### 단일 원본과 플랫폼 매핑
+
+버전은 아래 형식을 따릅니다.
 
 ```yaml
 version: 1.0.0+1
 ```
 
-| 값 | 의미 | 관리 기준 |
-| --- | --- | --- |
-| `1.0.0` | 사용자에게 보이는 앱 버전 | release 브랜치에서 수동 변경 |
-| `+1` | store build number | 초기에는 수동, 자동화 후 GitHub run number 검토 |
+| 값 | 역할 | 플랫폼 매핑 | 관리 기준 |
+| --- | --- | --- | --- |
+| `X.Y.Z` | 사용자에게 보이는 version | Android `versionName`, iOS `CFBundleShortVersionString` | `release/x.y.z`에서 수동 변경 |
+| `N` | 배포 artifact를 구분하는 build number | Android `versionCode`, iOS `CFBundleVersion` | 새 배포 candidate마다 수동 증가 후 커밋 |
 
-추천 방향:
+Android의 `flutter.versionName`/`flutter.versionCode`와 iOS의 `FLUTTER_BUILD_NAME`/`FLUTTER_BUILD_NUMBER`는 Flutter가 `pubspec.yaml`에서 생성한 값을 사용합니다. 플랫폼 프로젝트에 version을 중복 하드코딩하지 않습니다.
 
-- 앱 버전은 `release/x.y.z` 브랜치에서 명시적으로 올립니다.
-- build number는 자동화가 안정화되면 GitHub Actions run number 또는 별도 버전 관리 액션으로 전환합니다.
-- 태그는 앱 버전과 맞춰 `v1.0.0` 형식으로 생성합니다.
+### 증가 규칙
+
+- `X.Y.Z`는 `release/x.y.z` 브랜치명, 스토어 version, `vX.Y.Z` 태그와 일치시킵니다.
+- 같은 candidate commit에서 만든 Android/iOS artifact는 같은 양의 정수 `N`을 사용하며 두 스토어에 함께 올릴 수 있습니다.
+- 로컬 빌드가 실패해 어느 스토어에도 업로드하지 않았다면 같은 `N`으로 수정 빌드를 만들 수 있습니다.
+- Android 또는 iOS 배포 채널에 업로드를 시도한 candidate를 대체하는 새 artifact를 만들 때는 두 플랫폼 모두 `N`을 증가합니다.
+- 같은 `X.Y.Z`의 TestFlight/Internal testing 후보를 다시 만들 때는 `X.Y.Z`는 유지하고 `N`만 증가합니다.
+- 새 정식 version이나 hotfix에서도 Android의 단조 증가 기준을 따르기 위해 `N`을 이전 version보다 크게 유지합니다.
+- release 브랜치에서 바뀐 `pubspec.yaml`은 publish 후 `develop`에도 반영해 다음 작업이 이전 번호에서 시작하지 않게 합니다.
+
+### Release build override 기준
+
+- store에 올릴 build는 `pubspec.yaml` 값을 그대로 사용합니다.
+- release workflow에서 `--build-name` 또는 `--build-number`로 커밋된 값을 임시 덮어쓰지 않습니다.
+- 진단용 로컬 override artifact는 배포하지 않으며 검증 기록에도 release candidate로 남기지 않습니다.
+- `vX.Y.Z` 태그는 build number를 포함하지 않고, 최종 승인된 `X.Y.Z+N` 커밋을 가리킵니다.
+
+### MVP 자동 증가 결정
+
+MVP에서는 `GITHUB_RUN_NUMBER`나 별도 versioning action을 build number 원본으로 사용하지 않습니다.
+
+- `GITHUB_RUN_NUMBER`는 특정 workflow별 번호이므로 Android/iOS workflow가 나뉘거나 workflow가 교체되면 공통 store 이력과 일치한다고 보장할 수 없습니다.
+- CI에서만 값을 덮어쓰면 Git commit과 실제 배포 artifact의 version이 달라져 재현과 추적이 어려워집니다.
+- 별도 action은 현재 필요한 수동 변경 하나보다 의존성과 실패 지점을 늘립니다.
+
+자동 증가는 RELEASE-03에서 Play Console/App Store Connect 조회 권한과 기존 최대 build number를 확인한 뒤 store-aware 방식으로 다시 검토합니다. 도입할 때는 두 플랫폼의 기존 번호보다 큰 하나의 `N`을 결정하고, 그 값을 source에 반영하는 경계까지 함께 설계합니다.
+
+### 최초 업로드 전 확인
+
+현재 `version: 1.0.0+1`은 개발 기본값이며 store upload 번호로 확정된 값이 아닙니다. 같은 `com.plant.common` bundle identifier를 사용한 [v2 iOS 프로젝트](https://github.com/UMC-CommonPlant/v2_CommonPlant-iOS-refactoring/blob/develop/CommonPlant/CommonPlant.xcodeproj/project.pbxproj)에 marketing version `1.0`, build `1` 설정이 남아 있으므로 `+1`은 이전 업로드와 충돌할 수 있습니다.
+
+Play Console과 App Store Connect가 준비되면 아래 순서로 최초 번호를 확정합니다.
+
+1. 두 스토어에서 `com.plant.common`의 기존 version/build 이력을 확인합니다.
+2. Android의 최대 `versionCode`와 iOS의 대상 version/build 이력보다 큰 공통 `N`을 선택합니다.
+3. `release/x.y.z`의 `pubspec.yaml`에 `X.Y.Z+N`을 커밋합니다.
+4. 기본 Flutter build 명령으로 Android/iOS artifact를 만들고 산출물의 version을 다시 확인합니다.
+
+이 확인은 store 계정과 권한이 필요한 RELEASE-02-B/RELEASE-03 범위이며, 확인 전에는 현재 `+1` artifact를 업로드하지 않습니다.
+
+### Release version 검증
+
+- release 브랜치의 `x.y.z`와 `pubspec.yaml`의 `X.Y.Z`가 같은가?
+- `N`이 양의 정수이고 두 스토어에서 이미 사용한 최대 번호보다 큰가?
+- 새 배포 candidate라면 이전 업로드 시도보다 `N`이 증가했는가?
+- build 명령에 version override가 없는가?
+- Android artifact의 `versionName`/`versionCode`가 `X.Y.Z`/`N`과 같은가?
+- iOS artifact의 `CFBundleShortVersionString`/`CFBundleVersion`이 `X.Y.Z`/`N`과 같은가?
+- `vX.Y.Z` 태그가 최종 승인된 `X.Y.Z+N` 커밋을 가리키는가?
+
+### 공식 참고
+
+- [Flutter Android version 갱신](https://docs.flutter.dev/deployment/android#update-the-apps-version-number)
+- [Android 앱 version 관리](https://developer.android.com/studio/publish/versioning)
+- [Apple 배포용 version과 build string](https://developer.apple.com/documentation/Xcode/preparing-your-app-for-distribution)
+- [App Store Connect build 업로드](https://developer.apple.com/help/app-store-connect/manage-builds/upload-builds)
+- [GitHub Actions 기본 변수](https://docs.github.com/en/actions/reference/workflows-and-actions/variables)
 
 ## Android 자동화 기준
 
@@ -288,12 +347,14 @@ MATCH_PASSWORD
 | `.github/workflows/publish.yml` | `v*` 태그 기반 production 배포 | 내부 배포 안정화와 manual approval 기준 확정 후 |
 
 secret이 준비되기 전에는 release workflow를 추가하지 않습니다. 실패하는 workflow가 기본 브랜치 품질 게이트를 방해할 수 있기 때문입니다.
+release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 build number를 덮어쓰지 않습니다.
 
 ## 릴리즈 체크리스트
 
 - [ ] `develop`의 주요 PR이 모두 병합되었는가?
 - [ ] `release/x.y.z` 브랜치를 `develop`에서 생성했는가?
-- [ ] `pubspec.yaml` 버전을 갱신했는가?
+- [ ] `pubspec.yaml`의 `X.Y.Z+N`을 갱신하고 release 브랜치명과 version을 일치시켰는가?
+- [ ] `N`이 두 스토어의 기존 최대 build number보다 크고 이전 업로드에서 재사용되지 않았는가?
 - [ ] 릴리즈 노트를 작성했는가?
 - [ ] `fvm flutter analyze`를 통과했는가?
 - [ ] `fvm flutter test`를 통과했는가?
@@ -311,7 +372,7 @@ secret이 준비되기 전에는 release workflow를 추가하지 않습니다. 
 
 - 별도 설치, 배포 채널, 환경별 Firebase가 필요해지면 dev/staging flavor와 식별값을 새 작업에서 정해야 합니다.
 - staging/prod 서버 full base URL과 API versioning 정책을 정해야 합니다.
-- 앱 버전과 build number 자동 증가 방식을 정해야 합니다.
+- 최초 store build number는 Play Console/App Store Connect의 기존 업로드 이력을 확인한 뒤 정해야 합니다.
 - Android Play Console과 Apple Developer/App Store Connect 계정 준비 여부를 확인해야 합니다.
 - 내부 테스트 배포 안정화 후 production 제출 자동화 범위를 다시 판단합니다.
 
@@ -322,3 +383,9 @@ secret이 준비되기 전에는 release workflow를 추가하지 않습니다. 
 | #209 | `07c2477` | Android/iOS 표시 이름과 prod application/bundle identifier 적용 | Android debug APK와 iOS simulator app 빌드, 산출물 식별값 확인 |
 | #209 | `83945d7` | 기존 v1/v2 브랜드 앱 아이콘을 Android/iOS 전체 규격에 적용 | 20개 파일 크기와 알파 채널 확인, 1024px 원본 시각 검토 |
 | #209 | - | 단일 prod 운영, flavor 도입 조건, Firebase `Not needed`와 보류 경계 문서화 | `git diff --check`, format, analyze, 전체 test, Android/iOS debug build |
+
+## RELEASE-02 작업 이력
+
+| 이슈 | 커밋 | 변경 범위 | 검증 |
+| --- | --- | --- | --- |
+| #211 | - | `pubspec.yaml` 단일 원본, 수동 증가, 번호 재사용 금지, CI override 금지와 store 이력 보류 경계 문서화 | 현재 플랫폼 매핑과 v2 설정 확인, Flutter/Android/Apple/GitHub 공식 문서 대조, `git diff --check` |
