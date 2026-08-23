@@ -239,29 +239,21 @@ gh run view <run-id> --log
 
 ### TEST-02-B remote API end-to-end
 
-remote API를 사용하는 핵심 사용자 흐름은 아래 조건이 준비된 뒤 추가합니다.
+remote API의 상세 준비 조건은 [Remote integration test 준비 계약](remote-integration-test-readiness.md)에서 관리합니다. dev API URL은 준비됐지만 아래 단계는 서로 다른 검증으로 취급합니다.
 
-- dev API base URL `https://commonplant-dev.okbear.dev/api/v1`은 확정되어 있습니다.
-- 테스트 전용 계정과 seed 데이터 또는 테스트 후 정리 방식이 준비되어 있습니다.
-- Android emulator, iOS simulator, 실제 기기, 또는 GitHub Actions runner 중 실행 환경이 정해져 있습니다.
-- 네트워크 실패, 인증 만료, 데이터 중복이 테스트 결과를 불안정하게 만들지 않도록 격리 전략이 있습니다.
+| 단계 | 범위 | 현재 상태 |
+| --- | --- | --- |
+| Swagger/OpenAPI reachability | dev 문서와 base URL 접근 | Done (#213) |
+| authenticated read-only probe | 실행마다 발급한 token으로 `GET /users` 확인 | Blocked |
+| 실제 앱 auth UI smoke | 소셜 로그인, repository, token 저장, route 연결 | Blocked |
+| Place/Plant CRUD | run별 격리 데이터 생성과 항상 실행되는 cleanup | Blocked |
+| Friend/Image/Memo 확장 | schema와 도메인별 cleanup 확보 | Blocked |
 
-우선 도입 대상은 아래 흐름으로 제한합니다.
+첫 remote pilot은 데이터 변경이 없는 authenticated read-only probe로 제한합니다. 이는 인증과 dev 연결 준비를 확인하는 workflow-level probe이며 Flutter 화면 E2E 완료로 계산하지 않습니다. 실제 앱 smoke는 로그인/프로필 화면이 Auth repository에 연결된 뒤 별도 이슈로 추가합니다.
 
-- 로그인과 프로필 설정 smoke flow
-- 장소 생성/수정/삭제 flow
-- 식물 등록/수정/삭제 flow
-- 메모 작성/삭제 flow
+고정 access token이나 개인 소셜 계정을 장기 secret으로 사용하지 않습니다. credential/token을 `--dart-define`으로 전달하거나 앱 binary, 로그, artifact에 남기는 방식도 사용하지 않습니다. 팀이 승인한 인증 bootstrap, token lifecycle, fixture 격리와 cleanup, GitHub Environment가 모두 준비되기 전에는 실행 가능한 remote 명령이나 workflow를 저장소에 추가하지 않습니다.
 
-테스트 파일은 `integration_test/` 아래에 플로우 단위로 둡니다. remote API를 사용하는 경우 실행 명령은 환경값을 명시합니다.
-
-```bash
-fvm flutter test integration_test \
-  --dart-define=COMMONPLANT_USE_API=true \
-  --dart-define=COMMONPLANT_API_BASE_URL=https://commonplant-dev.okbear.dev/api/v1
-```
-
-dev API URL 조건은 해소됐습니다. 테스트 계정, seed/cleanup, secret과 데이터 격리 정책이 필요한 end-to-end flow는 나머지 조건이 준비될 때까지 `Blocked`입니다. 준비 전 회귀 검증은 unit/widget test와 feature별 Provider override를 사용합니다.
+Blocked 기간의 회귀 검증은 unit/widget test와 feature별 Provider override를 사용합니다. 환경 조건이 해결되면 read-only probe, 실제 auth UI, 단일 도메인 CRUD 순서로 각각 별도 이슈에서 진행합니다.
 
 ## 테스트 파일 네이밍
 
@@ -311,4 +303,4 @@ GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter anal
 
 - TEST-01 pilot은 #199에서 `OnboardingPage`, `375×812`, DPR 1, Ubuntu canonical, exact comparator로 확정했습니다. 추가 화면과 viewport baseline은 회귀 위험과 유지 비용을 확인해 별도 이슈로 확장합니다.
 - TEST-02-A는 #203에서 API 비사용 Home → 장소 친구 요청 Android smoke와 수동 workflow로 도입했고, #218에서 `develop` run 3회의 연속 성공과 로그 구분을 확인했습니다. required check 승격은 실행 시간·비용 수용과 팀 합의가 남아 있어 `Ready` 상태로 별도 결정합니다.
-- TEST-02-B의 dev API URL은 #213에서 확인했습니다. 테스트 계정, seed/cleanup, secret 정책이 준비되면 remote integration test workflow를 release 검증 또는 별도 CI job으로 연결하며, 그전 상태는 `Blocked`입니다.
+- TEST-02-B의 dev API URL은 #213에서 확인했고 #220에서 인증, token lifecycle, 데이터 격리·cleanup, secret 승인 gate를 구체화했습니다. 첫 단계는 authenticated read-only probe이며, 외부 조건이 준비되기 전 상태는 `Blocked`입니다.

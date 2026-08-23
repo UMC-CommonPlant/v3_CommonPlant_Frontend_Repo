@@ -17,7 +17,7 @@
 | [x] | TEST-01 | full-screen golden test 기준 크기 | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #199에서 `OnboardingPage`, `375×812`, DPR 1, Ubuntu canonical, exact comparator와 workflow 기반 baseline 갱신 규칙을 적용한다. | Decided |
 | [x] | TEST-02-A | API 비사용 integration smoke와 runner | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #203에서 실제 앱의 Home → 장소 친구 요청 Android smoke와 수동 workflow를 도입했고, #218에서 `develop` 3회 연속 성공을 확인했다. | Decided |
 | [ ] | TEST-02-A-GATE | Android smoke의 PR required check 승격 | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #218에서 재시도 없는 3회 성공과 5분 1초~7분 32초의 job 실행 시간을 확인했다. 팀이 시간·비용을 수용하고 승격에 동의한 뒤에만 repository 설정 변경을 별도 진행한다. | Ready |
-| [ ] | TEST-02-B | remote API integration 실행 환경과 workflow | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #213에서 dev API URL은 확인했다. 테스트 계정, seed/cleanup, secret과 데이터 격리 정책이 준비될 때까지 remote end-to-end workflow를 보류한다. | Blocked |
+| [ ] | TEST-02-B | remote API integration 실행 환경과 workflow | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md`, `docs/remote-integration-test-readiness.md` | #220에서 준비 계약을 정리했다. 인증 bootstrap·token lifecycle·fixture 격리/cleanup·GitHub Environment 승인 후 read-only probe부터 별도 구현한다. | Blocked |
 
 ## 릴리즈와 환경
 
@@ -64,6 +64,7 @@
 | [ ] | API-SEARCH | 주소/식물/사용자 검색 정책 | SEARCH-01, SEARCH-02, SEARCH-03 | 주소 검색, 식물 검색, 친구 추가 검색 UX | Open |
 | [ ] | API-MEMO | Memo CRUD와 이미지 첨부 정책 | MEMO-01, MEMO-02, MEMO-03 | 메모 화면 실데이터 연결 | Open |
 | [x] | API-ENV-DEV | dev 서버 환경값과 Swagger | ENV-01-A | #213에서 dev origin, API base URL과 문서 endpoint를 확인했다. | Decided |
+| [ ] | API-TESTENV | remote integration 테스트 환경 | TESTENV-01~05 | #220에서 최소 준비 계약을 정리했다. 백엔드 인증·fixture·cleanup 답변과 저장소 설정 승인 전까지 TEST-02-B를 보류한다. | Blocked |
 | [ ] | API-ENV-RELEASE | staging/prod 환경값과 versioning | ENV-01-B | staging/prod release 검증은 백엔드 답변 전까지 미확정이다. | Open |
 
 ## 다음 이슈화 기준

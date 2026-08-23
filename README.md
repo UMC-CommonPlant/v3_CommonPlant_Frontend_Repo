@@ -162,7 +162,7 @@ tool/
 - 인증 토큰은 `flutter_secure_storage` 기반 보관을 기본 방향으로 합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
 - Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 사용합니다.
-- Integration test는 remote API를 사용하지 않는 Home 진입과 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 테스트 계정, seed/cleanup과 secret 정책이 필요한 end-to-end 범위는 준비 전까지 `Blocked`입니다.
+- Integration test는 remote API를 사용하지 않는 Home 진입과 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 [remote integration test 준비 계약](docs/remote-integration-test-readiness.md)의 인증, 데이터 격리, cleanup, secret 승인 gate가 충족되기 전까지 end-to-end 범위는 `Blocked`입니다.
 
 ## 프로젝트 문서
 
@@ -180,6 +180,7 @@ tool/
 | [폼 검증 및 에러 메시지 작성 기준](docs/form-validation-error-guide.md) | 입력 검증 위치, helper/error 메시지, 서버 에러 처리 기준 |
 | [테스트 작성 기준](docs/testing-guide.md) | unit/widget test 작성 기준, 실행 명령, CI/pre-commit 연계 |
 | [품질·테스트 후속 작업 계획](docs/quality-testing-follow-up-plan.md) | QA 필수 viewport, golden/integration test 도입 순서, Ready/Blocked 경계 |
+| [Remote integration test 준비 계약](docs/remote-integration-test-readiness.md) | dev API E2E의 인증, fixture, cleanup, secret과 단계별 도입 gate |
 | [lib 구조 리팩토링 개선 방향](docs/lib-refactoring-direction.md) | `lib` 구조, Riverpod, 라우팅, feature 경계 리팩토링 진단과 단계별 개선안 |
 | [코드 가독성 리팩토링 실행 계획](docs/code-readability-refactoring-plan.md) | 사람이 읽기 쉬운 코드로 개선하기 위한 파일 분해, 우선순위, PR 단위, 리뷰 기준 |
 | [코드 가독성 리팩토링 2차 계획](docs/code-readability-refactoring-round-2-plan.md) | 1차 완료 후 남은 Place 중심 대형 화면, 라우팅 파라미터, detail action, mapper 경계 개선 계획 |

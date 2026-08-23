@@ -52,6 +52,9 @@
 | Place | `GET /place/{code}/members` 추가 | 친구 관리 화면 후보지만 성공 response schema가 없어 mapper 구현 보류 |
 | Auth register | request/response가 `RegisterRequest`/`RegisterResponse`로 분리 | #216에서 JSON part와 optional image multipart datasource 반영 |
 | Multipart encoding | Auth/User/Plant JSON part에 `application/json` 명시 | 해당 도메인 전송 기준 확인, Place는 encoding 미표기로 추가 확인 유지 |
+| Test environment | 19개 path에 test/seed/fixture/cleanup 전용 endpoint가 없고 login은 소셜 SDK token을 요구 | #220 준비 계약의 인증, 데이터 격리·cleanup gate가 해결되기 전 TEST-02-B 유지 |
+
+TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 `docs/remote-integration-test-readiness.md`에서 관리한다. 이 문서의 endpoint inventory만으로 테스트 계정이나 cleanup 정책이 제공된 것으로 해석하지 않는다.
 
 아래의 추가/삭제/변경 표는 2026-05-25 상세 비교 기록이며, 위 표는 2026-08-23 재확인에서 달라진 항목입니다.
 

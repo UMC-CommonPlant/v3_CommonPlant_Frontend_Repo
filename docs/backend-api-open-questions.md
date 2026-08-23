@@ -38,6 +38,11 @@
 | MEMO-01 | Memo | 메모 생성, 목록, 수정, 삭제 API 제공 계획은 무엇인가? | 메모 화면 실데이터 연결 보류 | Open |
 | MEMO-02 | Memo | 메모 이미지 첨부는 어떤 API와 필드로 연결하는가? | 메모 사진 업로드 흐름 보류 | Open |
 | MEMO-03 | Memo | 메모 목록 response의 작성자, 이미지, 작성일, pagination 구조는 무엇인가? | 메모 목록 mapper와 카드 상태 보류 | Open |
+| TESTENV-01 | 테스트 환경 | CI가 개인 소셜 계정 없이 매 run 인증을 발급받는 방법은 무엇인가? | authenticated probe와 UI E2E 보류 | Open |
+| TESTENV-02 | 테스트 환경 | 테스트 token의 TTL, 갱신·재발급·폐기 정책은 무엇인가? | 장시간 run과 만료 복구 보류 | Open |
+| TESTENV-03 | 테스트 환경 | backend 소유 fixture 사용자와 run별 데이터 격리 기준은 무엇인가? | 병렬 실행과 CRUD E2E 보류 | Open |
+| TESTENV-04 | 테스트 환경 | 정상·실패 cleanup과 중단된 run의 TTL 정리 방법은 무엇인가? | dev 데이터 오염 방지 불가 | Open |
+| TESTENV-05 | 테스트 환경 | CI 접근 권한, rate limit, 허용 실행 범위는 무엇인가? | GitHub Environment와 재시도 정책 보류 | Open |
 | ENV-01-A | 환경 | dev backend와 Swagger endpoint는 무엇인가? | 로컬 remote API URL 확정 | Answered |
 | ENV-01-B | 환경 | 백엔드 staging/prod full base URL과 API versioning 정책은 무엇인가? | 배포 환경값 주입 검증 필요 | Open |
 
@@ -281,6 +286,55 @@
 - 프론트 영향: 메모 카드 mapper와 pagination 정책을 정할 수 없다.
 - 확인 질문: 메모 id, 작성자, 작성일, 이미지 url/key, 권한, pagination 필드는 무엇인가?
 - 프론트 반영: 답변 후 memo list provider와 삭제/수정 액션을 API mode로 연결한다.
+- 답변: 미확인
+- 상태: Open
+
+## 테스트 환경
+
+TESTENV 질문의 상세 수용 조건과 단계별 도입 범위는 `docs/remote-integration-test-readiness.md`에서 관리한다. 실제 credential이나 secret 값은 이 문서의 답변에 기록하지 않는다.
+
+### TESTENV-01. CI 인증 bootstrap
+
+- 현재 근거: Swagger `POST /auth/login`은 Google/Kakao/Apple SDK token을 요구하며 test auth endpoint는 없다.
+- 프론트 영향: 개인 계정이나 수동 복사 token 없이 authenticated probe를 반복 실행할 수 없다.
+- 확인 질문: dev CI가 실행마다 기존 테스트 사용자의 짧은 수명 token을 얻을 수 있는 방식은 무엇인가?
+- 프론트 반영: 답변 후 실제 값이 아닌 필요한 secret 종류와 workflow 호출 계약만 문서화한다.
+- 답변: 미확인
+- 상태: Open
+
+### TESTENV-02. 테스트 token lifecycle
+
+- 현재 근거: 로그인은 access/refresh token을 반환하지만 Swagger에는 refresh 재발급과 logout endpoint가 없다.
+- 프론트 영향: token 만료가 앱 실패인지 환경 실패인지 구분할 수 없고 장기 고정 token은 재현성이 없다.
+- 확인 질문: 테스트 token의 TTL, 갱신 또는 재발급, 폐기 방법과 관련 오류 코드는 무엇인가?
+- 프론트 반영: 답변 후 probe timeout, 만료 판정, 재시도 금지 범위를 정한다.
+- 답변: 미확인
+- 상태: Open
+
+### TESTENV-03. Fixture와 run별 데이터 격리
+
+- 현재 근거: 19개 OpenAPI path에 seed/fixture 전용 endpoint가 없고 일부 CRUD endpoint만 있다.
+- 프론트 영향: 공유 사용자와 장소를 수정하면 병렬 run이 충돌하고 실제 dev 데이터를 오염시킬 수 있다.
+- 확인 질문: backend 소유 테스트 사용자, 초기 fixture 범위, run별 소유권 또는 격리 key는 어떻게 제공하는가?
+- 프론트 반영: 답변 후 첫 단계는 공유 fixture의 `GET /users` read-only probe로 제한하고 mutation 범위를 별도 확정한다.
+- 답변: 미확인
+- 상태: Open
+
+### TESTENV-04. Cleanup과 TTL fallback
+
+- 현재 근거: public API 일부에는 delete가 있지만 runner 강제 종료 시 cleanup 실행을 보장할 수 없고 전용 정리 API가 없다.
+- 프론트 영향: 실패 run이 남긴 Place, Plant, Image, Friend 데이터를 안전하게 식별·삭제할 수 없다.
+- 확인 질문: 정상·실패 cleanup 순서와 실행이 중단된 fixture를 정리할 TTL 또는 관리자 수단은 무엇인가?
+- 프론트 반영: 답변 후 `always` cleanup과 cleanup 실패 판정을 workflow에 반영한다.
+- 답변: 미확인
+- 상태: Open
+
+### TESTENV-05. CI 접근과 실행 제한
+
+- 현재 근거: dev Swagger는 공개 접근 가능하지만 authenticated test의 runner IP, rate limit, 허용 시간과 동시 실행 정책은 명시되지 않았다.
+- 프론트 영향: 일시적 429/5xx와 앱 회귀의 구분, concurrency와 재시도 범위를 정할 수 없다.
+- 확인 질문: GitHub-hosted runner 접근 허용 여부, rate limit, 허용 동시 실행 수, 점검 시간대 정책은 무엇인가?
+- 프론트 반영: 답변 후 GitHub Environment, 직렬/병렬 실행, 외부 장애 재시도 정책을 별도 이슈에서 적용한다.
 - 답변: 미확인
 - 상태: Open
 
