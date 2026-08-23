@@ -228,7 +228,7 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 - `flutter analyze`
 - `flutter test`
 
-`Android Integration Smoke`는 Android emulator에서 API 비사용 앱 시작과 route 이동을 확인하는 수동 workflow입니다. 안정성과 실행 비용을 확인하는 pilot 동안에는 PR 필수 게이트와 분리합니다.
+`Android Integration Smoke`는 Android emulator에서 API 비사용 앱 시작과 route 이동을 확인하는 수동 workflow입니다. #218에서 `develop` 수동 실행 3회가 재시도 없이 연속 성공했고 job 실행 시간은 5분 1초~7분 32초였습니다. 실행 시간·비용 수용과 팀 합의가 남아 있으므로 required check로 자동 승격하지 않고 수동 workflow로 유지합니다.
 
 ## 진행해야 할 작업 내역
 

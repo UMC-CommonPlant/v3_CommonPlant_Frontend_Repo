@@ -227,6 +227,16 @@ gh run view <run-id> --log
 3. 실행 시간과 GitHub Actions 비용이 팀이 수용할 수 있는 범위입니다.
 4. 팀이 required check 승격에 동의합니다.
 
+#218에서 아래 `develop` 수동 run을 겹치지 않게 순차 실행했고, 모두 최초 시도에서 성공했습니다.
+
+| 순서 | run | `develop` head | smoke job | 결과 | 재시도 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | [`32243828623`](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/actions/runs/32243828623) | `3a8781b` | 6분 36초 | Success | 없음 |
+| 2 | [`32628473811`](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/actions/runs/32628473811) | `34845e9` | 7분 32초 | Success | 없음 |
+| 3 | [`32628815566`](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/actions/runs/32628815566) | `34845e9` | 5분 1초 | Success | 없음 |
+
+연속 3회 성공과 로그 구분 조건은 충족했습니다. emulator 설치·cold boot와 실제 `flutter test` 명령이 같은 smoke step 안에서도 구분되어 runner 인프라와 앱 assertion의 실패 지점을 판별할 수 있습니다. 다만 job 하나가 5분 1초~7분 32초 걸리므로, 팀이 이 피드백 시간과 Actions 비용을 수용하고 required check 승격에 동의하기 전까지는 수동 workflow를 유지합니다. 승격 결정과 repository 설정 변경은 별도 작업으로 진행합니다.
+
 ### TEST-02-B remote API end-to-end
 
 remote API를 사용하는 핵심 사용자 흐름은 아래 조건이 준비된 뒤 추가합니다.
@@ -283,7 +293,7 @@ feature 구조와 test 구조를 비슷하게 맞추면 찾기 쉽습니다.
 
 로컬에 `.fvmrc`와 FVM이 있으면 lefthook도 `fvm` 명령을 우선 사용합니다.
 
-GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter analyze`, `flutter test`를 실행합니다. Ubuntu에서는 Golden test가 일반 `flutter test`에 포함되고 non-Linux 로컬에서는 golden만 skip됩니다. API 비사용 Android integration smoke는 별도 수동 workflow로 검증하며 승격 조건을 충족하기 전에는 required check가 아닙니다. Remote integration test는 백엔드 실행 환경이 준비된 뒤 release candidate 검증 또는 별도 CI job으로 연결합니다.
+GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter analyze`, `flutter test`를 실행합니다. Ubuntu에서는 Golden test가 일반 `flutter test`에 포함되고 non-Linux 로컬에서는 golden만 skip됩니다. API 비사용 Android integration smoke는 3회 연속 성공과 로그 구분을 확인했지만, 실행 시간·비용 수용과 팀 합의 전까지 별도 수동 workflow로 유지합니다. Remote integration test는 백엔드 실행 환경이 준비된 뒤 release candidate 검증 또는 별도 CI job으로 연결합니다.
 
 ## 체크리스트
 
@@ -300,5 +310,5 @@ GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter anal
 ## 후속 결정 필요
 
 - TEST-01 pilot은 #199에서 `OnboardingPage`, `375×812`, DPR 1, Ubuntu canonical, exact comparator로 확정했습니다. 추가 화면과 viewport baseline은 회귀 위험과 유지 비용을 확인해 별도 이슈로 확장합니다.
-- TEST-02-A는 #203에서 API 비사용 Home → 장소 친구 요청 Android smoke와 수동 workflow로 도입했고 `develop` run `32243828623`이 성공했습니다. 연속 3회 성공 기준을 충족하기 전에는 PR 필수 게이트로 승격하지 않습니다.
+- TEST-02-A는 #203에서 API 비사용 Home → 장소 친구 요청 Android smoke와 수동 workflow로 도입했고, #218에서 `develop` run 3회의 연속 성공과 로그 구분을 확인했습니다. required check 승격은 실행 시간·비용 수용과 팀 합의가 남아 있어 `Ready` 상태로 별도 결정합니다.
 - TEST-02-B의 dev API URL은 #213에서 확인했습니다. 테스트 계정, seed/cleanup, secret 정책이 준비되면 remote integration test workflow를 release 검증 또는 별도 CI job으로 연결하며, 그전 상태는 `Blocked`입니다.

@@ -20,7 +20,7 @@
 | Golden test | #199에서 `OnboardingPage` `375×812`, DPR 1 baseline과 Pretendard helper 구현 | Ubuntu canonical renderer의 exact 비교와 수동 baseline workflow run `31811426737` 성공 확인 |
 | Font/asset | 한글 포함 Pretendard v1.3.9 static OTF 4종과 OFL을 `pubspec.yaml` 및 저장소에 등록 | #200에서 Hangul glyph와 Android/iOS packaging 검증 완료 |
 | Integration test | #203에서 SDK 의존성, API 비사용 Home → 장소 친구 요청 smoke 추가 | Android API 36.1 `emulator-5554` 로컬 실행 통과 |
-| GitHub Actions | 기본 Flutter CI, 수동 `Golden Baseline`, 수동 `Android Integration Smoke` workflow 제공 | Android smoke run `32243828623` 성공, 연속 3회 기준 전이라 아직 required check가 아님 |
+| GitHub Actions | 기본 Flutter CI, 수동 `Golden Baseline`, 수동 `Android Integration Smoke` workflow 제공 | Android smoke `develop` 수동 run 3회 연속 성공. 시간·비용 수용과 팀 합의 전까지 required check가 아님 |
 | 기본 품질 게이트 | #216 기준 macOS에서 unit/widget/asset 263개 통과와 golden 1개 skip, Ubuntu에서 golden 포함 264개 통과 | Ubuntu PR run `32627288004`에서 canonical golden 포함 결과 확인 |
 | Remote API 환경 | dev API `https://commonplant-dev.okbear.dev/api/v1`과 환경값 주입 지점 확인 | 테스트 계정, seed/cleanup, secret과 데이터 격리 정책은 Blocked |
 
@@ -33,7 +33,8 @@
 | 3 | TEST-01 폰트 선행 | 한글 Pretendard asset과 라이선스 정리 | QA-01 적용 후속 | Done (#200) |
 | 4 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | TEST-01 폰트 선행 | Done (#199) |
 | 5 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 수동 Android runner 도입 | 없음. 우선순위상 TEST-01 다음 | Done (#203) |
-| 6 | TEST-02-B | dev API 기반 integration workflow와 핵심 CRUD flow 연결 | 테스트 계정, seed/cleanup, secret과 데이터 격리 정책 | Blocked |
+| 6 | TEST-02-A-GATE | Android smoke를 PR required check로 승격할지 결정 | 3회 연속 성공, 로그 구분, 실행 시간 측정 | Ready (#218, 팀 결정 대기) |
+| 7 | TEST-02-B | dev API 기반 integration workflow와 핵심 CRUD flow 연결 | 테스트 계정, seed/cleanup, secret과 데이터 격리 정책 | Blocked |
 
 TEST-01과 TEST-02-A 사이에 기술적 의존은 없지만 테스트 도입 범위를 한 번에 넓히지 않도록 QA-01, compact-width 회귀 수정, TEST-01, TEST-02 순서를 유지한다. TEST-02-B의 외부 조건이 준비되지 않아도 TEST-02-A의 API 비사용 smoke와 runner 검토는 별도 이슈로 진행할 수 있다.
 
@@ -135,8 +136,15 @@ Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료�
 - `integration_test/app_smoke_test.dart`에서 production `main()`을 실행하고 `COMMONPLANT_USE_API=false`를 assertion으로 고정한다.
 - Home의 기본 콘텐츠를 확인한 뒤 `장소 요청 3건`을 탭해 장소 친구 요청 화면까지 이동한다.
 - 로컬 명령은 Android device ID를 명시하고, GitHub Actions는 Android API 35 Google APIs x86_64 Pixel 6 emulator의 수동 workflow로 실행한다.
-- `develop`의 첫 수동 run `32243828623`은 성공했다.
-- `develop` 수동 run이 assertion 실패나 재시도 없이 3회 연속 성공하고 로그 구분, 실행 시간·비용, 팀 동의를 확인한 뒤에만 required check 승격을 검토한다.
+- `develop` 수동 run 3회가 assertion 실패나 재시도 없이 연속 성공했다.
+- emulator 준비와 Flutter test 실행이 로그에서 구분되며, 측정된 job 실행 시간은 5분 1초~7분 32초다.
+- 연속 성공과 로그 구분 조건은 충족했다. 팀이 실행 시간·비용을 수용하고 required check 승격에 동의한 뒤에만 repository 설정 변경을 별도 진행한다.
+
+| 순서 | run | `develop` head | smoke job | 결과 | 재시도 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | [`32243828623`](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/actions/runs/32243828623) | `3a8781b` | 6분 36초 | Success | 없음 |
+| 2 | [`32628473811`](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/actions/runs/32628473811) | `34845e9` | 7분 32초 | Success | 없음 |
+| 3 | [`32628815566`](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/actions/runs/32628815566) | `34845e9` | 5분 1초 | Success | 없음 |
 
 ### 백엔드 준비 전 Blocked 범위
 

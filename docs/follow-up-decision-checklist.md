@@ -15,7 +15,8 @@
 | --- | --- | --- | --- | --- | --- |
 | [x] | QA-01 | Figma 기준 해상도 외 QA 필수 디바이스 목록 | `docs/screen-publishing-rules.md`, `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | 네 QA profile을 적용한다. 확인된 compact overflow와 대상 회귀 테스트는 #197에서 완료했다. | Decided |
 | [x] | TEST-01 | full-screen golden test 기준 크기 | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #199에서 `OnboardingPage`, `375×812`, DPR 1, Ubuntu canonical, exact comparator와 workflow 기반 baseline 갱신 규칙을 적용한다. | Decided |
-| [x] | TEST-02-A | API 비사용 integration smoke와 runner | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #203에서 실제 앱의 Home → 장소 친구 요청 Android smoke, 명시적 device 실행, 수동 workflow와 required check 승격 조건을 적용한다. | Decided |
+| [x] | TEST-02-A | API 비사용 integration smoke와 runner | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #203에서 실제 앱의 Home → 장소 친구 요청 Android smoke와 수동 workflow를 도입했고, #218에서 `develop` 3회 연속 성공을 확인했다. | Decided |
+| [ ] | TEST-02-A-GATE | Android smoke의 PR required check 승격 | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #218에서 재시도 없는 3회 성공과 5분 1초~7분 32초의 job 실행 시간을 확인했다. 팀이 시간·비용을 수용하고 승격에 동의한 뒤에만 repository 설정 변경을 별도 진행한다. | Ready |
 | [ ] | TEST-02-B | remote API integration 실행 환경과 workflow | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #213에서 dev API URL은 확인했다. 테스트 계정, seed/cleanup, secret과 데이터 격리 정책이 준비될 때까지 remote end-to-end workflow를 보류한다. | Blocked |
 
 ## 릴리즈와 환경
