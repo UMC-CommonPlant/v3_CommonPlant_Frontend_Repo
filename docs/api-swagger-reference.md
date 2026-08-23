@@ -5,16 +5,23 @@
 
 ## 확인 기준
 
-- Swagger UI: https://commonplant.site/api/v1/swagger-ui/index.html
-- OpenAPI JSON: https://commonplant.site/api/v1/api-docs/json
-- Swagger config: https://commonplant.site/api/v1/api-docs/json/swagger-config
-- 확인일: 2026-05-25
+- 환경: `dev`
+- 개발 서버 origin: https://commonplant-dev.okbear.dev
+- API base URL: https://commonplant-dev.okbear.dev/api/v1
+- Swagger UI: https://commonplant-dev.okbear.dev/api/v1/swagger-ui/index.html#
+- OpenAPI JSON: https://commonplant-dev.okbear.dev/api/v1/api-docs/json
+- Swagger config: https://commonplant-dev.okbear.dev/api/v1/api-docs/json/swagger-config
+- 확인일: 2026-08-23
+- 접속 결과: Swagger UI, OpenAPI JSON, Swagger config HTTP 200
+- 개발 서버 루트: HTTP 404. 루트 route가 없다는 의미이며 Swagger/API endpoint 상태와 분리한다.
+- 인증 endpoint 확인: token 없이 `GET /api/v1/users` 요청 시 HTTP 401, code `A009`로 인증 요구 응답
 - OpenAPI 버전: `3.1.0`
 - API title: `Common Plant API Document`
 - 서버 base path: `/api/v1`
+- endpoint inventory: 19 paths, 27 operations
 - 기존 문서 비교 기준: `docs/api-swagger-summary-43` 브랜치의 `docs/api-swagger-reference.md` 확인일 2026-05-20
 - 코드 비교 기준: `feature/api-integration-45` 브랜치의 `lib/core/network`, `features/*/data` API 계층
-- 참고: 2026-05-25 기준 `develop`에는 기존 API 문서와 #45 API 계층 코드가 아직 병합되어 있지 않다.
+- 참고: 2026-05-25의 상세 schema 비교 기록을 보존하고, 2026-08-23에는 dev 접속 정보와 현재 endpoint/schema 차이를 재검증했다.
 
 ## 프론트엔드 연계 원칙
 
@@ -36,7 +43,19 @@
 
 ## Swagger 변경 요약
 
-### 추가된 API
+### 2026-08-23 dev Swagger 재확인
+
+| 구분 | 확인 내용 | 프론트 판단 |
+| --- | --- | --- |
+| 실행 환경 | dev origin과 `/api/v1` base URL 제공 | 로컬 remote API 실행 시 명시적 `dart-define` 주입 가능 |
+| API 문서 | Swagger UI, OpenAPI JSON/config 공개 접근 가능 | live spec 확인과 문서 대조 가능 |
+| Place | `GET /place/{code}/members` 추가 | 친구 관리 화면 후보지만 성공 response schema가 없어 mapper 구현 보류 |
+| Auth register | request/response가 `RegisterRequest`/`RegisterResponse`로 분리 | 기존 request schema 충돌 해소, multipart datasource 반영은 별도 작업 |
+| Multipart encoding | Auth/User/Plant JSON part에 `application/json` 명시 | 해당 도메인 전송 기준 확인, Place는 encoding 미표기로 추가 확인 유지 |
+
+아래의 추가/삭제/변경 표는 2026-05-25 상세 비교 기록이며, 위 표는 2026-08-23 재확인에서 달라진 항목입니다.
+
+### 2026-05-25 추가된 API
 
 | Domain | Method | Path | Summary | 상태 |
 | --- | --- | --- | --- | --- |
@@ -46,13 +65,13 @@
 | Friend | POST | `/friends/decline` | 없음 | 요청 schema만 있음 |
 | User | GET | `/users/{keyword}` | 사용자 이름 검색 | 응답 schema 있음 |
 
-### 삭제된 API
+### 2026-05-25 삭제된 API
 
 | Domain | Method | Path | 비고 |
 | --- | --- | --- | --- |
 | 없음 | - | - | 기존 문서의 API 중 삭제된 endpoint는 확인되지 않는다. |
 
-### 변경된 API
+### 2026-05-25 변경된 API
 
 | Domain | API | 변경 내용 | 프론트 영향 |
 | --- | --- | --- | --- |
@@ -83,6 +102,7 @@
 | Place | GET | `/place/myGarden` | 내 정원 조회 | 필요 | 없음 |
 | Place | GET | `/place/user` | 소속 장소 조회 | 필요 | 없음 |
 | Place | GET | `/place/{code}` | 장소 조회 | 필요 | 없음 |
+| Place | GET | `/place/{code}/members` | 장소 멤버 목록 조회 | 필요 | 없음 |
 | Place | POST | `/place/create` | 장소 생성 | 필요 | 없음 |
 | Place | PUT | `/place/update/{code}` | 장소 수정 | 필요 | 없음 |
 | Place | DELETE | `/place/delete/{code}` | 장소 삭제 | 필요 | 없음 |
@@ -139,10 +159,15 @@
 - Content-Type: `multipart/form-data`
 - Request schema: `RegisterMultipartRequest`
 - Form parts:
-  - `register`: `Register`, required
+  - `register`: `RegisterRequest`, required, `Content-Type: application/json`
   - `image`: binary, optional
-- 성공 response: `RegisterJsonResponse.result` -> `Register`
-- `Register` fields:
+- `RegisterRequest` required:
+  - `signupToken`
+  - `name`
+- `RegisterRequest` optional:
+  - `introduction`
+- 성공 response: `RegisterJsonResponse.result` -> `RegisterResponse`
+- `RegisterResponse` fields:
   - `accessToken`
   - `refreshToken`
   - `newUser`
@@ -151,10 +176,12 @@
   - `401`: `A006`, `A004`
   - `409`: `A007`, `A011`
 
-확인 필요:
+현재 판단:
 
-- `Register` schema가 request part와 response result에 동시에 연결되어 있으나, 필드가 `signupToken`, `name`, `introduction`이 아니라 `accessToken`, `refreshToken`, `newUser`이다.
-- 이전 Swagger 설명의 회원가입 입력값과 충돌하므로, 현재 코드의 `RegisterRequest(signupToken, name, introduction, imgUrl)`를 바로 multipart로 바꾸면 안 된다.
+- 기존의 request/response `Register` schema 충돌은 해소됐다.
+- 프로필 이미지는 `RegisterMultipartRequest.image` optional part이며 request JSON에는 `imgUrl`이 없다.
+- 성공 example의 `isNewUser`와 schema의 `newUser` 명칭은 여전히 일치하지 않으므로 response DTO는 schema와 실제 응답을 함께 확인한다.
+- 현재 `AuthRemoteDataSource.register`는 JSON body를 보내므로 multipart 전환은 별도 구현 이슈에서 진행한다.
 
 ### User
 
@@ -229,6 +256,17 @@
 - Error:
   - `403`: 장소 접근 권한 없음
   - `404`: 장소 없음
+
+#### GET `/place/{code}/members`
+
+- 가입 순서대로 장소 멤버 목록을 조회한다.
+- Path parameter:
+  - `code`: 장소 코드, required
+- 성공 response 설명은 `멤버 목록 조회 성공`이지만 body schema는 없다.
+- Error:
+  - `403`: 장소 접근 권한 없음
+  - `404`: 장소 없음
+- 친구 관리 화면에 연결하려면 member id, 이름, 프로필 이미지, 역할 필드와 wrapper를 백엔드에 확인해야 한다.
 
 #### POST `/place/create`
 
@@ -475,12 +513,13 @@
 
 | 화면 | Route | 새로 연결 가능한 API | 판단 |
 | --- | --- | --- | --- |
-| 프로필 설정 | `/profile/setup` | `POST /auth/register` | request schema 충돌이 있어 백엔드 확인 후 반영 |
+| 프로필 설정 | `/profile/setup` | `POST /auth/register` | request schema는 확인됐으며 현재 JSON datasource를 multipart로 바꾸는 별도 구현 필요 |
 | 프로필 설정 또는 마이페이지 | 미정 | `PUT /users` | User 수정 request/response schema가 보강되어 반영 가능 |
 | 친구 추가 | `/places/new/friends` | `GET /users/{keyword}` | 사용자 이름 검색 DTO 반영 가능 |
 | 친구 추가 | `/places/new/friends` | `POST /friends/request` | 요청 전송은 가능하나 response schema와 화면 성공 정책 확인 필요 |
 | 장소 친구 요청 | `/places/invitations` | `GET /friends/requests` | 목록 response schema가 없어 백엔드 확인 필요 |
 | 장소 친구 요청 | `/places/invitations` | `POST /friends/accept`, `POST /friends/decline` | accept/decline 요청은 가능하나 response와 갱신 정책 확인 필요 |
+| 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members` | endpoint는 확인됐지만 목록 response schema가 없어 백엔드 확인 필요 |
 | 장소 수정 | `/places/:placeId/edit` | `PUT /place/update/{code}` | multipart 여부는 해소됐지만 성공 response schema 없음 |
 | 식물 등록 정보 입력 | `/plants/new/details` | `POST /plants` | `placeCode` 기준으로 현재 코드 DTO 수정 필요 |
 | 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}` | query parameter 제거 필요 |
@@ -503,14 +542,15 @@
 | 공통 응답 wrapper 사용 여부 | `timeStamp`, `success`, `status`, `message`, `result` wrapper 확인 | 일부 해소 |
 | `/auth/login` 성공 응답 body 구조 | 기존/신규 유저 `oneOf` schema 추가 | 해소 |
 | `/auth/register` 성공 응답 body 구조 | `RegisterJsonResponse` 추가 | 해소 |
-| `/auth/register` 요청 body 구조 | multipart로 변경됐지만 `Register` schema가 응답 필드와 같음 | 확인 필요 |
+| `/auth/register` 요청 body 구조 | `RegisterRequest`/`RegisterResponse` 분리와 `register` JSON part encoding 확인 | 해소 |
 | `/users` 조회 성공 응답 body 구조 | `UserJsonResponse`, `UserResponse` 추가 | 해소 |
 | `PUT /users` request schema 오연결 | `UserUpdateMultipartRequest`로 변경 | 해소 |
 | Place 조회/생성/수정/삭제 성공 응답 body 구조 | 여전히 schema 없음 | 남음 |
 | Plant 목록/상세/수정 화면 조회 성공 응답 body 구조 | 목록, 생성, 상세, 수정 정보, 삭제 schema 추가 | 해소 |
 | Image 업로드/조회/수정/삭제 성공 응답 body 구조 | 여전히 schema 없음 | 남음 |
 | `PUT /place/update/{code}` multipart 여부 | `multipart/form-data`로 변경 | 해소 |
-| multipart 요청 JSON part content type | multipart schema는 있으나 part별 content type 명시는 없음 | 일부 남음 |
+| multipart 요청 JSON part content type | Auth/User/Plant는 `application/json` 명시, Place create/update는 encoding 미표기 | 일부 남음 |
+| 장소 멤버 목록 API | `GET /place/{code}/members` 추가, 성공 response schema 없음 | endpoint 확인, schema 확인 필요 |
 | Place create/update required와 validation | `name`, `address` required와 `name` maxLength 확인 | 일부 해소 |
 | Plant create/update validation과 nullable 정책 | 문자열 maxLength와 date format 확인 | 일부 해소 |
 | 에러 응답 body 구조와 code/message 필드명 | 성공 wrapper는 있으나 에러 body schema 없음 | 남음 |
@@ -552,7 +592,7 @@
 
 현재 보류 범위:
 
-- 프로필 설정의 회원가입 이미지 업로드는 `POST /auth/register` request schema 충돌이 있어 연결하지 않는다.
+- 프로필 설정의 회원가입 request schema 충돌은 해소됐지만 현재 datasource가 JSON body를 사용하므로 multipart 전환과 이미지 part 연결은 별도 구현으로 진행한다.
 - 장소/식물 화면은 도메인 multipart `image` part 전달 경계까지만 열어두고, 실제 파일 선택기 도입은 별도 UI 작업에서 진행한다.
 - 메모 화면은 아직 Memo API가 없어 로컬 사진 상태만 유지한다.
 - `/s3/images` 다운로드 URL 조회는 성공 response의 URL 필드 또는 wrapper 구조가 확정된 뒤 화면 fallback 정책과 함께 연결한다.
@@ -563,21 +603,29 @@
 
 | 영역 | 대표 확인 항목 | 프론트 영향 |
 | --- | --- | --- |
-| Auth | `POST /auth/register` request part schema, multipart 전송 정책 | 프로필 설정 회원가입 API 연결 보류 |
+| Auth | `POST /auth/register` response example의 `isNewUser`와 schema `newUser` 불일치 | 회원가입 응답 DTO의 실제 필드 확인 필요 |
 | 공통 Multipart | JSON part의 `Content-Type: application/json` 필요 여부 | Auth/Place/Plant/User multipart 전송 정책 정합성 |
-| Place | 조회/생성/수정/삭제 성공 response, 목록/상세 wrapper와 필드명 | 장소 mapper와 실데이터 화면 정책 제한 |
+| Place | 조회/생성/수정/삭제 성공 response, 목록/상세/멤버 wrapper와 필드명 | 장소 mapper와 실데이터 화면 정책 제한 |
 | Friend | 요청 목록/전송/수락/거절 response, `receiverName`, `friendId` 의미 | 친구 요청 화면과 액션 payload 확정 불가 |
 | Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물/메모 이미지 key/url 매핑 보류 |
 | Error | 에러 body의 `code`, `message`, field error 구조 | 공통 사용자 메시지와 field error 매핑 보류 |
 | Token | refresh token 재발급, 로그아웃 API 제공 여부 | 인증 만료 복구와 세션 종료 정책 보류 |
 | 검색 | 주소 검색, 식물 검색 API 제공 여부와 사용자 검색 매칭 정책 | 주소/식물 검색 실데이터 연결 보류 |
 | Memo | 메모 CRUD API, 이미지 첨부, 목록 response 구조 | 메모 화면 실데이터 연결 보류 |
-| 환경 | staging/prod full base URL과 API versioning 정책 | CI/CD 환경값과 release 검증 보류 |
+| 환경 | dev URL은 확인, staging/prod full base URL과 API versioning 정책은 미확정 | dev 로컬 실행 가능, release 검증 보류 |
 
 ## 첫 API 연계 보강 우선순위 제안
 
-1. Auth register request schema는 백엔드 확인 전까지 변경하지 않는다.
+1. Auth register request schema 충돌은 해소됐으므로 multipart datasource 전환과 profile image part 연결을 별도 구현 이슈로 진행한다.
 2. User 조회/검색/수정 datasource는 추가됐으므로, 화면 적용 시 상태 Provider와 UI 성공/실패 정책을 별도 작업으로 연결한다.
 3. Place update는 multipart 전송까지만 추가했으므로, response schema가 확정될 때까지 mapper는 넓히지 않는다.
 4. Friend API는 transport만 추가했으므로, 목록 response schema 확인 후 초대 요청 화면에 연결한다.
 5. Image API는 transport만 추가했으므로, 반환 image key/url schema와 에러 body가 보강되면 이미지 업로드 흐름을 연결한다.
+
+## DEV API 문서화 작업 이력
+
+| 이슈 | 커밋 | 변경 범위 | 검증 |
+| --- | --- | --- | --- |
+| #213 | - | dev origin/API base, Swagger UI/OpenAPI/config, 현재 endpoint 차이와 환경별 Ready/Blocked 경계 문서화 | endpoint HTTP status, OpenAPI metadata, 19 paths·27 operations와 schema 대조, `git diff --check` |
+
+작업 이력만 갱신하는 후속 문서 커밋은 자기 자신의 해시를 생략할 수 있다.

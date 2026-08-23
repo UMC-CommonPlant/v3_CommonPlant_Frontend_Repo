@@ -13,12 +13,13 @@
 
 | ID | 영역 | 질문 | 현재 영향 | 상태 |
 | --- | --- | --- | --- | --- |
-| AUTH-01 | Auth | `POST /auth/register` request part의 실제 schema는 무엇인가? | 프로필 설정 회원가입 API 연결 보류 | Open |
-| AUTH-02 | Auth | 회원가입은 이미지가 없어도 항상 multipart로 보내야 하는가? | 회원가입 datasource 전송 방식 보류 | Open |
+| AUTH-01 | Auth | `POST /auth/register` request part의 실제 schema는 무엇인가? | multipart datasource 구현 가능 | Answered |
+| AUTH-02 | Auth | 회원가입은 이미지가 없어도 항상 multipart로 보내야 하는가? | JSON body 대신 multipart, image optional 기준 확인 | Answered |
 | MULTIPART-01 | 공통 | multipart JSON part의 `Content-Type`은 `application/json`이 필수인가? | Auth/Place/Plant/User multipart 일관성 확인 필요 | Open |
 | PLACE-01 | Place | Place 조회/생성/수정/삭제 성공 response body 구조는 무엇인가? | Place mapper와 화면 성공 정책 제한 | Open |
 | PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | 장소 목록/상세 실데이터 신뢰도 제한 | Open |
 | PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | route query와 API 요청 이름 혼재 가능성 | Open |
+| PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | 친구 관리 화면 멤버 목록 API 연결 보류 | Open |
 | FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | 장소 친구 요청 화면 API 연결 보류 | Open |
 | FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | 친구 요청 액션 성공 처리 제한 | Open |
 | FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | 친구 추가 요청 payload 확정 불가 | Open |
@@ -37,37 +38,38 @@
 | MEMO-01 | Memo | 메모 생성, 목록, 수정, 삭제 API 제공 계획은 무엇인가? | 메모 화면 실데이터 연결 보류 | Open |
 | MEMO-02 | Memo | 메모 이미지 첨부는 어떤 API와 필드로 연결하는가? | 메모 사진 업로드 흐름 보류 | Open |
 | MEMO-03 | Memo | 메모 목록 response의 작성자, 이미지, 작성일, pagination 구조는 무엇인가? | 메모 목록 mapper와 카드 상태 보류 | Open |
-| ENV-01 | 환경 | 백엔드 staging/prod full base URL과 API versioning 정책은 무엇인가? | 배포 환경값 주입 검증 필요 | Open |
+| ENV-01-A | 환경 | dev backend와 Swagger endpoint는 무엇인가? | 로컬 remote API URL 확정 | Answered |
+| ENV-01-B | 환경 | 백엔드 staging/prod full base URL과 API versioning 정책은 무엇인가? | 배포 환경값 주입 검증 필요 | Open |
 
 ## Auth
 
 ### AUTH-01. `POST /auth/register` request part의 실제 schema
 
-- 현재 근거: Swagger의 `RegisterMultipartRequest.register`가 `Register` schema를 참조하지만, `Register` fields는 `accessToken`, `refreshToken`, `newUser`이다.
-- 프론트 영향: 현재 `RegisterRequest(signupToken, name, introduction, imgUrl)`와 충돌한다.
-- 확인 질문: `register` JSON part의 실제 필드가 `signupToken`, `name`, `introduction`, `imgUrl`인지, 아니면 다른 schema가 있는지 확인한다.
-- 프론트 반영: 답변 전까지 프로필 설정 화면에서 회원가입 API 전송 방식을 바꾸지 않는다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 2026-08-23 dev Swagger에서 `RegisterMultipartRequest.register`가 `RegisterRequest`를 참조하고 request/response schema가 분리됐다.
+- 프론트 영향: `signupToken`, `name` required와 optional `introduction` 기준으로 multipart JSON part를 만들 수 있다. `imgUrl`은 request JSON에 없고 `image` binary part가 optional이다.
+- 확인 질문: 해결됨.
+- 프론트 반영: 현재 JSON body를 보내는 `AuthRemoteDataSource.register`의 multipart 전환은 별도 구현 이슈에서 진행한다.
+- 답변: `register`는 `RegisterRequest(signupToken, name, introduction)`이고 `image`는 별도 optional binary part이다.
+- 상태: Answered
 
 ### AUTH-02. 회원가입 multipart 전송 정책
 
-- 현재 근거: Swagger는 `multipart/form-data`와 optional `image` part를 명시한다.
-- 프론트 영향: 이미지가 없는 회원가입도 multipart로 보내야 하는지, JSON body fallback이 가능한지 불명확하다.
-- 확인 질문: 이미지가 없을 때도 `register` part만 포함한 multipart로 전송해야 하는가?
-- 프론트 반영: 답변 전까지 `AuthRemoteDataSource.register`의 기존 JSON body를 임의 변경하지 않는다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 2026-08-23 dev Swagger는 request content type을 `multipart/form-data` 하나로 정의하고 `register`를 required, `image`를 optional로 명시한다.
+- 프론트 영향: 이미지 유무와 관계없이 `register` JSON part를 포함한 multipart로 전송해야 한다.
+- 확인 질문: 해결됨.
+- 프론트 반영: `AuthRemoteDataSource.register`를 `FormData` 기반으로 바꾸고 image가 있을 때만 binary part를 추가한다.
+- 답변: 이미지가 없어도 multipart이며 `image` part만 생략한다.
+- 상태: Answered
 
 ## 공통 Multipart
 
 ### MULTIPART-01. JSON part `Content-Type` 정책
 
-- 현재 근거: User/Place/Plant datasource는 JSON part를 `application/json`으로 전송하도록 구성되어 있다.
-- 프론트 영향: 백엔드 multipart parser가 part별 content type을 요구하는지에 따라 Auth/Place/Plant/User 전송 안정성이 달라진다.
-- 확인 질문: `user`, `place`, `plant`, `register` JSON part에는 `Content-Type: application/json`이 필수인가?
-- 프론트 반영: 필수라면 모든 multipart JSON part에 동일 정책을 유지하고, 아니라면 호환 범위를 문서화한다.
-- 답변: 미확인
+- 현재 근거: dev Swagger encoding은 Auth `register`, User `user`, Plant `plant` JSON part에 `application/json`을 명시한다. Place create/update의 `place` part에는 encoding이 없다.
+- 프론트 영향: Auth/User/Plant는 명세대로 전송할 수 있지만 Place multipart parser 요구사항은 여전히 확인이 필요하다.
+- 확인 질문: Place `place` JSON part에도 `Content-Type: application/json`이 필수인가?
+- 프론트 반영: Auth/User/Plant는 명시된 content type을 유지하고 Place는 답변 전까지 현재 호환 경계를 바꾸지 않는다.
+- 답변: Auth/User/Plant는 `application/json`; Place는 미확인.
 - 상태: Open
 
 ## Place
@@ -96,6 +98,15 @@
 - 프론트 영향: route parameter, query parameter, request DTO 이름이 섞일 수 있다.
 - 확인 질문: 프론트가 저장하고 전달해야 하는 표준 식별자는 `placeCode`인가, `placeId`인가?
 - 프론트 반영: 표준이 확정되면 route helper, provider key, request DTO naming을 정리한다.
+- 답변: 미확인
+- 상태: Open
+
+### PLACE-04. 장소 멤버 목록 response schema
+
+- 현재 근거: dev Swagger에 `GET /place/{code}/members`가 추가됐고 가입 순서대로 멤버를 조회한다고 설명하지만 성공 response body schema는 없다.
+- 프론트 영향: `/places/:placeId/friends`의 fixture 멤버를 remote response로 안전하게 바꿀 수 없다.
+- 확인 질문: wrapper와 member id, 이름, 프로필 이미지, 역할, 가입일 필드명은 무엇인가?
+- 프론트 반영: 답변 후 Place datasource/repository와 친구 관리 상태를 연결한다.
 - 답변: 미확인
 - 상태: Open
 
@@ -275,9 +286,23 @@
 
 ## 환경
 
-### ENV-01. 백엔드 환경 URL과 API versioning
+### ENV-01-A. dev backend와 Swagger endpoint
 
-- 현재 근거: Swagger server는 `/api/v1`만 제공하고, 프론트는 `COMMONPLANT_API_BASE_URL` 주입 전략을 문서화했다.
+- 현재 근거: 2026-08-23 dev Swagger config와 OpenAPI JSON의 `servers` 값을 직접 확인했다.
+- 프론트 영향: 로컬 remote API mode에서 full base URL을 명시적으로 주입할 수 있다.
+- 확인 질문: 해결됨.
+- 프론트 반영: 문서와 로컬 실행 명령에 dev base URL을 반영한다. 코드 기본 URL 변경은 별도 구현 범위로 둔다.
+- 답변:
+  - origin: `https://commonplant-dev.okbear.dev`
+  - API base URL: `https://commonplant-dev.okbear.dev/api/v1`
+  - Swagger UI: `https://commonplant-dev.okbear.dev/api/v1/swagger-ui/index.html#`
+  - OpenAPI JSON: `https://commonplant-dev.okbear.dev/api/v1/api-docs/json`
+  - Swagger config: `https://commonplant-dev.okbear.dev/api/v1/api-docs/json/swagger-config`
+- 상태: Answered
+
+### ENV-01-B. staging/prod 환경 URL과 API versioning
+
+- 현재 근거: dev는 `/api/v1`로 확인됐지만 staging/prod endpoint는 제공되지 않았다.
 - 프론트 영향: staging/prod 배포 검증에서 실제 full base URL이 필요하다.
 - 확인 질문: staging/prod full base URL과 API versioning 정책은 무엇인가?
 - 프론트 반영: 답변 후 CI/CD 환경값과 release 체크리스트를 갱신한다.
