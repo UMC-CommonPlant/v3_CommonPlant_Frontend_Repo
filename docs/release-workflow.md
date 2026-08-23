@@ -13,6 +13,7 @@
 | iOS 배포 자동화 | 보류: Apple 계정과 signing asset 준비 후 도입 |
 | Store 계정/secret | 저장소에 커밋하지 않고 GitHub Secrets/Environments에만 등록 |
 | 환경값 주입 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL`을 `dart-define` 또는 CI/CD에서 주입 |
+| Dev API | `https://commonplant-dev.okbear.dev/api/v1` 확인, 로컬에서 명시적으로 주입 |
 | Flavor 전략 | MVP는 flavor 없는 단일 prod 앱으로 운영하고 환경값은 CI/CD로 주입 |
 | Version 전략 | `pubspec.yaml`의 `X.Y.Z+N`을 공통 원본으로 두고 release 브랜치에서 수동 증가 |
 
@@ -164,12 +165,20 @@ dev/staging 앱명과 식별자 suffix는 미리 정하지 않습니다. 별도 
 
 ### 환경값 주입
 
+| 환경 | Origin | API base URL | 상태 |
+| --- | --- | --- | --- |
+| dev | `https://commonplant-dev.okbear.dev` | `https://commonplant-dev.okbear.dev/api/v1` | 확인 완료 |
+| staging | 미확정 | 미확정 | ENV-01-B Open |
+| prod | 미확정 | 미확정 | ENV-01-B Open |
+
+dev Swagger UI는 `https://commonplant-dev.okbear.dev/api/v1/swagger-ui/index.html#`, OpenAPI JSON은 `https://commonplant-dev.okbear.dev/api/v1/api-docs/json`입니다. origin 루트의 `404`는 루트 route가 없다는 뜻이며 Swagger와 `/api/v1` 가용성 판정에 사용하지 않습니다.
+
 로컬 개발에서는 필요할 때 `dart-define`으로 API mode를 켭니다.
 
 ```bash
 fvm flutter run \
   --dart-define=COMMONPLANT_USE_API=true \
-  --dart-define=COMMONPLANT_API_BASE_URL=https://commonplant.site/api/v1
+  --dart-define=COMMONPLANT_API_BASE_URL=https://commonplant-dev.okbear.dev/api/v1
 ```
 
 배포 빌드에서는 CI/CD가 환경별 값을 주입합니다.
@@ -189,7 +198,7 @@ fvm flutter build appbundle --release --dart-define-from-file=env/prod.json
 
 ### 단계별 도입
 
-1. 현재 단계에서는 단일 prod 앱 정체성과 `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 주입 기준을 유지합니다.
+1. 현재 단계에서는 단일 prod 앱 정체성과 확인된 dev API의 `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 명시적 주입 기준을 유지합니다.
 2. release workflow를 만들 때 GitHub Environment별 variables/secrets로 환경값을 주입합니다.
 3. 별도 앱 설치나 스토어 채널 분리가 필요해지면 Android/iOS `dev`, `staging`, `prod` flavor를 추가합니다.
 4. flavor가 추가된 뒤에도 API base URL과 API mode는 CI/CD 주입값을 우선합니다.
@@ -371,7 +380,7 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 ## 후속 결정 필요
 
 - 별도 설치, 배포 채널, 환경별 Firebase가 필요해지면 dev/staging flavor와 식별값을 새 작업에서 정해야 합니다.
-- staging/prod 서버 full base URL과 API versioning 정책을 정해야 합니다.
+- dev API와 Swagger endpoint는 확인됐습니다. staging/prod 서버 full base URL과 API versioning 정책은 별도로 정해야 합니다.
 - 최초 store build number는 Play Console/App Store Connect의 기존 업로드 이력을 확인한 뒤 정해야 합니다.
 - Android Play Console과 Apple Developer/App Store Connect 계정 준비 여부를 확인해야 합니다.
 - 내부 테스트 배포 안정화 후 production 제출 자동화 범위를 다시 판단합니다.

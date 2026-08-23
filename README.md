@@ -71,6 +71,23 @@ fvm use 3.35.7
 fvm flutter pub get
 ```
 
+### 5. 개발 API 확인
+
+- 개발 서버 origin: `https://commonplant-dev.okbear.dev`
+- 개발 API base URL: `https://commonplant-dev.okbear.dev/api/v1`
+- Swagger UI: [CommonPlant dev Swagger](https://commonplant-dev.okbear.dev/api/v1/swagger-ui/index.html#)
+- OpenAPI JSON: [CommonPlant dev OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)
+
+개발 서버 루트에는 화면이나 API route가 없어 `https://commonplant-dev.okbear.dev/` 요청은 `404`가 정상입니다. 서버 확인은 Swagger UI 또는 실제 `/api/v1` endpoint를 사용합니다.
+
+현재 앱 코드의 기본 URL은 별도 변경 전까지 이전 값을 유지하므로 dev API를 실행할 때는 base URL을 명시합니다.
+
+```bash
+fvm flutter run \
+  --dart-define=COMMONPLANT_USE_API=true \
+  --dart-define=COMMONPLANT_API_BASE_URL=https://commonplant-dev.okbear.dev/api/v1
+```
+
 ## 사용 라이브러리
 
 ### Runtime
@@ -139,12 +156,13 @@ tool/
 - HTTP 클라이언트는 API 연동 시점에 `dio`를 기준으로 도입합니다.
 - MVP 앱은 `커먼플랜트`, Android/iOS 식별자 `com.plant.common`인 단일 prod 앱으로 운영합니다.
 - 실제 API 사용 여부와 base URL은 `dart-define` 또는 CI/CD 환경값으로 주입합니다. dev/staging flavor는 별도 설치·배포 채널·환경별 Firebase가 필요해질 때 도입합니다.
+- dev API base URL은 `https://commonplant-dev.okbear.dev/api/v1`이며, staging/prod URL은 별도 확인 전까지 확정하지 않습니다.
 - 앱 version과 build number는 `pubspec.yaml`의 `X.Y.Z+N`을 단일 원본으로 사용하고 release 브랜치에서 수동 증가합니다. store 이력 확인 전에는 CI 실행 번호로 덮어쓰지 않습니다.
 - API 모델은 `freezed`와 `json_serializable` 기반 생성을 기본 방향으로 삼되, 실제 패키지 추가는 첫 API 연동 PR에서 함께 진행합니다.
 - 인증 토큰은 `flutter_secure_storage` 기반 보관을 기본 방향으로 합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
 - Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 사용합니다.
-- Integration test는 remote API를 사용하지 않는 Home 진입과 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. staging API, 테스트 계정, seed/cleanup이 필요한 end-to-end 범위는 준비 전까지 `Blocked`입니다.
+- Integration test는 remote API를 사용하지 않는 Home 진입과 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 테스트 계정, seed/cleanup과 secret 정책이 필요한 end-to-end 범위는 준비 전까지 `Blocked`입니다.
 
 ## 프로젝트 문서
 

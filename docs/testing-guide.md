@@ -50,7 +50,7 @@ CI는 GitHub Actions에서 Flutter `3.35.7`을 설치한 뒤 `flutter pub get`, 
 | Unit test | validator, DTO/entity mapper, repository 에러 매핑, Provider/Controller 분기 로직은 필수 |
 | Widget test | 새 화면, 상태 UI, form validation, 버튼 활성/비활성, route parameter 처리는 필수 |
 | Golden test | 공용 컴포넌트 또는 반복 화면에서 디자인 회귀 위험이 높을 때만 추가 |
-| Integration test | API 비사용 앱 시작/route smoke는 디바이스 runner로 먼저 검증하고, remote flow는 staging API, 테스트 계정, 데이터 초기화 정책이 준비된 핵심 플로우에만 추가 |
+| Integration test | API 비사용 앱 시작/route smoke는 디바이스 runner로 먼저 검증하고, remote flow는 dev API 외에 테스트 계정과 데이터 초기화 정책까지 준비된 핵심 플로우에만 추가 |
 
 MVP에서 새 기능을 만들 때 unit/widget test로 검증 가능한 동작을 golden 또는 integration test로 대체하지 않습니다. Golden test는 시각 회귀를 보강하는 용도이고, integration test는 여러 화면과 실제 실행 환경을 통과하는 흐름을 확인하는 용도입니다.
 
@@ -231,7 +231,7 @@ gh run view <run-id> --log
 
 remote API를 사용하는 핵심 사용자 흐름은 아래 조건이 준비된 뒤 추가합니다.
 
-- staging 또는 테스트용 API base URL이 확정되어 있습니다.
+- dev API base URL `https://commonplant-dev.okbear.dev/api/v1`은 확정되어 있습니다.
 - 테스트 전용 계정과 seed 데이터 또는 테스트 후 정리 방식이 준비되어 있습니다.
 - Android emulator, iOS simulator, 실제 기기, 또는 GitHub Actions runner 중 실행 환경이 정해져 있습니다.
 - 네트워크 실패, 인증 만료, 데이터 중복이 테스트 결과를 불안정하게 만들지 않도록 격리 전략이 있습니다.
@@ -248,10 +248,10 @@ remote API를 사용하는 핵심 사용자 흐름은 아래 조건이 준비된
 ```bash
 fvm flutter test integration_test \
   --dart-define=COMMONPLANT_USE_API=true \
-  --dart-define=COMMONPLANT_API_BASE_URL=<staging-api-url>
+  --dart-define=COMMONPLANT_API_BASE_URL=https://commonplant-dev.okbear.dev/api/v1
 ```
 
-staging API, 테스트 계정, seed/cleanup 정책이 필요한 end-to-end flow는 준비 전까지 `Blocked`입니다. 준비 전 회귀 검증은 unit/widget test와 feature별 Provider override를 사용합니다.
+dev API URL 조건은 해소됐습니다. 테스트 계정, seed/cleanup, secret과 데이터 격리 정책이 필요한 end-to-end flow는 나머지 조건이 준비될 때까지 `Blocked`입니다. 준비 전 회귀 검증은 unit/widget test와 feature별 Provider override를 사용합니다.
 
 ## 테스트 파일 네이밍
 
@@ -300,5 +300,5 @@ GitHub Actions의 기본 CI는 PR과 push에서 `flutter pub get`, `flutter anal
 ## 후속 결정 필요
 
 - TEST-01 pilot은 #199에서 `OnboardingPage`, `375×812`, DPR 1, Ubuntu canonical, exact comparator로 확정했습니다. 추가 화면과 viewport baseline은 회귀 위험과 유지 비용을 확인해 별도 이슈로 확장합니다.
-- TEST-02-A는 #203에서 API 비사용 Home → 장소 친구 요청 Android smoke와 수동 workflow로 도입했습니다. 병합 후 `develop` 수동 실행을 검증하고 연속 성공 기준을 충족하기 전에는 PR 필수 게이트로 승격하지 않습니다.
-- TEST-02-B는 staging API, 테스트 계정, seed/cleanup이 준비되면 remote integration test workflow를 release 검증 또는 별도 CI job으로 연결합니다. 준비 전 상태는 `Blocked`입니다.
+- TEST-02-A는 #203에서 API 비사용 Home → 장소 친구 요청 Android smoke와 수동 workflow로 도입했고 `develop` run `32243828623`이 성공했습니다. 연속 3회 성공 기준을 충족하기 전에는 PR 필수 게이트로 승격하지 않습니다.
+- TEST-02-B의 dev API URL은 #213에서 확인했습니다. 테스트 계정, seed/cleanup, secret 정책이 준비되면 remote integration test workflow를 release 검증 또는 별도 CI job으로 연결하며, 그전 상태는 `Blocked`입니다.

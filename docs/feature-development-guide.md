@@ -176,12 +176,14 @@ lib/core/network/
 feature의 datasource는 공통 Dio client를 주입받아 사용하고, 화면이나 Controller에서 직접 Dio를 생성하지 않습니다.
 
 실제 API 호출은 기본 개발/테스트 흐름을 깨지 않도록 `COMMONPLANT_USE_API` 환경값으로 켭니다.
-base URL은 `COMMONPLANT_API_BASE_URL`로 바꾸며, 기본값은 서버 Swagger 기준 `https://commonplant.site/api/v1`입니다.
+확인된 dev API base URL은 `https://commonplant-dev.okbear.dev/api/v1`이며 `COMMONPLANT_API_BASE_URL`로 명시적으로 주입합니다.
+현재 `lib/core/config/app_environment.dart`의 기본값은 이전 `https://commonplant.site/api/v1`이므로 별도 코드 변경 전에는 기본값에 의존하지 않습니다.
 앱 flavor는 dev/staging/prod 앱 정체성 구분에 사용하고, API mode와 base URL은 `dart-define` 또는 CI/CD 주입값으로 관리합니다.
 
 ```bash
-fvm flutter run --dart-define=COMMONPLANT_USE_API=true
-fvm flutter run --dart-define=COMMONPLANT_USE_API=true --dart-define=COMMONPLANT_API_BASE_URL=https://commonplant.site/api/v1
+fvm flutter run \
+  --dart-define=COMMONPLANT_USE_API=true \
+  --dart-define=COMMONPLANT_API_BASE_URL=https://commonplant-dev.okbear.dev/api/v1
 fvm flutter run --dart-define-from-file=env/local.api.json
 ```
 
@@ -211,6 +213,6 @@ Swagger에 성공 response body schema가 없는 API는 mapper에서 확인 가�
 
 ## 결정 필요
 
-- 백엔드 staging/prod full base URL과 API versioning 정책은 API 연동 시점에 확정해야 합니다.
+- dev API와 Swagger URL은 #213에서 확인했습니다. staging/prod full base URL과 API versioning 정책은 배포 환경 준비 시 별도로 확정해야 합니다.
 - flavor별 앱명, application id, bundle id는 배포 정책 확정 시 `docs/release-workflow.md` 기준으로 정합니다.
 - 백엔드 에러 코드가 확정되면 `api_exception.dart`의 mapping table을 갱신해야 합니다.

@@ -5,24 +5,24 @@
 ## 작업 원칙
 
 - 로컬 코드와 저장소 설정만으로 결정할 수 있는 범위를 먼저 진행한다.
-- staging API, 테스트 계정, seed/cleanup처럼 백엔드 준비가 필요한 항목은 `Blocked`로 분리한다.
+- dev API URL은 확인된 값으로 사용하고, 테스트 계정, seed/cleanup처럼 추가 백엔드 준비가 필요한 항목은 `Blocked`로 분리한다.
 - Golden test와 integration test는 기존 unit/widget test를 대체하지 않는다.
 - 새 테스트 종류를 PR 필수 게이트로 올리기 전 재현 가능한 로컬 실행 방법과 CI runner를 먼저 확보한다.
 - 각 항목은 별도 GitHub 이슈와 `develop` 기반 브랜치에서 진행한다.
 
-## 2026-08-19 현재 상태
+## 2026-08-23 현재 상태
 
 | 점검 항목 | 현재 상태 | 판단 |
 | --- | --- | --- |
-| 기준 브랜치 | `develop@5a6b000` | TEST-01 #199, PR #202 병합 완료 |
+| 기준 브랜치 | `develop@37501b6` | RELEASE-02 #211, PR #212까지 병합 완료 |
 | 화면 기준 크기 | `AppSizes.mobileWidth` 375, `AppSizes.mobileHeight` 812 | Figma 기준 viewport로 유지 |
 | Widget test viewport | `test/helpers/test_viewport.dart`에서 네 QA profile과 DPR 1 설정을 제공하고 compact gap 대상 화면에 적용 | 기존 raw viewport 설정은 관련 화면 수정 시 점진적으로 helper로 전환 |
 | Golden test | #199에서 `OnboardingPage` `375×812`, DPR 1 baseline과 Pretendard helper 구현 | Ubuntu canonical renderer의 exact 비교와 수동 baseline workflow run `31811426737` 성공 확인 |
 | Font/asset | 한글 포함 Pretendard v1.3.9 static OTF 4종과 OFL을 `pubspec.yaml` 및 저장소에 등록 | #200에서 Hangul glyph와 Android/iOS packaging 검증 완료 |
 | Integration test | #203에서 SDK 의존성, API 비사용 Home → 장소 친구 요청 smoke 추가 | Android API 36.1 `emulator-5554` 로컬 실행 통과 |
-| GitHub Actions | 기본 Flutter CI, 수동 `Golden Baseline`, 수동 `Android Integration Smoke` workflow 제공 | Android smoke는 병합 후 첫 수동 실행 검증이 필요하며 아직 required check가 아님 |
-| 기본 품질 게이트 | macOS에서 unit/widget 222개 통과와 golden 1개 skip, Ubuntu에서 golden 포함 223개 통과 | non-Linux font rasterization 차이는 skip하고 Ubuntu exact 결과를 필수 판정으로 사용 |
-| Remote API 환경 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL` 주입 지점만 존재 | staging URL, 계정, 데이터 격리 정책은 Blocked |
+| GitHub Actions | 기본 Flutter CI, 수동 `Golden Baseline`, 수동 `Android Integration Smoke` workflow 제공 | Android smoke run `32243828623` 성공, 연속 3회 기준 전이라 아직 required check가 아님 |
+| 기본 품질 게이트 | macOS에서 unit/widget/asset 258개 통과와 golden 1개 skip, Ubuntu에서 golden 포함 259개 통과 | non-Linux font rasterization 차이는 skip하고 Ubuntu exact 결과를 필수 판정으로 사용 |
+| Remote API 환경 | dev API `https://commonplant-dev.okbear.dev/api/v1`과 환경값 주입 지점 확인 | 테스트 계정, seed/cleanup, secret과 데이터 격리 정책은 Blocked |
 
 ## 의존관계를 반영한 작업 순서
 
@@ -32,8 +32,8 @@
 | 2 | QA-01 적용 후속 | compact-width overflow 수정과 viewport 회귀 테스트 추가 | QA-01 | Done (#197) |
 | 3 | TEST-01 폰트 선행 | 한글 Pretendard asset과 라이선스 정리 | QA-01 적용 후속 | Done (#200) |
 | 4 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | TEST-01 폰트 선행 | Done (#199) |
-| 5 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 수동 Android runner 도입 | 없음. 우선순위상 TEST-01 다음 | In Review (#203) |
-| 6 | TEST-02-B | staging API 기반 integration workflow와 핵심 CRUD flow 연결 | staging URL, 테스트 계정, seed/cleanup, secret 정책 | Blocked |
+| 5 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 수동 Android runner 도입 | 없음. 우선순위상 TEST-01 다음 | Done (#203) |
+| 6 | TEST-02-B | dev API 기반 integration workflow와 핵심 CRUD flow 연결 | 테스트 계정, seed/cleanup, secret과 데이터 격리 정책 | Blocked |
 
 TEST-01과 TEST-02-A 사이에 기술적 의존은 없지만 테스트 도입 범위를 한 번에 넓히지 않도록 QA-01, compact-width 회귀 수정, TEST-01, TEST-02 순서를 유지한다. TEST-02-B의 외부 조건이 준비되지 않아도 TEST-02-A의 API 비사용 smoke와 runner 검토는 별도 이슈로 진행할 수 있다.
 
@@ -135,13 +135,13 @@ Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료�
 - `integration_test/app_smoke_test.dart`에서 production `main()`을 실행하고 `COMMONPLANT_USE_API=false`를 assertion으로 고정한다.
 - Home의 기본 콘텐츠를 확인한 뒤 `장소 요청 3건`을 탭해 장소 친구 요청 화면까지 이동한다.
 - 로컬 명령은 Android device ID를 명시하고, GitHub Actions는 Android API 35 Google APIs x86_64 Pixel 6 emulator의 수동 workflow로 실행한다.
-- 새 `workflow_dispatch` 파일은 기본 브랜치 병합 전 실행할 수 없으므로 #203 병합 직후 `develop`에서 첫 run을 검증한다.
+- `develop`의 첫 수동 run `32243828623`은 성공했다.
 - `develop` 수동 run이 assertion 실패나 재시도 없이 3회 연속 성공하고 로그 구분, 실행 시간·비용, 팀 동의를 확인한 뒤에만 required check 승격을 검토한다.
 
 ### 백엔드 준비 전 Blocked 범위
 
 - `COMMONPLANT_USE_API=true`인 로그인과 CRUD end-to-end flow
-- staging API URL과 API versioning을 포함한 CI 환경값
+- 확인된 dev API URL을 CI에 주입할 variable/secret 정책
 - 테스트 전용 계정과 인증 갱신 정책
 - seed 데이터, 중복 방지, 테스트 후 cleanup 정책
 - secret 접근 권한과 외부 API 장애 시 재시도/판정 정책
@@ -174,5 +174,6 @@ Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게
 | TEST-02-A smoke | `61fd571` | `integration_test` 의존성과 API 비사용 Home → 장소 친구 요청 실제 앱 smoke 추가 | Android API 36.1 `emulator-5554` target test, `fvm flutter analyze` 통과 |
 | TEST-02-A runner | `fb1e7fd` | Android API 35 emulator 기반 수동 integration smoke workflow 추가 | workflow YAML parse 통과 |
 | TEST-02-A action | `92bd778` | 새 Android workflow의 checkout과 Java setup을 Node.js 24 기반 현재 major로 갱신 | 공식 release 확인, workflow YAML parse 통과 |
+| TEST-02-B dev 환경 | `6a9fbc9` | dev API URL 준비 완료와 계정·데이터·secret 정책 Blocked 경계 갱신 | dev Swagger/API endpoint와 OpenAPI schema 확인, `git diff --check` |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
