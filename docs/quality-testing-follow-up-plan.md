@@ -14,7 +14,7 @@
 
 | 점검 항목 | 현재 상태 | 판단 |
 | --- | --- | --- |
-| 기준 브랜치 | `develop@37501b6` | RELEASE-02 #211, PR #212까지 병합 완료 |
+| 기준 브랜치 | `develop@55b0e1e` | Android smoke 안정성 #218, PR #219까지 병합 완료 |
 | 화면 기준 크기 | `AppSizes.mobileWidth` 375, `AppSizes.mobileHeight` 812 | Figma 기준 viewport로 유지 |
 | Widget test viewport | `test/helpers/test_viewport.dart`에서 네 QA profile과 DPR 1 설정을 제공하고 compact gap 대상 화면에 적용 | 기존 raw viewport 설정은 관련 화면 수정 시 점진적으로 helper로 전환 |
 | Golden test | #199에서 `OnboardingPage` `375×812`, DPR 1 baseline과 Pretendard helper 구현 | Ubuntu canonical renderer의 exact 비교와 수동 baseline workflow run `31811426737` 성공 확인 |
@@ -22,7 +22,7 @@
 | Integration test | #203에서 SDK 의존성, API 비사용 Home → 장소 친구 요청 smoke 추가 | Android API 36.1 `emulator-5554` 로컬 실행 통과 |
 | GitHub Actions | 기본 Flutter CI, 수동 `Golden Baseline`, 수동 `Android Integration Smoke` workflow 제공 | Android smoke `develop` 수동 run 3회 연속 성공. 시간·비용 수용과 팀 합의 전까지 required check가 아님 |
 | 기본 품질 게이트 | #216 기준 macOS에서 unit/widget/asset 263개 통과와 golden 1개 skip, Ubuntu에서 golden 포함 264개 통과 | Ubuntu PR run `32627288004`에서 canonical golden 포함 결과 확인 |
-| Remote API 환경 | dev API `https://commonplant-dev.okbear.dev/api/v1`과 환경값 주입 지점 확인 | 테스트 계정, seed/cleanup, secret과 데이터 격리 정책은 Blocked |
+| Remote API 환경 | dev API URL과 #220 준비 계약 확인 | 인증 bootstrap, token lifecycle, fixture 격리·cleanup, GitHub Environment 승인은 Blocked |
 
 ## 의존관계를 반영한 작업 순서
 
@@ -34,9 +34,11 @@
 | 4 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | TEST-01 폰트 선행 | Done (#199) |
 | 5 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 수동 Android runner 도입 | 없음. 우선순위상 TEST-01 다음 | Done (#203) |
 | 6 | TEST-02-A-GATE | Android smoke를 PR required check로 승격할지 결정 | 3회 연속 성공, 로그 구분, 실행 시간 측정 | Ready (#218, 팀 결정 대기) |
-| 7 | TEST-02-B | dev API 기반 integration workflow와 핵심 CRUD flow 연결 | 테스트 계정, seed/cleanup, secret과 데이터 격리 정책 | Blocked |
+| 7 | TEST-02-B-READY | dev API integration의 backend/frontend/CI 준비 계약 정리 | dev URL과 Swagger, 현재 auth 연결 상태 | Done (#220) |
+| 8 | TEST-02-B-PROBE | authenticated `GET /users` read-only readiness probe | 인증 bootstrap, token lifecycle, GitHub Environment 승인 | Blocked |
+| 9 | TEST-02-B-E2E | 실제 auth UI와 도메인별 CRUD flow | frontend auth 연결, 데이터 격리·cleanup, endpoint schema | Blocked |
 
-TEST-01과 TEST-02-A 사이에 기술적 의존은 없지만 테스트 도입 범위를 한 번에 넓히지 않도록 QA-01, compact-width 회귀 수정, TEST-01, TEST-02 순서를 유지한다. TEST-02-B의 외부 조건이 준비되지 않아도 TEST-02-A의 API 비사용 smoke와 runner 검토는 별도 이슈로 진행할 수 있다.
+TEST-01과 TEST-02-A 사이에 기술적 의존은 없지만 테스트 도입 범위를 한 번에 넓히지 않도록 QA-01, compact-width 회귀 수정, TEST-01, TEST-02 순서를 유지한다. TEST-02-B는 준비 계약, read-only probe, 실제 UI/CRUD E2E로 나눠 외부 조건과 프론트 미구현을 분리한다.
 
 ## QA-01 필수 기준
 
@@ -148,13 +150,14 @@ Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료�
 
 ### 백엔드 준비 전 Blocked 범위
 
-- `COMMONPLANT_USE_API=true`인 로그인과 CRUD end-to-end flow
-- 확인된 dev API URL을 CI에 주입할 variable/secret 정책
-- 테스트 전용 계정과 인증 갱신 정책
-- seed 데이터, 중복 방지, 테스트 후 cleanup 정책
-- secret 접근 권한과 외부 API 장애 시 재시도/판정 정책
+- 개인 계정 없이 run마다 유효한 인증을 얻는 bootstrap과 token lifecycle
+- backend 소유 테스트 사용자, run별 데이터 격리 key와 병렬 실행 정책
+- 정상·실패 cleanup과 runner 중단 시 TTL fallback
+- GitHub Environment와 secret 등록 주체의 승인
+- 로그인/프로필 화면의 Auth repository 연결
+- pilot endpoint의 성공 schema와 도메인별 식별자 계약
 
-Blocked 조건이 해소되기 전에는 remote integration job을 PR 필수 게이트에 추가하지 않는다.
+상세 계약과 단계별 도입 범위는 `docs/remote-integration-test-readiness.md`에서 관리한다. Blocked 조건이 해소되기 전에는 remote workflow를 만들거나 PR 필수 게이트에 추가하지 않는다.
 
 ## 외부 기준
 
