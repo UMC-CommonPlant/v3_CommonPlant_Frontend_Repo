@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:dio/dio.dart';
@@ -20,11 +22,20 @@ class AuthRemoteDataSource {
     }
   }
 
-  Future<Object?> register(RegisterRequest request) async {
+  Future<Object?> register(
+    RegisterRequest request, {
+    MultipartFile? image,
+  }) async {
     try {
       final response = await _dio.post<Object?>(
         '/auth/register',
-        data: request.toJson(),
+        data: FormData.fromMap({
+          'register': MultipartFile.fromString(
+            jsonEncode(request.toJson()),
+            contentType: DioMediaType('application', 'json'),
+          ),
+          if (image != null) 'image': image,
+        }),
       );
 
       return response.data;

@@ -14,20 +14,17 @@ class RegisterRequest {
     required this.signupToken,
     required this.name,
     this.introduction,
-    this.imgUrl,
   });
 
   final String signupToken;
   final String name;
   final String? introduction;
-  final String? imgUrl;
 
   Map<String, Object?> toJson() {
     return {
       'signupToken': signupToken,
       'name': name,
       if (introduction != null) 'introduction': introduction,
-      if (imgUrl != null) 'imgUrl': imgUrl,
     };
   }
 }
