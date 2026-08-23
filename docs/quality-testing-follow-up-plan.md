@@ -187,5 +187,6 @@ Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료�
 | TEST-02-A action | `92bd778` | 새 Android workflow의 checkout과 Java setup을 Node.js 24 기반 현재 major로 갱신 | 공식 release 확인, workflow YAML parse 통과 |
 | TEST-02-A 안정성 | `256e029` | `develop` 수동 run 3회 연속 성공 근거와 required check 결정 경계 정리 | run `32243828623`, `32628473811`, `32628815566` 최초 시도 성공, `git diff --check` |
 | TEST-02-B dev 환경 | `6a9fbc9` | dev API URL 준비 완료와 계정·데이터·secret 정책 Blocked 경계 갱신 | dev Swagger/API endpoint와 OpenAPI schema 확인, `git diff --check` |
+| TEST-02-B 준비 계약 | `1b15325` | backend/frontend/CI gate, read-only probe와 UI/CRUD E2E 경계, TESTENV 질문 정리 | OpenAPI 19개 path와 `GET /users` schema, 현재 Auth 화면 연결 대조, `git diff --check` |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
