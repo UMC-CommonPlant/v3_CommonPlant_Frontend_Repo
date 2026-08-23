@@ -629,6 +629,6 @@
 | 이슈 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- | --- |
 | #213 | `6a9fbc9` | dev origin/API base, Swagger UI/OpenAPI/config, 현재 endpoint 차이와 환경별 Ready/Blocked 경계 문서화 | endpoint HTTP status, OpenAPI metadata, 19 paths·27 operations와 schema 대조, `git diff --check` |
-| #216 | `ae134d0` | Auth register JSON part와 optional image multipart datasource/repository, Swagger request DTO 반영 | Auth DTO/datasource/repository unit test 5개, format 260개 파일, analyze |
+| #216 | `ae134d0` | Auth register JSON part와 optional image multipart datasource/repository, Swagger request DTO 반영 | Auth unit test 5개, macOS 전체 263개와 Ubuntu golden 포함 264개, format 260개 파일, analyze |
 
 작업 이력만 갱신하는 후속 문서 커밋은 자기 자신의 해시를 생략할 수 있다.

@@ -21,7 +21,7 @@
 | Font/asset | 한글 포함 Pretendard v1.3.9 static OTF 4종과 OFL을 `pubspec.yaml` 및 저장소에 등록 | #200에서 Hangul glyph와 Android/iOS packaging 검증 완료 |
 | Integration test | #203에서 SDK 의존성, API 비사용 Home → 장소 친구 요청 smoke 추가 | Android API 36.1 `emulator-5554` 로컬 실행 통과 |
 | GitHub Actions | 기본 Flutter CI, 수동 `Golden Baseline`, 수동 `Android Integration Smoke` workflow 제공 | Android smoke run `32243828623` 성공, 연속 3회 기준 전이라 아직 required check가 아님 |
-| 기본 품질 게이트 | #216 기준 macOS에서 unit/widget/asset 263개 통과와 golden 1개 skip, Ubuntu에서 golden 포함 264개 예상 | non-Linux font rasterization 차이는 skip하고 Ubuntu exact 결과를 필수 판정으로 사용 |
+| 기본 품질 게이트 | #216 기준 macOS에서 unit/widget/asset 263개 통과와 golden 1개 skip, Ubuntu에서 golden 포함 264개 통과 | Ubuntu PR run `32627288004`에서 canonical golden 포함 결과 확인 |
 | Remote API 환경 | dev API `https://commonplant-dev.okbear.dev/api/v1`과 환경값 주입 지점 확인 | 테스트 계정, seed/cleanup, secret과 데이터 격리 정책은 Blocked |
 
 ## 의존관계를 반영한 작업 순서
