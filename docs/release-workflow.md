@@ -41,7 +41,7 @@ v2 iOS 소스에는 동일 bundle id, Team ID `9HP6SS4WYV`, marketing version `1
 | --- | --- | --- |
 | Google Play Console | `커먼랩` 개인 개발자 계정 접근 가능, 등록 앱 없음 | 계정 소유자가 본인·Android 기기·연락처 전화번호 인증 완료 |
 | Google Play 앱 등록 | 계정 확인 전 앱 만들기 비활성화 | 인증 후 `com.plant.common` 등록 가능 여부와 기존 package 소유 여부 확인 |
-| Google Play 권한/자동화 | 현재 접근만 확인, app signing·upload key·service account·tester group 없음 | 계정 소유자와 생성/보관 책임 확정 |
+| Google Play 권한/자동화 | 현재 사용자는 활성·만료 없음·관리자(모든 권한), 등록 앱과 app signing·upload key·service account·tester group은 없음 | 계정 소유자의 인증 완료 후 생성/보관 책임 확정 |
 | App Store Connect | 로그인 전 상태 | 로그인 후 Team, role, 앱, build 이력 확인 |
 | Apple signing/자동화 | v3에서 certificate·provisioning profile·ASC API key 미확인 | Apple Developer/App Store Connect 권한 확인 후 준비 여부만 기록 |
 
