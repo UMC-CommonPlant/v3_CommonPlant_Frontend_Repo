@@ -9,13 +9,48 @@
 | 기본 브랜치 | `develop` |
 | 배포 브랜치 | `main` |
 | CI | `.github/workflows/flutter_ci.yml`에서 analyze/test 실행 |
-| Android 배포 자동화 | 보류: signing secret과 Play Console 계정 준비 후 도입 |
-| iOS 배포 자동화 | 보류: Apple 계정과 signing asset 준비 후 도입 |
-| Store 계정/secret | 저장소에 커밋하지 않고 GitHub Secrets/Environments에만 등록 |
+| Android 배포 자동화 | 보류: Play Console 접근은 가능하지만 계정 인증, 앱 등록과 release signing이 준비되지 않음 |
+| iOS 배포 자동화 | 보류: Apple 계정 확인과 signing asset이 준비되지 않음 |
+| Store 계정/secret | GitHub Actions secrets, variables, environments가 아직 없으며 준비 후 저장소 밖에 등록 |
 | 환경값 주입 | `COMMONPLANT_USE_API`, `COMMONPLANT_API_BASE_URL`을 `dart-define` 또는 CI/CD에서 주입 |
 | Dev API | `https://commonplant-dev.okbear.dev/api/v1` 확인, 로컬에서 명시적으로 주입 |
 | Flavor 전략 | MVP는 flavor 없는 단일 prod 앱으로 운영하고 환경값은 CI/CD로 주입 |
 | Version 전략 | `pubspec.yaml`의 `X.Y.Z+N`을 공통 원본으로 두고 release 브랜치에서 수동 증가 |
+
+## RELEASE-03 준비 상태 확인
+
+2026-08-23에 #215 범위로 저장소와 store console을 읽기 전용으로 점검했습니다. 계정 인증, 앱 생성, signing asset이나 API key 생성은 수행하지 않았습니다.
+
+### 저장소 상태
+
+| 항목 | 확인 결과 | 판정 |
+| --- | --- | --- |
+| Android identifier | `com.plant.common` | RELEASE-01 기준과 일치 |
+| Android signing | release build가 `signingConfigs.debug` 사용, release keystore와 key properties 없음 | Blocked |
+| iOS identifier | Runner `com.plant.common`, RunnerTests `com.plant.common.RunnerTests` | RELEASE-01 기준과 일치 |
+| iOS signing | automatic signing이지만 v3 `DEVELOPMENT_TEAM`과 배포용 certificate/profile 미확인 | Blocked |
+| 배포 자동화 | fastlane과 store upload workflow 없음 | 계정과 signing 준비 후 도입 |
+| GitHub 배포 설정 | Actions secrets, variables, environments 없음 | credential 준비 후 이름과 environment 정책부터 확정 |
+| source version | `pubspec.yaml` `1.0.0+1` | store 이력 확인 전 업로드 금지 유지 |
+
+v2 iOS 소스에는 동일 bundle id, Team ID `9HP6SS4WYV`, marketing version `1.0`, source build `1`이 남아 있습니다. 이는 후보 정보일 뿐 현재 Apple Developer Team 권한, App Store Connect 앱 또는 실제 최대 업로드 build number를 증명하지 않으므로 그대로 재사용하지 않습니다.
+
+### Store console 상태
+
+| 항목 | 확인 결과 | 다음 조건 |
+| --- | --- | --- |
+| Google Play Console | `커먼랩` 개인 개발자 계정 접근 가능, 등록 앱 없음 | 계정 소유자가 본인·Android 기기·연락처 전화번호 인증 완료 |
+| Google Play 앱 등록 | 계정 확인 전 앱 만들기 비활성화 | 인증 후 `com.plant.common` 등록 가능 여부와 기존 package 소유 여부 확인 |
+| Google Play 권한/자동화 | 현재 접근만 확인, app signing·upload key·service account·tester group 없음 | 계정 소유자와 생성/보관 책임 확정 |
+| App Store Connect | 로그인 전 상태 | 로그인 후 Team, role, 앱, build 이력 확인 |
+| Apple signing/자동화 | v3에서 certificate·provisioning profile·ASC API key 미확인 | Apple Developer/App Store Connect 권한 확인 후 준비 여부만 기록 |
+
+### 현재 판정
+
+- `RELEASE-03`은 Google Play 계정 소유자 인증과 Apple 계정 로그인이 필요해 `Blocked`입니다.
+- `RELEASE-02-B`는 양쪽 store의 실제 업로드 이력을 확인할 때까지 `Blocked`를 유지합니다.
+- `RELEASE-04`와 store upload workflow는 RELEASE-02-B/03이 해소되고 내부 테스트 배포가 안정화되기 전에는 시작하지 않습니다.
+- 로그인 이메일, console 계정 ID, secret 값과 key 원문은 문서·이슈·PR·로그에 남기지 않습니다.
 
 ## MVP 릴리즈 정책
 
@@ -381,8 +416,9 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 
 - 별도 설치, 배포 채널, 환경별 Firebase가 필요해지면 dev/staging flavor와 식별값을 새 작업에서 정해야 합니다.
 - dev API와 Swagger endpoint는 확인됐습니다. staging/prod 서버 full base URL과 API versioning 정책은 별도로 정해야 합니다.
-- 최초 store build number는 Play Console/App Store Connect의 기존 업로드 이력을 확인한 뒤 정해야 합니다.
-- Android Play Console과 Apple Developer/App Store Connect 계정 준비 여부를 확인해야 합니다.
+- Google Play Console은 접근 가능하지만 계정 소유자의 인증과 앱 등록이 필요합니다.
+- Apple Developer/App Store Connect는 로그인 후 Team, app, role과 signing 준비 상태를 확인해야 합니다.
+- 최초 store build number는 양쪽 store의 기존 업로드 이력을 확인한 뒤 정해야 합니다.
 - 내부 테스트 배포 안정화 후 production 제출 자동화 범위를 다시 판단합니다.
 
 ## RELEASE-01 작업 이력
@@ -398,3 +434,11 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 | 이슈 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- | --- |
 | #211 | - | `pubspec.yaml` 단일 원본, 수동 증가, 번호 재사용 금지, CI override 금지와 store 이력 보류 경계 문서화 | 현재 플랫폼 매핑과 v2 설정 확인, Flutter/Android/Apple/GitHub 공식 문서 대조, `git diff --check` |
+
+## RELEASE-03 작업 이력
+
+| 이슈 | 커밋 | 변경 범위 | 검증 |
+| --- | --- | --- | --- |
+| #215 | - | repository signing/배포 설정, Play Console 준비 상태와 Apple 확인 대기 조건 문서화 | tracked signing 파일, GitHub Actions 설정, v2 source metadata와 store console 읽기 전용 점검, `git diff --check` |
+
+작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있습니다.
