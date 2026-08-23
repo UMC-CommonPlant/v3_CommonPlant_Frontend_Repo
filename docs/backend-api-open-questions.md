@@ -13,8 +13,8 @@
 
 | ID | 영역 | 질문 | 현재 영향 | 상태 |
 | --- | --- | --- | --- | --- |
-| AUTH-01 | Auth | `POST /auth/register` request part의 실제 schema는 무엇인가? | multipart datasource 구현 가능 | Answered |
-| AUTH-02 | Auth | 회원가입은 이미지가 없어도 항상 multipart로 보내야 하는가? | JSON body 대신 multipart, image optional 기준 확인 | Answered |
+| AUTH-01 | Auth | `POST /auth/register` request part의 실제 schema는 무엇인가? | #216 multipart datasource/repository 반영 완료 | Done |
+| AUTH-02 | Auth | 회원가입은 이미지가 없어도 항상 multipart로 보내야 하는가? | #216 image optional 전송 기준 반영 완료 | Done |
 | MULTIPART-01 | 공통 | multipart JSON part의 `Content-Type`은 `application/json`이 필수인가? | Auth/Place/Plant/User multipart 일관성 확인 필요 | Open |
 | PLACE-01 | Place | Place 조회/생성/수정/삭제 성공 response body 구조는 무엇인가? | Place mapper와 화면 성공 정책 제한 | Open |
 | PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | 장소 목록/상세 실데이터 신뢰도 제한 | Open |
@@ -48,18 +48,18 @@
 - 현재 근거: 2026-08-23 dev Swagger에서 `RegisterMultipartRequest.register`가 `RegisterRequest`를 참조하고 request/response schema가 분리됐다.
 - 프론트 영향: `signupToken`, `name` required와 optional `introduction` 기준으로 multipart JSON part를 만들 수 있다. `imgUrl`은 request JSON에 없고 `image` binary part가 optional이다.
 - 확인 질문: 해결됨.
-- 프론트 반영: 현재 JSON body를 보내는 `AuthRemoteDataSource.register`의 multipart 전환은 별도 구현 이슈에서 진행한다.
+- 프론트 반영: #216에서 `register` JSON part와 optional `image` part를 보내도록 datasource/repository를 전환하고 request JSON의 `imgUrl`을 제거했다.
 - 답변: `register`는 `RegisterRequest(signupToken, name, introduction)`이고 `image`는 별도 optional binary part이다.
-- 상태: Answered
+- 상태: Done
 
 ### AUTH-02. 회원가입 multipart 전송 정책
 
 - 현재 근거: 2026-08-23 dev Swagger는 request content type을 `multipart/form-data` 하나로 정의하고 `register`를 required, `image`를 optional로 명시한다.
 - 프론트 영향: 이미지 유무와 관계없이 `register` JSON part를 포함한 multipart로 전송해야 한다.
 - 확인 질문: 해결됨.
-- 프론트 반영: `AuthRemoteDataSource.register`를 `FormData` 기반으로 바꾸고 image가 있을 때만 binary part를 추가한다.
+- 프론트 반영: #216에서 `FormData` 기반으로 바꾸고 image가 있을 때만 binary part를 추가했다. 실제 파일 생성과 화면 submit 연결은 별도 UI 작업이다.
 - 답변: 이미지가 없어도 multipart이며 `image` part만 생략한다.
-- 상태: Answered
+- 상태: Done
 
 ## 공통 Multipart
 
