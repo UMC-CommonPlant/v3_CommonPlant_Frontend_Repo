@@ -139,6 +139,7 @@ tool/
 - HTTP 클라이언트는 API 연동 시점에 `dio`를 기준으로 도입합니다.
 - MVP 앱은 `커먼플랜트`, Android/iOS 식별자 `com.plant.common`인 단일 prod 앱으로 운영합니다.
 - 실제 API 사용 여부와 base URL은 `dart-define` 또는 CI/CD 환경값으로 주입합니다. dev/staging flavor는 별도 설치·배포 채널·환경별 Firebase가 필요해질 때 도입합니다.
+- 앱 version과 build number는 `pubspec.yaml`의 `X.Y.Z+N`을 단일 원본으로 사용하고 release 브랜치에서 수동 증가합니다. store 이력 확인 전에는 CI 실행 번호로 덮어쓰지 않습니다.
 - API 모델은 `freezed`와 `json_serializable` 기반 생성을 기본 방향으로 삼되, 실제 패키지 추가는 첫 API 연동 PR에서 함께 진행합니다.
 - 인증 토큰은 `flutter_secure_storage` 기반 보관을 기본 방향으로 합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
