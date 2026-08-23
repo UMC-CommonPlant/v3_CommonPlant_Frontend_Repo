@@ -525,4 +525,4 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 
 | 이슈 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- | --- |
-| #222 | - | production 제출/공개 승인 gate, 동일 artifact 승격, 최초 출시와 후속 rollout, halt/pause/hotfix 경계 확정 | GitHub/Google Play/Apple 공식 문서와 저장소 Environment 상태 대조, `git diff --check` |
+| #222 | `1df75c3` | production 제출/공개 승인 gate, 동일 artifact 승격, 최초 출시와 후속 rollout, halt/pause/hotfix 경계 확정 | GitHub/Google Play/Apple 공식 문서와 저장소 Environment 상태 대조, `git diff --check` |
