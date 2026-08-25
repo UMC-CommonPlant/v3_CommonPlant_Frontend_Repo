@@ -89,6 +89,47 @@ void main() {
     expect(find.text('필로덴드론'), findsOneWidget);
   });
 
+  testWidgets('미래 API 날짜는 보존하되 날짜 선택기는 오늘 이후를 허용하지 않는다', (tester) async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final futureDate = DateTime(today.year + 1, today.month, today.day);
+    final apiDate = _apiDate(futureDate);
+    final displayDate = _displayDate(futureDate);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(
+            _StaticEditInfoPlantRepository(
+              PlantEditInfo(name: '필로덴드론', lastWateredDate: apiDate),
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          home: PlantFormPage(plantId: 'plant-1', placeId: 'place-1'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(displayDate), findsOneWidget);
+
+    await tester.tap(find.text(displayDate));
+    await tester.pumpAndSettle();
+
+    final calendar = tester.widget<CalendarDatePicker>(
+      find.byType(CalendarDatePicker),
+    );
+    expect(calendar.initialDate, today);
+    expect(calendar.lastDate, today);
+
+    await tester.tapAt(const Offset(4, 4));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CalendarDatePicker), findsNothing);
+    expect(find.text(displayDate), findsOneWidget);
+  });
+
   testWidgets('식물 등록 화면은 원격 제출 중 등록 버튼을 잠근다', (tester) async {
     final repository = _PendingPlantCreateRepository();
 
@@ -273,6 +314,20 @@ void main() {
     expect(find.text('필로덴드론'), findsOneWidget);
     expect(find.text('식물 수정 정보를 불러오지 못했어요'), findsNothing);
   });
+}
+
+String _apiDate(DateTime date) {
+  final month = date.month.toString().padLeft(2, '0');
+  final day = date.day.toString().padLeft(2, '0');
+
+  return '${date.year}-$month-$day';
+}
+
+String _displayDate(DateTime date) {
+  final month = date.month.toString().padLeft(2, '0');
+  final day = date.day.toString().padLeft(2, '0');
+
+  return '${date.year}. $month. $day';
 }
 
 class _PendingPlantCreateRepository extends Fake implements PlantRepository {

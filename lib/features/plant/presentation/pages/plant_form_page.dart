@@ -98,11 +98,16 @@ class PlantFormPage extends ConsumerWidget {
     String? currentDate,
   ) async {
     final today = DateUtils.dateOnly(DateTime.now());
+    final firstDate = DateTime(1900);
     final selectedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.tryParse(currentDate ?? '') ?? today,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
+      initialDate: _clampWateringDatePickerInitialDate(
+        currentDate: currentDate,
+        firstDate: firstDate,
+        lastDate: today,
+      ),
+      firstDate: firstDate,
+      lastDate: today,
     );
 
     if (selectedDate == null || !context.mounted) {
@@ -155,4 +160,28 @@ class PlantFormPage extends ConsumerWidget {
         }
     }
   }
+}
+
+DateTime _clampWateringDatePickerInitialDate({
+  required String? currentDate,
+  required DateTime firstDate,
+  required DateTime lastDate,
+}) {
+  final parsedDate = DateTime.tryParse(currentDate ?? '');
+
+  if (parsedDate == null) {
+    return lastDate;
+  }
+
+  final date = DateUtils.dateOnly(parsedDate);
+
+  if (date.isBefore(firstDate)) {
+    return firstDate;
+  }
+
+  if (date.isAfter(lastDate)) {
+    return lastDate;
+  }
+
+  return date;
 }
