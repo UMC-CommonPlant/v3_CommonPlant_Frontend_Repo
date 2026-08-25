@@ -1,4 +1,3 @@
-import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
@@ -12,11 +11,15 @@ class PlantHero extends StatelessWidget {
     required this.placeName,
     required this.name,
     required this.species,
+    this.imageUrl,
+    this.imageAsset,
   });
 
   final String placeName;
   final String name;
   final String species;
+  final String? imageUrl;
+  final String? imageAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +32,12 @@ class PlantHero extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _PlantHeroImage(placeName: placeName),
+          _PlantHeroImage(
+            placeName: placeName,
+            name: name,
+            imageUrl: imageUrl,
+            imageAsset: imageAsset,
+          ),
           const SizedBox(height: AppSpacing.x8),
           Text(
             name,
@@ -57,9 +65,17 @@ class PlantHero extends StatelessWidget {
 }
 
 class _PlantHeroImage extends StatelessWidget {
-  const _PlantHeroImage({required this.placeName});
+  const _PlantHeroImage({
+    required this.placeName,
+    required this.name,
+    required this.imageUrl,
+    required this.imageAsset,
+  });
 
   final String placeName;
+  final String name;
+  final String? imageUrl;
+  final String? imageAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -78,17 +94,7 @@ class _PlantHeroImage extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 const ColoredBox(color: AppColors.surfaceMuted),
-                Positioned(
-                  left: 0,
-                  top: -126 * scale,
-                  child: Image.asset(
-                    AppImageAssets.plantEditMonstera,
-                    width: 495 * scale,
-                    height: 369 * scale,
-                    fit: BoxFit.cover,
-                    semanticLabel: '몬테 식물 사진',
-                  ),
-                ),
+                _buildImage(scale),
                 Positioned(
                   top: AppSpacing.x8 * scale,
                   left: 0,
@@ -100,6 +106,49 @@ class _PlantHeroImage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildImage(double scale) {
+    if (imageUrl != null) {
+      return Image.network(
+        imageUrl!,
+        fit: BoxFit.cover,
+        semanticLabel: '$name 식물 사진',
+        errorBuilder: (context, error, stackTrace) => const _EmptyPlantImage(),
+      );
+    }
+
+    if (imageAsset != null) {
+      return Positioned(
+        left: 0,
+        top: -126 * scale,
+        child: Image.asset(
+          imageAsset!,
+          width: 495 * scale,
+          height: 369 * scale,
+          fit: BoxFit.cover,
+          semanticLabel: '$name 식물 사진',
+        ),
+      );
+    }
+
+    return const _EmptyPlantImage();
+  }
+}
+
+class _EmptyPlantImage extends StatelessWidget {
+  const _EmptyPlantImage();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Icon(
+        Icons.image_not_supported_outlined,
+        color: AppColors.iconInactive,
+        size: 40,
+        semanticLabel: '식물 이미지 없음',
+      ),
     );
   }
 }

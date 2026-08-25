@@ -1,6 +1,7 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
@@ -17,10 +18,14 @@ class MemoPreviewSection extends StatelessWidget {
     super.key,
     required this.plantId,
     required this.memos,
+    this.representativeMemo,
+    this.supportsActions = true,
   });
 
   final String plantId;
   final List<PlantDetailMemoItem> memos;
+  final String? representativeMemo;
+  final bool supportsActions;
 
   @override
   Widget build(BuildContext context) {
@@ -33,37 +38,42 @@ class MemoPreviewSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _MemoSectionHeader(
-                onPressed: () =>
-                    context.push(AppRoutePaths.memoListLocation(plantId)),
+                onPressed: supportsActions
+                    ? () =>
+                          context.push(AppRoutePaths.memoListLocation(plantId))
+                    : null,
               ),
-              SizedBox(
-                height: AppSizes.memoCardHeight,
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.x20,
+              if (supportsActions) ...[
+                SizedBox(
+                  height: AppSizes.memoCardHeight,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.x20,
+                    ),
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) =>
+                        _PlantMemoCard(memo: memos[index]),
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(width: AppSpacing.x8),
+                    itemCount: memos.length,
                   ),
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) =>
-                      _PlantMemoCard(memo: memos[index]),
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(width: AppSpacing.x8),
-                  itemCount: memos.length,
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.x20,
-                  AppSpacing.x16,
-                  AppSpacing.x20,
-                  AppSpacing.x24,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.x20,
+                    AppSpacing.x16,
+                    AppSpacing.x20,
+                    AppSpacing.x24,
+                  ),
+                  child: CommonButton(
+                    label: '작성하기',
+                    size: CommonButtonSize.medium,
+                    onPressed: () =>
+                        context.push(AppRoutePaths.memoWriteLocation(plantId)),
+                  ),
                 ),
-                child: CommonButton(
-                  label: '작성하기',
-                  size: CommonButtonSize.medium,
-                  onPressed: () =>
-                      context.push(AppRoutePaths.memoWriteLocation(plantId)),
-                ),
-              ),
+              ] else
+                _RemoteMemoSummary(representativeMemo: representativeMemo),
             ],
           ),
         ),
@@ -72,10 +82,62 @@ class MemoPreviewSection extends StatelessWidget {
   }
 }
 
+class _RemoteMemoSummary extends StatelessWidget {
+  const _RemoteMemoSummary({required this.representativeMemo});
+
+  final String? representativeMemo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.x20,
+        0,
+        AppSpacing.x20,
+        AppSpacing.x24,
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.surfaceMuted,
+          borderRadius: BorderRadius.circular(AppRadius.medium),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.x16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                representativeMemo == null ? '대표 메모 없음' : '대표 메모',
+                style: AppTextStyles.size14Bold.copyWith(
+                  color: AppColors.textStrong,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.x8),
+              Text(
+                representativeMemo ?? '서버에서 제공한 대표 메모가 없어요.',
+                style: AppTextStyles.size14Medium.copyWith(
+                  color: AppColors.textBody,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.x12),
+              Text(
+                '메모 목록과 작성 API는 아직 제공되지 않아요.',
+                style: AppTextStyles.size14Medium.copyWith(
+                  color: AppColors.iconInactive,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _MemoSectionHeader extends StatelessWidget {
   const _MemoSectionHeader({required this.onPressed});
 
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -100,20 +162,21 @@ class _MemoSectionHeader extends StatelessWidget {
                 ),
               ),
             ),
-            Semantics(
-              button: true,
-              label: '메모 전체보기',
-              child: ExcludeSemantics(
-                child: IconButton(
-                  onPressed: onPressed,
-                  icon: const Icon(
-                    Icons.chevron_right,
-                    color: AppColors.textStrong,
-                    size: AppSizes.iconMedium,
+            if (onPressed != null)
+              Semantics(
+                button: true,
+                label: '메모 전체보기',
+                child: ExcludeSemantics(
+                  child: IconButton(
+                    onPressed: onPressed,
+                    icon: const Icon(
+                      Icons.chevron_right,
+                      color: AppColors.textStrong,
+                      size: AppSizes.iconMedium,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ),

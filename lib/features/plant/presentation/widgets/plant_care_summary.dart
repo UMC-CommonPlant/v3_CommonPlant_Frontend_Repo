@@ -21,10 +21,10 @@ class PlantCareSummary extends StatelessWidget {
   });
 
   final String name;
-  final int daysTogether;
-  final String dDayLabel;
-  final String startDate;
-  final String lastWateredDate;
+  final int? daysTogether;
+  final String? dDayLabel;
+  final String? startDate;
+  final String? lastWateredDate;
 
   @override
   Widget build(BuildContext context) {
@@ -36,25 +36,7 @@ class PlantCareSummary extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: AppSpacing.x24),
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: AppTextStyles.size16Medium.copyWith(
-                    color: AppColors.textBody,
-                  ),
-                  children: [
-                    TextSpan(text: '$name와 함께한지 '),
-                    TextSpan(
-                      text: '$daysTogether일',
-                      style: AppTextStyles.size18Medium.copyWith(
-                        color: AppColors.textStrong,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const TextSpan(text: '이 지났어요!'),
-                  ],
-                ),
-              ),
+              _DaysTogetherLabel(name: name, daysTogether: daysTogether),
               const SizedBox(height: AppSpacing.x8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -68,13 +50,17 @@ class PlantCareSummary extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.x8),
                   Text(
-                    dDayLabel,
-                    style: AppTextStyles.size24Medium.copyWith(
-                      fontSize: 28,
-                      height: 36 / 28,
-                      color: AppColors.textStrong,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    dDayLabel ?? '물주기 예정 정보 없음',
+                    style: dDayLabel == null
+                        ? AppTextStyles.size14Medium.copyWith(
+                            color: AppColors.iconInactive,
+                          )
+                        : AppTextStyles.size24Medium.copyWith(
+                            fontSize: 28,
+                            height: 36 / 28,
+                            color: AppColors.textStrong,
+                            fontWeight: FontWeight.w700,
+                          ),
                   ),
                 ],
               ),
@@ -92,14 +78,50 @@ class PlantCareSummary extends StatelessWidget {
   }
 }
 
+class _DaysTogetherLabel extends StatelessWidget {
+  const _DaysTogetherLabel({required this.name, required this.daysTogether});
+
+  final String name;
+  final int? daysTogether;
+
+  @override
+  Widget build(BuildContext context) {
+    if (daysTogether == null) {
+      return Text(
+        '$name와 함께한 기간 정보가 없어요',
+        textAlign: TextAlign.center,
+        style: AppTextStyles.size16Medium.copyWith(color: AppColors.textBody),
+      );
+    }
+
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: AppTextStyles.size16Medium.copyWith(color: AppColors.textBody),
+        children: [
+          TextSpan(text: '$name와 함께한지 '),
+          TextSpan(
+            text: '$daysTogether일',
+            style: AppTextStyles.size18Medium.copyWith(
+              color: AppColors.textStrong,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const TextSpan(text: '이 지났어요!'),
+        ],
+      ),
+    );
+  }
+}
+
 class _PlantDateSummary extends StatelessWidget {
   const _PlantDateSummary({
     required this.startDate,
     required this.lastWateredDate,
   });
 
-  final String startDate;
-  final String lastWateredDate;
+  final String? startDate;
+  final String? lastWateredDate;
 
   @override
   Widget build(BuildContext context) {
@@ -133,8 +155,8 @@ class _PlantDateSummary extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(startDate, style: textStyle),
-                Text(lastWateredDate, style: textStyle),
+                Text(startDate ?? '정보 없음', style: textStyle),
+                Text(lastWateredDate ?? '정보 없음', style: textStyle),
               ],
             ),
           ],

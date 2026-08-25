@@ -7,11 +7,15 @@ PlantDetailViewData plantDetailFixture({String? placeCode}) {
     placeName: '스윗홈_거실',
     name: '몬테',
     species: 'Monstera deliciosa',
+    imageUrl: null,
+    imageAsset: AppImageAssets.plantEditMonstera,
     daysTogether: 1,
     dDayLabel: 'D-3',
     startDate: '2022.11.24',
     lastWateredDate: '2022.11.24',
     wateringCycleLabel: '10 Day',
+    representativeMemo: null,
+    plantInfo: null,
     memos: const [
       PlantDetailMemoItem(
         author: '커먼플랜트',
@@ -39,5 +43,6 @@ PlantDetailViewData plantDetailFixture({String? placeCode}) {
         dateLabel: '2022.11.20',
       ),
     ],
+    supportsMemoActions: true,
   );
 }

@@ -68,7 +68,7 @@ class PlantDetailPage extends ConsumerWidget {
       loading: () => const PlantStateScaffold(
         title: 'My plant',
         statusTitle: '식물 정보를 불러오고 있어요',
-        message: '식물과 메모 정보를 준비하고 있어요',
+        message: '식물 상세 정보를 준비하고 있어요',
         isLoading: true,
       ),
     );
@@ -142,6 +142,8 @@ class PlantDetailPage extends ConsumerWidget {
                 placeName: detail.placeName,
                 name: detail.name,
                 species: detail.species,
+                imageUrl: detail.imageUrl,
+                imageAsset: detail.imageAsset,
               ),
             ),
             PlantCareSummary(
@@ -151,8 +153,16 @@ class PlantDetailPage extends ConsumerWidget {
               startDate: detail.startDate,
               lastWateredDate: detail.lastWateredDate,
             ),
-            MemoPreviewSection(plantId: plantId, memos: detail.memos),
-            PlantInfoSection(wateringCycleLabel: detail.wateringCycleLabel),
+            MemoPreviewSection(
+              plantId: plantId,
+              memos: detail.memos,
+              representativeMemo: detail.representativeMemo,
+              supportsActions: detail.supportsMemoActions,
+            ),
+            PlantInfoSection(
+              wateringCycleLabel: detail.wateringCycleLabel,
+              plantInfo: detail.plantInfo,
+            ),
             const SizedBox(height: 82),
           ],
         ),

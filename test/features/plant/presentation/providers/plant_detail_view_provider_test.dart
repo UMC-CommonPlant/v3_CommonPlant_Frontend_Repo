@@ -22,7 +22,7 @@ void main() {
       expect(detail?.placeName, '스윗홈_거실');
     });
 
-    test('remote mode는 PlantDetail을 fixture 상세에 병합한다', () async {
+    test('remote mode는 PlantDetail을 원격 전용 ViewData로 변환한다', () async {
       final repository = _StaticPlantRepository(
         const PlantDetail(
           id: 'remote-plant',
@@ -30,13 +30,15 @@ void main() {
           placeId: 'remote-place',
           placeName: '거실 정원',
           species: 'Philodendron',
-          lastWateredDate: '2026.05.25',
+          lastWateredDate: '2026-05-25',
+          registeredAt: '2026-05-20T10:30:00',
         ),
       );
       final container = ProviderContainer(
         overrides: [
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
+          plantDetailNowProvider.overrideWithValue(() => DateTime(2026, 5, 25)),
         ],
       );
       addTearDown(container.dispose);
@@ -53,6 +55,10 @@ void main() {
       expect(detail?.placeName, '거실 정원');
       expect(detail?.species, 'Philodendron');
       expect(detail?.lastWateredDate, '2026.05.25');
+      expect(detail?.startDate, '2026.05.20');
+      expect(detail?.daysTogether, 6);
+      expect(detail?.memos, isEmpty);
+      expect(detail?.dDayLabel, isNull);
       expect(repository.fetchCalls, 1);
     });
 

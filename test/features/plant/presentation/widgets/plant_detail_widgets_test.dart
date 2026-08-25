@@ -56,6 +56,34 @@ void main() {
     expect(find.text('10 Day'), findsOneWidget);
   });
 
+  testWidgets('원격 관리 정보가 없으면 지원 범위를 명확히 표시한다', (tester) async {
+    await tester.pumpWidget(
+      _buildRouterApp(
+        const Column(
+          children: [
+            PlantCareSummary(
+              name: '필로덴드론',
+              daysTogether: null,
+              dDayLabel: null,
+              startDate: null,
+              lastWateredDate: null,
+            ),
+            PlantInfoSection(
+              wateringCycleLabel: null,
+              plantInfo: '반양지에서 관리해 주세요.',
+            ),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.text('필로덴드론와 함께한 기간 정보가 없어요'), findsOneWidget);
+    expect(find.text('물주기 예정 정보 없음'), findsOneWidget);
+    expect(find.text('정보 없음'), findsNWidgets(2));
+    expect(find.text('물주기 주기 정보 없음'), findsOneWidget);
+    expect(find.text('반양지에서 관리해 주세요.'), findsOneWidget);
+  });
+
   testWidgets('MemoPreviewSection은 메모를 표시하고 목록/작성으로 이동한다', (tester) async {
     const memoSection = MemoPreviewSection(
       plantId: 'plant-1',
@@ -86,6 +114,25 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('메모 작성 화면'), findsOneWidget);
+  });
+
+  testWidgets('원격 Memo는 대표 메모만 표시하고 미지원 동작을 숨긴다', (tester) async {
+    await tester.pumpWidget(
+      _buildRouterApp(
+        const MemoPreviewSection(
+          plantId: 'plant-1',
+          memos: [],
+          representativeMemo: '서버 대표 메모',
+          supportsActions: false,
+        ),
+      ),
+    );
+
+    expect(find.text('대표 메모'), findsOneWidget);
+    expect(find.text('서버 대표 메모'), findsOneWidget);
+    expect(find.text('메모 목록과 작성 API는 아직 제공되지 않아요.'), findsOneWidget);
+    expect(find.bySemanticsLabel('메모 전체보기'), findsNothing);
+    expect(find.text('작성하기'), findsNothing);
   });
 }
 

@@ -10,10 +10,12 @@ void main() {
       expect(detail.placeName, '스윗홈_거실');
       expect(detail.name, '몬테');
       expect(detail.species, 'Monstera deliciosa');
+      expect(detail.imageAsset, isNotNull);
       expect(detail.dDayLabel, 'D-3');
       expect(detail.wateringCycleLabel, '10 Day');
       expect(detail.memos, hasLength(4));
       expect(detail.memos.first.author, '커먼플랜트');
+      expect(detail.supportsMemoActions, isTrue);
     });
   });
 }
