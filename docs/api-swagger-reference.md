@@ -519,7 +519,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | 화면 | Route | 새로 연결 가능한 API | 판단 |
 | --- | --- | --- | --- |
 | 프로필 설정 | `/profile/setup` | `POST /auth/register` | #216에서 multipart datasource/repository 반영 완료, 실제 image picker 파일과 submit 연결은 별도 구현 필요 |
-| 프로필 설정 또는 마이페이지 | 미정 | `PUT /users` | User 수정 request/response schema가 보강되어 반영 가능 |
+| 마이페이지·회원 정보 수정 | `/me`, `/me/edit` | `GET/PUT/DELETE /users` | #237에서 조회·이름 수정·회원 탈퇴 화면 흐름 연결, 실제 image picker는 별도 정책 필요 |
 | 친구 추가 | `/places/new/friends` | `GET /users/{keyword}` | 사용자 이름 검색 DTO 반영 가능 |
 | 친구 추가 | `/places/new/friends` | `POST /friends/request` | 요청 전송은 가능하나 response schema와 화면 성공 정책 확인 필요 |
 | 장소 친구 요청 | `/places/invitations` | `GET /friends/requests` | 목록 response schema가 없어 백엔드 확인 필요 |
@@ -581,6 +581,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: User 조회/수정/검색 DTO와 datasource/repository는 `UserResponse`, `UserListJsonResponse`, `UserUpdateMultipartRequest` 기준으로 추가했다.
 - 반영: `PUT /users`는 multipart `user` JSON part와 optional `image` part를 사용하는 datasource로 구성했다.
 - 반영: `UserRepository.updateMe`는 화면의 이미지 선택 흐름이 `MultipartFile`을 확보하면 optional `image` part를 전달할 수 있도록 열어두었다.
+- 반영: #237에서 `/me`, `/me/settings`, `/me/edit` 화면을 추가하고 `GET/PUT/DELETE /users`를 현재 사용자 조회·이름 수정·회원 탈퇴 흐름에 연결했다.
 - 반영: `GET /users/{keyword}`는 사용자 검색 datasource/repository 후보로 추가했다.
 - 반영: `POST /place/create`와 `PUT /place/update/{code}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
 - 반영: `PUT /place/update/{code}`는 multipart 전송 datasource/repository를 추가했다.

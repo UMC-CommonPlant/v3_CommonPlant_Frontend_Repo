@@ -153,6 +153,7 @@ CommonAddressOrPlaceField(
 - 기본 크기: 100x100
 - 기본 아이콘: `add_person.svg`
 - 이미지가 있으면 원형으로 꽉 차게 표시
+- 우측 하단 overlay는 `overlay`로 교체하고 `overlayInset`으로 Figma 내부 여백을 조정
 
 ### CommonPhotoAddButton
 

@@ -64,6 +64,7 @@ final tokens =
 
 | 토큰 | 크기 | Weight | Line height |
 | --- | --- | --- | --- |
+| `size28Bold` | 28 | 700 | 36 |
 | `size24Medium` | 24 | 500 | 32 |
 | `size20Medium` | 20 | 500 | 24 |
 | `size18Medium` | 18 | 500 | 24 |
@@ -116,6 +117,7 @@ final tokens =
 static const double placeCardWidth = 250;
 static const double placeCardHeight = 156;
 static const double searchTextFieldHeight = 64;
+static const double bottomNavigationBarHeight = 64;
 ```
 
 ### 가변 크기의 최소·최대 기준
