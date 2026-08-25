@@ -5,58 +5,72 @@ import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class PlantWateringDateField extends StatelessWidget {
-  const PlantWateringDateField({required this.date, super.key});
+  const PlantWateringDateField({
+    required this.lastWateredDate,
+    required this.onTap,
+    super.key,
+  });
 
-  final String date;
+  final String? lastWateredDate;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        DecoratedBox(
-          decoration: const BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: AppColorPrimitives.grayGray2),
-            ),
-          ),
-          child: SizedBox(
-            width: double.infinity,
-            height: AppSizes.addressOrPlaceFieldHeight,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '마지막으로 물 준 날짜',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.size18Medium.copyWith(
-                      color: AppColors.textStrong,
-                    ),
-                  ),
+        Semantics(
+          button: true,
+          label: '마지막으로 물 준 날짜 선택',
+          child: InkWell(
+            onTap: onTap,
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: AppColorPrimitives.grayGray2),
                 ),
-                const SizedBox(width: AppSpacing.x12),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceDisabled,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: AppSpacing.x8,
-                    ),
-                    child: Text(
-                      date,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.size18Medium.copyWith(
-                        color: AppColors.textStrong,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: AppSizes.addressOrPlaceFieldHeight,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '마지막으로 물 준 날짜',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.size18Medium.copyWith(
+                          color: AppColors.textStrong,
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: AppSpacing.x12),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceDisabled,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: AppSpacing.x8,
+                        ),
+                        child: Text(
+                          _displayDate(lastWateredDate),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.size18Medium.copyWith(
+                            color: lastWateredDate == null
+                                ? AppColors.textBody
+                                : AppColors.textStrong,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -72,4 +86,18 @@ class PlantWateringDateField extends StatelessWidget {
       ],
     );
   }
+}
+
+String _displayDate(String? date) {
+  if (date == null) {
+    return '날짜 선택';
+  }
+
+  final parts = date.split('-');
+
+  if (parts.length != 3) {
+    return date;
+  }
+
+  return '${parts[0]}. ${parts[1]}. ${parts[2]}';
 }

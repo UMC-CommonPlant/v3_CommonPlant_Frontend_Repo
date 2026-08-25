@@ -14,17 +14,21 @@ import 'package:flutter/material.dart';
 class PlantEditScaffold extends StatelessWidget {
   const PlantEditScaffold({
     required this.name,
+    required this.lastWateredDate,
     required this.canSubmit,
     required this.isSubmitting,
     required this.onChanged,
+    required this.onWateringDateTap,
     required this.onSubmit,
     super.key,
   });
 
   final String name;
+  final String? lastWateredDate;
   final bool canSubmit;
   final bool isSubmitting;
   final ValueChanged<String> onChanged;
+  final VoidCallback onWateringDateTap;
   final VoidCallback onSubmit;
 
   @override
@@ -57,6 +61,11 @@ class PlantEditScaffold extends StatelessWidget {
                       const PlantEditPhotoButton(),
                       const SizedBox(height: AppSpacing.x32),
                       PlantNameField(name: name, onChanged: onChanged),
+                      const SizedBox(height: AppSpacing.x32),
+                      PlantWateringDateField(
+                        lastWateredDate: lastWateredDate,
+                        onTap: onWateringDateTap,
+                      ),
                     ],
                   ),
                 ),
@@ -86,9 +95,10 @@ class PlantCreateScaffold extends StatelessWidget {
   const PlantCreateScaffold({
     required this.places,
     required this.selectedPlaceId,
-    required this.wateringDate,
+    required this.lastWateredDate,
     required this.isSubmitting,
     required this.onPlaceSelected,
+    required this.onWateringDateTap,
     required this.onCancel,
     required this.onSubmit,
     super.key,
@@ -96,9 +106,10 @@ class PlantCreateScaffold extends StatelessWidget {
 
   final List<PlantRegistrationPlace> places;
   final String? selectedPlaceId;
-  final String wateringDate;
+  final String? lastWateredDate;
   final bool isSubmitting;
   final ValueChanged<PlantRegistrationPlace> onPlaceSelected;
+  final VoidCallback onWateringDateTap;
   final VoidCallback onCancel;
   final VoidCallback onSubmit;
 
@@ -136,7 +147,10 @@ class PlantCreateScaffold extends StatelessWidget {
                         onPlaceSelected: onPlaceSelected,
                       ),
                       const SizedBox(height: AppSpacing.x32),
-                      PlantWateringDateField(date: wateringDate),
+                      PlantWateringDateField(
+                        lastWateredDate: lastWateredDate,
+                        onTap: onWateringDateTap,
+                      ),
                     ],
                   ),
                 ),

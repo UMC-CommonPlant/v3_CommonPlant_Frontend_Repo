@@ -20,7 +20,8 @@ void main() {
     expect(find.text('스윗 홈_거실'), findsOneWidget);
     expect(find.text('낫 스윗 회사_가든'), findsOneWidget);
     expect(find.text('마지막으로 물 준 날짜'), findsOneWidget);
-    expect(find.text('2023. 01. 30'), findsOneWidget);
+    expect(find.text('날짜 선택'), findsOneWidget);
+    expect(find.text('2023. 01. 30'), findsNothing);
     expect(find.text('선택하지 않을 시, 등록일을 기준으로 설정합니다'), findsOneWidget);
     expect(find.text('취소'), findsOneWidget);
     expect(find.text('등록'), findsOneWidget);
@@ -42,6 +43,48 @@ void main() {
       find.widgetWithText(FilledButton, '완료'),
     );
     expect(completeButton.onPressed, isNull);
+  });
+
+  testWidgets('식물 등록 화면에서 선택한 날짜를 폼에 표시한다', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: PlantFormPage())),
+    );
+
+    await tester.tap(find.text('날짜 선택'));
+    await tester.pumpAndSettle();
+
+    final calendar = tester.widget<CalendarDatePicker>(
+      find.byType(CalendarDatePicker),
+    );
+    calendar.onDateChanged(DateTime(2026, 8, 25));
+    await tester.pump();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('2026. 08. 25'), findsOneWidget);
+    expect(find.text('날짜 선택'), findsNothing);
+  });
+
+  testWidgets('식물 수정 화면은 API에서 불러온 마지막 물 준 날짜를 복원한다', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(
+            _StaticEditInfoPlantRepository(
+              const PlantEditInfo(name: '필로덴드론', lastWateredDate: '2026-05-25'),
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          home: PlantFormPage(plantId: 'plant-1', placeId: 'place-1'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('2026. 05. 25'), findsOneWidget);
+    expect(find.text('필로덴드론'), findsOneWidget);
   });
 
   testWidgets('식물 수정 화면은 원격 제출 중 완료 버튼을 잠근다', (tester) async {
