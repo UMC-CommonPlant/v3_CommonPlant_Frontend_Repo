@@ -1,10 +1,13 @@
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/user/presentation/providers/current_user_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeHero extends StatelessWidget {
   const HomeHero({
@@ -34,13 +37,9 @@ class HomeHero extends StatelessWidget {
         ),
         Positioned(
           left: AppSpacing.x20,
+          right: AppSpacing.x20,
           top: topInset + 48,
-          child: Text(
-            '커먼(유저 네임',
-            style: AppTextStyles.size16Bold.copyWith(
-              color: AppColorPrimitives.unspecifiedGreenGray,
-            ),
-          ),
+          child: const _HomeCurrentUserName(),
         ),
         Positioned(
           left: AppSpacing.x20,
@@ -106,6 +105,66 @@ class HomeHero extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _HomeCurrentUserName extends ConsumerWidget {
+  const _HomeCurrentUserName();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(currentUserProvider);
+
+    return currentUser.when(
+      skipLoadingOnRefresh: false,
+      loading: () => Align(
+        alignment: Alignment.centerLeft,
+        child: Semantics(
+          label: '사용자 정보 불러오는 중',
+          child: const SizedBox.square(
+            dimension: AppSizes.iconSmall,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.brandPrimary,
+            ),
+          ),
+        ),
+      ),
+      error: (_, _) => Row(
+        children: [
+          Flexible(
+            child: Text(
+              '사용자 정보를 불러오지 못했어요',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.size14Medium.copyWith(
+                color: AppColors.textBody,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.x8),
+          TextButton(
+            onPressed: () => ref.invalidate(currentUserProvider),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.brandPrimary,
+              minimumSize: const Size(0, AppSizes.iconSmall),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x4),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              textStyle: AppTextStyles.size14Bold,
+            ),
+            child: const Text('다시 시도'),
+          ),
+        ],
+      ),
+      data: (user) => Text(
+        user.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTextStyles.size16Bold.copyWith(
+          color: AppColorPrimitives.unspecifiedGreenGray,
+        ),
+      ),
     );
   }
 }
