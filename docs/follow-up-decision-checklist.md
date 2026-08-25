@@ -16,7 +16,7 @@
 | [x] | QA-01 | Figma 기준 해상도 외 QA 필수 디바이스 목록 | `docs/screen-publishing-rules.md`, `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | 네 QA profile을 적용한다. 확인된 compact overflow와 대상 회귀 테스트는 #197에서 완료했다. | Decided |
 | [x] | TEST-01 | full-screen golden test 기준 크기 | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #199에서 `OnboardingPage`, `375×812`, DPR 1, Ubuntu canonical, exact comparator와 workflow 기반 baseline 갱신 규칙을 적용한다. | Decided |
 | [x] | TEST-02-A | API 비사용 integration smoke와 runner | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #203에서 실제 앱의 Home → 장소 친구 요청 Android smoke와 수동 workflow를 도입했고, #218에서 `develop` 3회 연속 성공을 확인했다. | Decided |
-| [ ] | TEST-02-A-GATE | Android smoke의 PR required check 승격 | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #218에서 재시도 없는 3회 성공과 5분 1초~7분 32초의 job 실행 시간을 확인했다. 팀이 시간·비용을 수용하고 승격에 동의한 뒤에만 repository 설정 변경을 별도 진행한다. | Ready |
+| [x] | TEST-02-A-GATE | Android smoke의 PR required check 승격 | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md` | #224에서 기본 `Flutter CI / quality`만 `develop` required check로 설정하고 Android smoke는 관련 변경과 release candidate에서 선택 실행하는 수동 workflow로 유지하기로 결정했다. | Decided |
 | [ ] | TEST-02-B | remote API integration 실행 환경과 workflow | `docs/testing-guide.md`, `docs/quality-testing-follow-up-plan.md`, `docs/remote-integration-test-readiness.md` | #220에서 준비 계약을 정리했다. 인증 bootstrap·token lifecycle·fixture 격리/cleanup·GitHub Environment 승인 후 read-only probe부터 별도 구현한다. | Blocked |
 
 ## 릴리즈와 환경

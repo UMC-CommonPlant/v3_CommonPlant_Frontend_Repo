@@ -10,18 +10,18 @@
 - 새 테스트 종류를 PR 필수 게이트로 올리기 전 재현 가능한 로컬 실행 방법과 CI runner를 먼저 확보한다.
 - 각 항목은 별도 GitHub 이슈와 `develop` 기반 브랜치에서 진행한다.
 
-## 2026-08-23 현재 상태
+## 2026-08-25 현재 상태
 
 | 점검 항목 | 현재 상태 | 판단 |
 | --- | --- | --- |
-| 기준 브랜치 | `develop@55b0e1e` | Android smoke 안정성 #218, PR #219까지 병합 완료 |
+| 기준 브랜치 | `develop@5af4b9b` | production 제출 승인 경계 #222, PR #223까지 병합 완료 |
 | 화면 기준 크기 | `AppSizes.mobileWidth` 375, `AppSizes.mobileHeight` 812 | Figma 기준 viewport로 유지 |
 | Widget test viewport | `test/helpers/test_viewport.dart`에서 네 QA profile과 DPR 1 설정을 제공하고 compact gap 대상 화면에 적용 | 기존 raw viewport 설정은 관련 화면 수정 시 점진적으로 helper로 전환 |
 | Golden test | #199에서 `OnboardingPage` `375×812`, DPR 1 baseline과 Pretendard helper 구현 | Ubuntu canonical renderer의 exact 비교와 수동 baseline workflow run `31811426737` 성공 확인 |
 | Font/asset | 한글 포함 Pretendard v1.3.9 static OTF 4종과 OFL을 `pubspec.yaml` 및 저장소에 등록 | #200에서 Hangul glyph와 Android/iOS packaging 검증 완료 |
 | Integration test | #203에서 SDK 의존성, API 비사용 Home → 장소 친구 요청 smoke 추가 | Android API 36.1 `emulator-5554` 로컬 실행 통과 |
-| GitHub Actions | 기본 Flutter CI, 수동 `Golden Baseline`, 수동 `Android Integration Smoke` workflow 제공 | Android smoke `develop` 수동 run 3회 연속 성공. 시간·비용 수용과 팀 합의 전까지 required check가 아님 |
-| 기본 품질 게이트 | #216 기준 macOS에서 unit/widget/asset 263개 통과와 golden 1개 skip, Ubuntu에서 golden 포함 264개 통과 | Ubuntu PR run `32627288004`에서 canonical golden 포함 결과 확인 |
+| GitHub Actions | 기본 Flutter CI, 수동 `Golden Baseline`, 수동 `Android Integration Smoke` workflow 제공 | #224에서 기본 `Flutter CI / quality`를 `develop` required check로 설정하고 Android smoke는 수동 유지 |
+| 기본 품질 게이트 | #216 기준 macOS에서 unit/widget/asset 263개 통과와 golden 1개 skip, Ubuntu에서 golden 포함 264개 통과 | Ubuntu PR run `32627288004`에서 canonical golden 포함 결과를 확인했고 `quality` check를 branch protection에 연결 |
 | Remote API 환경 | dev API URL과 #220 준비 계약 확인 | 인증 bootstrap, token lifecycle, fixture 격리·cleanup, GitHub Environment 승인은 Blocked |
 
 ## 의존관계를 반영한 작업 순서
@@ -33,7 +33,7 @@
 | 3 | TEST-01 폰트 선행 | 한글 Pretendard asset과 라이선스 정리 | QA-01 적용 후속 | Done (#200) |
 | 4 | TEST-01 | full-screen golden 대상 화면, baseline, 갱신 규칙 도입 | TEST-01 폰트 선행 | Done (#199) |
 | 5 | TEST-02-A | remote API를 사용하지 않는 integration smoke와 수동 Android runner 도입 | 없음. 우선순위상 TEST-01 다음 | Done (#203) |
-| 6 | TEST-02-A-GATE | Android smoke를 PR required check로 승격할지 결정 | 3회 연속 성공, 로그 구분, 실행 시간 측정 | Ready (#218, 팀 결정 대기) |
+| 6 | TEST-02-A-GATE | Android smoke를 PR required check로 승격할지 결정 | 3회 연속 성공, 로그 구분, 실행 시간 측정 | Decided (#224, 기본 CI required·Android smoke 수동) |
 | 7 | TEST-02-B-READY | dev API integration의 backend/frontend/CI 준비 계약 정리 | dev URL과 Swagger, 현재 auth 연결 상태 | Done (#220) |
 | 8 | TEST-02-B-PROBE | authenticated `GET /users` read-only readiness probe | 인증 bootstrap, token lifecycle, GitHub Environment 승인 | Blocked |
 | 9 | TEST-02-B-E2E | 실제 auth UI와 도메인별 CRUD flow | frontend auth 연결, 데이터 격리·cleanup, endpoint schema | Blocked |
@@ -140,7 +140,7 @@ Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료�
 - 로컬 명령은 Android device ID를 명시하고, GitHub Actions는 Android API 35 Google APIs x86_64 Pixel 6 emulator의 수동 workflow로 실행한다.
 - `develop` 수동 run 3회가 assertion 실패나 재시도 없이 연속 성공했다.
 - emulator 준비와 Flutter test 실행이 로그에서 구분되며, 측정된 job 실행 시간은 5분 1초~7분 32초다.
-- 연속 성공과 로그 구분 조건은 충족했다. 팀이 실행 시간·비용을 수용하고 required check 승격에 동의한 뒤에만 repository 설정 변경을 별도 진행한다.
+- 연속 성공과 로그 구분 조건은 충족했다. #224에서 기본 `Flutter CI / quality`만 `develop` required check로 설정하고 Android smoke는 관련 변경과 release candidate에서 선택 실행하는 수동 workflow로 유지하기로 결정했다.
 
 | 순서 | run | `develop` head | smoke job | 결과 | 재시도 |
 | --- | --- | --- | --- | --- | --- |
@@ -186,6 +186,7 @@ Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료�
 | TEST-02-A runner | `fb1e7fd` | Android API 35 emulator 기반 수동 integration smoke workflow 추가 | workflow YAML parse 통과 |
 | TEST-02-A action | `92bd778` | 새 Android workflow의 checkout과 Java setup을 Node.js 24 기반 현재 major로 갱신 | 공식 release 확인, workflow YAML parse 통과 |
 | TEST-02-A 안정성 | `256e029` | `develop` 수동 run 3회 연속 성공 근거와 required check 결정 경계 정리 | run `32243828623`, `32628473811`, `32628815566` 최초 시도 성공, `git diff --check` |
+| TEST-02-A gate | `95999a4` | `quality` required check 설정과 `develop` PR·push 기준 기본 CI trigger 정리, Android smoke 수동 유지 결정 | branch protection API에서 GitHub Actions app의 `quality`, 관리자 적용, strict 비활성 확인; workflow YAML parse, `git diff --check` |
 | TEST-02-B dev 환경 | `6a9fbc9` | dev API URL 준비 완료와 계정·데이터·secret 정책 Blocked 경계 갱신 | dev Swagger/API endpoint와 OpenAPI schema 확인, `git diff --check` |
 | TEST-02-B 준비 계약 | `1b15325` | backend/frontend/CI gate, read-only probe와 UI/CRUD E2E 경계, TESTENV 질문 정리 | OpenAPI 19개 path와 `GET /users` schema, 현재 Auth 화면 연결 대조, `git diff --check` |
 
