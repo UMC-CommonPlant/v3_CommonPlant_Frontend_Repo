@@ -29,11 +29,21 @@
 
 | 순서 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- | --- |
-| 1 | 이 문서의 최초 커밋 | 작업 계약과 병렬 작업 파일 경계 기록 | `git diff --check` |
-| 2 | 예정 | 날짜 상태·Controller·API 요청과 unit test | 관련 Plant provider test |
-| 3 | 예정 | 등록·수정 날짜 선택 UI와 widget test | Plant form page test |
-| 4 | 예정 | 전체 검증 결과와 최종 이력 | format, analyze, 전체 test, `git diff --check` |
+| 1 | `3816e05` | 작업 계약과 병렬 작업 파일 경계 기록 | `git diff --check` |
+| 2 | `97d6e3c` | 폼의 초기·현재 물주기 날짜 상태, 변경 감지, create/update 요청 전달과 unit test | Plant form state/controller/edit provider test 13개 통과 |
+| 3 | `9eeae52` | 등록·수정 날짜 선택 UI, API 날짜 표시와 widget test | Plant form page/provider test 18개 통과 |
+| 4 | `f689495` | 원격 등록의 submitting/failure/retry와 Swagger 날짜 fixture 보강 | Plant form page/edit provider test 15개 통과 |
+| 5 | 이 문서의 최종 커밋 | 전체 검증 결과와 최종 이력 | format, analyze, 전체 test, `git diff --check` |
 
 ## 최종 검증
 
-작업 완료 후 기록한다.
+- `fvm dart format --output=none --set-exit-if-changed .`: 270개 파일 변경 없음
+- `fvm flutter analyze`: 문제 없음
+- `fvm flutter test --reporter compact`: 284개 통과, 기존 golden skip 1개
+- `git diff --check origin/develop...HEAD`: 통과
+
+## 남은 후속 작업
+
+- 식물 검색 결과의 한글 학명, 영문 학명, 사용자가 정할 애칭을 구분하는 API·화면 계약이 필요하다.
+- Plant create/update의 optional image part에 전달할 실제 파일 선택 정책과 picker 도입은 별도 이슈로 진행한다.
+- Swagger에 식물 검색 endpoint가 추가되기 전까지 현재 fixture 검색과 remote API 모델을 섞지 않는다.
