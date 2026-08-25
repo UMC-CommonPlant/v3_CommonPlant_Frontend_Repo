@@ -60,6 +60,10 @@
 
 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- |
-| 이 문서의 계획 커밋 | 작업 기준, API 계약, 구현·보류 경계, 커밋 계획 | `git diff --check` |
+| `7ae68cf` | 작업 기준, API 계약, 구현·보류 경계, 커밋 계획 | `git diff --check` |
+| `24079a6` | Friend 요청 entity·mapper와 typed repository | Friend data test 13개 |
+| `a1761a8` | 요청 목록·action 상태와 Home 동적 요청 수 | Provider·Home test 9개 |
+| `0141f74` | loading·empty·error·submit UI와 네트워크 프로필 이미지 | 관련 test 17개, analyze |
+| 이 문서의 최종 커밋 | 계획·API 질문 상태와 전체 검증 이력 | format 289개, analyze, 전체 test 332개 통과·기존 skip 1개 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있습니다.

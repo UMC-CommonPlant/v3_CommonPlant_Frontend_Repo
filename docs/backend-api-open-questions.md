@@ -132,7 +132,8 @@
 - 현재 근거: 백엔드 `7d572cb`의 `FriendController`, `FriendDto`, `FriendServiceImpl`에서 목록 응답과 생성 로직을 확인했다.
 - 프론트 영향: 장소 친구 요청 화면의 DTO와 loading/empty/error/success 상태를 확정할 수 있다.
 - 확인 질문: 해결됨. 생성일은 응답에 포함되지 않는다.
-- 프론트 반영: 별도 Friend 수직 슬라이스에서 요청 목록 Provider와 화면을 연결한다.
+- 프론트 반영: #241에서 typed 요청 목록 Provider와 Home 요청 수,
+  loading/empty/error/success 화면을 연결했다.
 - 답변: `result.requests[]` 항목은 `friendId`, `senderName`, `senderImgUrl`, `placeCode`, `placeName`, `placeAddress`, `status`를 가진다.
 - 상태: Answered
 
@@ -140,8 +141,10 @@
 
 - 현재 근거: 백엔드 Controller에서 전송은 `sendFriendRes`, 수락·거절은 null을 `JsonResponse.result`로 반환한다.
 - 프론트 영향: 수락·거절 성공은 HTTP 성공 후 해당 요청을 로컬 목록에서 제거하고 목록 Provider를 invalidate하는 정책으로 구현할 수 있다.
-- 확인 질문: response 구조는 해결됨. 화면 갱신은 프론트 수직 슬라이스에서 optimistic remove 후 invalidate로 검증한다.
-- 프론트 반영: 별도 Friend 수직 슬라이스에서 Controller와 목록 재조회 정책을 구현한다.
+- 확인 질문: 해결됨. 원격 성공 항목을 화면에서 제거하고 목록 Provider를
+  invalidate하는 정책을 #241에서 검증했다.
+- 프론트 반영: #241에서 항목별 중복 submit 방지, 실패 복구, 수락·거절 후
+  목록과 Home 요청 수 갱신을 구현했다.
 - 답변: 전송 result는 `{ placeCode, receiverList }`, 수락·거절 result는 null이다.
 - 상태: Answered
 
@@ -159,7 +162,8 @@
 - 현재 근거: `FriendServiceImpl`은 `findByFriendIdxAndReceiver(friendId, currentUserName)`로 요청을 찾는다.
 - 프론트 영향: 요청 목록의 `friendId`를 그대로 수락·거절 payload에 넣을 수 있다.
 - 확인 질문: 해결됨.
-- 프론트 반영: 별도 Friend 수직 슬라이스의 요청 entity id와 action request에 반영한다.
+- 프론트 반영: #241의 `FriendInvitation.id`와 수락·거절
+  `FriendDecisionRequest.friendId`에 반영했다.
 - 답변: `friendId`는 친구 요청 테이블의 `friendIdx`, 즉 요청 PK이다.
 - 상태: Answered
 
