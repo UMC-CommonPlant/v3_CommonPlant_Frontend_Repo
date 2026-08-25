@@ -3,6 +3,7 @@
 ## 작업 기준
 
 - 이슈: #239 `[Feature] 장소 목록·상세 API 실데이터 연결`
+- PR: #240 `[Feature] 장소 목록·상세 API 실데이터 연결`
 - 상위 이슈: #226 `[Epic] MVP 화면·API 실연동 전환`
 - 작업일: 2026-08-25
 - 브랜치: `feature/place-list-detail-api-239`
@@ -50,4 +51,5 @@
 | --- | --- | --- |
 | `893d201` | Place 목록·상세 도메인 모델, mapper, repository, Provider, remote UI와 테스트 | Place test 81개, analyze 통과 |
 | `7ac4bc1` | owner 삭제와 member 나가기 권한·문구 분리 | 상세·FAB·삭제 Controller test 통과 |
-| 이 문서 후속 커밋 | API 계약 문서, 우선순위, PR·Project 연결 이력 | format 286개, analyze, 전체 test 321개 통과·기존 golden 1개 skip |
+| `972a6ae` | API 계약 문서, 우선순위, 작업 이력 | format 286개, analyze, 전체 test 321개 통과·기존 golden 1개 skip |
+| 이 문서 후속 커밋 | PR #240과 Project 10 In Review 연결 기록 | `git diff --check` |
