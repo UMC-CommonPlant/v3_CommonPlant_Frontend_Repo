@@ -18,7 +18,7 @@ Home hero의 고정 사용자명을 현재 사용자 상태로 교체하고, API
 
 | 모드 | 사용자 데이터 | Home 표시 |
 | --- | --- | --- |
-| API 비사용 | 로컬 `UserProfile` fixture | 기존 `커먼(유저 네임` 표시 계약 보존 |
+| API 비사용 | 로컬 `UserProfile` fixture | #237부터 Figma User 화면 기준 `커먼플랜트`와 이메일 표시 |
 | API 사용 | `UserRepository.fetchMe()` | `GET /users` 결과의 `name` 표시 |
 | API 최초 조회 중 | `AsyncLoading` | 진행 표시와 접근성 label 노출 |
 | API 조회 실패 | `AsyncError` | 오류 안내와 `다시 시도` 제공 |
@@ -30,7 +30,7 @@ Home hero의 고정 사용자명을 현재 사용자 상태로 교체하고, API
 - Home 위젯은 repository와 JSON 구조를 알지 않고 `AsyncValue<UserProfile>` 상태만 표시한다.
 - Provider 자동 재시도를 비활성화하여 오류 표시와 재시도 호출 횟수를 Home의 명시적 재시도 UI가 소유한다.
 - 재시도는 `currentUserProvider`만 invalidate하여 Place·Plant 목록을 다시 조회하지 않는다.
-- API 비사용 Home과 Android smoke의 결정적 텍스트는 유지한다.
+- API 비사용 Home과 Android smoke의 결정적 텍스트는 #237의 Figma User 화면 기본값으로 함께 갱신한다.
 
 ## 보류 항목
 

@@ -21,7 +21,7 @@
 - `features` 바로 아래에는 `common`, `friend`, `home`, `image`, `login`, `memo`, `onboarding`, `place`, `plant`, `terms`, `user` 11개 영역이 있습니다.
 - `shared/widgets`에는 공용 위젯 21개, 약 2,817줄이 있습니다.
 - `test`에는 Dart 테스트 파일 35개가 있고, route, page, repository, datasource, DTO, shared widget 테스트가 이미 존재합니다.
-- 라우트는 `app/router`에 모여 있고, phase 0 기준 route-level screen 18개가 실제 page에 연결되어 있습니다.
+- 라우트는 `app/router`에 모여 있고, phase 0과 User 후속 화면 기준 route-level screen 21개가 실제 page에 연결되어 있습니다.
 - API 연동을 위한 `core/network`, feature별 `data/datasources`, `data/repositories`, 일부 `domain/entities`가 이미 생겨 있습니다.
 
 큰 화면 파일은 아래에 집중되어 있습니다.

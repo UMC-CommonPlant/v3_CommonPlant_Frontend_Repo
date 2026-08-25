@@ -28,6 +28,9 @@ void main() {
       AppRoutePaths.memoWriteLocation('plant-1'),
       AppRoutePaths.memoListLocation('plant-1'),
       AppRoutePaths.plantDetailLocation('plant-1'),
+      AppRoutePaths.userProfile,
+      AppRoutePaths.userSettings,
+      AppRoutePaths.userProfileEdit,
     ];
 
     for (final location in locations) {

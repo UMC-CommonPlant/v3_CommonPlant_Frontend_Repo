@@ -12,9 +12,9 @@
 | `lib/app/router/route_paths.dart` | route name, path, location helper 상수 |
 | `lib/app/router/route_placeholder_page.dart` | 새 route 추가 시 임시 진입 화면으로 사용할 fallback |
 | `lib/features/home/presentation/home_screen.dart` | 인증 후 홈 화면 |
-| `lib/features/*/presentation/pages` | Onboarding, Login, Terms, Place, Plant, Memo route 화면 |
+| `lib/features/*/presentation/pages` | Onboarding, Login, Terms, Place, Plant, Memo, User route 화면 |
 
-현재 등록된 라우트는 Figma `phase 0` 페이지를 기준으로 route-level screen 18개입니다.
+현재 등록된 라우트는 Figma `phase 0`과 User 후속 화면을 기준으로 route-level screen 21개입니다.
 
 ```dart
 final appRouterProvider = Provider<GoRouter>(
@@ -22,7 +22,7 @@ final appRouterProvider = Provider<GoRouter>(
 );
 ```
 
-`phase 0`의 18개 route-level screen은 실제 page 위젯에 연결되어 있습니다. 새 route를 추가할 때 아직 화면 구현이 없다면 같은 route spec을 유지한 채 `RoutePlaceholderPage`를 임시로 연결하고, 기능 화면이 구현되면 builder만 실제 page로 교체합니다.
+21개 route-level screen은 실제 page 위젯에 연결되어 있습니다. 새 route를 추가할 때 아직 화면 구현이 없다면 같은 route spec을 유지한 채 `RoutePlaceholderPage`를 임시로 연결하고, 기능 화면이 구현되면 builder만 실제 page로 교체합니다.
 
 ## 기본 원칙
 
@@ -58,6 +58,9 @@ Figma 파일 `Common Plant 복제`의 `phase 0` 페이지를 기준으로 프레
 | Plant | `plantDetail` | `/plants/:plantId` | `#2-4 My plants` | 식물 상세 |
 | Memo | `memoWrite` | `/plants/:plantId/memos/new` | `#2-4-2 메모 작성` | 식물 메모 작성 |
 | Memo | `memoList` | `/plants/:plantId/memos` | `#2-4-3 메모` | 식물 메모 목록 |
+| User | `userProfile` | `/me` | `04 마이페이지 - 메인` | 현재 사용자 정보와 My 탭 |
+| User | `userSettings` | `/me/settings` | `#4-3설정` | 알림 설정, 로그아웃, 회원 탈퇴 |
+| User | `userProfileEdit` | `/me/edit` | `#4 -2 수정` | 이름과 프로필 이미지 수정 진입 |
 
 Place 상세/수정/친구 관리는 `placeId`를 path에 포함합니다. Plant 상세/수정/Memo 플로우는 `plantId` 중심으로 둡니다. 식물 등록은 Figma상 먼저 식물을 검색하고 다음 단계에서 장소를 고르는 흐름이므로 `/plants/new/*` 아래에 둡니다.
 
@@ -78,6 +81,9 @@ Place 상세/수정/친구 관리는 `placeId`를 path에 포함합니다. Plant
 | 장소/날짜 선택 | Plant create details | picker 또는 bottom sheet 상태 |
 | 메모 수정/삭제 메뉴 | Memo list | popup/action sheet |
 | 메모 삭제 alert | Memo list | dialog |
+| 알림 토글 | User settings | API 부재로 화면 세션의 Provider 상태 |
+| 로그아웃·회원 탈퇴 확인 | User settings | dialog, 성공 후 인증 Provider가 로그인 route로 redirect |
+| 프로필 이미지 선택 | User profile edit | 파일 선택·플랫폼 권한 정책 확정 후 연결, 현재는 진입 안내 상태 |
 
 ## 파일 배치 기준
 
@@ -102,7 +108,7 @@ lib/app/router/
 | `route_placeholder_page.dart` | 미구현 route의 임시 화면 |
 | `redirect_notifier.dart` | 인증 상태 변경 시 router refresh 연결 |
 
-작은 MVP 화면에서도 Figma 기준 라우트가 이미 18개로 확정되었기 때문에 route spec과 path 상수는 분리해서 관리합니다.
+작은 MVP 화면에서도 Figma 기준 라우트가 이미 21개로 확정되었기 때문에 route spec과 path 상수는 분리해서 관리합니다.
 
 ## 인증 라우팅 기준
 
@@ -142,7 +148,7 @@ lib/app/router/
 | --- | --- |
 | 공개 route | `onboarding`, `login` |
 | 회원가입 진행 route | `profileSetup`, `terms` |
-| 인증 필요 route | `home`, `placeInvitations`, `placeCreate`, `addressSearch`, `placeFriendAdd`, `placeEdit`, `placeDetail`, `friendManagement`, `plantSearch`, `plantCreateDetails`, `plantEdit`, `plantDetail`, `memoWrite`, `memoList` |
+| 인증 필요 route | `home`, `placeInvitations`, `placeCreate`, `addressSearch`, `placeFriendAdd`, `placeEdit`, `placeDetail`, `friendManagement`, `plantSearch`, `plantCreateDetails`, `plantEdit`, `plantDetail`, `memoWrite`, `memoList`, `userProfile`, `userSettings`, `userProfileEdit` |
 
 `TOKEN-01`, `TOKEN-02`가 답변되기 전까지 refresh token 재발급과 서버 로그아웃 invalidation은 redirect 구현 범위에 넣지 않습니다. 그 전에는 토큰이 없거나 명시적으로 clear된 경우만 `unauthenticated`로 전환합니다.
 

@@ -8,6 +8,8 @@
 - Figma 파일: `Common Plant 복제`
 - Figma file key: `CyNKSHNXzhzhpy36ELMMbq`
 - Figma page: `phase 0` (`0:1`)
+- User 후속 화면 Figma 파일: `Common-Plant`
+- User 후속 화면 file key: `aczb7WXctn1R3YFjmkgtXf`
 - MCP tool에는 node-id를 `1:3308`처럼 콜론 형식으로 전달합니다.
 - 브라우저 URL의 `node-id` query에는 `1-3308`처럼 하이픈 형식으로 전달합니다.
 - Figma에 같은 이름의 프레임이 여러 개 있으면 이 문서의 `비고`에 적힌 기준을 우선합니다.
@@ -59,6 +61,9 @@
 | Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모` | `1:3749` | 기본 | #38 | `375×1434` scroll content 전체 프레임 |
 | Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 수정/삭제` | `1:3852` | 메뉴 | #38 | route가 아닌 `375×812` 수정/삭제 popup 상태 |
 | Memo | 메모 목록 | `/plants/:plantId/memos` | `#2-4-3 메모 삭제 alert` | `1:3964` | alert | #38 | route가 아닌 `375×812` 게시물 삭제 dialog 상태 |
+| User | 마이페이지 | `/me` | `04 마이페이지 - 메인` | `1:22439` | 기본 | #238 | `Common-Plant` 파일 기준, Home 하단 My 탭과 연결 |
+| User | 설정 | `/me/settings` | `#4-3설정` | `1:22196` | 기본 | #238 | 알림 토글은 API 부재로 화면 세션 상태, 로그아웃·탈퇴는 확인 dialog 상태 포함 |
+| User | 회원 정보 수정 | `/me/edit` | `#4 -2 수정` | `1:22313` | 기본 | #238 | 이름 수정은 `PUT /users`, 이미지 선택은 정책 확정 전까지 진입 안내만 제공 |
 
 ## node-id 확인 로그
 
@@ -68,6 +73,7 @@
 | 2026-05-25 | Memo `#2-4-3 메모` 기본/메뉴/삭제 alert | #38 구현 기록에 route-level node-id가 직접 식별되지 않았다고 남아 있고, MCP metadata 재확인에서도 메모 작성(`1:4984`, `1:5035`) 이후 exact state frame을 확정하지 못했다. | Figma 원본에서 기본, 수정/삭제 popup, 삭제 alert 상태 프레임을 각각 직접 선택해 node-specific URL을 확보한다. |
 | 2026-08-19 | Home 기본 | `phase 0` 전체 frame metadata에서 `#2 Main/D`가 `1:2332`, `1:6296` 두 개임을 확인했다. `1:2332` screenshot은 장소 추가 CTA와 비활성 식물 추가 CTA를 표시하고, `1:6296`은 로그인 필요 안내를 표시한다. | `1:2332`를 Home 기본으로 반영하고 `1:6156` 요청 있음, `1:6296` 로그인 필요 상태와 분리한다. |
 | 2026-08-19 | Memo 기본/메뉴/삭제 alert | Figma 원본 metadata와 screenshot에서 `1:3749`, `1:3852`, `1:3964`가 각 frame 이름과 상태에 일치함을 확인했다. | 기본 `1:3749`, 메뉴 `1:3852`, 삭제 alert `1:3964`를 반영한다. |
+| 2026-08-25 | User 마이페이지·설정·회원 정보 수정 | `Common-Plant` 파일의 node-specific design context와 screenshot에서 `1:22439`, `1:22196`, `1:22313`의 화면 구조, 텍스트, 간격, 상태를 확인했다. | 세 node를 `/me`, `/me/settings`, `/me/edit` route로 분리하고 설정·수정 화면은 마이페이지 action에서 push한다. |
 
 ## 갱신 이력
 

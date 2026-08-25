@@ -12,6 +12,7 @@ class CommonCircleImageBox extends StatelessWidget {
     this.placeholder,
     this.onTap,
     this.overlay,
+    this.overlayInset = 0,
     this.placeholderColor = AppColors.brandAccent,
     this.showOverlay = true,
   });
@@ -21,6 +22,7 @@ class CommonCircleImageBox extends StatelessWidget {
   final Widget? placeholder;
   final VoidCallback? onTap;
   final Widget? overlay;
+  final double overlayInset;
   final Color placeholderColor;
   final bool showOverlay;
 
@@ -61,8 +63,8 @@ class CommonCircleImageBox extends StatelessWidget {
         ),
         if (showOverlay)
           Positioned(
-            right: 0,
-            bottom: 0,
+            right: overlayInset,
+            bottom: overlayInset,
             child: SizedBox(
               width: AppSizes.profileImageOverlaySize,
               height: AppSizes.profileImageOverlaySize,

@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('API 비사용 모드에서 기존 Home 사용자명을 보존한다', () async {
+  test('API 비사용 모드에서 Figma 기본 회원 정보를 제공한다', () async {
     final repository = _RecordingUserRepository();
     final container = ProviderContainer(
       overrides: [
@@ -19,7 +19,8 @@ void main() {
     final user = await container.read(currentUserProvider.future);
 
     expect(user.id, 'local-user');
-    expect(user.name, '커먼(유저 네임');
+    expect(user.name, '커먼플랜트');
+    expect(user.email, 'alwaysweave@gmail.com');
     expect(repository.fetchMeCalls, 0);
   });
 
@@ -64,6 +65,28 @@ void main() {
 
     expect(retry, isNotNull);
     expect(retry!(0, StateError('조회 실패')), isNull);
+  });
+
+  test('수정 완료 회원 정보로 현재 사용자 상태를 교체한다', () async {
+    final container = ProviderContainer(
+      overrides: [useRemoteApiProvider.overrideWithValue(false)],
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(currentUserProvider, (_, _) {});
+    addTearDown(subscription.close);
+    await container.read(currentUserProvider.future);
+
+    container
+        .read(currentUserProvider.notifier)
+        .replace(
+          const UserProfile(
+            id: 'local-user',
+            name: '새싹집사',
+            email: 'alwaysweave@gmail.com',
+          ),
+        );
+
+    expect(container.read(currentUserProvider).requireValue.name, '새싹집사');
   });
 }
 

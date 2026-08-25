@@ -26,9 +26,9 @@
 | 순서 | 수직 슬라이스 | 범위 | 상태 |
 | --- | --- | --- | --- |
 | P0 | Auth 로그인·회원가입 | 로그인 화면, 인증 세션, 프로필 등록, route redirect, `/auth/login`, `/auth/register` | #227 / PR #228 병합 완료 |
-| P1 | Home 초기 데이터 | 인증 사용자 정보와 장소·식물 요약을 화면 상태로 연결 | #232 진행 |
-| P2 | Plant 핵심 동선 | 목록, 상세, 생성, 수정 API와 각 화면 상태 연결 | #229, #231 진행 |
-| P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | 이미지 파일 선택 정책과 분리 가능 |
+| P1 | Home 초기 데이터 | 인증 사용자 정보와 장소·식물 요약을 화면 상태로 연결 | #232 / PR #233 병합 완료 |
+| P2 | Plant 핵심 동선 | 목록, 상세, 생성, 수정 API와 각 화면 상태 연결 | #229, #231 병합 완료 |
+| P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | #237 / PR #238 In Review, 이미지 파일 선택 정책과 분리 |
 | 제한 | Place | response schema가 확인된 동선부터 연결 | 목록·상세 schema 확인 필요 |
 | 보류 | Friend, Image, Memo | 성공 response 또는 endpoint가 불충분한 영역 | 백엔드 확인 필요 |
 
@@ -41,7 +41,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | 도메인 | 화면·route | 현재 상태 | 남은 연결 | API·선행 조건 | 판정 |
 | --- | --- | --- | --- | --- | --- |
 | Home | Home `/` | Place·Plant 목록 API 모드 연결, 사용자명·초대 수 고정 | 현재 사용자 Provider, hero 상태, 목록 재시도 정책, 고정값 제거 | `GET /users`, `GET /plants`; Place·Friend response schema 확인 필요 | #232 즉시 진행 |
-| User | 내 정보·프로필 | datasource/repository만 존재, 화면·route 없음 | 조회·수정·탈퇴 Controller와 화면, 이미지 선택 | `GET/PUT/DELETE /users` 사용 가능 | #232 이후 |
+| User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴 Controller와 세 화면 연결 | 실제 이미지 파일 선택, 알림 설정 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 / PR #238 In Review |
 | Place | 장소 친구 요청 | fixture 목록과 로컬 수락·거절 | 목록 DTO, loading/empty/error, 수락·거절 submit | Friend response schema와 `friendId` 의미 확인 | 제한 |
 | Place | 장소 등록 | 이름·주소 create API 연결 | 생성된 장소 code, 실제 이미지, 친구 추가 후속 흐름 | `POST /place/create` response schema 필요 | 부분 연결 |
 | Place | 주소 검색 | fixture 검색 | 검색 adapter와 선택 결과 | 백엔드 endpoint 또는 외부 주소 서비스 결정 필요 | 보류 |
@@ -93,6 +93,17 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 - API 모드는 secure storage의 access/refresh token 쌍으로 세션을 복원합니다. refresh와 서버 로그아웃은 endpoint 확정 전까지 추가하지 않습니다.
 - 라우터는 `unauthenticated`, `signupRequired`, `authenticated` 세션에 따라 접근을 제어하고 로그인 전 target을 보존합니다.
 
+## User 프로필 수직 슬라이스
+
+#237은 Home에서 마련한 `currentUserProvider`를 수정 가능한 현재 사용자 상태로 확장하고, Figma의 마이페이지·설정·회원 정보 수정 화면을 연결합니다.
+
+- 마이페이지는 `GET /users`의 loading/error/success 상태를 표시하고 Home 하단 My 탭에서 진입합니다.
+- 이름 수정은 2~10자 검증과 변경 여부를 기준으로 `PUT /users`를 호출하며, 성공 응답으로 현재 사용자 상태를 즉시 교체합니다.
+- 회원 탈퇴는 확인 dialog 뒤 `DELETE /users` 성공 시 secure token과 인증 세션을 제거합니다.
+- 서버 logout endpoint가 없어 로그아웃은 secure token과 로컬 인증 세션만 제거합니다.
+- 알림 설정 endpoint가 없어 토글은 설정 화면이 유지되는 동안의 로컬 Provider 상태로 둡니다.
+- 프로필 이미지는 기존 optional multipart 경계를 유지하지만, 파일 선택기와 플랫폼 권한 정책이 확정되지 않아 현재 이미지와 카메라 진입 안내까지만 제공합니다.
+
 ## 완료 기준
 
 각 수직 슬라이스는 아래 항목을 모두 충족해야 완료로 판단합니다.
@@ -113,5 +124,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #227 | `e9543fc` | 인증 상태 기반 route 접근 정책과 redirect target 복원 | router redirect test |
 | #227 | `9c21d24` | 화면·모델·API 수직 슬라이스 우선순위와 Auth 작업 이력 문서화 | format 270개, analyze, 전체 test 280개·기존 skip 1개 |
 | #230 | - | 남은 화면 연결 매트릭스, 병렬 workstream과 파일 소유권 문서화 | `git diff --check` |
+| #237 | `684d55b` | 마이페이지·설정·회원 정보 수정 UI와 User 조회·수정·탈퇴 상태 연결 | format 284개, analyze, 전체 test 314개·기존 skip 1개 |
+| #237 | `3063230` | Figma frame map, route, Swagger 연결 상태와 User 구현 경계 문서화 | `git diff --check` |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.

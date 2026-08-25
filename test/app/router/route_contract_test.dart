@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Figma 기준 route-level screen 18개를 등록한다', () {
-    expect(appRouteSpecs, hasLength(18));
-    expect(appRouteSpecs.map((route) => route.name).toSet(), hasLength(18));
-    expect(appRouteSpecs.map((route) => route.path).toSet(), hasLength(18));
+  test('Figma 기준 route-level screen 21개를 등록한다', () {
+    expect(appRouteSpecs, hasLength(21));
+    expect(appRouteSpecs.map((route) => route.name).toSet(), hasLength(21));
+    expect(appRouteSpecs.map((route) => route.path).toSet(), hasLength(21));
   });
 
   test('필수 path parameter는 null, 빈 문자열, 공백 문자열을 허용하지 않는다', () {
