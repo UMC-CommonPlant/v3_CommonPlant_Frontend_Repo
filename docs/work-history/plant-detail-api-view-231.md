@@ -39,8 +39,18 @@
 
 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- |
-| 작성 예정 | 작업 기준과 데이터 표시 계약 | `git diff --check` |
+| `fd8a1de` | 작업 기준과 데이터 표시 계약 | `git diff --check` |
+| `4aa5b01` | 원격 상세 ViewData·날짜 계산·미제공 상태 UI와 상세 전용 unit/widget test | 상세 관련 test 20개, `fvm flutter analyze` |
+| 이 문서의 최종 커밋 | 전체 검증 결과와 커밋별 이력 | format 270개, analyze, 전체 test 285개 통과·기존 skip 1개, `git diff --check` |
 
 ## 최종 검증
 
-작업 완료 후 갱신한다.
+- `fvm dart format --output=none --set-exit-if-changed .`: 270개 파일, 변경 없음
+- `fvm flutter analyze`: 통과
+- `fvm flutter test --reporter compact`: 285개 통과, 기존 golden skip 1개
+- `git diff --check develop...HEAD`: 통과
+
+## 남은 서버 의존 항목
+
+- 물주기 예정일과 주기는 상세 schema에 근거 필드가 없어 미제공 상태를 유지한다.
+- Memo CRUD endpoint가 추가되기 전에는 대표 메모 문자열만 읽고 목록·작성 액션을 원격 데이터 기능으로 노출하지 않는다.
