@@ -33,14 +33,22 @@
 | 2 | `97d6e3c` | 폼의 초기·현재 물주기 날짜 상태, 변경 감지, create/update 요청 전달과 unit test | Plant form state/controller/edit provider test 13개 통과 |
 | 3 | `9eeae52` | 등록·수정 날짜 선택 UI, API 날짜 표시와 widget test | Plant form page/provider test 18개 통과 |
 | 4 | `f689495` | 원격 등록의 submitting/failure/retry와 Swagger 날짜 fixture 보강 | Plant form page/edit provider test 15개 통과 |
-| 5 | 이 문서의 최종 커밋 | 전체 검증 결과와 최종 이력 | format, analyze, 전체 test, `git diff --check` |
+| 5 | `a4c960f` | 최초 전체 검증 결과와 이력 기록 | format, analyze, 전체 test, `git diff --check` |
+| 6 | `c0c9348` | 마지막 물 준 날짜의 미래 선택 차단, 범위 밖 서버 날짜 초기 위치 보정과 상태 보존 테스트 | Plant form page test 12개 통과 |
+| 7 | 이 문서의 후속 커밋 | 리뷰 반영 결과와 최종 검증 갱신 | format, analyze, 전체 test, `git diff --check` |
 
 ## 최종 검증
 
 - `fvm dart format --output=none --set-exit-if-changed .`: 270개 파일 변경 없음
 - `fvm flutter analyze`: 문제 없음
-- `fvm flutter test --reporter compact`: 284개 통과, 기존 golden skip 1개
+- `fvm flutter test --reporter compact`: 285개 통과, 기존 golden skip 1개
 - `git diff --check origin/develop...HEAD`: 통과
+
+## 리뷰 반영
+
+- 마지막 물 준 날짜 선택기의 최대 날짜를 실행 당일로 제한해 미래 날짜를 새로 선택할 수 없게 했다.
+- 서버의 기존 날짜가 선택 범위보다 이전이거나 미래이면 picker의 초기 위치만 범위 안으로 보정한다.
+- 범위 밖 서버 값은 사용자가 새 날짜를 확정하기 전까지 폼 상태와 화면 표시에서 그대로 보존한다.
 
 ## 남은 후속 작업
 
