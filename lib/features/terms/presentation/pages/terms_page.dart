@@ -54,7 +54,7 @@ class TermsPage extends ConsumerWidget {
     context.go(AppRoutePaths.profileSetup);
   }
 
-  void _confirmAgreement(BuildContext context, WidgetRef ref) {
+  Future<void> _confirmAgreement(BuildContext context, WidgetRef ref) async {
     ref
         .read(profileSetupControllerProvider.notifier)
         .setPrivacyTermsAccepted(true);
@@ -67,6 +67,21 @@ class TermsPage extends ConsumerWidget {
           context.go(AppRoutePaths.profileSetup);
         }
       case TermsNextDestination.home:
+        final didSubmit = await ref
+            .read(profileSetupControllerProvider.notifier)
+            .submit();
+        if (!context.mounted) {
+          return;
+        }
+        if (!didSubmit) {
+          final message = ref.read(profileSetupControllerProvider).errorMessage;
+          if (message != null) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(content: Text(message)));
+          }
+          return;
+        }
         context.go(AppRoutePaths.home);
     }
   }
@@ -77,6 +92,9 @@ class TermsPage extends ConsumerWidget {
       profileSetupControllerProvider.select(
         (state) => state.isPrivacyTermsAccepted,
       ),
+    );
+    final isSubmitting = ref.watch(
+      profileSetupControllerProvider.select((state) => state.isSubmitting),
     );
 
     return Scaffold(
@@ -178,7 +196,10 @@ class TermsPage extends ConsumerWidget {
                           label: '확인',
                           backgroundColor: AppColors.brandAccent,
                           foregroundColor: AppColors.white,
-                          onPressed: () => _confirmAgreement(context, ref),
+                          isLoading: isSubmitting,
+                          onPressed: isSubmitting
+                              ? null
+                              : () => _confirmAgreement(context, ref),
                         ),
                       ),
                     ],

@@ -7,8 +7,11 @@ import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/login/domain/models/social_auth.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/login_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 const double _figmaFrameWidth = 375;
@@ -23,15 +26,34 @@ const double _heroSize = 186;
 const double _buttonTop = 582;
 const double _buttonHeight = 44;
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
 
-  void _goNext(BuildContext context) {
-    context.go(AppRoutePaths.profileSetup);
+  Future<void> _handleLogin(
+    BuildContext context,
+    WidgetRef ref,
+    SocialAuthProvider provider,
+  ) async {
+    final outcome = await ref
+        .read(loginControllerProvider.notifier)
+        .login(provider);
+
+    if (!context.mounted || outcome == null) {
+      return;
+    }
+
+    switch (outcome) {
+      case LoginOutcome.signupRequired:
+        context.go(AppRoutePaths.profileSetup);
+      case LoginOutcome.authenticated:
+        context.go(AppRoutePaths.home);
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loginState = ref.watch(loginControllerProvider);
+
     return Scaffold(
       backgroundColor: AppColors.surfaceAlt,
       body: LayoutBuilder(
@@ -84,7 +106,16 @@ class LoginPage extends StatelessWidget {
                       logoWidth: 18,
                       logoHeight: 18,
                       logoTop: 11,
-                      onPressed: () => _goNext(context),
+                      isLoading:
+                          loginState.submittingProvider ==
+                          SocialAuthProvider.kakao,
+                      onPressed: loginState.isSubmitting
+                          ? null
+                          : () => _handleLogin(
+                              context,
+                              ref,
+                              SocialAuthProvider.kakao,
+                            ),
                     ),
                     const SizedBox(height: AppSpacing.x12),
                     _LoginSocialButton(
@@ -97,7 +128,16 @@ class LoginPage extends StatelessWidget {
                       logoWidth: 18,
                       logoHeight: 18,
                       logoTop: 10,
-                      onPressed: () => _goNext(context),
+                      isLoading:
+                          loginState.submittingProvider ==
+                          SocialAuthProvider.google,
+                      onPressed: loginState.isSubmitting
+                          ? null
+                          : () => _handleLogin(
+                              context,
+                              ref,
+                              SocialAuthProvider.google,
+                            ),
                     ),
                     const SizedBox(height: AppSpacing.x12),
                     _LoginSocialButton(
@@ -109,8 +149,28 @@ class LoginPage extends StatelessWidget {
                       logoWidth: 16.26,
                       logoHeight: 20,
                       logoTop: 12,
-                      onPressed: () => _goNext(context),
+                      isLoading:
+                          loginState.submittingProvider ==
+                          SocialAuthProvider.apple,
+                      onPressed: loginState.isSubmitting
+                          ? null
+                          : () => _handleLogin(
+                              context,
+                              ref,
+                              SocialAuthProvider.apple,
+                            ),
                     ),
+                    if (loginState.errorMessage != null) ...[
+                      const SizedBox(height: AppSpacing.x8),
+                      Text(
+                        loginState.errorMessage!,
+                        key: const ValueKey('loginErrorMessage'),
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.size12Medium.copyWith(
+                          color: AppColors.danger,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -164,6 +224,7 @@ class _LoginSocialButton extends StatelessWidget {
     required this.logoHeight,
     required this.logoTop,
     required this.onPressed,
+    this.isLoading = false,
   });
 
   final String label;
@@ -174,12 +235,14 @@ class _LoginSocialButton extends StatelessWidget {
   final double logoWidth;
   final double logoHeight;
   final double logoTop;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
+      enabled: onPressed != null,
       label: label,
       child: Material(
         color: backgroundColor,
@@ -209,15 +272,24 @@ class _LoginSocialButton extends StatelessWidget {
                     excludeFromSemantics: true,
                   ),
                 ),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.size14Bold.copyWith(
-                    color: foregroundColor,
+                if (isLoading)
+                  SizedBox.square(
+                    dimension: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: foregroundColor,
+                    ),
+                  )
+                else
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.size14Bold.copyWith(
+                      color: foregroundColor,
+                    ),
                   ),
-                ),
               ],
             ),
           ),

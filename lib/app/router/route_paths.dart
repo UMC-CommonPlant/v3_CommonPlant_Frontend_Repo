@@ -43,6 +43,14 @@ abstract final class AppRoutePaths {
   static const String memoWrite = '/plants/:plantId/memos/new';
   static const String memoList = '/plants/:plantId/memos';
 
+  static String loginLocation({String? redirect}) {
+    if (redirect == null || redirect.isEmpty) {
+      return login;
+    }
+
+    return Uri(path: login, queryParameters: {'redirect': redirect}).toString();
+  }
+
   static String termsLocation({String? next}) {
     if (next == null) {
       return terms;

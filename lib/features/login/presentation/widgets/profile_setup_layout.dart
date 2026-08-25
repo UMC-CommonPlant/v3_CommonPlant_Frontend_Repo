@@ -22,6 +22,7 @@ class ProfileSetupLayout extends StatelessWidget {
   const ProfileSetupLayout({
     required this.nickname,
     required this.hasImage,
+    this.profileImageUrl,
     required this.isTermsAccepted,
     required this.isCompleteEnabled,
     required this.isSubmitting,
@@ -36,6 +37,7 @@ class ProfileSetupLayout extends StatelessWidget {
 
   final String nickname;
   final bool hasImage;
+  final String? profileImageUrl;
   final bool isTermsAccepted;
   final bool isCompleteEnabled;
   final bool isSubmitting;
@@ -118,7 +120,11 @@ class ProfileSetupLayout extends StatelessWidget {
                 width: contentWidth,
                 child: Column(
                   children: [
-                    ProfileAvatar(hasImage: hasImage, onTap: onImagePressed),
+                    ProfileAvatar(
+                      hasImage: hasImage,
+                      imageUrl: profileImageUrl,
+                      onTap: onImagePressed,
+                    ),
                     const SizedBox(height: AppSpacing.x16),
                     ProfileNicknameField(
                       nickname: nickname,

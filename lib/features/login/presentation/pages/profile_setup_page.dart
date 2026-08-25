@@ -85,23 +85,39 @@ class ProfileSetupPage extends ConsumerWidget {
   }
 
   Future<void> _handleComplete(BuildContext context, WidgetRef ref) async {
+    final isTermsAccepted = ref
+        .read(profileSetupControllerProvider)
+        .isPrivacyTermsAccepted;
+    if (!isTermsAccepted) {
+      _openTerms(context, TermsReturnDestination.home);
+      return;
+    }
+
     final didSubmit = await ref
         .read(profileSetupControllerProvider.notifier)
         .submit();
 
-    if (!context.mounted || !didSubmit) {
+    if (!context.mounted) {
       return;
     }
 
-    final isTermsAccepted = ref
-        .read(profileSetupControllerProvider)
-        .isPrivacyTermsAccepted;
-    if (isTermsAccepted) {
-      context.go(AppRoutePaths.home);
+    if (!didSubmit) {
+      _showSubmitError(context, ref);
       return;
     }
 
-    _openTerms(context, TermsReturnDestination.home);
+    context.go(AppRoutePaths.home);
+  }
+
+  void _showSubmitError(BuildContext context, WidgetRef ref) {
+    final message = ref.read(profileSetupControllerProvider).errorMessage;
+    if (message == null) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -112,6 +128,7 @@ class ProfileSetupPage extends ConsumerWidget {
     return ProfileSetupLayout(
       nickname: state.nickname,
       hasImage: state.hasImage,
+      profileImageUrl: state.profileImageUrl,
       isTermsAccepted: state.isPrivacyTermsAccepted,
       isCompleteEnabled: state.canSubmit,
       isSubmitting: state.isSubmitting,

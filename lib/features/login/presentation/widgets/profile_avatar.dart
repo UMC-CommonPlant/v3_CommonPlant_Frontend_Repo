@@ -8,9 +8,15 @@ const double _profileAvatarBoxSize = 100;
 const double _profileAvatarImageSize = 83.33;
 
 class ProfileAvatar extends StatelessWidget {
-  const ProfileAvatar({required this.hasImage, required this.onTap, super.key});
+  const ProfileAvatar({
+    required this.hasImage,
+    required this.onTap,
+    this.imageUrl,
+    super.key,
+  });
 
   final bool hasImage;
+  final String? imageUrl;
   final VoidCallback onTap;
 
   @override
@@ -30,13 +36,30 @@ class ProfileAvatar extends StatelessWidget {
             children: [
               if (hasImage)
                 ClipOval(
-                  child: Image.asset(
-                    AppImageAssets.profileSetupSampleAvatar,
-                    width: _profileAvatarImageSize,
-                    height: _profileAvatarImageSize,
-                    fit: BoxFit.cover,
-                    excludeFromSemantics: true,
-                  ),
+                  child: imageUrl == null
+                      ? Image.asset(
+                          AppImageAssets.profileSetupSampleAvatar,
+                          width: _profileAvatarImageSize,
+                          height: _profileAvatarImageSize,
+                          fit: BoxFit.cover,
+                          excludeFromSemantics: true,
+                        )
+                      : Image.network(
+                          imageUrl!,
+                          width: _profileAvatarImageSize,
+                          height: _profileAvatarImageSize,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              AppImageAssets.profileSetupSampleAvatar,
+                              width: _profileAvatarImageSize,
+                              height: _profileAvatarImageSize,
+                              fit: BoxFit.cover,
+                              excludeFromSemantics: true,
+                            );
+                          },
+                          excludeFromSemantics: true,
+                        ),
                 )
               else
                 const CommonSvgIcon(

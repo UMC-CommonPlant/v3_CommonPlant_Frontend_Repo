@@ -187,6 +187,7 @@ tool/
 | [코드 가독성 리팩토링 2차 계획](docs/code-readability-refactoring-round-2-plan.md) | 1차 완료 후 남은 Place 중심 대형 화면, 라우팅 파라미터, detail action, mapper 경계 개선 계획 |
 | [코드 가독성 리팩토링 3차 계획](docs/code-readability-refactoring-round-3-plan.md) | Riverpod-first 화면 상태, ViewData, feature/repository 경계를 정리하는 실행 계획 |
 | [코드 가독성 리팩토링 검증 기준](docs/code-readability-refactoring-validation.md) | 리팩토링 구조 감사, 회귀 테스트, 플랫폼 빌드, 실제 기기/API smoke 판정 기준과 검증 기록 |
+| [화면·모델·API 실연동 전환 계획](docs/screen-api-integration-plan.md) | mock 화면을 사용자 동선별 상태·모델·dev API 수직 슬라이스로 전환하는 우선순위와 완료 기준 |
 | [API Swagger 연계 참고 문서](docs/api-swagger-reference.md) | 서버 Swagger 변경사항, API 계층 반영 가능 항목, 백엔드 확인 필요 항목 |
 | [백엔드 API 확인 질문 목록](docs/backend-api-open-questions.md) | Swagger와 API 계층 기준으로 분리한 백엔드 확인 질문 목록 |
 | [후속 결정 체크리스트](docs/follow-up-decision-checklist.md) | 계획된 작업 완료 후 새 이슈로 분리할 결정/확인 항목 목록 |
@@ -239,7 +240,7 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 기존 [남은 작업 진행 계획](docs/remaining-work-plan.md)의 0~15번 항목은 2026-06-28 기준 모두 완료되었습니다.
 완료된 항목은 작업 기록 보존용으로 남기고, 코드 가독성 리팩토링 1차 라운드는 [코드 가독성 리팩토링 실행 계획](docs/code-readability-refactoring-plan.md)의 Task 1~7 기준으로 완료되었습니다. 2차 라운드도 2026-08-04에 [코드 가독성 리팩토링 2차 계획](docs/code-readability-refactoring-round-2-plan.md)의 Task 1~8 기준으로 완료되었습니다. 3차 라운드는 2026-08-12에 [코드 가독성 리팩토링 3차 계획](docs/code-readability-refactoring-round-3-plan.md)의 Task 1~11과 코드 수준 검증을 완료했습니다.
 
-이후 새 작업은 아래 기준으로 범위를 다시 정합니다.
+이후 새 작업은 아래 기준으로 범위를 다시 정합니다. 2026-08-25부터 배포 자동화보다 [화면·모델·API 실연동 전환 계획](docs/screen-api-integration-plan.md)을 MVP 최우선으로 진행합니다.
 
 - 후속 결정/확인 항목은 [후속 결정 체크리스트](docs/follow-up-decision-checklist.md)를 기준으로 새 이슈로 분리합니다.
 - 구조 개선 후보는 [lib 구조 리팩토링 개선 방향](docs/lib-refactoring-direction.md)의 남은 진단 항목을 기준으로 재평가합니다.
@@ -248,8 +249,9 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 
 우선순위:
 
-1. [x] 기존 남은 작업 계획 0~15번 완료 상태를 확인합니다.
-2. [x] 코드 가독성 리팩토링 1차 라운드의 상위 범위와 완료 기준을 문서화합니다.
-3. [x] 코드 가독성 리팩토링 2차 라운드 Task 1~8을 완료합니다.
-4. [x] 코드 가독성 리팩토링 3차 Task 1~11과 최종 코드 수준 검증을 완료합니다.
-5. [ ] 백엔드 확인, 테스트, 릴리즈처럼 결정이 필요한 항목을 개별 이슈로 분리합니다.
+1. [ ] Epic #226에서 화면, 상태·모델, dev API를 사용자 동선별 수직 슬라이스로 연결합니다.
+2. [ ] #227 Auth 로그인·회원가입·세션·라우팅 연결을 완료합니다.
+3. [ ] 로그인 직후 Home에 User와 Plant의 확인된 API 데이터를 연결합니다.
+4. [ ] Plant 목록·상세·생성·수정 동선을 실제 API로 전환합니다.
+5. [ ] Swagger가 불충분한 Place, Friend, Image, Memo는 확인된 범위만 구현하고 나머지는 백엔드 질문으로 유지합니다.
+6. [ ] 릴리즈와 원격 E2E는 기존 정책을 보존하되 외부 준비 조건이 충족될 때 재개합니다.

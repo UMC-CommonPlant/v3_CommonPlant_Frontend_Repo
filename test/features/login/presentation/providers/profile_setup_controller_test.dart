@@ -1,7 +1,14 @@
 import 'dart:async';
 
+import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
+import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
+import 'package:commonplant_frontend/features/login/data/repositories/auth_repository.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_state.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_state.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -102,4 +109,74 @@ void main() {
     );
     expect(container.read(profileSetupControllerProvider).canSubmit, isTrue);
   });
+
+  test('신규 로그인 추천 프로필로 초기 상태를 구성한다', () async {
+    final container = _remoteSignupContainer(_FakeAuthRepository());
+    addTearDown(container.dispose);
+    await container.read(authSessionControllerProvider.future);
+
+    final state = container.read(profileSetupControllerProvider);
+
+    expect(state.nickname, '초록');
+    expect(state.hasImage, isTrue);
+    expect(state.profileImageUrl, 'https://example.com/profile.png');
+  });
+
+  test('API 모드 제출은 signup token으로 회원가입하고 인증 상태를 전환한다', () async {
+    final repository = _FakeAuthRepository();
+    final container = _remoteSignupContainer(repository);
+    addTearDown(container.dispose);
+    await container.read(authSessionControllerProvider.future);
+    final controller = container.read(profileSetupControllerProvider.notifier);
+
+    controller.updateNickname('커먼');
+    final didSubmit = await controller.submit();
+
+    expect(didSubmit, isTrue);
+    expect(repository.latestRequest?.signupToken, 'signup-token');
+    expect(repository.latestRequest?.name, '커먼');
+    expect(
+      container.read(authSessionControllerProvider).requireValue.status,
+      AuthSessionStatus.authenticated,
+    );
+  });
+}
+
+ProviderContainer _remoteSignupContainer(AuthRepository repository) {
+  return ProviderContainer(
+    overrides: [
+      useRemoteApiProvider.overrideWithValue(true),
+      authRepositoryProvider.overrideWithValue(repository),
+      authSessionControllerProvider.overrideWith(
+        _SignupAuthSessionController.new,
+      ),
+    ],
+  );
+}
+
+class _SignupAuthSessionController extends AuthSessionController {
+  @override
+  Future<AuthSessionState> build() async {
+    return const AuthSessionState.signupRequired(
+      signupToken: 'signup-token',
+      suggestedName: '초록',
+      suggestedImgUrl: 'https://example.com/profile.png',
+    );
+  }
+}
+
+class _FakeAuthRepository extends Fake implements AuthRepository {
+  RegisterRequest? latestRequest;
+
+  @override
+  Future<AuthResult> register(
+    RegisterRequest request, {
+    MultipartFile? image,
+  }) async {
+    latestRequest = request;
+    return const AuthenticatedResult(
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+    );
+  }
 }
