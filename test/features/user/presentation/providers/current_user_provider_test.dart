@@ -58,6 +58,13 @@ void main() {
     );
     expect(repository.fetchMeCalls, 1);
   });
+
+  test('Home의 명시적 재시도를 위해 Provider 자동 재시도를 끄는다', () {
+    final retry = currentUserProvider.retry;
+
+    expect(retry, isNotNull);
+    expect(retry!(0, StateError('조회 실패')), isNull);
+  });
 }
 
 class _RecordingUserRepository extends Fake implements UserRepository {

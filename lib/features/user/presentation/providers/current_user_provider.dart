@@ -11,4 +11,4 @@ final currentUserProvider = FutureProvider<UserProfile>((ref) async {
   }
 
   return ref.watch(userRepositoryProvider).fetchMe();
-});
+}, retry: (retryCount, error) => null);
