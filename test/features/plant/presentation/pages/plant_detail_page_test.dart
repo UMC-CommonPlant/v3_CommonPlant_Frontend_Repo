@@ -6,6 +6,7 @@ import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail
 import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_detail_page.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_view_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -166,6 +167,50 @@ void main() {
     expect(repository.detailFetchCalls, 2);
     expect(find.text('필로덴드론'), findsOneWidget);
     expect(find.text('식물 정보를 불러오지 못했어요'), findsNothing);
+  });
+
+  testWidgets('remote 상세는 Swagger 값과 미제공 상태만 표시한다', (tester) async {
+    final repository = _StaticPlantRepository(
+      detail: const PlantDetail(
+        id: 'plant-remote',
+        name: '필로덴드론',
+        placeName: '거실 정원',
+        species: 'Philodendron erubescens',
+        description: '반양지에서 관리해 주세요.',
+        lastWateredDate: '2026-05-25',
+        memo: '새 잎이 올라오고 있어요.',
+        registeredAt: '2026-05-12T19:30:00',
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+          plantDetailNowProvider.overrideWithValue(() => DateTime(2026, 5, 25)),
+        ],
+        child: const MaterialApp(
+          home: PlantDetailPage(plantId: 'plant-remote'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('거실 정원'), findsOneWidget);
+    expect(find.text('Philodendron erubescens'), findsOneWidget);
+    expect(find.textContaining('14일', findRichText: true), findsOneWidget);
+    expect(find.text('2026.05.12'), findsOneWidget);
+    expect(find.text('2026.05.25'), findsOneWidget);
+    expect(find.text('물주기 예정 정보 없음'), findsOneWidget);
+    expect(find.text('물주기 주기 정보 없음'), findsOneWidget);
+    expect(find.text('새 잎이 올라오고 있어요.'), findsOneWidget);
+    expect(find.text('반양지에서 관리해 주세요.'), findsOneWidget);
+    expect(find.text('D-3'), findsNothing);
+    expect(find.text('10 Day'), findsNothing);
+    expect(find.text('커먼플랜트'), findsNothing);
+    expect(find.text('작성하기'), findsNothing);
+    expect(find.bySemanticsLabel('메모 전체보기'), findsNothing);
   });
 
   testWidgets('remote 식물 삭제 확인은 삭제 API를 호출하고 홈으로 이동한다', (tester) async {

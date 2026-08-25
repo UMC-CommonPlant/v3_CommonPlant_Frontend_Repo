@@ -8,9 +8,14 @@ import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 
 class PlantInfoSection extends StatelessWidget {
-  const PlantInfoSection({super.key, required this.wateringCycleLabel});
+  const PlantInfoSection({
+    super.key,
+    required this.wateringCycleLabel,
+    this.plantInfo,
+  });
 
-  final String wateringCycleLabel;
+  final String? wateringCycleLabel;
+  final String? plantInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -49,21 +54,39 @@ class PlantInfoSection extends StatelessWidget {
                     width: double.infinity,
                     child: Padding(
                       padding: const EdgeInsets.all(AppSpacing.x16),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const CommonSvgIcon(
-                            AppIconAssets.watering,
-                            width: 24,
-                            height: 24,
-                            semanticsLabel: '물주기 주기',
+                          Row(
+                            children: [
+                              const CommonSvgIcon(
+                                AppIconAssets.watering,
+                                width: 24,
+                                height: 24,
+                                semanticsLabel: '물주기 주기',
+                              ),
+                              const SizedBox(width: AppSpacing.x8),
+                              Expanded(
+                                child: Text(
+                                  wateringCycleLabel ?? '물주기 주기 정보 없음',
+                                  style: AppTextStyles.size14Medium.copyWith(
+                                    color: wateringCycleLabel == null
+                                        ? AppColors.iconInactive
+                                        : AppColors.textStrong,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: AppSpacing.x8),
-                          Text(
-                            wateringCycleLabel,
-                            style: AppTextStyles.size14Medium.copyWith(
-                              color: AppColors.textStrong,
+                          if (plantInfo != null) ...[
+                            const SizedBox(height: AppSpacing.x12),
+                            Text(
+                              plantInfo!,
+                              style: AppTextStyles.size14Medium.copyWith(
+                                color: AppColors.textBody,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),

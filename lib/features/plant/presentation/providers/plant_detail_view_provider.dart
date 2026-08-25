@@ -7,6 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 typedef PlantDetailViewRequest = ({String plantId, String? placeCode});
 
+final plantDetailNowProvider = Provider<DateTime Function()>((ref) {
+  return DateTime.now;
+});
+
 final plantDetailViewProvider =
     Provider.family<AsyncValue<PlantDetailViewData?>, PlantDetailViewRequest>((
       ref,
@@ -32,12 +36,16 @@ final plantRemoteDetailViewProvider =
       ref,
       request,
     ) async {
-      final fallback = ref.watch(plantLocalDetailViewProvider(request));
+      final now = ref.watch(plantDetailNowProvider);
       final detail = await ref.watch(
         remotePlantDetailProvider(request.plantId).future,
       );
 
-      return mapPlantDetailToViewData(fallback: fallback, detail: detail);
+      return mapPlantDetailToViewData(
+        detail: detail,
+        placeCode: request.placeCode,
+        now: now(),
+      );
     }, retry: (retryCount, error) => null);
 
 void invalidatePlantDetailView(WidgetRef ref, PlantDetailViewRequest request) {
