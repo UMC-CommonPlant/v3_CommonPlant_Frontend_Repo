@@ -33,15 +33,11 @@ final placeRemoteDetailViewProvider =
       ref,
       request,
     ) async {
-      final fallback = ref.watch(placeLocalDetailViewProvider(request));
-      final summary = await ref.watch(
+      final detail = await ref.watch(
         placeDetailProvider(request.placeId).future,
       );
 
-      return mapPlaceSummaryToDetailViewData(
-        fallback: fallback,
-        summary: summary,
-      );
+      return mapPlaceDetailToViewData(detail);
     }, retry: (retryCount, error) => null);
 
 void invalidatePlaceDetailView(WidgetRef ref, PlaceDetailViewRequest request) {

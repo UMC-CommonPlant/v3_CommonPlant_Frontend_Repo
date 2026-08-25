@@ -26,8 +26,8 @@ class PlaceDetailHeader extends StatelessWidget {
   final String placeId;
   final String name;
   final String address;
-  final String sunlightLabel;
-  final String humidityLabel;
+  final String? sunlightLabel;
+  final String? humidityLabel;
   final List<PlaceDetailFriendItem> friends;
 
   @override
@@ -58,11 +58,13 @@ class PlaceDetailHeader extends StatelessWidget {
                 Expanded(
                   child: _PlaceTitleBlock(name: name, address: address),
                 ),
-                const SizedBox(width: AppSpacing.x12),
-                _PlaceMetricStrip(
-                  sunlightLabel: sunlightLabel,
-                  humidityLabel: humidityLabel,
-                ),
+                if (sunlightLabel != null || humidityLabel != null) ...[
+                  const SizedBox(width: AppSpacing.x12),
+                  _PlaceMetricStrip(
+                    sunlightLabel: sunlightLabel,
+                    humidityLabel: humidityLabel,
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: AppSpacing.x24),
@@ -114,8 +116,8 @@ class _PlaceMetricStrip extends StatelessWidget {
     required this.humidityLabel,
   });
 
-  final String sunlightLabel;
-  final String humidityLabel;
+  final String? sunlightLabel;
+  final String? humidityLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -123,17 +125,20 @@ class _PlaceMetricStrip extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _PlaceMetric(
-          icon: AppIconAssets.tagSunlight,
-          label: sunlightLabel,
-          semanticsLabel: '햇빛',
-        ),
-        const SizedBox(width: AppSpacing.x16),
-        _PlaceMetric(
-          icon: AppIconAssets.tagHumidity,
-          label: humidityLabel,
-          semanticsLabel: '습도',
-        ),
+        if (sunlightLabel case final label?)
+          _PlaceMetric(
+            icon: AppIconAssets.tagSunlight,
+            label: label,
+            semanticsLabel: '햇빛',
+          ),
+        if (sunlightLabel != null && humidityLabel != null)
+          const SizedBox(width: AppSpacing.x16),
+        if (humidityLabel case final label?)
+          _PlaceMetric(
+            icon: AppIconAssets.tagHumidity,
+            label: label,
+            semanticsLabel: '습도',
+          ),
       ],
     );
   }
@@ -181,16 +186,18 @@ class _PlaceFriendStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        for (final friend in friends)
-          _PlaceFriendMark(friend: friend, profile: friend.toProfile()),
-        _FriendManagementShortcut(
-          onPressed: () =>
-              context.push(AppRoutePaths.friendManagementLocation(placeId)),
-        ),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final friend in friends)
+            _PlaceFriendMark(friend: friend, profile: friend.toProfile()),
+          _FriendManagementShortcut(
+            onPressed: () =>
+                context.push(AppRoutePaths.friendManagementLocation(placeId)),
+          ),
+        ],
+      ),
     );
   }
 }

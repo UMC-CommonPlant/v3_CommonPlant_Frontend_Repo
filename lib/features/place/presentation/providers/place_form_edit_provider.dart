@@ -34,7 +34,7 @@ final placeFormEditInfoProvider =
 
 final remotePlaceFormEditInfoProvider =
     FutureProvider.family<PlaceFormEditInfo?, String>((ref, placeId) async {
-      final summary = await ref.watch(placeDetailProvider(placeId).future);
+      final summary = await ref.watch(placeSummaryProvider(placeId).future);
 
       if (summary.name.trim().isEmpty) {
         return null;

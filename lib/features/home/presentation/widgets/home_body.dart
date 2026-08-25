@@ -71,6 +71,9 @@ class HomeBody extends ConsumerWidget {
                     for (final place in places) ...[
                       CommonPlaceCard(
                         title: place.name,
+                        imageProvider: place.imageUrl == null
+                            ? null
+                            : NetworkImage(place.imageUrl!),
                         onTap: () => context.push(
                           AppRoutePaths.placeDetailLocation(place.id),
                         ),

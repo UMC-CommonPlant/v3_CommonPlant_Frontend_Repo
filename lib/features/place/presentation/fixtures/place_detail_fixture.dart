@@ -37,6 +37,7 @@ PlaceDetailViewData placeDetailFixture(
         dDayLabel: 'D-3',
         dateLabel: '2022.11.20',
         canWater: true,
+        imageAsset: AppImageAssets.placeDetailMonstera,
       ),
       PlaceDetailPlantItem(
         id: 'plant-2',
@@ -45,6 +46,7 @@ PlaceDetailViewData placeDetailFixture(
         description: '일주일에 x번 물주는 거 잊지 않기',
         dDayLabel: 'D-5',
         dateLabel: '2022.11.20',
+        imageAsset: AppImageAssets.placeDetailMonstera,
       ),
       PlaceDetailPlantItem(
         id: 'plant-3',
@@ -53,6 +55,7 @@ PlaceDetailViewData placeDetailFixture(
         description: '일주일에 x번 물주는 거 잊지 않기',
         dDayLabel: 'D-5',
         dateLabel: '2022.11.20',
+        imageAsset: AppImageAssets.placeDetailMonstera,
       ),
       PlaceDetailPlantItem(
         id: 'plant-4',
@@ -61,6 +64,7 @@ PlaceDetailViewData placeDetailFixture(
         description: '일주일에 x번 물주는 거 잊지 않기',
         dDayLabel: 'D-5',
         dateLabel: '2022.11.20',
+        imageAsset: AppImageAssets.placeDetailMonstera,
       ),
     ],
   );

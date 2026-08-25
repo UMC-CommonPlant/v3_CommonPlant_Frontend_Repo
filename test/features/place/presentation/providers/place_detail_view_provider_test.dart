@@ -1,5 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
-import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
+import 'package:commonplant_frontend/features/place/domain/entities/place_detail.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
@@ -25,12 +25,15 @@ void main() {
       expect(detail?.role, PlaceDetailRole.member);
     });
 
-    test('remote mode는 summary를 fixture 상세에 병합한다', () async {
+    test('remote mode는 API 상세만 ViewData로 변환한다', () async {
       final repository = _StaticPlaceRepository(
-        const PlaceSummary(
-          id: 'remote-place',
+        const PlaceDetail(
+          code: 'remote-place',
           name: '옥상 정원',
           address: '서울시 노원구 광운로 20',
+          isOwner: false,
+          members: [PlaceMember(name: '커먼맘')],
+          plants: [],
         ),
       );
       final container = ProviderContainer(
@@ -50,13 +53,24 @@ void main() {
 
       expect(detail?.name, '옥상 정원');
       expect(detail?.address, '서울시 노원구 광운로 20');
-      expect(detail?.role, PlaceDetailRole.leader);
+      expect(detail?.role, PlaceDetailRole.member);
+      expect(detail?.friends.single.name, '커먼맘');
+      expect(detail?.plants, isEmpty);
+      expect(detail?.sunlightLabel, isNull);
+      expect(detail?.humidityLabel, isNull);
       expect(repository.fetchCalls, 1);
     });
 
     test('remote mode에서 빈 summary는 null data로 표시한다', () async {
       final repository = _StaticPlaceRepository(
-        const PlaceSummary(id: 'empty-place', name: ''),
+        const PlaceDetail(
+          code: 'empty-place',
+          name: '',
+          address: '',
+          isOwner: false,
+          members: [],
+          plants: [],
+        ),
       );
       final container = ProviderContainer(
         overrides: [
@@ -78,14 +92,14 @@ void main() {
 }
 
 class _StaticPlaceRepository extends Fake implements PlaceRepository {
-  _StaticPlaceRepository(this.summary);
+  _StaticPlaceRepository(this.detail);
 
-  final PlaceSummary summary;
+  final PlaceDetail detail;
   int fetchCalls = 0;
 
   @override
-  Future<PlaceSummary> fetchPlace(String code) async {
+  Future<PlaceDetail> fetchPlaceDetail(String code) async {
     fetchCalls++;
-    return summary;
+    return detail;
   }
 }

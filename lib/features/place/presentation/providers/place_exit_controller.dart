@@ -42,6 +42,7 @@ class PlaceExitController extends Notifier<FormSubmitState> {
     try {
       await ref.read(placeRepositoryProvider).deletePlace(placeId);
       ref.invalidate(placeDetailProvider(placeId));
+      ref.invalidate(placeSummaryProvider(placeId));
       ref.invalidate(remotePlaceListProvider);
       ref.invalidate(userPlaceSummariesProvider);
       state = const FormSubmitState.idle();

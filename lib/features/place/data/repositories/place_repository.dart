@@ -1,6 +1,7 @@
 import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
 import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
 import 'package:commonplant_frontend/features/place/data/mappers/place_mapper.dart';
+import 'package:commonplant_frontend/features/place/domain/entities/place_detail.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:dio/dio.dart';
@@ -29,6 +30,13 @@ class PlaceRepositoryImpl implements PlaceRepository {
     final data = await _remoteDataSource.getPlace(code);
 
     return placeSummaryFromResponse(data, fallbackId: code);
+  }
+
+  @override
+  Future<PlaceDetail> fetchPlaceDetail(String code) async {
+    final data = await _remoteDataSource.getPlace(code);
+
+    return placeDetailFromResponse(data, fallbackCode: code);
   }
 
   @override

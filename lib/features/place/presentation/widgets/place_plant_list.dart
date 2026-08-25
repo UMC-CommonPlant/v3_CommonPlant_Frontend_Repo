@@ -1,5 +1,4 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
-import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
@@ -30,18 +29,26 @@ class PlacePlantList extends StatelessWidget {
       ),
       child: Column(
         children: [
+          if (plants.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.x32),
+              child: Text(
+                '등록된 식물이 없어요',
+                style: AppTextStyles.size16Medium.copyWith(
+                  color: AppColors.textBody,
+                ),
+              ),
+            ),
           for (final plant in plants) ...[
             CommonPlacePlantCard(
               width: double.infinity,
               name: plant.name,
               species: plant.species,
               description: plant.description,
-              imageProvider: const AssetImage(
-                AppImageAssets.placeDetailMonstera,
-              ),
-              action: CommonWateringButton(
-                onPressed: plant.canWater ? () {} : null,
-              ),
+              imageProvider: _imageProvider(plant),
+              action: plant.canWater
+                  ? CommonWateringButton(onPressed: () {})
+                  : null,
               trailing: _PlantDueInfo(
                 dDayLabel: plant.dDayLabel,
                 dateLabel: plant.dateLabel,
@@ -57,6 +64,20 @@ class PlacePlantList extends StatelessWidget {
       ),
     );
   }
+
+  ImageProvider<Object>? _imageProvider(PlaceDetailPlantItem plant) {
+    final imageUrl = plant.imageUrl?.trim();
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      return NetworkImage(imageUrl);
+    }
+
+    final imageAsset = plant.imageAsset;
+    if (imageAsset != null) {
+      return AssetImage(imageAsset);
+    }
+
+    return null;
+  }
 }
 
 class _PlantDueInfo extends StatelessWidget {
@@ -66,8 +87,8 @@ class _PlantDueInfo extends StatelessWidget {
     required this.isPrimary,
   });
 
-  final String dDayLabel;
-  final String dateLabel;
+  final String? dDayLabel;
+  final String? dateLabel;
   final bool isPrimary;
 
   @override
@@ -76,16 +97,22 @@ class _PlantDueInfo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Text(
-          dDayLabel,
-          style: AppTextStyles.size16Bold.copyWith(
-            color: isPrimary ? AppColors.brandPrimary : AppColors.iconInactive,
+        if (dDayLabel case final label?)
+          Text(
+            label,
+            style: AppTextStyles.size16Bold.copyWith(
+              color: isPrimary
+                  ? AppColors.brandPrimary
+                  : AppColors.iconInactive,
+            ),
           ),
-        ),
-        Text(
-          dateLabel,
-          style: AppTextStyles.size12Medium.copyWith(color: AppColors.textBody),
-        ),
+        if (dateLabel case final label?)
+          Text(
+            label,
+            style: AppTextStyles.size12Medium.copyWith(
+              color: AppColors.textBody,
+            ),
+          ),
       ],
     );
   }

@@ -3,25 +3,44 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('placeSummariesFromResponse', () {
-    test('wrapper 응답에서 장소 요약 목록을 만든다', () {
+    test('myGarden wrapper의 placeList를 장소 요약 목록으로 만든다', () {
       final summaries = placeSummariesFromResponse({
         'result': {
-          'content': {
-            'items': [
-              {
-                'placeCode': 'place-nano-id',
-                'placeName': '거실 정원',
-                'placeAddress': '서울시 성북구',
-              },
-            ],
-          },
+          'name': '커먼이',
+          'placeList': [
+            {
+              'image': 'https://example.com/garden.png',
+              'code': 'place-nano-id',
+              'name': '거실 정원',
+              'member': '2',
+              'plant': '3',
+            },
+          ],
         },
       });
 
       expect(summaries, hasLength(1));
       expect(summaries.single.id, 'place-nano-id');
       expect(summaries.single.name, '거실 정원');
-      expect(summaries.single.address, '서울시 성북구');
+      expect(summaries.single.imageUrl, 'https://example.com/garden.png');
+      expect(summaries.single.memberCount, 2);
+      expect(summaries.single.plantCount, 3);
+    });
+
+    test('소속 장소의 result 배열도 장소 요약 목록으로 만든다', () {
+      final summaries = placeSummariesFromResponse({
+        'result': [
+          {
+            'code': 'place-2',
+            'name': '작업실',
+            'imgUrl': 'https://example.com/studio.png',
+          },
+        ],
+      });
+
+      expect(summaries.single.id, 'place-2');
+      expect(summaries.single.name, '작업실');
+      expect(summaries.single.imageUrl, 'https://example.com/studio.png');
     });
   });
 
@@ -56,6 +75,58 @@ void main() {
 
       expect(summary.id, 'fallback-place');
       expect(summary.name, '루프탑');
+    });
+  });
+
+  group('placeDetailFromResponse', () {
+    test('백엔드 Place 상세 계약을 멤버와 식물까지 매핑한다', () {
+      final detail = placeDetailFromResponse({
+        'result': {
+          'name': '거실 정원',
+          'code': 'ABCabc',
+          'address': '서울시 노원구',
+          'imgUrl': 'https://example.com/garden.png',
+          'owner': true,
+          'userList': [
+            {'name': '커먼맘', 'image': 'https://example.com/user.png'},
+          ],
+          'plantList': [
+            {
+              'plantId': 1,
+              'scientificNameKo': '몬스테라',
+              'scientificNameEn': 'Monstera deliciosa',
+              'registeredAt': '2026-06-30T16:55:51.387461',
+              'lastWateredDate': '2026-06-29',
+              'imageUrl': 'https://example.com/plant.png',
+              'memo': '새 잎이 올라옴',
+              'placeName': '거실 정원',
+              'plantInfo': '창가에서 키우는 식물',
+            },
+          ],
+        },
+      }, fallbackCode: 'fallback');
+
+      expect(detail.code, 'ABCabc');
+      expect(detail.name, '거실 정원');
+      expect(detail.address, '서울시 노원구');
+      expect(detail.isOwner, isTrue);
+      expect(detail.members.single.name, '커먼맘');
+      expect(detail.members.single.imageUrl, 'https://example.com/user.png');
+      expect(detail.plants.single.id, '1');
+      expect(detail.plants.single.scientificNameKo, '몬스테라');
+      expect(detail.plants.single.lastWateredDate, '2026-06-29');
+      expect(detail.plants.single.description, '창가에서 키우는 식물');
+    });
+
+    test('목록이 없는 상세 응답은 빈 멤버와 식물 목록을 사용한다', () {
+      final detail = placeDetailFromResponse({
+        'result': {'name': '옥상', 'address': '서울시'},
+      }, fallbackCode: 'fallback');
+
+      expect(detail.code, 'fallback');
+      expect(detail.isOwner, isFalse);
+      expect(detail.members, isEmpty);
+      expect(detail.plants, isEmpty);
     });
   });
 }

@@ -18,23 +18,35 @@ class PlaceFriendAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = friend.imageUrl?.trim();
+
     return SizedBox.square(
       dimension: dimension,
       child: ClipOval(
-        child: friend.imageAsset == null
-            ? ColoredBox(
-                color: AppColors.borderDefault,
-                child: Center(
-                  child: CommonSvgIcon(
-                    AppIconAssets.addPerson,
-                    width: dimension * 0.7,
-                    height: dimension * 0.7,
-                    color: AppColors.white,
-                    semanticsLabel: '기본 프로필',
-                  ),
-                ),
+        child: imageUrl != null && imageUrl.isNotEmpty
+            ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => _fallback(),
               )
+            : friend.imageAsset == null
+            ? _fallback()
             : Image.asset(friend.imageAsset!, fit: BoxFit.cover),
+      ),
+    );
+  }
+
+  Widget _fallback() {
+    return ColoredBox(
+      color: AppColors.borderDefault,
+      child: Center(
+        child: CommonSvgIcon(
+          AppIconAssets.addPerson,
+          width: dimension * 0.7,
+          height: dimension * 0.7,
+          color: AppColors.white,
+          semanticsLabel: '기본 프로필',
+        ),
       ),
     );
   }
