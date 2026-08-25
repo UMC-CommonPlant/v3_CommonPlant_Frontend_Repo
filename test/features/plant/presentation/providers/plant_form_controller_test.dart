@@ -28,6 +28,7 @@ void main() {
         plantFormControllerProvider(args).notifier,
       );
       controller.selectPlace(plantRegistrationPlaceFallbacks[1]);
+      controller.updateLastWateredDate(DateTime(2026, 8, 25));
 
       final result = await controller.submit();
       final plants = container.read(plantListProvider);
@@ -66,16 +67,19 @@ void main() {
       await container.read(plantRegistrationPlaceProvider.future);
       await Future<void>.delayed(Duration.zero);
 
-      final result = await container
-          .read(plantFormControllerProvider(args).notifier)
-          .submit();
+      final controller = container.read(
+        plantFormControllerProvider(args).notifier,
+      );
+      controller.updateLastWateredDate(DateTime(2026, 8, 5));
+      final result = await controller.submit();
       final plants = container.read(plantListProvider);
 
       expect(result?.destination, PlantFormSubmitDestination.home);
       expect(repository.createCalls, 1);
       expect(repository.latestCreatePlaceCode, 'place-1');
       expect(repository.latestCreateNickname, '몬스테라');
-      expect(repository.latestCreateScientificNameKo, '몬스테라');
+      expect(repository.latestCreateScientificNameKo, isNull);
+      expect(repository.latestCreateLastWateredDate, '2026-08-05');
       expect(plants.single.name, '몬스테라');
     });
 
@@ -139,8 +143,10 @@ void main() {
       );
 
       expect(initialState.currentName, '몬테');
+      expect(initialState.currentLastWateredDate, '2026-05-25');
 
       controller.updateName('몬테라');
+      controller.updateLastWateredDate(DateTime(2026, 8, 24));
       final result = await controller.submit();
 
       expect(result?.destination, PlantFormSubmitDestination.plantDetail);
@@ -148,6 +154,7 @@ void main() {
       expect(repository.latestUpdatePlantId, 'plant-1');
       expect(repository.latestUpdatePlaceCode, 'place-1');
       expect(repository.latestUpdateNickname, '몬테라');
+      expect(repository.latestUpdateLastWateredDate, '2026-08-24');
     });
   });
 }
@@ -160,11 +167,13 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
   String? latestCreatePlaceCode;
   String? latestCreateNickname;
   String? latestCreateScientificNameKo;
+  String? latestCreateLastWateredDate;
   String? latestUpdateNickname;
+  String? latestUpdateLastWateredDate;
 
   @override
   Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {
-    return const PlantEditInfo(name: '몬테');
+    return const PlantEditInfo(name: '몬테', lastWateredDate: '2026-05-25');
   }
 
   @override
@@ -180,6 +189,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
     latestCreatePlaceCode = placeCode;
     latestCreateNickname = nickname;
     latestCreateScientificNameKo = scientificNameKo;
+    latestCreateLastWateredDate = lastWateredDate;
   }
 
   @override
@@ -194,5 +204,6 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
     latestUpdatePlantId = plantId;
     latestUpdatePlaceCode = placeCode;
     latestUpdateNickname = nickname;
+    latestUpdateLastWateredDate = lastWateredDate;
   }
 }

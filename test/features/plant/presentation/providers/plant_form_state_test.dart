@@ -15,6 +15,7 @@ void main() {
 
       expect(state.isEdit, isFalse);
       expect(state.selectedPlace?.id, 'place-1');
+      expect(state.currentLastWateredDate, isNull);
       expect(state.canSubmit, isTrue);
     });
 
@@ -37,12 +38,17 @@ void main() {
         plantId: 'plant-1',
         placeId: 'place-1',
         name: '몬테',
+        lastWateredDate: '2026-05-25',
       );
 
       expect(state.isEdit, isTrue);
       expect(state.hasChanges, isFalse);
       expect(state.canSubmit, isFalse);
       expect(state.copyWith(currentName: '몬테라').canSubmit, isTrue);
+      expect(
+        state.copyWith(currentLastWateredDate: '2026-05-26').canSubmit,
+        isTrue,
+      );
     });
 
     test('로딩과 조회 실패 상태는 제출할 수 없다', () {

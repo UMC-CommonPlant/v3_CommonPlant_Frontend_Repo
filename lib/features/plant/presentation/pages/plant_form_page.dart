@@ -64,9 +64,14 @@ class PlantFormPage extends ConsumerWidget {
       return PlantCreateScaffold(
         places: formState.places,
         selectedPlaceId: formState.selectedPlaceId,
-        wateringDate: '2023. 01. 30',
+        lastWateredDate: formState.currentLastWateredDate,
         isSubmitting: formState.isSubmitting,
         onPlaceSelected: controller.selectPlace,
+        onWateringDateTap: () => _selectLastWateredDate(
+          context,
+          ref,
+          formState.currentLastWateredDate,
+        ),
         onCancel: () => _cancelCreate(context),
         onSubmit: () => _submit(context, ref),
       );
@@ -74,11 +79,44 @@ class PlantFormPage extends ConsumerWidget {
 
     return PlantEditScaffold(
       name: formState.currentName,
+      lastWateredDate: formState.currentLastWateredDate,
       canSubmit: formState.canSubmit,
       isSubmitting: formState.isSubmitting,
       onChanged: controller.updateName,
+      onWateringDateTap: () => _selectLastWateredDate(
+        context,
+        ref,
+        formState.currentLastWateredDate,
+      ),
       onSubmit: () => _submit(context, ref),
     );
+  }
+
+  Future<void> _selectLastWateredDate(
+    BuildContext context,
+    WidgetRef ref,
+    String? currentDate,
+  ) async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final firstDate = DateTime(1900);
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: _clampWateringDatePickerInitialDate(
+        currentDate: currentDate,
+        firstDate: firstDate,
+        lastDate: today,
+      ),
+      firstDate: firstDate,
+      lastDate: today,
+    );
+
+    if (selectedDate == null || !context.mounted) {
+      return;
+    }
+
+    ref
+        .read(plantFormControllerProvider(_args).notifier)
+        .updateLastWateredDate(selectedDate);
   }
 
   void _cancelCreate(BuildContext context) {
@@ -122,4 +160,28 @@ class PlantFormPage extends ConsumerWidget {
         }
     }
   }
+}
+
+DateTime _clampWateringDatePickerInitialDate({
+  required String? currentDate,
+  required DateTime firstDate,
+  required DateTime lastDate,
+}) {
+  final parsedDate = DateTime.tryParse(currentDate ?? '');
+
+  if (parsedDate == null) {
+    return lastDate;
+  }
+
+  final date = DateUtils.dateOnly(parsedDate);
+
+  if (date.isBefore(firstDate)) {
+    return firstDate;
+  }
+
+  if (date.isAfter(lastDate)) {
+    return lastDate;
+  }
+
+  return date;
 }
