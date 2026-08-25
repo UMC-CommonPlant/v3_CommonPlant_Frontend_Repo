@@ -44,6 +44,18 @@ git switch -c feature/place-list
 
 `develop` 브랜치는 다음 배포를 준비하는 통합 브랜치이며, 모든 기능 브랜치는 `develop`에서 시작합니다.
 
+## develop 품질 게이트
+
+`develop` branch protection은 GitHub Actions app이 생성하는 `Flutter CI / quality` check를 필수로 요구하며 관리자에게도 같은 기준을 적용합니다. 이 check는 `develop` 대상 PR에서 아래 검증을 실행합니다.
+
+- `flutter pub get`
+- `flutter analyze`
+- `flutter test`
+
+feature branch의 단순 push에서는 기본 CI를 별도로 실행하지 않습니다. PR을 열거나 새 commit을 push하면 `pull_request` 이벤트로 검증하고, `develop` 병합 후에는 `push` 이벤트로 통합 상태를 다시 확인합니다. 최신 `develop` 반영 강제, 리뷰 승인 수, 대화 해결 같은 병합 정책은 이번 품질 게이트 설정에 포함하지 않습니다.
+
+`Android Integration Smoke`는 required check가 아니며 관련 Android/app shell/route 변경과 release candidate에서 수동 실행합니다. required check나 branch protection 범위를 바꿀 때는 권한을 가진 팀 구성원의 승인을 받은 뒤 저장소 변경 이슈와 분리해 적용 결과를 기록합니다.
+
 ## GitHub 이슈 기반 작업 흐름
 
 코드, 문서, 설정 등 저장소 변경이 필요한 요구사항은 GitHub 이슈를 기준으로 추적합니다. 단순 질의, 현황 확인, 명시적으로 보류된 요청은 이슈 생성 없이 답변할 수 있습니다.
