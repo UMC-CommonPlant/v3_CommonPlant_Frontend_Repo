@@ -18,6 +18,10 @@ abstract final class AppIconAssets {
   static const String plantSelected = 'assets/icons/plant_selected.svg';
   static const String plantEmpty = 'assets/icons/plant_empty.svg';
   static const String userIllustration = 'assets/icons/user_illustration.svg';
+  static const String userProfile = 'assets/icons/user_profile.svg';
+  static const String userProfileHeader =
+      'assets/icons/user_profile_header.svg';
+  static const String settings = 'assets/icons/settings.svg';
   static const String watering = 'assets/icons/watering.svg';
 
   static const String tagAirPurifying = 'assets/icons/tag_air_purifying.svg';

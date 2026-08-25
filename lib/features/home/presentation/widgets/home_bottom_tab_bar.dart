@@ -5,13 +5,24 @@ import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 
+enum HomeBottomTab { info, story, garden, calendar, my }
+
 class HomeBottomTabBar extends StatelessWidget {
-  const HomeBottomTabBar({super.key});
+  const HomeBottomTabBar({
+    super.key,
+    this.selectedTab = HomeBottomTab.garden,
+    this.onGardenPressed,
+    this.onMyPressed,
+  });
+
+  final HomeBottomTab selectedTab;
+  final VoidCallback? onGardenPressed;
+  final VoidCallback? onMyPressed;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFFFDFDFD),
+      color: AppColors.canvas,
       child: DecoratedBox(
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(color: AppColors.borderDefault)),
@@ -19,26 +30,36 @@ class HomeBottomTabBar extends StatelessWidget {
         child: SafeArea(
           top: false,
           child: SizedBox(
-            height: 64,
+            height: AppSizes.bottomNavigationBarHeight,
             child: Row(
-              children: const [
+              children: [
                 _HomeBottomTabItem(
                   icon: Icons.article_outlined,
                   semanticsLabel: '정보',
+                  isSelected: selectedTab == HomeBottomTab.info,
                 ),
                 _HomeBottomTabItem(
                   icon: Icons.chat_bubble_outline,
                   semanticsLabel: '이야기',
+                  isSelected: selectedTab == HomeBottomTab.story,
                 ),
-                _HomeGardenTabItem(isSelected: true),
+                _HomeGardenTabItem(
+                  isSelected: selectedTab == HomeBottomTab.garden,
+                  onTap: onGardenPressed,
+                ),
                 _HomeBottomTabItem(
                   icon: Icons.calendar_today_outlined,
                   semanticsLabel: '캘린더',
+                  isSelected: selectedTab == HomeBottomTab.calendar,
                 ),
                 _HomeBottomTabItem(
-                  icon: Icons.person_outline,
+                  icon: selectedTab == HomeBottomTab.my
+                      ? Icons.person
+                      : Icons.person_outline,
                   semanticsLabel: '마이',
                   iconSize: AppSizes.iconLarge,
+                  isSelected: selectedTab == HomeBottomTab.my,
+                  onTap: onMyPressed,
                 ),
               ],
             ),
@@ -53,22 +74,38 @@ class _HomeBottomTabItem extends StatelessWidget {
   const _HomeBottomTabItem({
     required this.icon,
     required this.semanticsLabel,
+    required this.isSelected,
     this.iconSize = AppSizes.iconMedium,
+    this.onTap,
   });
 
   final IconData icon;
   final String semanticsLabel;
+  final bool isSelected;
   final double iconSize;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Center(
-        child: Icon(
-          icon,
-          size: iconSize,
-          color: AppColors.textDisabled,
-          semanticLabel: semanticsLabel,
+      child: Semantics(
+        button: onTap != null,
+        selected: isSelected,
+        label: semanticsLabel,
+        child: InkResponse(
+          onTap: onTap,
+          child: Center(
+            child: _HomeBottomTabContent(
+              isSelected: isSelected,
+              child: Icon(
+                icon,
+                size: iconSize,
+                color: isSelected
+                    ? AppColors.brandStrong
+                    : AppColors.iconInactive,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -76,37 +113,60 @@ class _HomeBottomTabItem extends StatelessWidget {
 }
 
 class _HomeGardenTabItem extends StatelessWidget {
-  const _HomeGardenTabItem({this.isSelected = true});
+  const _HomeGardenTabItem({required this.isSelected, this.onTap});
 
   final bool isSelected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CommonSvgIcon(
-              isSelected ? AppIconAssets.plantSelected : AppIconAssets.plant,
-              width: 24,
-              height: 24,
-              semanticsLabel: '정원',
-            ),
-            if (isSelected) ...[
-              const SizedBox(height: AppSpacing.x8),
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: AppColors.brandAccent,
-                  shape: BoxShape.circle,
-                ),
+      child: Semantics(
+        button: onTap != null,
+        selected: isSelected,
+        label: '정원',
+        child: InkResponse(
+          onTap: onTap,
+          child: Center(
+            child: _HomeBottomTabContent(
+              isSelected: isSelected,
+              child: CommonSvgIcon(
+                isSelected ? AppIconAssets.plantSelected : AppIconAssets.plant,
+                width: AppSizes.iconMedium,
+                height: AppSizes.iconMedium,
               ),
-            ],
-          ],
+            ),
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _HomeBottomTabContent extends StatelessWidget {
+  const _HomeBottomTabContent({required this.isSelected, required this.child});
+
+  final bool isSelected;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        child,
+        if (isSelected) ...[
+          const SizedBox(height: AppSpacing.x8),
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: AppColors.brandAccent,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

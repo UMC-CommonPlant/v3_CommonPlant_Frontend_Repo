@@ -22,6 +22,7 @@ abstract final class AppSizes {
   static const double navigationBarHeight = 56;
   static const double navigationBarSideWidth = 56;
   static const double navigationBackIconSize = 24;
+  static const double bottomNavigationBarHeight = 64;
   static const double addressOrPlaceFieldHeight = 56;
   static const double addressOrPlaceDeleteIconSize = 24;
   static const double searchTextFieldHeight = 64;

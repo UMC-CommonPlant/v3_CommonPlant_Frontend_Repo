@@ -20,6 +20,9 @@ import 'package:commonplant_frontend/features/plant/presentation/pages/plant_det
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_search_page.dart';
 import 'package:commonplant_frontend/features/terms/presentation/pages/terms_page.dart';
+import 'package:commonplant_frontend/features/user/presentation/pages/user_profile_edit_page.dart';
+import 'package:commonplant_frontend/features/user/presentation/pages/user_profile_page.dart';
+import 'package:commonplant_frontend/features/user/presentation/pages/user_settings_page.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -136,6 +139,24 @@ const List<AppRouteSpec> appRouteSpecs = [
     title: '식물 상세',
     figmaFrames: ['#2-4 My plants'],
   ),
+  AppRouteSpec(
+    name: AppRouteNames.userProfile,
+    path: AppRoutePaths.userProfile,
+    title: '마이페이지',
+    figmaFrames: ['04 마이페이지 - 메인'],
+  ),
+  AppRouteSpec(
+    name: AppRouteNames.userSettings,
+    path: AppRoutePaths.userSettings,
+    title: '설정',
+    figmaFrames: ['#4-3설정'],
+  ),
+  AppRouteSpec(
+    name: AppRouteNames.userProfileEdit,
+    path: AppRoutePaths.userProfileEdit,
+    title: '회원 정보 수정',
+    figmaFrames: ['#4 -2 수정'],
+  ),
 ];
 
 List<RouteBase> buildAppRoutes() {
@@ -217,6 +238,9 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
         placeId: _queryParameter(state, 'placeId'),
       ),
     ),
+    AppRouteNames.userProfile => const UserProfilePage(),
+    AppRouteNames.userSettings => const UserSettingsPage(),
+    AppRouteNames.userProfileEdit => const UserProfileEditPage(),
     _ => RoutePlaceholderPage(
       route: route,
       pathParameters: state.pathParameters,

@@ -16,7 +16,7 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: CommonPlantApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('커먼(유저 네임'), findsOneWidget);
+    expect(find.text('커먼플랜트'), findsOneWidget);
     expect(find.textContaining('한걸음에', findRichText: true), findsOneWidget);
     expect(find.text('My place'), findsOneWidget);
     expect(find.text('My plant'), findsOneWidget);
@@ -65,7 +65,7 @@ void main() {
 
     const horizontalPadding = 20.0;
     expect(
-      tester.getTopLeft(find.text('커먼(유저 네임')).dx,
+      tester.getTopLeft(find.text('커먼플랜트')).dx,
       closeTo(horizontalPadding, 0.1),
     );
     expect(

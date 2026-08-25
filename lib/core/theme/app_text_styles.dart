@@ -6,6 +6,15 @@ abstract final class AppTextStyles {
 
   static const String fontFamily = 'Pretendard';
 
+  static const TextStyle size28Bold = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    height: 36 / 28,
+    letterSpacing: 0,
+    color: AppColors.textHeadline,
+  );
+
   static const TextStyle size24Medium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 24,
