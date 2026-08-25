@@ -4,7 +4,9 @@ import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_registration_place_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -85,6 +87,65 @@ void main() {
 
     expect(find.text('2026. 05. 25'), findsOneWidget);
     expect(find.text('필로덴드론'), findsOneWidget);
+  });
+
+  testWidgets('식물 등록 화면은 원격 제출 중 등록 버튼을 잠근다', (tester) async {
+    final repository = _PendingPlantCreateRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+          plantRegistrationPlaceProvider.overrideWith(
+            (ref) => [plantRegistrationPlaceFallbacks.first],
+          ),
+        ],
+        child: const MaterialApp(home: PlantFormPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, '등록'));
+    await tester.pump();
+
+    expect(repository.createCalls, 1);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    final submitButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, '등록'),
+    );
+    expect(submitButton.onPressed, isNull);
+  });
+
+  testWidgets('식물 등록 실패는 사용자 오류를 표시하고 재시도할 수 있다', (tester) async {
+    final repository = _FailingPlantCreateRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+          plantRegistrationPlaceProvider.overrideWith(
+            (ref) => [plantRegistrationPlaceFallbacks.first],
+          ),
+        ],
+        child: const MaterialApp(home: PlantFormPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, '등록'));
+    await tester.pumpAndSettle();
+
+    expect(repository.createCalls, 1);
+    expect(find.text('식물 등록에 실패했어요'), findsOneWidget);
+    expect(find.textContaining('raw failure'), findsNothing);
+
+    final submitButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, '등록'),
+    );
+    expect(submitButton.onPressed, isNotNull);
   });
 
   testWidgets('식물 수정 화면은 원격 제출 중 완료 버튼을 잠근다', (tester) async {
@@ -212,6 +273,41 @@ void main() {
     expect(find.text('필로덴드론'), findsOneWidget);
     expect(find.text('식물 수정 정보를 불러오지 못했어요'), findsNothing);
   });
+}
+
+class _PendingPlantCreateRepository extends Fake implements PlantRepository {
+  final Completer<void> _completer = Completer<void>();
+  int createCalls = 0;
+
+  @override
+  Future<void> createPlant({
+    required String placeCode,
+    required String nickname,
+    String? scientificNameKo,
+    String? scientificNameEn,
+    String? lastWateredDate,
+    String? description,
+  }) {
+    createCalls++;
+    return _completer.future;
+  }
+}
+
+class _FailingPlantCreateRepository extends Fake implements PlantRepository {
+  int createCalls = 0;
+
+  @override
+  Future<void> createPlant({
+    required String placeCode,
+    required String nickname,
+    String? scientificNameKo,
+    String? scientificNameEn,
+    String? lastWateredDate,
+    String? description,
+  }) async {
+    createCalls++;
+    throw StateError('raw failure');
+  }
 }
 
 class _PendingPlantRepository extends Fake implements PlantRepository {

@@ -20,7 +20,7 @@ void main() {
 
     test('remote mode는 식물 수정 정보를 반환한다', () async {
       final repository = _StaticPlantRepository(
-        const PlantEditInfo(name: '필로덴드론', lastWateredDate: '2026.05.25'),
+        const PlantEditInfo(name: '필로덴드론', lastWateredDate: '2026-05-25'),
       );
       final container = ProviderContainer(
         overrides: [
@@ -39,13 +39,13 @@ void main() {
           .requireValue;
 
       expect(info?.name, '필로덴드론');
-      expect(info?.lastWateredDate, '2026.05.25');
+      expect(info?.lastWateredDate, '2026-05-25');
       expect(repository.fetchCalls, 1);
     });
 
     test('수정 정보 remote 조회를 repository에 위임한다', () async {
       final repository = _StaticPlantRepository(
-        const PlantEditInfo(name: '필로덴드론', lastWateredDate: '2026.05.25'),
+        const PlantEditInfo(name: '필로덴드론', lastWateredDate: '2026-05-25'),
       );
       final container = ProviderContainer(
         overrides: [plantRepositoryProvider.overrideWithValue(repository)],
