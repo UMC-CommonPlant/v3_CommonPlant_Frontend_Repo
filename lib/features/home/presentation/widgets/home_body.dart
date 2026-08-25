@@ -5,6 +5,7 @@ import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/home/presentation/widgets/home_sections.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_invitation_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_card.dart';
@@ -14,7 +15,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 const double _homeSectionContentGap = 26;
-const int _placeInvitationRequestCount = 3;
 
 class HomeBody extends ConsumerWidget {
   const HomeBody({super.key});
@@ -23,6 +23,7 @@ class HomeBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final placesAsync = ref.watch(placeSummariesProvider);
     final plantsAsync = ref.watch(plantSummariesProvider);
+    final invitationCountAsync = ref.watch(placeInvitationRequestCountProvider);
 
     if (placesAsync.isLoading || plantsAsync.isLoading) {
       return const _HomeStatusBody(
@@ -54,7 +55,7 @@ class HomeBody extends ConsumerWidget {
               title: 'My place',
               addSemanticsLabel: '장소 추가',
               action: HomePlaceRequestButton(
-                count: _placeInvitationRequestCount,
+                count: invitationCountAsync.value ?? 0,
                 onPressed: () => context.push(AppRoutePaths.placeInvitations),
               ),
               onAddPressed: hasPlaces
