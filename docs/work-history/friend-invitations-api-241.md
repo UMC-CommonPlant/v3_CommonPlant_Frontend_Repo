@@ -3,6 +3,7 @@
 ## 작업 기준
 
 - 이슈: #241 `[Feature] 장소 친구 요청 목록·수락·거절 API 연결`
+- PR: #242 `[Feature] 장소 친구 요청 목록·수락·거절 API 연결`
 - 상위 이슈: #226 `[Epic] MVP 화면·API 실연동 전환`
 - 작업일: 2026-08-26
 - 브랜치: `feature/friend-invitations-api-241`
