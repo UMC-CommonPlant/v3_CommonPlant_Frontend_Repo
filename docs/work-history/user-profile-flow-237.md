@@ -3,6 +3,7 @@
 ## 작업 기준
 
 - 이슈: #237 `[Feature] 마이페이지·설정·회원정보 API 연결`
+- PR: #238 `[Feature] 마이페이지·설정·회원정보 API 연결`
 - 상위 이슈: #226 `[Epic] MVP 화면·API 실연동 전환`
 - 작업일: 2026-08-25
 - 브랜치: `feature/user-profile-flow-237`
@@ -48,6 +49,7 @@
 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- |
 | `684d55b` | User 화면·상태·API·라우팅·테스트 | format 284개 파일, analyze, 전체 test 314개 통과·기존 golden 1개 skip |
-| 이 문서 후속 커밋 | Figma frame map, route, Swagger 연결 상태와 구현 경계 기록 | `git diff --check` |
+| `3063230` | Figma frame map, route, Swagger 연결 상태와 구현 경계 기록 | `git diff --check` |
+| 이 문서 후속 커밋 | PR #238과 Project 10 In Review 연결 기록 | `git diff --check` |
 
 추가 asset 검증으로 신규 SVG 3개의 XML parse와 `vector_graphics_compiler` 변환, 전체 SVG 39개 rasterize test를 통과했습니다. 마이페이지는 임시 375×812 golden probe로 Figma 원본과 시각 대조했으며 probe 파일은 저장소에 남기지 않았습니다.

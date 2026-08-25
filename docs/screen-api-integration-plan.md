@@ -28,7 +28,7 @@
 | P0 | Auth 로그인·회원가입 | 로그인 화면, 인증 세션, 프로필 등록, route redirect, `/auth/login`, `/auth/register` | #227 / PR #228 병합 완료 |
 | P1 | Home 초기 데이터 | 인증 사용자 정보와 장소·식물 요약을 화면 상태로 연결 | #232 / PR #233 병합 완료 |
 | P2 | Plant 핵심 동선 | 목록, 상세, 생성, 수정 API와 각 화면 상태 연결 | #229, #231 병합 완료 |
-| P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | #237 구현, 이미지 파일 선택 정책과 분리 |
+| P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | #237 / PR #238 In Review, 이미지 파일 선택 정책과 분리 |
 | 제한 | Place | response schema가 확인된 동선부터 연결 | 목록·상세 schema 확인 필요 |
 | 보류 | Friend, Image, Memo | 성공 response 또는 endpoint가 불충분한 영역 | 백엔드 확인 필요 |
 
@@ -41,7 +41,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | 도메인 | 화면·route | 현재 상태 | 남은 연결 | API·선행 조건 | 판정 |
 | --- | --- | --- | --- | --- | --- |
 | Home | Home `/` | Place·Plant 목록 API 모드 연결, 사용자명·초대 수 고정 | 현재 사용자 Provider, hero 상태, 목록 재시도 정책, 고정값 제거 | `GET /users`, `GET /plants`; Place·Friend response schema 확인 필요 | #232 즉시 진행 |
-| User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴 Controller와 세 화면 연결 | 실제 이미지 파일 선택, 알림 설정 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 구현 |
+| User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴 Controller와 세 화면 연결 | 실제 이미지 파일 선택, 알림 설정 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 / PR #238 In Review |
 | Place | 장소 친구 요청 | fixture 목록과 로컬 수락·거절 | 목록 DTO, loading/empty/error, 수락·거절 submit | Friend response schema와 `friendId` 의미 확인 | 제한 |
 | Place | 장소 등록 | 이름·주소 create API 연결 | 생성된 장소 code, 실제 이미지, 친구 추가 후속 흐름 | `POST /place/create` response schema 필요 | 부분 연결 |
 | Place | 주소 검색 | fixture 검색 | 검색 adapter와 선택 결과 | 백엔드 endpoint 또는 외부 주소 서비스 결정 필요 | 보류 |
@@ -125,5 +125,6 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #227 | `9c21d24` | 화면·모델·API 수직 슬라이스 우선순위와 Auth 작업 이력 문서화 | format 270개, analyze, 전체 test 280개·기존 skip 1개 |
 | #230 | - | 남은 화면 연결 매트릭스, 병렬 workstream과 파일 소유권 문서화 | `git diff --check` |
 | #237 | `684d55b` | 마이페이지·설정·회원 정보 수정 UI와 User 조회·수정·탈퇴 상태 연결 | format 284개, analyze, 전체 test 314개·기존 skip 1개 |
+| #237 | `3063230` | Figma frame map, route, Swagger 연결 상태와 User 구현 경계 문서화 | `git diff --check` |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.
