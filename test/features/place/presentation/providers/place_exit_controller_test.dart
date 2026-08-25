@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PlaceExitController', () {
-    test('remote 장소 나가기는 repository를 호출하고 홈 이동 결과를 반환한다', () async {
+    test('remote 장소 삭제는 repository를 호출하고 홈 이동 결과를 반환한다', () async {
       final repository = _RecordingPlaceRepository();
       final container = ProviderContainer(
         overrides: [
@@ -32,7 +32,7 @@ void main() {
       );
     });
 
-    test('remote 장소 나가기 실패는 사용자 메시지 상태를 남긴다', () async {
+    test('remote 장소 삭제 실패는 사용자 메시지 상태를 남긴다', () async {
       final repository = _FailingPlaceRepository();
       final container = ProviderContainer(
         overrides: [
@@ -51,7 +51,7 @@ void main() {
       expect(repository.deleteCalls, 1);
       expect(
         container.read(placeExitControllerProvider),
-        const FormSubmitState.failure('장소 나가기에 실패했어요'),
+        const FormSubmitState.failure('장소 삭제에 실패했어요'),
       );
     });
 

@@ -12,12 +12,14 @@ class PlaceDetailFab extends StatelessWidget {
     super.key,
     required this.placeId,
     required this.canEditPlace,
-    required this.onExit,
+    this.removalLabel = '장소 나가기',
+    this.onRemove,
   });
 
   final String placeId;
   final bool canEditPlace;
-  final VoidCallback onExit;
+  final String removalLabel;
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -47,17 +49,18 @@ class PlaceDetailFab extends StatelessWidget {
             onPressed: () =>
                 context.push(AppRoutePaths.placeEditLocation(placeId)),
           ),
-        CommonFabDialAction(
-          label: '장소 나가기',
-          icon: const CommonSvgIcon(
-            AppIconAssets.exit,
-            width: AppSizes.iconMedium,
-            height: AppSizes.iconMedium,
-            color: AppColors.textStrong,
-            semanticsLabel: '장소 나가기',
+        if (onRemove case final onRemove?)
+          CommonFabDialAction(
+            label: removalLabel,
+            icon: CommonSvgIcon(
+              AppIconAssets.exit,
+              width: AppSizes.iconMedium,
+              height: AppSizes.iconMedium,
+              color: AppColors.textStrong,
+              semanticsLabel: removalLabel,
+            ),
+            onPressed: onRemove,
           ),
-          onPressed: onExit,
-        ),
       ],
       child: const CommonSvgIcon(
         AppIconAssets.shape,

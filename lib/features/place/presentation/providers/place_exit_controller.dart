@@ -42,13 +42,14 @@ class PlaceExitController extends Notifier<FormSubmitState> {
     try {
       await ref.read(placeRepositoryProvider).deletePlace(placeId);
       ref.invalidate(placeDetailProvider(placeId));
+      ref.invalidate(placeSummaryProvider(placeId));
       ref.invalidate(remotePlaceListProvider);
       ref.invalidate(userPlaceSummariesProvider);
       state = const FormSubmitState.idle();
 
       return const PlaceExitResult.home();
     } catch (_) {
-      state = const FormSubmitState.failure('장소 나가기에 실패했어요');
+      state = const FormSubmitState.failure('장소 삭제에 실패했어요');
 
       return null;
     }

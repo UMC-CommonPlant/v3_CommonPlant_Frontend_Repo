@@ -11,7 +11,7 @@
 - Swagger UI: https://commonplant-dev.okbear.dev/api/v1/swagger-ui/index.html#
 - OpenAPI JSON: https://commonplant-dev.okbear.dev/api/v1/api-docs/json
 - Swagger config: https://commonplant-dev.okbear.dev/api/v1/api-docs/json/swagger-config
-- 확인일: 2026-08-23
+- 확인일: 2026-08-25
 - 접속 결과: Swagger UI, OpenAPI JSON, Swagger config HTTP 200
 - 개발 서버 루트: HTTP 404. 루트 route가 없다는 의미이며 Swagger/API endpoint 상태와 분리한다.
 - 인증 endpoint 확인: token 없이 `GET /api/v1/users` 요청 시 HTTP 401, code `A009`로 인증 요구 응답
@@ -21,7 +21,8 @@
 - endpoint inventory: 19 paths, 27 operations
 - 기존 문서 비교 기준: `docs/api-swagger-summary-43` 브랜치의 `docs/api-swagger-reference.md` 확인일 2026-05-20
 - 코드 비교 기준: `feature/api-integration-45` 브랜치의 `lib/core/network`, `features/*/data` API 계층
-- 참고: 2026-05-25의 상세 schema 비교 기록을 보존하고, 2026-08-23에는 dev 접속 정보와 현재 endpoint/schema 차이를 재검증했다.
+- 백엔드 소스 비교 기준: `UMC-CommonPlant/v3_CommonPlant_Backend_Repo` main `7d572cbcabc81a65926738b2a09e8479d0bd0c79`
+- 참고: 2026-05-25의 상세 schema 비교 기록을 보존하고, 2026-08-25에는 live OpenAPI와 백엔드 Controller·DTO·Service를 함께 재검증했다.
 
 ## 프론트엔드 연계 원칙
 
@@ -39,9 +40,21 @@
 - `/users`, `/users/{keyword}`는 operation에 bearer 인증이 명시되어 있다.
 - 그 외 operation은 별도 security가 없으므로 전역 bearer 인증이 상속되는 것으로 본다.
 - Auth, User, Plant 일부 API는 `timeStamp`, `success`, `status`, `message`, `result` 형태의 JSON response wrapper schema가 추가되었다.
-- Place, Image, Friend API는 여전히 성공 response body schema가 없거나 `OK` 수준의 설명만 있다.
+- Place, Image, Friend API는 live OpenAPI에 여전히 성공 response body schema가 없거나 `OK` 수준의 설명만 있다.
+- Place와 Friend는 백엔드 source의 `JsonResponse.result` 반환 타입을 추가 근거로 사용한다. machine-readable Swagger가 아니라는 점과 실제 인증 응답 smoke가 남았다는 점은 구분한다.
 
 ## Swagger 변경 요약
+
+### 2026-08-25 live Swagger·백엔드 source 재확인
+
+| 구분 | 확인 내용 | 프론트 판단 |
+| --- | --- | --- |
+| Live OpenAPI | 19 paths, 27 operations이며 Place·Friend 성공 schema는 여전히 미노출 | endpoint 변화 없음 |
+| Place 목록 | `getMainPage.placeList`, `getPlaceListRes`, `getPlaceBelongUser` 확인 | #239 목록 mapper와 Home 대표 이미지 연결 |
+| Place 상세 | `getPlaceRes`가 `owner`, `userList`, `plantList`를 반환 | #239에서 remote fixture 병합 제거 가능 |
+| Place 멤버 | `getPlaceResUser`는 `name`, `image`만 반환 | 상세 표시는 가능, 멤버 고유 id·역할 기반 변경은 보류 |
+| Friend 요청 | `friendRequestListRes.requests`와 요청 PK `friendId` 확인 | 목록·수락·거절 후속 수직 슬라이스 진행 가능 |
+| Friend 전송 | receiver는 표시 이름이며 부분 검색 첫 결과를 사용 | 중복 이름 오매칭이 해결되기 전 신규 초대 전송 보류 |
 
 ### 2026-08-23 dev Swagger 재확인
 
@@ -102,13 +115,13 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | User | PUT | `/users` | 내 정보 수정 | 필요 | `UserJsonResponse` |
 | User | DELETE | `/users` | 회원 탈퇴 | 필요 | `UserDeleteJsonResponse` |
 | User | GET | `/users/{keyword}` | 사용자 이름 검색 | 필요 | `UserListJsonResponse` |
-| Place | GET | `/place/myGarden` | 내 정원 조회 | 필요 | 없음 |
-| Place | GET | `/place/user` | 소속 장소 조회 | 필요 | 없음 |
-| Place | GET | `/place/{code}` | 장소 조회 | 필요 | 없음 |
-| Place | GET | `/place/{code}/members` | 장소 멤버 목록 조회 | 필요 | 없음 |
-| Place | POST | `/place/create` | 장소 생성 | 필요 | 없음 |
-| Place | PUT | `/place/update/{code}` | 장소 수정 | 필요 | 없음 |
-| Place | DELETE | `/place/delete/{code}` | 장소 삭제 | 필요 | 없음 |
+| Place | GET | `/place/myGarden` | 내 정원 조회 | 필요 | Swagger 없음; source `getMainPage` |
+| Place | GET | `/place/user` | 소속 장소 조회 | 필요 | Swagger 없음; source `getPlaceBelongUser[]` |
+| Place | GET | `/place/{code}` | 장소 조회 | 필요 | Swagger 없음; source `getPlaceRes` |
+| Place | GET | `/place/{code}/members` | 장소 멤버 목록 조회 | 필요 | Swagger 없음; source `getPlaceResUser[]` |
+| Place | POST | `/place/create` | 장소 생성 | 필요 | Swagger 없음; source place code 문자열 |
+| Place | PUT | `/place/update/{code}` | 장소 수정 | 필요 | Swagger 없음; source `updatePlaceRes` |
+| Place | DELETE | `/place/delete/{code}` | 장소 삭제 | 필요 | Swagger 없음; source null |
 | Friend | GET | `/friends/requests` | 없음 | 필요 | 없음 |
 | Friend | POST | `/friends/request` | 없음 | 필요 | 없음 |
 | Friend | POST | `/friends/accept` | 없음 | 필요 | 없음 |
@@ -246,18 +259,37 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 #### GET `/place/myGarden`
 
 - 사용자의 정원 정보를 조회한다.
-- 성공 response body schema는 없다.
+- live Swagger 성공 response body schema는 없다.
+- 백엔드 source의 `JsonResponse.result`는 `getMainPage`이다.
+- `getMainPage` fields:
+  - `name`: 현재 사용자 이름
+  - `placeList`: `getPlaceListRes[]`
+- `getPlaceListRes` fields:
+  - `image`
+  - `code`
+  - `name`
+  - `member`: 문자열 멤버 수
+  - `plant`: 문자열 식물 수
 
 #### GET `/place/user`
 
 - 사용자가 속한 장소 리스트를 조회한다.
-- 성공 response body schema는 없다.
+- live Swagger 성공 response body schema는 없다.
+- 백엔드 source의 `JsonResponse.result`는 `getPlaceBelongUser[]`이다.
+- 항목 fields: `code`, `name`, `imgUrl`
 
 #### GET `/place/{code}`
 
 - Path parameter:
   - `code`: 장소 코드
-- 성공 response body schema는 없다.
+- live Swagger 성공 response body schema는 없다.
+- 백엔드 source의 `JsonResponse.result`는 `getPlaceRes`이다.
+- `getPlaceRes` fields:
+  - `name`, `code`, `address`, `imgUrl`
+  - `owner`: 현재 사용자의 장소 소유자 여부
+  - `userList`: `{ name, image }[]`
+  - `plantList`: Plant `DetailResponse[]`
+- #239는 위 계약을 별도 `PlaceDetail` 도메인 모델로 파싱하고 API 모드의 fixture 환경값·멤버·식물을 제거한다.
 - Error:
   - `403`: 장소 접근 권한 없음
   - `404`: 장소 없음
@@ -267,11 +299,12 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 가입 순서대로 장소 멤버 목록을 조회한다.
 - Path parameter:
   - `code`: 장소 코드, required
-- 성공 response 설명은 `멤버 목록 조회 성공`이지만 body schema는 없다.
+- 성공 response 설명은 `멤버 목록 조회 성공`이지만 live Swagger body schema는 없다.
+- 백엔드 source의 result는 가입 순서의 `{ name, image }[]`이다.
 - Error:
   - `403`: 장소 접근 권한 없음
   - `404`: 장소 없음
-- 친구 관리 화면에 연결하려면 member id, 이름, 프로필 이미지, 역할 필드와 wrapper를 백엔드에 확인해야 한다.
+- 고유 member id와 역할은 제공되지 않으므로 멤버 변경·권한 UI에는 별도 endpoint 또는 응답 확장이 필요하다.
 
 #### POST `/place/create`
 
@@ -285,7 +318,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - `createPlaceReq` properties:
   - `name`: 최대 10자
   - `address`: 필수
-- 성공 response body schema는 없다.
+- live Swagger 성공 response body schema는 없다.
+- 백엔드 source의 성공 result는 생성된 place code 문자열이다.
 - Error:
   - `400`: 요청 값 검증 실패, 주소 누락/공백
 
@@ -304,7 +338,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
   - `imageKey`
   - `name`: 최대 10자
   - `address`
-- 성공 response body schema는 없다.
+- live Swagger 성공 response body schema는 없다.
+- 백엔드 source의 성공 result는 `{ code, name, address, imgUrl }`이다.
 - Error:
   - `400`: 장소 이미지 키 오류
   - `403`: 장소 접근 권한 없음
@@ -314,7 +349,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 - Path parameter:
   - `code`: 장소 코드
-- 성공 response body schema는 없다.
+- live Swagger 성공 response body schema는 없다.
+- 백엔드 source의 성공 result는 null이다.
 - Error:
   - `403`: 장소 접근 권한 없음
   - `404`: 장소 없음
@@ -323,8 +359,13 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 #### GET `/friends/requests`
 
-- 친구 요청 목록 조회로 추정되지만 Swagger summary와 response schema가 없다.
-- 성공 response 설명은 `OK`이다.
+- live Swagger summary와 response schema는 없고 성공 설명은 `OK`이다.
+- 백엔드 source의 result는 `{ requests: friendRequestItem[] }`이다.
+- `friendRequestItem` fields:
+  - `friendId`: 친구 요청 PK
+  - `senderName`, `senderImgUrl`
+  - `placeCode`, `placeName`, `placeAddress`
+  - `status`
 
 #### POST `/friends/request`
 
@@ -333,7 +374,9 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - Request properties:
   - `receiverName`: string array
   - `placeCode`: string
-- 성공 response 설명은 `OK`이고 response schema는 없다.
+- live Swagger 성공 response 설명은 `OK`이고 response schema는 없다.
+- 백엔드 source의 result는 `{ placeCode, receiverList }`이다.
+- 현재 Service는 `receiverName`을 표시 이름 부분 검색에 넣고 첫 결과를 사용하므로 중복 이름 오매칭 위험이 있다.
 
 #### POST `/friends/accept`
 
@@ -341,7 +384,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - Request schema: `friendDecisionReq`
 - Request properties:
   - `friendId`: int64
-- 성공 response 설명은 `OK`이고 response schema는 없다.
+- `friendId`는 친구 요청 PK이다.
+- 성공 result는 null이다.
 
 #### POST `/friends/decline`
 
@@ -349,7 +393,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - Request schema: `friendDecisionReq`
 - Request properties:
   - `friendId`: int64
-- 성공 response 설명은 `OK`이고 response schema는 없다.
+- `friendId`는 친구 요청 PK이다.
+- 성공 result는 null이다.
 
 ### Plant
 
@@ -521,11 +566,12 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | 프로필 설정 | `/profile/setup` | `POST /auth/register` | #216에서 multipart datasource/repository 반영 완료, 실제 image picker 파일과 submit 연결은 별도 구현 필요 |
 | 마이페이지·회원 정보 수정 | `/me`, `/me/edit` | `GET/PUT/DELETE /users` | #237에서 조회·이름 수정·회원 탈퇴 화면 흐름 연결, 실제 image picker는 별도 정책 필요 |
 | 친구 추가 | `/places/new/friends` | `GET /users/{keyword}` | 사용자 이름 검색 DTO 반영 가능 |
-| 친구 추가 | `/places/new/friends` | `POST /friends/request` | 요청 전송은 가능하나 response schema와 화면 성공 정책 확인 필요 |
-| 장소 친구 요청 | `/places/invitations` | `GET /friends/requests` | 목록 response schema가 없어 백엔드 확인 필요 |
-| 장소 친구 요청 | `/places/invitations` | `POST /friends/accept`, `POST /friends/decline` | accept/decline 요청은 가능하나 response와 갱신 정책 확인 필요 |
-| 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members` | endpoint는 확인됐지만 목록 response schema가 없어 백엔드 확인 필요 |
-| 장소 수정 | `/places/:placeId/edit` | `PUT /place/update/{code}` | multipart 여부는 해소됐지만 성공 response schema 없음 |
+| 친구 추가 | `/places/new/friends` | `POST /friends/request` | source 응답은 확인했지만 표시 이름 중복 오매칭 위험 해결 필요 |
+| 장소 친구 요청 | `/places/invitations` | `GET /friends/requests` | source의 `requests[]` 계약으로 후속 구현 가능 |
+| 장소 친구 요청 | `/places/invitations` | `POST /friends/accept`, `POST /friends/decline` | 요청 PK와 null 성공 result 확인, 후속 구현 가능 |
+| 장소 상세 | `/places/:placeId` | `GET /place/{code}` | #239에서 장소·owner·멤버·식물 실데이터 연결 |
+| 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members` | 이름·이미지 조회 가능, 고유 id와 멤버 변경 endpoint는 없음 |
+| 장소 수정 | `/places/:placeId/edit` | `PUT /place/update/{code}` | multipart와 수정 결과 계약 확인, image key 조회는 별도 확인 필요 |
 | 식물 등록 정보 입력 | `/plants/new/details` | `POST /plants` | `placeCode` 기준으로 현재 코드 DTO 수정 필요 |
 | 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}` | query parameter 제거 필요 |
 | 식물 수정 | `/plants/:plantId/edit` | `GET /plants/{plantId}/edit` | query parameter 제거 필요 |
@@ -550,12 +596,12 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | `/auth/register` 요청 body 구조 | `RegisterRequest`/`RegisterResponse` 분리와 `register` JSON part encoding 확인 | 해소 |
 | `/users` 조회 성공 응답 body 구조 | `UserJsonResponse`, `UserResponse` 추가 | 해소 |
 | `PUT /users` request schema 오연결 | `UserUpdateMultipartRequest`로 변경 | 해소 |
-| Place 조회/생성/수정/삭제 성공 응답 body 구조 | 여전히 schema 없음 | 남음 |
+| Place 조회/생성/수정/삭제 성공 응답 body 구조 | live Swagger schema는 없지만 backend source 반환 타입 확인 | source 기준 해소, 인증 smoke 남음 |
 | Plant 목록/상세/수정 화면 조회 성공 응답 body 구조 | 목록, 생성, 상세, 수정 정보, 삭제 schema 추가 | 해소 |
 | Image 업로드/조회/수정/삭제 성공 응답 body 구조 | 여전히 schema 없음 | 남음 |
 | `PUT /place/update/{code}` multipart 여부 | `multipart/form-data`로 변경 | 해소 |
 | multipart 요청 JSON part content type | Auth/User/Plant는 `application/json` 명시, Place create/update는 encoding 미표기 | 일부 남음 |
-| 장소 멤버 목록 API | `GET /place/{code}/members` 추가, 성공 response schema 없음 | endpoint 확인, schema 확인 필요 |
+| 장소 멤버 목록 API | source에서 `{ name, image }[]` 확인 | 표시 계약 해소, 고유 id·변경 API 남음 |
 | Place create/update required와 validation | `name`, `address` required와 `name` maxLength 확인 | 일부 해소 |
 | Plant create/update validation과 nullable 정책 | 문자열 maxLength와 date format 확인 | 일부 해소 |
 | 에러 응답 body 구조와 code/message 필드명 | 성공 wrapper는 있으나 에러 body schema 없음 | 남음 |
@@ -585,6 +631,9 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: `GET /users/{keyword}`는 사용자 검색 datasource/repository 후보로 추가했다.
 - 반영: `POST /place/create`와 `PUT /place/update/{code}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
 - 반영: `PUT /place/update/{code}`는 multipart 전송 datasource/repository를 추가했다.
+- 반영: #239에서 `GET /place/myGarden`의 `result.placeList`와 대표 이미지를 Home 장소 카드에 연결했다.
+- 반영: #239에서 `GET /place/{code}`를 `PlaceDetail`로 파싱하고 owner·멤버·식물·이미지·날짜를 상세 화면에 연결했다.
+- 반영: #239 remote 상세에서는 서버가 주지 않는 햇빛·습도와 fixture 멤버·식물을 표시하지 않는다.
 - 반영: `POST /plants`와 `PUT /plants/{plantId}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
 - 반영: Auth login DTO는 Swagger의 `newUser` 필드명을 명시적으로 보존한다.
 - 반영: Friend 요청 목록/전송/수락/거절 endpoint는 response schema가 없으므로 raw 또는 void 경계로 datasource/repository만 추가했다.
@@ -611,8 +660,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | --- | --- | --- |
 | Auth | `POST /auth/register` response example의 `isNewUser`와 schema `newUser` 불일치 | 회원가입 응답 DTO의 실제 필드 확인 필요 |
 | 공통 Multipart | JSON part의 `Content-Type: application/json` 필요 여부 | Auth/Place/Plant/User multipart 전송 정책 정합성 |
-| Place | 조회/생성/수정/삭제 성공 response, 목록/상세/멤버 wrapper와 필드명 | 장소 mapper와 실데이터 화면 정책 제한 |
-| Friend | 요청 목록/전송/수락/거절 response, `receiverName`, `friendId` 의미 | 친구 요청 화면과 액션 payload 확정 불가 |
+| Place | dev 배포가 backend source `7d572cb` 계약과 일치하는지 인증 smoke | #239 mapper의 실제 환경 검증 필요 |
+| Friend | 표시 이름 receiver의 중복 오매칭, 멤버 변경 endpoint 부재 | 신규 초대 전송과 친구 관리 변경 보류 |
 | Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물/메모 이미지 key/url 매핑 보류 |
 | Error | 에러 body의 `code`, `message`, field error 구조 | 공통 사용자 메시지와 field error 매핑 보류 |
 | Token | refresh token 재발급, 로그아웃 API 제공 여부 | 인증 만료 복구와 세션 종료 정책 보류 |

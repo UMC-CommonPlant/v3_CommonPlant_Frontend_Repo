@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/features/place/domain/entities/place_detail.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 
 abstract interface class PlaceRepository {
@@ -6,6 +7,8 @@ abstract interface class PlaceRepository {
   Future<List<PlaceSummary>> fetchUserPlaces();
 
   Future<PlaceSummary> fetchPlace(String code);
+
+  Future<PlaceDetail> fetchPlaceDetail(String code);
 
   Future<void> createPlace({required String name, required String address});
 

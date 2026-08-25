@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
-import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
+import 'package:commonplant_frontend/features/place/domain/entities/place_detail.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
@@ -151,7 +151,14 @@ void main() {
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(
             _StaticPlaceRepository(
-              const PlaceSummary(id: 'empty-place', name: ''),
+              const PlaceDetail(
+                code: 'empty-place',
+                name: '',
+                address: '',
+                isOwner: false,
+                members: [],
+                plants: [],
+              ),
             ),
           ),
         ],
@@ -163,6 +170,85 @@ void main() {
     expect(find.text('장소 정보를 찾을 수 없어요'), findsOneWidget);
     expect(find.text('다시 장소 목록에서 선택해 주세요'), findsOneWidget);
     expect(find.text('스윗 홈_거실'), findsNothing);
+  });
+
+  testWidgets('remote 상세는 API 멤버와 식물만 표시한다', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          placeRepositoryProvider.overrideWithValue(
+            _StaticPlaceRepository(
+              const PlaceDetail(
+                code: 'remote-place',
+                name: 'API 정원',
+                address: '서울시 성북구',
+                isOwner: false,
+                members: [PlaceMember(name: 'API 멤버')],
+                plants: [
+                  PlacePlant(
+                    id: '10',
+                    scientificNameKo: '고무나무',
+                    scientificNameEn: 'Ficus elastica',
+                    lastWateredDate: '2026-08-24',
+                    memo: 'API 메모',
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          home: PlaceDetailPage(placeId: 'remote-place'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('API 정원'), findsOneWidget);
+    expect(find.text('API 멤버'), findsOneWidget);
+    expect(find.text('고무나무'), findsOneWidget);
+    expect(find.text('Ficus elastica'), findsOneWidget);
+    expect(find.text('API 메모'), findsOneWidget);
+    expect(find.text('마지막 물주기'), findsOneWidget);
+    expect(find.text('2026.08.24'), findsOneWidget);
+    expect(find.text('스윗 홈_거실'), findsNothing);
+    expect(find.text('9.3 / 5'), findsNothing);
+    expect(find.text('69%'), findsNothing);
+
+    await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('장소 나가기'), findsNothing);
+    expect(find.text('장소 삭제하기'), findsNothing);
+  });
+
+  testWidgets('remote 식물 목록이 비어 있으면 empty 안내를 표시한다', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          placeRepositoryProvider.overrideWithValue(
+            _StaticPlaceRepository(
+              const PlaceDetail(
+                code: 'remote-place',
+                name: 'API 정원',
+                address: '서울시 성북구',
+                isOwner: true,
+                members: [],
+                plants: [],
+              ),
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          home: PlaceDetailPage(placeId: 'remote-place'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('등록된 식물이 없어요'), findsOneWidget);
   });
 
   testWidgets('remote error 상태는 재시도 후 상세 정보를 표시한다', (tester) async {
@@ -191,12 +277,15 @@ void main() {
     expect(find.text('장소 정보를 불러오지 못했어요'), findsNothing);
   });
 
-  testWidgets('remote 장소 나가기 확인은 삭제 API를 호출하고 홈으로 이동한다', (tester) async {
+  testWidgets('remote owner 장소 삭제는 경고 후 삭제 API를 호출한다', (tester) async {
     final repository = _DeletablePlaceRepository(
-      const PlaceSummary(
-        id: 'remote-place',
+      const PlaceDetail(
+        code: 'remote-place',
         name: '옥상 정원',
         address: '서울시 노원구 광운로 20',
+        isOwner: true,
+        members: [],
+        plants: [],
       ),
     );
 
@@ -205,9 +294,13 @@ void main() {
 
     await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('장소 나가기'));
+    await tester.tap(find.text('장소 삭제하기'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('나가기'));
+
+    expect(find.text('장소를 삭제하시겠어요?'), findsOneWidget);
+    expect(find.text('삭제하면 장소의 식물과 메모도 함께 사라져요.'), findsOneWidget);
+
+    await tester.tap(find.text('삭제'));
     await tester.pumpAndSettle();
 
     expect(repository.deleteCalls, 1);
@@ -242,22 +335,22 @@ Widget _remotePlaceDetailApp(PlaceRepository repository) {
 }
 
 class _PendingPlaceRepository extends Fake implements PlaceRepository {
-  final Completer<PlaceSummary> _completer = Completer<PlaceSummary>();
+  final Completer<PlaceDetail> _completer = Completer<PlaceDetail>();
 
   @override
-  Future<PlaceSummary> fetchPlace(String code) {
+  Future<PlaceDetail> fetchPlaceDetail(String code) {
     return _completer.future;
   }
 }
 
 class _StaticPlaceRepository extends Fake implements PlaceRepository {
-  _StaticPlaceRepository(this.summary);
+  _StaticPlaceRepository(this.detail);
 
-  final PlaceSummary summary;
+  final PlaceDetail detail;
 
   @override
-  Future<PlaceSummary> fetchPlace(String code) async {
-    return summary;
+  Future<PlaceDetail> fetchPlaceDetail(String code) async {
+    return detail;
   }
 }
 
@@ -265,31 +358,34 @@ class _RetryPlaceRepository extends Fake implements PlaceRepository {
   int fetchCalls = 0;
 
   @override
-  Future<PlaceSummary> fetchPlace(String code) async {
+  Future<PlaceDetail> fetchPlaceDetail(String code) async {
     fetchCalls++;
 
     if (fetchCalls == 1) {
       throw Exception('network');
     }
 
-    return const PlaceSummary(
-      id: 'retry-place',
+    return const PlaceDetail(
+      code: 'retry-place',
       name: '옥상 정원',
       address: '서울시 노원구 광운로 20',
+      isOwner: true,
+      members: [],
+      plants: [],
     );
   }
 }
 
 class _DeletablePlaceRepository extends Fake implements PlaceRepository {
-  _DeletablePlaceRepository(this.summary);
+  _DeletablePlaceRepository(this.detail);
 
-  final PlaceSummary summary;
+  final PlaceDetail detail;
   int deleteCalls = 0;
   String? latestDeleteCode;
 
   @override
-  Future<PlaceSummary> fetchPlace(String code) async {
-    return summary;
+  Future<PlaceDetail> fetchPlaceDetail(String code) async {
+    return detail;
   }
 
   @override

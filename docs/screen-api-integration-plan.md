@@ -18,7 +18,7 @@
 - 화면 위젯은 JSON 파싱이나 Dio 호출을 직접 수행하지 않습니다.
 - API 사용 여부는 기존 `COMMONPLANT_USE_API` 환경값으로 분리합니다.
 - API 비사용 모드는 화면 개발과 Android smoke의 결정적 mock 흐름을 유지합니다.
-- Swagger에 response schema가 없는 기능은 화면 모델을 추측해 연결하지 않습니다.
+- Swagger에 response schema가 없는 기능은 화면 모델을 추측하지 않고, 배포 기준과 일치하는 백엔드 Controller·DTO·Service 근거까지 확인한 뒤 연결합니다.
 - loading, success, empty, error 상태를 해당 화면과 Controller 테스트에서 함께 검증합니다.
 
 ## 우선순위
@@ -28,11 +28,12 @@
 | P0 | Auth 로그인·회원가입 | 로그인 화면, 인증 세션, 프로필 등록, route redirect, `/auth/login`, `/auth/register` | #227 / PR #228 병합 완료 |
 | P1 | Home 초기 데이터 | 인증 사용자 정보와 장소·식물 요약을 화면 상태로 연결 | #232 / PR #233 병합 완료 |
 | P2 | Plant 핵심 동선 | 목록, 상세, 생성, 수정 API와 각 화면 상태 연결 | #229, #231 병합 완료 |
-| P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | #237 / PR #238 In Review, 이미지 파일 선택 정책과 분리 |
-| 제한 | Place | response schema가 확인된 동선부터 연결 | 목록·상세 schema 확인 필요 |
-| 보류 | Friend, Image, Memo | 성공 response 또는 endpoint가 불충분한 영역 | 백엔드 확인 필요 |
+| P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | #237 / PR #238 병합 완료, 이미지 파일 선택 정책과 분리 |
+| P4 | Place 목록·상세 | Home 장소 목록, 상세 owner·멤버·식물 실데이터 연결 | #239 진행 중 |
+| P5 후보 | Friend 요청 | 요청 목록, 수락, 거절 API와 화면 상태 연결 | 백엔드 source 계약 확인, #239 이후 진행 가능 |
+| 보류 | Image, Memo | 성공 response 또는 endpoint가 불충분한 영역 | 백엔드 확인 필요 |
 
-P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기준으로 합니다. 다만 Place 성공 response schema가 없으므로, 먼저 schema가 있는 `GET /users`와 `GET /plants`를 사용하고 Place 데이터는 확인된 필드만 별도 작업으로 추가합니다.
+P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기준으로 했습니다. #239는 live Swagger에 누락된 Place schema를 백엔드 main `7d572cb`의 Controller·DTO와 대조해 목록·상세 응답 계약을 확인한 뒤 후속 연결합니다.
 
 ## 화면 연결 매트릭스
 
@@ -40,16 +41,16 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 | 도메인 | 화면·route | 현재 상태 | 남은 연결 | API·선행 조건 | 판정 |
 | --- | --- | --- | --- | --- | --- |
-| Home | Home `/` | Place·Plant 목록 API 모드 연결, 사용자명·초대 수 고정 | 현재 사용자 Provider, hero 상태, 목록 재시도 정책, 고정값 제거 | `GET /users`, `GET /plants`; Place·Friend response schema 확인 필요 | #232 즉시 진행 |
-| User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴 Controller와 세 화면 연결 | 실제 이미지 파일 선택, 알림 설정 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 / PR #238 In Review |
-| Place | 장소 친구 요청 | fixture 목록과 로컬 수락·거절 | 목록 DTO, loading/empty/error, 수락·거절 submit | Friend response schema와 `friendId` 의미 확인 | 제한 |
-| Place | 장소 등록 | 이름·주소 create API 연결 | 생성된 장소 code, 실제 이미지, 친구 추가 후속 흐름 | `POST /place/create` response schema 필요 | 부분 연결 |
+| Home | Home `/` | User·Place·Plant 목록 API 모드 연결, Place 대표 이미지 표시 | 초대 수 API 연결, 목록 재시도 정책 | Friend 요청 목록 source 계약 확인 | #232, #239 연결 |
+| User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴 Controller와 세 화면 연결 | 실제 이미지 파일 선택, 알림 설정 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 / PR #238 병합 완료 |
+| Place | 장소 친구 요청 | fixture 목록과 로컬 수락·거절 | 목록 DTO, loading/empty/error, 수락·거절 submit | backend source에서 `requests[]`, 요청 PK, accept/decline null result 확인 | P5 후보 |
+| Place | 장소 등록 | 이름·주소 create API 연결 | 생성된 place code 소비, 실제 이미지, 친구 추가 후속 흐름 | source에서 생성 result code 확인, receiver 이름 중복 정책 필요 | 부분 연결 |
 | Place | 주소 검색 | fixture 검색 | 검색 adapter와 선택 결과 | 백엔드 endpoint 또는 외부 주소 서비스 결정 필요 | 보류 |
 | Place | 장소 등록 중 친구 추가 | User 검색만 API 모드 연결 | 선택 사용자 요청 submit, 장소 초대와 친구 요청 관계 | `GET /users/{keyword}`, `POST /friends/request`; 도메인 관계 확인 | 제한 |
-| Place | 장소 수정 | 상세 조회와 update API 연결 | 전체 수정 필드, image key/file, 응답 후 갱신 | `GET /place/{code}`, `PUT /place/update/{code}` response schema 필요 | 부분 연결 |
-| Place | 장소 상세 | API의 이름·주소와 fixture 상세를 혼합 | 역할, 환경 정보, 멤버, 장소 식물 목록 | Place detail/members schema와 장소별 식물 조회 기준 필요 | 제한 |
-| Place | 친구 관리 | fixture 검색·선택·삭제 | 멤버 목록과 추가·삭제 submit | members response와 멤버 변경 endpoint 필요 | 보류 |
-| Place | 장소 나가기·삭제 | delete 호출 연결 | 소유자 삭제와 구성원 나가기 분리 | `DELETE /place/delete/{code}` 의미 확인 | 제한 |
+| Place | 장소 수정 | 상세 조회와 update API 연결 | image key/file, 수정 결과 즉시 반영 | source에서 update result 확인, 상세에는 image key 미제공 | 부분 연결 |
+| Place | 장소 상세 | API 장소·owner·멤버·식물 연결, fixture 병합 제거 | 서버 미제공 환경 수치와 물주기 액션 | `GET /place/{code}` source 계약 #239 반영 | #239 진행 중 |
+| Place | 친구 관리 | fixture 검색·선택·삭제 | 멤버 목록 조회, 추가·삭제 submit | `{ name, image }[]` 확인, 고유 member id와 변경 endpoint 없음 | 보류 |
+| Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
 | Plant | 식물 등록 검색 | fixture 검색 | 실제 검색 모델과 상태 | 식물 종 검색 endpoint 필요 | 보류 |
 | Plant | 식물 등록 | create API 부분 연결, 물주기 날짜 고정 | 날짜 상태·request, 학명/별칭 분리, image file | `POST /plants` 사용 가능; 검색·이미지 정책 별도 | #229 즉시 진행 |
 | Plant | 식물 수정 | edit info와 update API 부분 연결 | 기존/변경 물주기 날짜, image key/file | `GET /plants/{id}/edit`, `PUT /plants/{id}` 사용 가능 | #229 즉시 진행 |
@@ -104,6 +105,18 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 - 알림 설정 endpoint가 없어 토글은 설정 화면이 유지되는 동안의 로컬 Provider 상태로 둡니다.
 - 프로필 이미지는 기존 optional multipart 경계를 유지하지만, 파일 선택기와 플랫폼 권한 정책이 확정되지 않아 현재 이미지와 카메라 진입 안내까지만 제공합니다.
 
+## Place 목록·상세 수직 슬라이스
+
+#239는 live Swagger에 노출되지 않은 Place 성공 타입을 백엔드 main `7d572cb`의 Controller·DTO와 대조한 뒤, Home 장소 목록과 장소 상세의 remote fixture 병합을 제거합니다.
+
+- Home 장소 목록은 `GET /place/myGarden`의 `result.placeList`에서 code, 이름, 대표 이미지, 멤버 수, 식물 수를 파싱합니다.
+- 장소 상세는 `GET /place/{code}`를 별도 `PlaceDetail` 도메인 모델로 변환하고 owner, 멤버, 식물을 화면 ViewData로 연결합니다.
+- API 모드에서는 서버가 제공하지 않는 햇빛·습도, 물주기 예정값, fixture 멤버·식물을 표시하지 않습니다.
+- 마지막 물주기 날짜가 있으면 확인 가능한 이력으로 표시하고, 물주기 action은 endpoint가 없어 활성화하지 않습니다.
+- `DELETE /place/delete/{code}`는 owner 전용 전체 삭제이므로 owner에게만 삭제 문구와 영향 범위 경고를 표시합니다.
+- 구성원 leave endpoint가 없어 API 모드의 구성원에게는 동작하지 않는 나가기 action을 노출하지 않습니다.
+- API 비사용 모드는 Android smoke와 화면 개발을 위해 기존 fixture 흐름을 유지합니다.
+
 ## 완료 기준
 
 각 수직 슬라이스는 아래 항목을 모두 충족해야 완료로 판단합니다.
@@ -126,5 +139,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #230 | - | 남은 화면 연결 매트릭스, 병렬 workstream과 파일 소유권 문서화 | `git diff --check` |
 | #237 | `684d55b` | 마이페이지·설정·회원 정보 수정 UI와 User 조회·수정·탈퇴 상태 연결 | format 284개, analyze, 전체 test 314개·기존 skip 1개 |
 | #237 | `3063230` | Figma frame map, route, Swagger 연결 상태와 User 구현 경계 문서화 | `git diff --check` |
+| #239 | `893d201` | Place 목록·상세 모델, mapper, Provider와 remote 실데이터 UI 연결 | Place test 81개, analyze |
+| #239 | `7ac4bc1` | owner 전체 삭제와 구성원 나가기 미지원 경계 분리 | format 286개, analyze, 전체 test 321개·기존 skip 1개 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.

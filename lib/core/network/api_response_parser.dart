@@ -88,6 +88,28 @@ int? readOptionalInt(JsonMap json, List<String> keys) {
   return null;
 }
 
+bool? readOptionalBool(JsonMap json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+
+    if (value is bool) {
+      return value;
+    }
+
+    if (value is String) {
+      final normalized = value.toLowerCase();
+      if (normalized == 'true') {
+        return true;
+      }
+      if (normalized == 'false') {
+        return false;
+      }
+    }
+  }
+
+  return null;
+}
+
 Object? _normalizeResponseData(Object? data) {
   if (data is String && data.isNotEmpty) {
     return jsonDecode(data);

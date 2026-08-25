@@ -92,7 +92,7 @@ class PlaceFormController extends Notifier<PlaceFormState> {
       return;
     }
 
-    ref.invalidate(placeDetailProvider(placeId));
+    ref.invalidate(placeSummaryProvider(placeId));
     ref.invalidate(remotePlaceFormEditInfoProvider(placeId));
   }
 
@@ -158,6 +158,7 @@ class PlaceFormController extends Notifier<PlaceFormState> {
           .read(placeRepositoryProvider)
           .updatePlace(code: placeId, name: name, address: requiredAddress);
       ref.invalidate(placeDetailProvider(placeId));
+      ref.invalidate(placeSummaryProvider(placeId));
       ref.invalidate(remotePlaceListProvider);
       ref.invalidate(userPlaceSummariesProvider);
     } else {
