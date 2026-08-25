@@ -49,7 +49,7 @@ class PlaceExitController extends Notifier<FormSubmitState> {
 
       return const PlaceExitResult.home();
     } catch (_) {
-      state = const FormSubmitState.failure('장소 나가기에 실패했어요');
+      state = const FormSubmitState.failure('장소 삭제에 실패했어요');
 
       return null;
     }

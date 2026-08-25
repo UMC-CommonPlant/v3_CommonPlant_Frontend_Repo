@@ -71,7 +71,11 @@ void main() {
   testWidgets('PlaceDetailFab는 권한에 따라 장소 수정 액션을 표시한다', (tester) async {
     await tester.pumpWidget(
       _buildRouterApp(
-        PlaceDetailFab(placeId: 'place-1', canEditPlace: false, onExit: () {}),
+        PlaceDetailFab(
+          placeId: 'place-1',
+          canEditPlace: false,
+          onRemove: () {},
+        ),
       ),
     );
 

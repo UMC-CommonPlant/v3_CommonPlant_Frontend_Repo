@@ -215,6 +215,12 @@ void main() {
     expect(find.text('스윗 홈_거실'), findsNothing);
     expect(find.text('9.3 / 5'), findsNothing);
     expect(find.text('69%'), findsNothing);
+
+    await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('장소 나가기'), findsNothing);
+    expect(find.text('장소 삭제하기'), findsNothing);
   });
 
   testWidgets('remote 식물 목록이 비어 있으면 empty 안내를 표시한다', (tester) async {
@@ -271,7 +277,7 @@ void main() {
     expect(find.text('장소 정보를 불러오지 못했어요'), findsNothing);
   });
 
-  testWidgets('remote 장소 나가기 확인은 삭제 API를 호출하고 홈으로 이동한다', (tester) async {
+  testWidgets('remote owner 장소 삭제는 경고 후 삭제 API를 호출한다', (tester) async {
     final repository = _DeletablePlaceRepository(
       const PlaceDetail(
         code: 'remote-place',
@@ -288,9 +294,13 @@ void main() {
 
     await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('장소 나가기'));
+    await tester.tap(find.text('장소 삭제하기'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('나가기'));
+
+    expect(find.text('장소를 삭제하시겠어요?'), findsOneWidget);
+    expect(find.text('삭제하면 장소의 식물과 메모도 함께 사라져요.'), findsOneWidget);
+
+    await tester.tap(find.text('삭제'));
     await tester.pumpAndSettle();
 
     expect(repository.deleteCalls, 1);

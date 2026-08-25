@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
@@ -27,13 +28,18 @@ class PlaceDetailPage extends ConsumerWidget {
   final String placeId;
   final PlaceDetailRole? role;
 
-  void _showExitDialog(BuildContext context, WidgetRef ref) {
+  void _showExitDialog(
+    BuildContext context,
+    WidgetRef ref, {
+    required PlaceRemovalMode mode,
+  }) {
     final isExiting = ref.read(placeExitControllerProvider).isSubmitting;
 
     unawaited(
       showPlaceExitDialog(
         context: context,
         isExiting: isExiting,
+        mode: mode,
         onConfirm: () => _handleExitConfirmed(context, ref),
       ),
     );
@@ -121,6 +127,13 @@ class PlaceDetailPage extends ConsumerWidget {
     WidgetRef ref,
     PlaceDetailViewData detail,
   ) {
+    final usesRemoteApi = ref.watch(useRemoteApiProvider);
+    final isOwner = detail.role == PlaceDetailRole.leader;
+    final canRemove = !usesRemoteApi || isOwner;
+    final removalMode = usesRemoteApi
+        ? PlaceRemovalMode.delete
+        : PlaceRemovalMode.leave;
+
     return CommonScaffold(
       title: 'My place',
       navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
@@ -130,8 +143,13 @@ class PlaceDetailPage extends ConsumerWidget {
       bodyPadding: EdgeInsets.zero,
       floatingActionButton: PlaceDetailFab(
         placeId: placeId,
-        canEditPlace: detail.role == PlaceDetailRole.leader,
-        onExit: () => _showExitDialog(context, ref),
+        canEditPlace: isOwner,
+        removalLabel: removalMode == PlaceRemovalMode.delete
+            ? '장소 삭제하기'
+            : '장소 나가기',
+        onRemove: canRemove
+            ? () => _showExitDialog(context, ref, mode: removalMode)
+            : null,
       ),
       child: SizedBox(
         width: double.infinity,
