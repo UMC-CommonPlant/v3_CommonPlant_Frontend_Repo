@@ -16,12 +16,14 @@ class PlaceInvitationListItem extends StatelessWidget {
     required this.result,
     required this.onAccept,
     required this.onDelete,
+    this.isSubmitting = false,
   });
 
   final PlaceInvitation invitation;
   final PlaceInvitationResult? result;
   final VoidCallback onAccept;
   final VoidCallback onDelete;
+  final bool isSubmitting;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +38,24 @@ class PlaceInvitationListItem extends StatelessWidget {
             children: [
               _InvitationDescription(invitation: invitation, result: result),
               const SizedBox(height: _invitationButtonGap),
-              if (result == null)
+              if (isSubmitting)
+                SizedBox(
+                  height: AppSizes.placeInvitationActionButtonHeight,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Semantics(
+                      label: '${invitation.placeName} 요청 처리 중',
+                      child: const SizedBox.square(
+                        dimension: AppSizes.iconSmall,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.brandPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else if (result == null)
                 _InvitationActions(
                   invitation: invitation,
                   onAccept: onAccept,
@@ -61,18 +80,34 @@ class _InvitationAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = invitation.avatarImageUrl?.trim();
+
     return Semantics(
       label: '${invitation.inviterName} 프로필 사진',
       image: true,
       child: ClipOval(
-        child: Image.asset(
-          invitation.avatarAsset,
-          width: AppSizes.placeInvitationAvatarSize,
-          height: AppSizes.placeInvitationAvatarSize,
-          fit: BoxFit.cover,
-          alignment: invitation.avatarAlignment,
-        ),
+        child: imageUrl == null || imageUrl.isEmpty
+            ? _buildAssetImage()
+            : Image.network(
+                imageUrl,
+                width: AppSizes.placeInvitationAvatarSize,
+                height: AppSizes.placeInvitationAvatarSize,
+                fit: BoxFit.cover,
+                alignment: invitation.avatarAlignment,
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildAssetImage(),
+              ),
       ),
+    );
+  }
+
+  Widget _buildAssetImage() {
+    return Image.asset(
+      invitation.avatarAsset,
+      width: AppSizes.placeInvitationAvatarSize,
+      height: AppSizes.placeInvitationAvatarSize,
+      fit: BoxFit.cover,
+      alignment: invitation.avatarAlignment,
     );
   }
 }

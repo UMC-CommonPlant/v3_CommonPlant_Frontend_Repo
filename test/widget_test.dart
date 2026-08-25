@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/app/common_plant_app.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/features/home/presentation/home_screen.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_invitation_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
@@ -82,6 +83,9 @@ void main() {
         overrides: [
           placeListProvider.overrideWith(_SeededPlaceListNotifier.new),
           plantListProvider.overrideWith(_SeededPlantListNotifier.new),
+          placeInvitationRequestCountProvider.overrideWithValue(
+            const AsyncData(2),
+          ),
         ],
         child: const MaterialApp(home: HomeScreen()),
       ),
@@ -90,9 +94,9 @@ void main() {
 
     expect(find.text('장소 추가하기'), findsNothing);
     expect(find.text('식물 추가하기'), findsNothing);
-    expect(find.text('요청 3건'), findsOneWidget);
+    expect(find.text('요청 2건'), findsOneWidget);
     expect(
-      tester.getSize(find.bySemanticsLabel('장소 요청 3건')),
+      tester.getSize(find.bySemanticsLabel('장소 요청 2건')),
       const Size(96, 36),
     );
     expect(find.bySemanticsLabel('장소 추가'), findsOneWidget);
