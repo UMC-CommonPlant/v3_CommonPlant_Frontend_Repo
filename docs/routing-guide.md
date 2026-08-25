@@ -106,9 +106,9 @@ lib/app/router/
 
 ## 인증 라우팅 기준
 
-인증 기능이 들어오면 아래 방향으로 확장합니다.
+인증 기능은 아래 구조로 연결합니다.
 
-1. 인증 상태 Provider를 `appRouterProvider`에서 watch합니다.
+1. 인증 상태 Provider를 `appRouterProvider`에서 listen하고 router refresh에 연결합니다.
 2. 로그인 전 접근 가능한 route, 회원가입 진행 route, 로그인 후 route를 route policy로 분리합니다.
 3. 인증 토큰은 `flutter_secure_storage` 기반 저장소를 통해 관리하되, 라우터는 token storage에 직접 접근하지 않고 인증 Provider의 상태만 봅니다.
 4. access token 만료, refresh 실패, 로그아웃은 인증 Provider 상태를 `unauthenticated`로 바꾸고, 라우터 redirect에서 `/login`으로 이동시킵니다.
@@ -118,12 +118,13 @@ lib/app/router/
 
 ### Auth redirect Provider 설계
 
-현재 `appRouterProvider`는 `createAppRouter()`만 반환하며 인증 상태를 watch하지 않습니다. 인증 redirect 구현 PR에서는 아래 파일 경계를 목표로 둡니다.
+`appRouterProvider`는 인증 세션 변경을 listen하고 `RouterRefreshNotifier`로 GoRouter redirect를 다시 평가합니다. 현재 파일 경계는 아래와 같습니다.
 
 | 파일 | 역할 |
 | --- | --- |
-| `features/login/presentation/providers/auth_state_provider.dart` | 앱 전역 인증 상태를 `checking`, `unauthenticated`, `signupRequired`, `authenticated`처럼 표현합니다. |
-| `app/router/route_access_policy.dart` | route name별 접근 정책을 공개, 회원가입 진행, 인증 필요로 분류합니다. |
+| `features/login/presentation/providers/auth_session_controller.dart` | 앱 시작 token 복원과 로그인/회원가입 결과에 따른 세션 전환을 담당합니다. |
+| `features/login/presentation/providers/auth_session_state.dart` | 앱 전역 인증 상태를 `unauthenticated`, `signupRequired`, `authenticated`로 표현합니다. Provider loading을 `checking`으로 사용합니다. |
+| `app/router/auth_route_policy.dart` | 현재 URI와 인증 상태를 기준으로 redirect location을 계산합니다. |
 | `app/router/redirect_notifier.dart` | 인증 Provider 변경을 `GoRouter.refreshListenable`로 연결합니다. |
 | `app/router/app_router.dart` | 인증 상태와 현재 location을 기준으로 redirect target을 계산합니다. |
 

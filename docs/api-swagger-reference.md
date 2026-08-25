@@ -621,11 +621,12 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 ## 첫 API 연계 보강 우선순위 제안
 
-1. Auth register multipart datasource/repository는 #216에서 반영했다. profile image 파일 생성과 화면 submit 연결은 별도 구현 이슈로 진행한다.
-2. User 조회/검색/수정 datasource는 추가됐으므로, 화면 적용 시 상태 Provider와 UI 성공/실패 정책을 별도 작업으로 연결한다.
-3. Place update는 multipart 전송까지만 추가했으므로, response schema가 확정될 때까지 mapper는 넓히지 않는다.
-4. Friend API는 transport만 추가했으므로, 목록 response schema 확인 후 초대 요청 화면에 연결한다.
-5. Image API는 transport만 추가했으므로, 반환 image key/url schema와 에러 body가 보강되면 이미지 업로드 흐름을 연결한다.
+1. #227에서 Auth login/register repository를 로그인·프로필·약관 화면, 앱 세션, 인증 redirect까지 연결한다. 실제 소셜 SDK token 공급은 `SocialAuthCredentialGateway` 구현으로 분리한다.
+2. 로그인 직후 Home은 response schema가 있는 User 조회와 Plant 목록부터 상태 Provider와 loading/empty/error UI에 연결한다.
+3. Plant 목록·상세·생성·수정은 보강된 Swagger DTO를 기준으로 화면 동선을 순차 전환한다.
+4. Place는 multipart 전송 경계만 사용하고 response schema가 확정될 때까지 화면 mapper를 추정하지 않는다.
+5. Friend와 Image는 transport만 유지하며 성공 response schema 확인 후 화면에 연결한다.
+6. Memo는 Swagger endpoint가 추가되기 전까지 mock 화면 상태와 실제 API 코드를 섞지 않는다.
 
 ## DEV API 문서화 작업 이력
 
@@ -633,5 +634,6 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | --- | --- | --- | --- |
 | #213 | `6a9fbc9` | dev origin/API base, Swagger UI/OpenAPI/config, 현재 endpoint 차이와 환경별 Ready/Blocked 경계 문서화 | endpoint HTTP status, OpenAPI metadata, 19 paths·27 operations와 schema 대조, `git diff --check` |
 | #216 | `ae134d0` | Auth register JSON part와 optional image multipart datasource/repository, Swagger request DTO 반영 | Auth unit test 5개, macOS 전체 263개와 Ubuntu golden 포함 264개, format 260개 파일, analyze |
+| #227 | `111373a`, `a065188`, `e9543fc` | Auth 세션과 social credential 경계, 로그인·회원가입 화면 submit, 인증 route redirect 연결 | format 270개 파일, analyze, 전체 test 280개 통과·기존 skip 1개 |
 
 작업 이력만 갱신하는 후속 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
