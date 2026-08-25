@@ -16,6 +16,7 @@
 | Dev API | `https://commonplant-dev.okbear.dev/api/v1` 확인, 로컬에서 명시적으로 주입 |
 | Flavor 전략 | MVP는 flavor 없는 단일 prod 앱으로 운영하고 환경값은 CI/CD로 주입 |
 | Version 전략 | `pubspec.yaml`의 `X.Y.Z+N`을 공통 원본으로 두고 release 브랜치에서 수동 증가 |
+| Production 제출 정책 | #222에서 동일 artifact 승격, 비실행자 승인, 최초 출시 수동 공개를 확정. 실제 workflow는 외부 준비 전까지 보류 |
 
 ## MVP 릴리즈 정책
 
@@ -26,7 +27,7 @@ MVP 릴리즈는 자동 업로드보다 재현 가능한 빌드와 승인 흐름
 | release branch | 배포 후보는 항상 최신 `develop`에서 `release/x.y.z`로 생성합니다. |
 | publish branch | `main`은 실제 배포 가능한 코드만 유지하며 일반 작업을 직접 커밋하지 않습니다. |
 | version/tag | release 브랜치에서 `pubspec.yaml`의 version과 build number를 올리고, `main` 병합 후 version과 같은 `vX.Y.Z` 태그를 생성합니다. |
-| production approval | production 업로드는 자동 제출하지 않고 GitHub Environment manual approval 또는 수동 승인 단계를 둡니다. |
+| production approval | build, store 심사 제출, 사용자 공개를 분리하고 production에 영향을 주는 job은 실행자 외 required reviewer 승인을 거칩니다. |
 | secret 관리 | signing key, store token, API key는 GitHub Secrets/Environments에만 저장하고 저장소에는 커밋하지 않습니다. |
 | store 계정 | Android/iOS store 계정과 앱 등록이 확인되기 전에는 store upload workflow를 만들지 않습니다. |
 | release 자동화 | CI 품질 검사는 유지하고, release build 생성 -> 내부 테스트 배포 -> production 후보 순서로 단계 도입합니다. |
@@ -37,7 +38,7 @@ MVP 릴리즈는 자동 업로드보다 재현 가능한 빌드와 승인 흐름
 | --- | --- | --- |
 | Android store upload | Play Console 앱, service account, signing key가 준비되지 않음 | tester group, Play service account, signing secret 확정 |
 | iOS TestFlight upload | Apple Developer/App Store Connect 계정과 signing asset이 준비되지 않음 | Team ID, certificate, provisioning profile, ASC API key 확정 |
-| production 자동 제출 | 심사 승인, rollback, release note 승인 흐름이 아직 없음 | 내부 테스트 배포가 안정화되고 manual approval 기준 확정 |
+| production workflow 구현 | RELEASE-04 승인 정책은 #222에서 확정했지만 계정, signing, build number, prod API와 내부 배포가 준비되지 않음 | RELEASE-02-B, RELEASE-03, ENV-01-B와 내부 배포 안정성 기준 충족 |
 | flavor별 앱 분리 | MVP에서 별도 설치·배포할 dev/staging 앱이 필요하지 않음 | 동시 설치, 별도 배포 채널, 환경별 Firebase 중 하나가 실제로 필요해지는 시점 |
 
 store 계정이 준비되면 Android는 Google Play Internal testing을 우선 검토하고, Play Console 준비가 지연될 때만 Firebase App Distribution을 대체 경로로 검토합니다. iOS는 TestFlight를 내부 테스트 배포 기준으로 사용합니다.
@@ -103,17 +104,133 @@ main
 
 ### 3단계: Production 배포 준비
 
-- `main` 또는 `v*` 태그 기준으로 production candidate를 생성합니다.
-- GitHub Environments의 manual approval을 사용해 실수로 운영 배포되는 것을 막습니다.
-- Android production track, App Store 제출은 승인 단계 이후 진행합니다.
+- 승인된 `main` 커밋의 `v*` 태그와 내부 테스트에서 검증한 동일 artifact를 production candidate로 고정합니다.
+- store metadata, release note, prod 환경값, QA 결과와 중단/hotfix 계획을 검토합니다.
+- 심사 제출 job은 GitHub Environment의 비실행자 승인 이후에만 store credential에 접근합니다.
 
-### 4단계: Production 배포 자동화
+### 4단계: 사용자 공개
 
-- Android production track 업로드
-- iOS App Store 제출 또는 TestFlight에서 심사 제출
-- 릴리즈 노트와 버전 태그를 함께 관리
+- 최초 MVP 출시는 Android/iOS 모두 store 측 수동 공개로 유지합니다.
+- 후속 Android 업데이트는 승인된 비율의 staged rollout을, iOS 업데이트는 manual release와 phased release를 선택할 수 있습니다.
+- 사용자 공개는 심사 제출과 분리된 두 번째 승인으로 진행하며 unattended full rollout은 허용하지 않습니다.
 
-초기에는 production 자동 제출보다 internal/test 배포 자동화를 우선합니다.
+초기에는 production workflow 구현보다 internal/test 배포 자동화를 우선합니다.
+
+## RELEASE-04 Production 제출 승인 정책
+
+### 결정 요약
+
+RELEASE-04는 정책을 `Decided`로 관리하되 실제 workflow 구현은 `Blocked`로 분리합니다. 허용하는 자동화는 승인된 artifact의 검증, 업로드, 심사 제출 같은 기계적 작업이며, 승인 없이 사용자에게 공개하는 fully automated release는 MVP 범위에서 허용하지 않습니다.
+
+| 단계 | 자동화 허용 범위 | 필요한 승인 | 사용자 노출 |
+| --- | --- | --- | --- |
+| Candidate | release build, checksum, provenance, artifact 보관 | `main` PR review | 없음 |
+| Internal | Google Play Internal testing, TestFlight 업로드 | 내부 배포 권한 | 내부 tester만 |
+| Submission | 동일 artifact의 store version 연결, metadata 검증, 심사 제출 | production Environment 비실행자 승인 | 없음 |
+| Release | Android rollout 시작 또는 Apple 수동 출시 | 제출 승인과 분리된 명시적 출시 승인 | 있음 |
+| Expansion | staged/phased rollout 확대 또는 완료 | 각 확대 시 release owner 확인 | 증가 |
+
+### Build once, promote same artifact
+
+- `release/x.y.z`의 승인된 commit에서 Android/iOS artifact를 한 번 생성합니다.
+- artifact에는 commit SHA, `X.Y.Z+N`, 플랫폼, checksum과 build workflow run을 연결합니다.
+- 내부 테스트에서 검증한 동일한 signed build를 production으로 승격하며 승인 후 다시 빌드하지 않습니다.
+- 코드, 환경값, signing, metadata 변경이 필요하면 기존 candidate를 폐기하고 `N`을 증가한 새 candidate를 만듭니다.
+- `vX.Y.Z` 태그를 이동하거나 같은 store build number의 artifact를 교체하지 않습니다.
+
+Android와 iOS는 store 심사와 공개 시점이 다를 수 있으므로 플랫폼별 승인 상태를 따로 기록합니다. 한 플랫폼만 먼저 공개할 경우 release note와 이슈에 비대칭 상태와 후속 일정을 남깁니다.
+
+### 승인 gate
+
+#### Gate 1. Candidate 승인
+
+`release/x.y.z`에서 `main`으로 보내는 PR review가 첫 승인입니다. 아래 증거가 모두 있어야 `main` 병합과 태그 생성을 진행합니다.
+
+- commit SHA와 `X.Y.Z+N`, Android/iOS artifact checksum
+- Flutter CI와 release build 결과
+- 플랫폼별 내부 테스트 링크와 QA 승인
+- production API URL과 `COMMONPLANT_USE_API=true` 주입 확인
+- store metadata, 개인정보 표시, release note 검토
+- 알려진 문제와 사용자 영향
+- rollout 중단 조건, hotfix 담당과 모니터링 방법
+
+#### Gate 2. Store 심사 제출 승인
+
+- production credential을 쓰는 job은 GitHub Environment를 참조합니다.
+- Environment에는 required reviewer와 prevent self-review를 적용해 workflow 실행자가 자기 배포를 승인하지 못하게 합니다.
+- environment secret은 승인된 job에서만 읽고 candidate build job에는 제공하지 않습니다.
+- tag만 push했다고 심사 제출이나 production track 변경이 자동 실행되지 않습니다.
+- 2026-08-23 읽기 전용 확인 기준 저장소는 public, 조직은 GitHub Free plan이고 Environment는 0개입니다. public repository의 required reviewer 사용 조건은 충족하지만 계정 소유자와 운영 책임자가 승인하기 전에는 생성하지 않습니다.
+
+#### Gate 3. 사용자 공개 승인
+
+- store 심사 제출과 실제 사용자 공개를 하나의 job으로 합치지 않습니다.
+- 심사 승인 결과, 최신 QA 상태, 장애 공지 여부와 출시 시점을 다시 확인합니다.
+- 최초 MVP 출시는 store console의 명시적 수동 공개를 사용합니다.
+- 후속 업데이트의 staged/phased rollout도 시작 비율 또는 방식이 해당 release 기록에 승인된 경우에만 실행합니다.
+
+GitHub Environment required reviewer는 최대 여섯 사용자/팀을 지정할 수 있지만 한 명의 승인으로 job이 진행될 수 있습니다. 따라서 기술 설정만으로 다중 승인을 가정하지 않고 `main` PR review와 prevent self-review가 적용된 Environment 승인을 서로 다른 gate로 유지합니다.
+
+### 최초 MVP 출시
+
+| 플랫폼 | 제출 이후 정책 | 이유 |
+| --- | --- | --- |
+| Android | production 공개는 Play Console에서 수동 실행 | Google Play staged rollout은 첫 출시에 사용할 수 없음 |
+| iOS | `Manually release this version`을 사용하고 승인 후 `Pending Developer Release`에서 수동 실행 | 심사 승인과 사용자 공개 시점을 분리할 수 있음 |
+
+최초 출시에는 자동 full rollout, 예약 시각 자동 공개, 태그 push 직후 production 공개를 사용하지 않습니다.
+
+### 후속 업데이트 rollout
+
+#### Android
+
+- production update는 release별로 승인한 `userFraction`을 사용하는 staged rollout으로 시작할 수 있습니다.
+- 시작 비율을 workflow에 고정하지 않고 release 승인 기록에 남깁니다.
+- 확대는 crash/ANR, 핵심 smoke, backend 상태와 사용자 피드백을 확인한 뒤 별도 승인합니다.
+- 문제 발견 시 rollout을 `halted`로 바꿔 신규 노출을 중단합니다.
+- 이미 업데이트한 사용자는 이전 version으로 자동 복귀하지 않으므로 수정 build number의 hotfix를 준비합니다.
+- 첫 출시에는 staged rollout을 적용하지 않습니다.
+
+#### iOS
+
+- 심사 제출 시 자동 공개 대신 manual release를 기본으로 유지합니다.
+- 후속 업데이트는 승인 후 7일 phased release를 선택할 수 있습니다.
+- phased release는 누적 30일까지 pause할 수 있지만 사용자는 App Store에서 수동으로 update를 받을 수 있습니다.
+- pause는 신규 자동 update를 늦출 뿐 이미 설치된 version을 되돌리지 않으므로 문제 시 새 build의 hotfix가 필요합니다.
+
+### 중단과 hotfix 기준
+
+아래 중 하나가 발생하면 rollout 확대 또는 공개를 중단합니다.
+
+- release candidate와 승인된 SHA, version/build, checksum이 다름
+- production API/환경값 검증 실패
+- 로그인, 핵심 데이터 조회 또는 앱 시작 smoke 실패
+- store 심사 metadata와 실제 기능/권한 사용이 일치하지 않음
+- blocker 수준의 crash, 데이터 손상, 인증/결제/개인정보 문제가 확인됨
+- backend 장애 또는 데이터 무결성 문제로 안전한 사용자 흐름을 보장할 수 없음
+
+`halt`와 `pause`는 rollback이 아닙니다. 이미 배포된 binary를 되돌리기 위해 태그를 이동하거나 기존 build number를 재사용하지 않고 `main`에서 `hotfix/x.y.z`를 만들고 더 큰 `N`의 새 artifact를 제출합니다. 최초 출시 또는 full rollout 이후의 긴급 제거·판매 중지는 store 소유자가 영향과 복구 방법을 확인한 뒤 별도 incident 절차로 수행합니다.
+
+### Workflow 구현 재개 조건
+
+- [ ] RELEASE-02-B에서 양쪽 store 기존 이력보다 큰 최초 build number를 확정했습니다.
+- [ ] RELEASE-03에서 앱 등록, role, signing asset과 store credential 소유자를 확인했습니다.
+- [ ] ENV-01-B에서 production API full base URL과 versioning을 확정했습니다.
+- [ ] Android Internal testing과 iOS TestFlight workflow가 각각 재실행 없는 연속 3회 성공했습니다.
+- [ ] 플랫폼별 내부 candidate가 QA 체크리스트를 한 번 이상 완료했습니다.
+- [ ] release owner, QA approver, incident/hotfix 담당 역할을 지정했습니다.
+- [ ] GitHub Environment 생성과 required reviewer 설정을 계정 소유자/팀이 승인했습니다.
+- [ ] release note, 모니터링, halt/pause/hotfix 기록 양식을 준비했습니다.
+
+조건을 충족하면 candidate build, internal upload, store submission, user release를 하나의 무인 workflow로 합치지 않고 독립 job 또는 workflow로 구현합니다.
+
+### RELEASE-04 공식 근거
+
+- [GitHub Deployments and environments](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments)
+- [Google Play tracks API](https://developers.google.com/android-publisher/api-ref/rest/v3/edits.tracks)
+- [Google Play staged rollout](https://support.google.com/googleplay/android-developer/answer/6346149)
+- [Apple App Store version release option](https://developer.apple.com/help/app-store-connect/manage-your-apps-availability/select-an-app-store-version-release-option)
+- [Apple phased release](https://developer.apple.com/help/app-store-connect/update-your-app/release-a-version-update-in-phases)
 
 ## 추천 트리거
 
@@ -123,9 +240,9 @@ main
 | push to `develop` | QA build 또는 내부 테스트 배포 후보 |
 | PR to `main` | release quality gate |
 | push to `main` | publish build 생성 |
-| tag `v*` | 스토어 업로드 workflow 실행 |
+| tag `v*` | production candidate 검증. 승인 없이 심사 제출·사용자 공개하지 않음 |
 
-운영 배포는 `tag v*` 기준을 추천합니다. `main`에 병합된 모든 커밋이 자동 배포되는 것보다 명시적인 릴리즈 의도가 드러나기 때문입니다.
+운영 candidate는 `tag v*` 기준을 사용합니다. tag는 릴리즈 의도를 표시하고 artifact를 고정하지만 배포 승인 자체를 뜻하지 않습니다.
 
 ## 환경과 flavor 전략
 
@@ -353,7 +470,7 @@ MATCH_PASSWORD
 | `.github/workflows/flutter_ci.yml` | PR/Push 품질 검사 | 이미 사용 중 |
 | `.github/workflows/android_release.yml` | Android release build 및 내부 테스트 업로드 | Android signing, package name, Play 계정 준비 후 |
 | `.github/workflows/ios_testflight.yml` | iOS archive 및 TestFlight 업로드 | Apple signing, bundle id, ASC API key 준비 후 |
-| `.github/workflows/publish.yml` | `v*` 태그 기반 production 배포 | 내부 배포 안정화와 manual approval 기준 확정 후 |
+| `.github/workflows/publish.yml` | 승인된 `v*` candidate의 심사 제출과 사용자 공개 gate | RELEASE-04 재개 조건 전체 충족 후 |
 
 secret이 준비되기 전에는 release workflow를 추가하지 않습니다. 실패하는 workflow가 기본 브랜치 품질 게이트를 방해할 수 있기 때문입니다.
 release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 build number를 덮어쓰지 않습니다.
@@ -372,8 +489,13 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 - [ ] Android release build가 생성되거나, signing/store 준비 전 보류 사유가 기록되었는가?
 - [ ] iOS archive가 생성되거나, signing/store 준비 전 보류 사유가 기록되었는가?
 - [ ] 필요한 signing secret과 store token이 GitHub Secrets/Environments에 등록되었는가?
-- [ ] production 환경에 manual approval이 걸려 있는가?
+- [ ] production Environment에 required reviewer와 prevent self-review가 적용되었는가?
 - [ ] QA 승인 또는 내부 테스트 승인이 완료되었는가?
+- [ ] 내부 테스트와 production이 동일 checksum의 artifact를 사용하는가?
+- [ ] store 심사 제출과 사용자 공개 승인이 분리되어 있는가?
+- [ ] 최초 출시라면 Android staged rollout을 사용하지 않고 양쪽 store 수동 공개를 선택했는가?
+- [ ] 업데이트라면 Android 시작 비율 또는 iOS phased release 선택을 기록했는가?
+- [ ] halt/pause가 rollback이 아님을 반영한 hotfix 담당과 새 build number 계획이 있는가?
 - [ ] `main` PR 리뷰가 완료되었는가?
 - [ ] `main` 병합 후 `vX.Y.Z` 태그를 생성했는가?
 
@@ -383,7 +505,7 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 - dev API와 Swagger endpoint는 확인됐습니다. staging/prod 서버 full base URL과 API versioning 정책은 별도로 정해야 합니다.
 - 최초 store build number는 Play Console/App Store Connect의 기존 업로드 이력을 확인한 뒤 정해야 합니다.
 - Android Play Console과 Apple Developer/App Store Connect 계정 준비 여부를 확인해야 합니다.
-- 내부 테스트 배포 안정화 후 production 제출 자동화 범위를 다시 판단합니다.
+- RELEASE-04 정책은 #222에서 확정했습니다. 실제 production workflow는 RELEASE-02-B/03, ENV-01-B와 내부 배포 안정성 조건이 충족된 뒤 별도 구현합니다.
 
 ## RELEASE-01 작업 이력
 
@@ -398,3 +520,9 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 | 이슈 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- | --- |
 | #211 | - | `pubspec.yaml` 단일 원본, 수동 증가, 번호 재사용 금지, CI override 금지와 store 이력 보류 경계 문서화 | 현재 플랫폼 매핑과 v2 설정 확인, Flutter/Android/Apple/GitHub 공식 문서 대조, `git diff --check` |
+
+## RELEASE-04 작업 이력
+
+| 이슈 | 커밋 | 변경 범위 | 검증 |
+| --- | --- | --- | --- |
+| #222 | `1df75c3` | production 제출/공개 승인 gate, 동일 artifact 승격, 최초 출시와 후속 rollout, halt/pause/hotfix 경계 확정 | GitHub/Google Play/Apple 공식 문서와 저장소 Environment 상태 대조, `git diff --check` |
