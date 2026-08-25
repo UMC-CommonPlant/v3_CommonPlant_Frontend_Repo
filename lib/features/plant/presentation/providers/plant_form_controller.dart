@@ -65,6 +65,9 @@ class PlantFormController extends Notifier<PlantFormState> {
                 plantId: plantId,
                 placeId: args.placeId,
                 name: info.name.trim(),
+                lastWateredDate: _normalizedLastWateredDate(
+                  info.lastWateredDate,
+                ),
               );
             },
             error: (error, stackTrace) => PlantFormState.failure(
@@ -104,6 +107,17 @@ class PlantFormController extends Notifier<PlantFormState> {
 
     state = state.copyWith(
       currentName: name,
+      submitState: const FormSubmitState.idle(),
+    );
+  }
+
+  void updateLastWateredDate(DateTime date) {
+    if (state.loadStatus != PlantFormLoadStatus.ready) {
+      return;
+    }
+
+    state = state.copyWith(
+      currentLastWateredDate: _formatPlantWateringDate(date),
       submitState: const FormSubmitState.idle(),
     );
   }
@@ -164,7 +178,7 @@ class PlantFormController extends Notifier<PlantFormState> {
           .createPlant(
             placeCode: selectedPlace.id,
             nickname: plantName,
-            scientificNameKo: plantName,
+            lastWateredDate: state.currentLastWateredDate,
           );
       ref.invalidate(remotePlantListProvider);
     }
@@ -192,6 +206,7 @@ class PlantFormController extends Notifier<PlantFormState> {
             plantId: plantId,
             placeCode: placeId,
             nickname: plantName,
+            lastWateredDate: state.currentLastWateredDate,
           );
       ref.invalidate(remotePlantListProvider);
     }
@@ -233,4 +248,17 @@ String _normalizedInitialPlantName(String? initialPlantName) {
   }
 
   return plantName;
+}
+
+String? _normalizedLastWateredDate(String? lastWateredDate) {
+  final normalized = lastWateredDate?.trim();
+
+  return normalized == null || normalized.isEmpty ? null : normalized;
+}
+
+String _formatPlantWateringDate(DateTime date) {
+  final month = date.month.toString().padLeft(2, '0');
+  final day = date.day.toString().padLeft(2, '0');
+
+  return '${date.year}-$month-$day';
 }

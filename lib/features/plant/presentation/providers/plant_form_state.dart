@@ -33,6 +33,8 @@ class PlantFormState {
     required this.mode,
     required this.initialName,
     required this.currentName,
+    required this.initialLastWateredDate,
+    required this.currentLastWateredDate,
     required this.places,
     required this.selectedPlaceId,
     required this.loadStatus,
@@ -49,6 +51,8 @@ class PlantFormState {
          mode: PlantFormMode.create,
          initialName: plantName,
          currentName: plantName,
+         initialLastWateredDate: null,
+         currentLastWateredDate: null,
          places: List.unmodifiable(places),
          selectedPlaceId: places.isEmpty ? null : places.first.id,
          loadStatus: PlantFormLoadStatus.ready,
@@ -64,6 +68,8 @@ class PlantFormState {
          mode: PlantFormMode.edit,
          initialName: '',
          currentName: '',
+         initialLastWateredDate: null,
+         currentLastWateredDate: null,
          places: const [],
          selectedPlaceId: null,
          loadStatus: PlantFormLoadStatus.loading,
@@ -74,12 +80,15 @@ class PlantFormState {
     required String plantId,
     required String? placeId,
     required String name,
+    required String? lastWateredDate,
   }) : this(
          plantId: plantId,
          placeId: placeId,
          mode: PlantFormMode.edit,
          initialName: name,
          currentName: name,
+         initialLastWateredDate: lastWateredDate,
+         currentLastWateredDate: lastWateredDate,
          places: const [],
          selectedPlaceId: null,
          loadStatus: PlantFormLoadStatus.ready,
@@ -95,6 +104,8 @@ class PlantFormState {
          mode: PlantFormMode.edit,
          initialName: '',
          currentName: '',
+         initialLastWateredDate: null,
+         currentLastWateredDate: null,
          places: const [],
          selectedPlaceId: null,
          loadStatus: PlantFormLoadStatus.notFound,
@@ -111,6 +122,8 @@ class PlantFormState {
          mode: PlantFormMode.edit,
          initialName: '',
          currentName: '',
+         initialLastWateredDate: null,
+         currentLastWateredDate: null,
          places: const [],
          selectedPlaceId: null,
          loadStatus: PlantFormLoadStatus.failure,
@@ -123,6 +136,8 @@ class PlantFormState {
   final PlantFormMode mode;
   final String initialName;
   final String currentName;
+  final String? initialLastWateredDate;
+  final String? currentLastWateredDate;
   final List<PlantRegistrationPlace> places;
   final String? selectedPlaceId;
   final PlantFormLoadStatus loadStatus;
@@ -135,7 +150,9 @@ class PlantFormState {
 
   String? get submitErrorMessage => submitState.errorMessage;
 
-  bool get hasChanges => currentName.trim() != initialName;
+  bool get hasChanges =>
+      currentName.trim() != initialName ||
+      currentLastWateredDate != initialLastWateredDate;
 
   PlantRegistrationPlace? get selectedPlace {
     final selectedPlaceId = this.selectedPlaceId;
@@ -167,6 +184,7 @@ class PlantFormState {
 
   PlantFormState copyWith({
     String? currentName,
+    Object? currentLastWateredDate = _unset,
     List<PlantRegistrationPlace>? places,
     Object? selectedPlaceId = _unset,
     FormSubmitState? submitState,
@@ -177,6 +195,10 @@ class PlantFormState {
       mode: mode,
       initialName: initialName,
       currentName: currentName ?? this.currentName,
+      initialLastWateredDate: initialLastWateredDate,
+      currentLastWateredDate: identical(currentLastWateredDate, _unset)
+          ? this.currentLastWateredDate
+          : currentLastWateredDate as String?,
       places: places == null ? this.places : List.unmodifiable(places),
       selectedPlaceId: identical(selectedPlaceId, _unset)
           ? this.selectedPlaceId
