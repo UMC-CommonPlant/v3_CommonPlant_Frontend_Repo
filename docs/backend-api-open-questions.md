@@ -5,7 +5,7 @@
 ## 관리 기준
 
 - 상태는 `Open`, `Answered`, `Blocked`, `Done` 중 하나로 관리한다.
-- 백엔드 답변을 받으면 `답변`과 `프론트 반영` 칸을 갱신한다.
+- 백엔드 답변 또는 배포 기준과 일치하는 백엔드 Controller·DTO·Service 근거를 확인하면 `답변`과 `프론트 반영` 칸을 갱신한다.
 - Swagger가 갱신되면 `docs/api-swagger-reference.md`의 최신 명세와 이 문서를 함께 갱신한다.
 - 구현은 이 문서의 질문이 `Answered`가 된 뒤 별도 이슈에서 진행한다.
 
@@ -16,14 +16,15 @@
 | AUTH-01 | Auth | `POST /auth/register` request part의 실제 schema는 무엇인가? | #216 multipart datasource/repository 반영 완료 | Done |
 | AUTH-02 | Auth | 회원가입은 이미지가 없어도 항상 multipart로 보내야 하는가? | #216 image optional 전송 기준 반영 완료 | Done |
 | MULTIPART-01 | 공통 | multipart JSON part의 `Content-Type`은 `application/json`이 필수인가? | Auth/Place/Plant/User multipart 일관성 확인 필요 | Open |
-| PLACE-01 | Place | Place 조회/생성/수정/삭제 성공 response body 구조는 무엇인가? | Place mapper와 화면 성공 정책 제한 | Open |
-| PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | 장소 목록/상세 실데이터 신뢰도 제한 | Open |
-| PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | route query와 API 요청 이름 혼재 가능성 | Open |
-| PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | 친구 관리 화면 멤버 목록 API 연결 보류 | Open |
-| FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | 장소 친구 요청 화면 API 연결 보류 | Open |
-| FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | 친구 요청 액션 성공 처리 제한 | Open |
-| FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | 친구 추가 요청 payload 확정 불가 | Open |
-| FRIEND-04 | Friend | `friendDecisionReq.friendId`는 요청 id인가, 사용자 id인가? | 수락/거절 payload 확정 불가 | Open |
+| PLACE-01 | Place | Place 조회/생성/수정/삭제 성공 response body 구조는 무엇인가? | #239 목록·상세 반영, 생성·수정 결과 소비는 후속 | Answered |
+| PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | #239 목록·상세 mapper와 화면 반영 | Done |
+| PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | API 경계는 `code`, 기존 route 모델명은 `id` 유지 | Answered |
+| PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | 멤버 목록 계약 확인, 친구 관리 연결은 후속 | Answered |
+| PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 API mode에서 member 나가기 action 숨김 | Blocked |
+| FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | 요청 목록 수직 슬라이스 진행 가능 | Answered |
+| FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | 성공 result 확인, invalidate 정책은 화면 작업에서 결정 | Answered |
+| FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | 표시 이름 사용 확인, 중복 이름 오매칭 위험은 백엔드 확인 필요 | Answered |
+| FRIEND-04 | Friend | `friendDecisionReq.friendId`는 요청 id인가, 사용자 id인가? | 요청 PK 사용 확인, 수락·거절 연결 가능 | Answered |
 | IMAGE-01 | Image | `/s3/images` upload/download/update/delete 성공 response schema는 무엇인가? | image key/url mapper 보류 | Open |
 | IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | 프로필/장소/식물/메모 이미지 흐름 확정 불가 | Open |
 | IMAGE-03 | Image | presigned download URL 응답 필드와 wrapper 구조는 무엇인가? | 네트워크 이미지 fallback 정책 보류 | Open |
@@ -81,77 +82,86 @@
 
 ### PLACE-01. Place 성공 response body 구조
 
-- 현재 근거: Swagger의 Place 조회/생성/수정/삭제 성공 response body schema가 없다.
-- 프론트 영향: create/update/delete는 `void` 경계로만 처리하고, 조회 mapper는 넓은 fallback에 의존한다.
-- 확인 질문: 각 API의 성공 response wrapper와 `result` 구조는 무엇인가?
-- 프론트 반영: schema가 확정되면 `PlaceSummary` mapper와 화면 success/empty 정책을 좁힌다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 2026-08-25 dev Swagger의 machine-readable schema는 여전히 없지만, 백엔드 `7d572cb`의 `PlaceController`와 `PlaceDto`가 각 성공 응답을 `JsonResponse.result`로 반환한다.
+- 프론트 영향: 조회 mapper를 실제 필드로 좁힐 수 있고 생성 code, 수정 결과, 삭제 null 계약을 구분할 수 있다.
+- 확인 질문: 해결됨. 단, dev 배포와 백엔드 main commit의 동기화는 실제 인증 smoke 전까지 별도 검증한다.
+- 프론트 반영: #239에서 목록·상세 응답을 실제 도메인 모델로 연결했다. 생성 code와 수정 결과 소비는 친구 추가·수정 후속 이슈에서 연결한다.
+- 답변: 생성은 place code 문자열, 상세는 `getPlaceRes`, 수정은 `updatePlaceRes`, 삭제는 null이며 모두 공통 `JsonResponse.result`에 담긴다.
+- 상태: Answered
 
 ### PLACE-02. Place 목록/상세 필드명
 
-- 현재 근거: `/place/myGarden`, `/place/user`, `/place/{code}`의 list/object wrapper와 필드명이 명시되지 않았다.
-- 프론트 영향: 장소 목록, 식물 등록 장소 선택, 장소 상세의 실데이터 표시가 제한된다.
-- 확인 질문: 장소 id/code, 이름, 주소, 대표 이미지, 멤버/역할 정보의 정확한 필드명은 무엇인가?
-- 프론트 반영: 답변 후 repository mapper와 상태 UI를 보강한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 백엔드 `PlaceDto`에서 `getMainPage`, `getPlaceListRes`, `getPlaceBelongUser`, `getPlaceRes` 필드를 확인했다.
+- 프론트 영향: Home 장소 목록과 장소 상세가 fixture 없이 서버 필드를 사용할 수 있다.
+- 확인 질문: 해결됨.
+- 프론트 반영: #239에서 `result.placeList`와 `result.userList`, `result.plantList`, `owner`를 목록·상세 mapper와 화면 상태에 반영했다.
+- 답변: myGarden은 `{ name, placeList[] }`, user는 장소 배열, 상세는 `{ name, code, address, imgUrl, owner, userList[], plantList[] }`이다.
+- 상태: Done
 
 ### PLACE-03. Place 식별자 명칭
 
-- 현재 근거: Swagger와 기존 코드에서 `placeCode`, `placeId`, `code`가 함께 등장한다.
-- 프론트 영향: route parameter, query parameter, request DTO 이름이 섞일 수 있다.
-- 확인 질문: 프론트가 저장하고 전달해야 하는 표준 식별자는 `placeCode`인가, `placeId`인가?
-- 프론트 반영: 표준이 확정되면 route helper, provider key, request DTO naming을 정리한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 백엔드 Place DTO와 모든 Place path parameter는 문자열 `code`를 사용하고 Plant 요청은 `placeCode`로 같은 값을 전달한다.
+- 프론트 영향: API 경계에서는 정수 Place ID를 만들지 않고 code 문자열을 보존해야 한다.
+- 확인 질문: 해결됨.
+- 프론트 반영: #239의 `PlaceDetail.code`와 `PlaceSummary.id`는 서버 code 문자열을 저장한다. 기존 route의 `placeId` 이름 변경은 별도 routing 정리 범위로 남긴다.
+- 답변: Place의 외부 식별자는 code 문자열이며 요청 JSON에서는 `placeCode`, Place path에서는 `code`로 표현한다.
+- 상태: Answered
 
 ### PLACE-04. 장소 멤버 목록 response schema
 
-- 현재 근거: dev Swagger에 `GET /place/{code}/members`가 추가됐고 가입 순서대로 멤버를 조회한다고 설명하지만 성공 response body schema는 없다.
-- 프론트 영향: `/places/:placeId/friends`의 fixture 멤버를 remote response로 안전하게 바꿀 수 없다.
-- 확인 질문: wrapper와 member id, 이름, 프로필 이미지, 역할, 가입일 필드명은 무엇인가?
-- 프론트 반영: 답변 후 Place datasource/repository와 친구 관리 상태를 연결한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 백엔드 Controller는 `List<PlaceDto.getPlaceResUser>`를 `JsonResponse.result`로 반환한다.
+- 프론트 영향: 이름과 프로필 이미지는 연결할 수 있지만 member id, 역할, 가입일은 응답에 없어 삭제·권한 UI에 사용할 수 없다.
+- 확인 질문: 부분 해결됨. 멤버 변경 endpoint와 고유 member id가 필요하면 백엔드 확장이 필요하다.
+- 프론트 반영: #239 상세 화면은 `/place/{code}`에 포함된 동일 멤버 타입을 표시한다. 친구 관리 화면의 조회·변경은 후속 이슈로 남긴다.
+- 답변: 멤버 항목은 `{ name, image }`이며 가입 순서 배열이다.
+- 상태: Answered
+
+### PLACE-05. 구성원 장소 나가기 endpoint
+
+- 현재 근거: 백엔드 `PlaceServiceImpl.deletePlace`는 owner만 허용하고 장소와 식물·메모·Belong을 모두 삭제한다. 구성원 leave endpoint는 Controller에 없다.
+- 프론트 영향: owner 전체 삭제와 구성원 나가기를 같은 action으로 호출하면 구성원은 403이 발생하고 owner는 파괴 범위를 오해할 수 있다.
+- 확인 질문: owner가 아닌 구성원이 Belong만 제거하고 장소에서 나가는 endpoint가 제공되는가?
+- 프론트 반영: #239 API 모드는 owner에게만 전체 삭제 action과 경고를 표시하고 구성원 나가기는 숨긴다.
+- 답변: 현재 제공 endpoint 없음.
+- 상태: Blocked
 
 ## Friend
 
 ### FRIEND-01. 친구 요청 목록 response schema
 
-- 현재 근거: `GET /friends/requests`는 Swagger summary와 response schema가 없다.
-- 프론트 영향: 장소 친구 요청 화면을 raw response 없이 연결할 수 없다.
-- 확인 질문: 요청 id, 요청자, 대상 장소, 상태, 생성일, 프로필 이미지 필드가 포함되는가?
-- 프론트 반영: 답변 후 초대 요청 목록 Provider와 empty/error/success UI를 연결한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 백엔드 `7d572cb`의 `FriendController`, `FriendDto`, `FriendServiceImpl`에서 목록 응답과 생성 로직을 확인했다.
+- 프론트 영향: 장소 친구 요청 화면의 DTO와 loading/empty/error/success 상태를 확정할 수 있다.
+- 확인 질문: 해결됨. 생성일은 응답에 포함되지 않는다.
+- 프론트 반영: 별도 Friend 수직 슬라이스에서 요청 목록 Provider와 화면을 연결한다.
+- 답변: `result.requests[]` 항목은 `friendId`, `senderName`, `senderImgUrl`, `placeCode`, `placeName`, `placeAddress`, `status`를 가진다.
+- 상태: Answered
 
 ### FRIEND-02. 친구 요청 액션 성공 response와 갱신 정책
 
-- 현재 근거: `POST /friends/request`, `/friends/accept`, `/friends/decline` 성공 response 설명은 `OK`뿐이다.
-- 프론트 영향: 액션 후 snackbar, 목록 remove, 재조회 중 어떤 정책을 적용할지 확정할 수 없다.
-- 확인 질문: 성공 시 body가 있는가? 없다면 액션 후 목록 재조회가 권장되는가?
-- 프론트 반영: 답변 후 액션 Controller와 목록 invalidate 정책을 확정한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 백엔드 Controller에서 전송은 `sendFriendRes`, 수락·거절은 null을 `JsonResponse.result`로 반환한다.
+- 프론트 영향: 수락·거절 성공은 HTTP 성공 후 해당 요청을 로컬 목록에서 제거하고 목록 Provider를 invalidate하는 정책으로 구현할 수 있다.
+- 확인 질문: response 구조는 해결됨. 화면 갱신은 프론트 수직 슬라이스에서 optimistic remove 후 invalidate로 검증한다.
+- 프론트 반영: 별도 Friend 수직 슬라이스에서 Controller와 목록 재조회 정책을 구현한다.
+- 답변: 전송 result는 `{ placeCode, receiverList }`, 수락·거절 result는 null이다.
+- 상태: Answered
 
 ### FRIEND-03. `receiverName` 의미
 
-- 현재 근거: `sendFriendReq.receiverName`은 string array로만 명시되어 있다.
-- 프론트 영향: 사용자 검색 결과의 display name을 보낼지, user id를 보낼지 불명확하다.
-- 확인 질문: `receiverName`은 사용자 표시 이름 배열인가, 고유 user id 배열인가? 중복 이름은 어떻게 처리하는가?
-- 프론트 반영: 답변 후 친구 추가 선택 모델과 request DTO를 조정한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: `FriendServiceImpl`은 `receiverName`의 각 문자열을 사용자 이름 검색에 넣고 첫 결과를 receiver로 사용한다.
+- 프론트 영향: payload 타입은 확정됐지만 표시 이름이 중복되면 잘못된 사용자가 선택될 수 있어 신규 초대 전송을 안전하게 완료할 수 없다.
+- 확인 질문: receiver를 고유 user id로 바꾸거나 exact unique name을 보장할지 백엔드 결정이 필요하다.
+- 프론트 반영: 요청 DTO는 표시 이름 배열로 유지하되, 중복 이름 정책이 해결되기 전 실제 전송 화면 연결은 보류한다.
+- 답변: 현재 구현은 사용자 표시 이름 배열이며 부분 검색 결과의 첫 사용자를 선택한다.
+- 상태: Answered
 
 ### FRIEND-04. `friendId` 의미
 
-- 현재 근거: `friendDecisionReq.friendId`는 int64로만 명시되어 있다.
-- 프론트 영향: 수락/거절 payload에 요청 id를 넣어야 하는지 사용자 id를 넣어야 하는지 알 수 없다.
-- 확인 질문: `friendId`는 친구 요청 id인가, 요청자 user id인가, 친구 관계 id인가?
-- 프론트 반영: 답변 후 초대 요청 entity의 id 필드를 확정한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: `FriendServiceImpl`은 `findByFriendIdxAndReceiver(friendId, currentUserName)`로 요청을 찾는다.
+- 프론트 영향: 요청 목록의 `friendId`를 그대로 수락·거절 payload에 넣을 수 있다.
+- 확인 질문: 해결됨.
+- 프론트 반영: 별도 Friend 수직 슬라이스의 요청 entity id와 action request에 반영한다.
+- 답변: `friendId`는 친구 요청 테이블의 `friendIdx`, 즉 요청 PK이다.
+- 상태: Answered
 
 ## Image
 
