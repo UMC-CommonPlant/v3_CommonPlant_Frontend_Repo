@@ -31,6 +31,7 @@ void main() {
       final places = container.read(placeListProvider);
 
       expect(result?.destination, PlaceFormSubmitDestination.friendAdd);
+      expect(result?.placeCode, 'place-1');
       expect(
         container.read(placeFormControllerProvider(null)).submitState,
         const FormSubmitState.idle(),
@@ -70,6 +71,7 @@ void main() {
       final places = container.read(placeListProvider);
 
       expect(result?.destination, PlaceFormSubmitDestination.home);
+      expect(result?.placeCode, place.id);
       expect(places.single.name, '루프탑');
       expect(places.single.address, '서울시 강남구');
     });
@@ -105,6 +107,35 @@ void main() {
       );
     });
 
+    test('remote 장소 생성은 응답 place code를 친구 추가 결과에 보존한다', () async {
+      final repository = _RecordingPlaceRepository();
+      final container = ProviderContainer(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          placeRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      final subscription = container.listen(
+        placeFormControllerProvider(null),
+        (previous, next) {},
+      );
+
+      addTearDown(subscription.close);
+      addTearDown(container.dispose);
+
+      final controller = container.read(
+        placeFormControllerProvider(null).notifier,
+      );
+      controller.updateName('거실');
+      controller.updateAddress('서울시 성북구');
+
+      final result = await controller.submit();
+
+      expect(result?.destination, PlaceFormSubmitDestination.friendAdd);
+      expect(result?.placeCode, 'created-place');
+      expect(repository.createCalls, 1);
+    });
+
     test('remote 장소 수정은 조회값을 draft로 사용하고 repository를 호출한다', () async {
       final repository = _RecordingPlaceRepository();
       final container = ProviderContainer(
@@ -137,6 +168,7 @@ void main() {
       final result = await controller.submit();
 
       expect(result?.destination, PlaceFormSubmitDestination.home);
+      expect(result?.placeCode, 'place-1');
       expect(repository.updateCalls, 1);
       expect(repository.latestUpdateCode, 'place-1');
       expect(repository.latestUpdateName, '루프탑');

@@ -69,6 +69,13 @@ abstract final class AppRoutePaths {
     return '/places/${Uri.encodeComponent(placeId)}/edit';
   }
 
+  static String placeFriendAddLocation(String placeCode) {
+    return Uri(
+      path: placeFriendAdd,
+      queryParameters: {'placeCode': placeCode},
+    ).toString();
+  }
+
   static String placeDetailLocation(String placeId) {
     return '/places/${Uri.encodeComponent(placeId)}';
   }

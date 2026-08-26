@@ -18,7 +18,9 @@ import 'package:go_router/go_router.dart';
 const double _friendAddTrailingWidth = 81;
 
 class PlaceFriendAddPage extends ConsumerWidget {
-  const PlaceFriendAddPage({super.key});
+  const PlaceFriendAddPage({super.key, this.placeCode});
+
+  final String? placeCode;
 
   void _cancel(BuildContext context) {
     final navigator = Navigator.of(context);

@@ -83,7 +83,7 @@ class PlaceFormPage extends ConsumerWidget {
       case PlaceFormSubmitDestination.home:
         context.go(AppRoutePaths.home);
       case PlaceFormSubmitDestination.friendAdd:
-        context.push(AppRoutePaths.placeFriendAdd);
+        context.push(AppRoutePaths.placeFriendAddLocation(result!.placeCode));
       case null:
         final errorMessage = ref.read(provider).submitErrorMessage;
 

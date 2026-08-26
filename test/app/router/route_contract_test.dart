@@ -33,6 +33,12 @@ void main() {
     );
   });
 
+  test('친구 추가 location은 생성된 place code를 query로 보존한다', () {
+    final location = AppRoutePaths.placeFriendAddLocation('place A/B');
+
+    expect(location, '/places/new/friends?placeCode=place+A%2FB');
+  });
+
   testWidgets('route parameter 오류 화면이 누락된 parameter와 route 정보를 표시한다', (
     WidgetTester tester,
   ) async {

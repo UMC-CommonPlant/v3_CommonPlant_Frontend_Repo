@@ -182,7 +182,9 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
     AppRouteNames.placeInvitations => const PlaceInvitationsPage(),
     AppRouteNames.placeCreate => const PlaceFormPage(),
     AppRouteNames.addressSearch => const AddressSearchPage(),
-    AppRouteNames.placeFriendAdd => const PlaceFriendAddPage(),
+    AppRouteNames.placeFriendAdd => PlaceFriendAddPage(
+      placeCode: _queryParameter(state, 'placeCode'),
+    ),
     AppRouteNames.placeEdit => _buildWithRequiredPathParameter(
       route: route,
       state: state,
