@@ -44,10 +44,10 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Home | Home `/` | User·Place·Plant 목록과 Friend 수신 요청 수 API 모드 연결 | 배지 조회 실패 표현 고도화 | Friend 요청 목록 source 계약 #241 반영 | #232, #239, #241 연결 |
 | User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴 Controller와 세 화면 연결 | 실제 이미지 파일 선택, 알림 설정 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 / PR #238 병합 완료 |
 | Place | 장소 친구 요청 | API 목록·프로필·loading/empty/error와 수락·거절 연결, fixture 모드 유지 | 원격 인증 smoke | `GET /friends/requests`, `POST /friends/accept`, `POST /friends/decline` #241 반영 | #241 연결 |
-| Place | 장소 등록 | 이름·주소 create API 연결 | 생성된 place code 소비, 실제 이미지, 친구 추가 후속 흐름 | source에서 생성 result code 확인, receiver 이름 중복 정책 필요 | 부분 연결 |
+| Place | 장소 등록 | 이름·주소 create API와 생성 code·친구 추가 route 문맥 연결 | 실제 이미지, 친구 요청 submit | 생성 result code #243 반영, receiver 이름 중복 정책 필요 | #243 연결 |
 | Place | 주소 검색 | fixture 검색 | 검색 adapter와 선택 결과 | 백엔드 endpoint 또는 외부 주소 서비스 결정 필요 | 보류 |
-| Place | 장소 등록 중 친구 추가 | User 검색만 API 모드 연결 | 선택 사용자 요청 submit, 장소 초대와 친구 요청 관계 | `GET /users/{keyword}`, `POST /friends/request`; 도메인 관계 확인 | 제한 |
-| Place | 장소 수정 | 상세 조회와 update API 연결 | image key/file, 수정 결과 즉시 반영 | source에서 update result 확인, 상세에는 image key 미제공 | 부분 연결 |
+| Place | 장소 등록 중 친구 추가 | User 검색과 생성된 place code route 문맥 연결 | 선택 사용자 요청 submit, 장소 초대와 친구 요청 관계 | `GET /users/{keyword}`, `POST /friends/request`; 동명이인 정책 필요 | #243 문맥 연결, submit 제한 |
+| Place | 장소 수정 | 상세 조회·update API와 typed 수정 결과 연결 | image key/file | source update result #243 반영, 상세에는 image key 미제공 | #243 연결 |
 | Place | 장소 상세 | API 장소·owner·멤버·식물 연결, fixture 병합 제거 | 서버 미제공 환경 수치와 물주기 액션 | `GET /place/{code}` source 계약 #239 반영 | #239 / PR #240 병합 완료 |
 | Place | 친구 관리 | fixture 검색·선택·삭제 | 멤버 목록 조회, 추가·삭제 submit | `{ name, image }[]` 확인, 고유 member id와 변경 endpoint 없음 | 보류 |
 | Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
@@ -117,6 +117,23 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 - 구성원 leave endpoint가 없어 API 모드의 구성원에게는 동작하지 않는 나가기 action을 노출하지 않습니다.
 - API 비사용 모드는 Android smoke와 화면 개발을 위해 기존 fixture 흐름을 유지합니다.
 
+## Place 생성·수정 결과 수직 슬라이스
+
+#243은 백엔드 source에서 확인한 생성·수정 성공 result를 Form의 후속 흐름까지
+보존합니다.
+
+- `POST /place/create`의 result 문자열을 생성된 place code로 파싱합니다.
+- `PUT /place/update/{code}`의 `{ code, name, address, imgUrl }`를
+  `PlaceSummary`로 파싱합니다.
+- Form Controller는 API·fixture 모드 모두 생성된 장소 식별자를 submit 결과에
+  저장합니다.
+- 장소 생성 뒤 친구 추가 route는 `placeCode` query로 생성된 장소 문맥을
+  전달합니다.
+- 수정 성공은 서버가 반환한 canonical code를 보존하고 기존 목록·상세 Provider
+  invalidate 정책을 유지합니다.
+- 실제 친구 요청 전송, 주소 검색 adapter와 이미지 선택은 정책·endpoint가
+  준비될 때까지 분리합니다.
+
 ## Friend 수신 요청 수직 슬라이스
 
 #241은 백엔드 main `7d572cb`에서 확인한 Friend 요청 계약을 typed entity와
@@ -163,5 +180,8 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #241 | `a1761a8` | 요청 상태·수락·거절과 Home 동적 요청 수 연결 | Provider·Home test 9개 |
 | #241 | `0141f74` | 요청 화면 loading·empty·error·submit UI 연결 | 관련 test 17개, analyze |
 | #241 | - | API 문서 상태와 전체 검증 이력 갱신 | format 289개, analyze, 전체 test 332개·기존 skip 1개 |
+| #243 | `c5fbca2` | Place 생성 code·수정 요약 mapper와 typed repository | Place data test 18개 |
+| #243 | `d38e031` | Form 결과와 친구 추가 route의 place code 전달 | 관련 test 19개 |
+| #243 | - | OpenAPI 재확인과 전체 검증 이력 갱신 | format 289개, analyze, 전체 test 337개·기존 skip 1개 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.

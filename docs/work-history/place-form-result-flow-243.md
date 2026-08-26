@@ -52,6 +52,9 @@
 
 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- |
-| 이 문서의 계획 커밋 | 작업 기준, API 계약, 구현·보류 경계 | `git diff --check` |
+| `1af3893` | 작업 기준, API 계약, 구현·보류 경계 | `git diff --check` |
+| `c5fbca2` | 생성 code·수정 장소 mapper와 typed datasource·repository | Place data test 18개 |
+| `d38e031` | Form submit 결과와 친구 추가 route의 place code 전달 | 관련 test 19개 |
+| 이 문서의 최종 커밋 | 계획·API·routing 상태와 전체 검증 이력 | format 289개, analyze, 전체 test 337개 통과·기존 skip 1개 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있습니다.

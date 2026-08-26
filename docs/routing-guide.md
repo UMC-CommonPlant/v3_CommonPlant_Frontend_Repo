@@ -64,6 +64,12 @@ Figma 파일 `Common Plant 복제`의 `phase 0` 페이지를 기준으로 프레
 
 Place 상세/수정/친구 관리는 `placeId`를 path에 포함합니다. Plant 상세/수정/Memo 플로우는 `plantId` 중심으로 둡니다. 식물 등록은 Figma상 먼저 식물을 검색하고 다음 단계에서 장소를 고르는 흐름이므로 `/plants/new/*` 아래에 둡니다.
 
+장소 생성 뒤 친구 추가 화면으로 이동할 때는
+`/places/new/friends?placeCode={생성된 code}`를 사용합니다. `placeCode`는 route
+path를 늘리지 않고 생성 직후의 후속 요청 문맥을 보존하는 optional query이며,
+직접 route 진입과 API 비사용 화면 테스트에서는 없을 수 있습니다. 친구 요청
+전송을 연결할 때는 이 query를 임의의 장소 id로 대체하지 않습니다.
+
 ## Route가 아닌 상태
 
 아래 Figma 프레임은 별도 route로 만들지 않고 해당 화면의 상태, dialog, bottom sheet로 처리합니다.

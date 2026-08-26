@@ -565,13 +565,14 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | --- | --- | --- | --- |
 | 프로필 설정 | `/profile/setup` | `POST /auth/register` | #216에서 multipart datasource/repository 반영 완료, 실제 image picker 파일과 submit 연결은 별도 구현 필요 |
 | 마이페이지·회원 정보 수정 | `/me`, `/me/edit` | `GET/PUT/DELETE /users` | #237에서 조회·이름 수정·회원 탈퇴 화면 흐름 연결, 실제 image picker는 별도 정책 필요 |
+| 장소 등록 | `/places/new` | `POST /place/create` | #243에서 생성 result code와 친구 추가 route 문맥 연결 |
 | 친구 추가 | `/places/new/friends` | `GET /users/{keyword}` | 사용자 이름 검색 DTO 반영 가능 |
 | 친구 추가 | `/places/new/friends` | `POST /friends/request` | source 응답은 확인했지만 표시 이름 중복 오매칭 위험 해결 필요 |
 | 장소 친구 요청 | `/places/invitations` | `GET /friends/requests` | #241에서 `requests[]` typed mapper와 화면 상태 연결 |
 | 장소 친구 요청 | `/places/invitations` | `POST /friends/accept`, `POST /friends/decline` | #241에서 요청 PK submit·목록 갱신 연결 |
 | 장소 상세 | `/places/:placeId` | `GET /place/{code}` | #239에서 장소·owner·멤버·식물 실데이터 연결 |
 | 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members` | 이름·이미지 조회 가능, 고유 id와 멤버 변경 endpoint는 없음 |
-| 장소 수정 | `/places/:placeId/edit` | `PUT /place/update/{code}` | multipart와 수정 결과 계약 확인, image key 조회는 별도 확인 필요 |
+| 장소 수정 | `/places/:placeId/edit` | `PUT /place/update/{code}` | #243에서 수정 result를 typed 장소 요약으로 연결, image key 조회는 별도 확인 필요 |
 | 식물 등록 정보 입력 | `/plants/new/details` | `POST /plants` | `placeCode` 기준으로 현재 코드 DTO 수정 필요 |
 | 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}` | query parameter 제거 필요 |
 | 식물 수정 | `/plants/:plantId/edit` | `GET /plants/{plantId}/edit` | query parameter 제거 필요 |
@@ -634,6 +635,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: #239에서 `GET /place/myGarden`의 `result.placeList`와 대표 이미지를 Home 장소 카드에 연결했다.
 - 반영: #239에서 `GET /place/{code}`를 `PlaceDetail`로 파싱하고 owner·멤버·식물·이미지·날짜를 상세 화면에 연결했다.
 - 반영: #239 remote 상세에서는 서버가 주지 않는 햇빛·습도와 fixture 멤버·식물을 표시하지 않는다.
+- 반영: #243에서 `POST /place/create`의 result 문자열을 place code로 파싱하고 친구 추가 route에 전달한다.
+- 반영: #243에서 `PUT /place/update/{code}`의 result를 typed `PlaceSummary`로 파싱한다.
 - 반영: #241에서 `GET /friends/requests`를 typed `FriendInvitation` 목록으로 파싱하고 Home 요청 수와 장소 친구 요청 화면에 연결했다.
 - 반영: #241에서 `POST /friends/accept`, `POST /friends/decline`을 항목별 submit 상태와 목록 invalidate 정책에 연결했다.
 - 반영: `POST /plants`와 `PUT /plants/{plantId}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
@@ -676,7 +679,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 1. #227에서 Auth login/register repository를 로그인·프로필·약관 화면, 앱 세션, 인증 redirect까지 연결한다. 실제 소셜 SDK token 공급은 `SocialAuthCredentialGateway` 구현으로 분리한다.
 2. 로그인 직후 Home은 response schema가 있는 User 조회와 Plant 목록부터 상태 Provider와 loading/empty/error UI에 연결한다.
 3. Plant 목록·상세·생성·수정은 보강된 Swagger DTO를 기준으로 화면 동선을 순차 전환한다.
-4. Place는 multipart 전송 경계만 사용하고 response schema가 확정될 때까지 화면 mapper를 추정하지 않는다.
+4. Place 목록·상세와 생성·수정 source 계약은 #239·#243에서 화면까지 연결했고, 이미지·주소 검색·구성원 변경은 정책과 endpoint 확인 전까지 분리한다.
 5. Friend 수신 목록·수락·거절은 #241에서 화면에 연결했고, 신규 요청 전송과 Image는 정책·성공 response 확인 전까지 transport 경계만 유지한다.
 6. Memo는 Swagger endpoint가 추가되기 전까지 mock 화면 상태와 실제 API 코드를 섞지 않는다.
 
@@ -688,5 +691,6 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | #216 | `ae134d0` | Auth register JSON part와 optional image multipart datasource/repository, Swagger request DTO 반영 | Auth unit test 5개, macOS 전체 263개와 Ubuntu golden 포함 264개, format 260개 파일, analyze |
 | #227 | `111373a`, `a065188`, `e9543fc` | Auth 세션과 social credential 경계, 로그인·회원가입 화면 submit, 인증 route redirect 연결 | format 270개 파일, analyze, 전체 test 280개 통과·기존 skip 1개 |
 | #241 | `24079a6`, `a1761a8`, `0141f74` | Friend 수신 요청 typed mapper, 수락·거절 상태, Home 요청 수와 화면 상태 연결 | format 289개 파일, analyze, 전체 test 332개 통과·기존 skip 1개 |
+| #243 | `c5fbca2`, `d38e031` | Place 생성 code·수정 요약 typed 응답과 친구 추가 route 문맥 연결 | format 289개 파일, analyze, 전체 test 337개 통과·기존 skip 1개 |
 
 작업 이력만 갱신하는 후속 문서 커밋은 자기 자신의 해시를 생략할 수 있다.

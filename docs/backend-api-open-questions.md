@@ -82,10 +82,11 @@
 
 ### PLACE-01. Place 성공 response body 구조
 
-- 현재 근거: 2026-08-25 dev Swagger의 machine-readable schema는 여전히 없지만, 백엔드 `7d572cb`의 `PlaceController`와 `PlaceDto`가 각 성공 응답을 `JsonResponse.result`로 반환한다.
+- 현재 근거: 2026-08-26 dev Swagger의 machine-readable schema는 여전히 없지만, 백엔드 `7d572cb`의 `PlaceController`와 `PlaceDto`가 각 성공 응답을 `JsonResponse.result`로 반환한다.
 - 프론트 영향: 조회 mapper를 실제 필드로 좁힐 수 있고 생성 code, 수정 결과, 삭제 null 계약을 구분할 수 있다.
 - 확인 질문: 해결됨. 단, dev 배포와 백엔드 main commit의 동기화는 실제 인증 smoke 전까지 별도 검증한다.
-- 프론트 반영: #239에서 목록·상세 응답을 실제 도메인 모델로 연결했다. 생성 code와 수정 결과 소비는 친구 추가·수정 후속 이슈에서 연결한다.
+- 프론트 반영: #239에서 목록·상세 응답을 연결했고, #243에서 생성 code와
+  수정 결과를 typed repository·Form 결과·친구 추가 route 문맥에 연결했다.
 - 답변: 생성은 place code 문자열, 상세는 `getPlaceRes`, 수정은 `updatePlaceRes`, 삭제는 null이며 모두 공통 `JsonResponse.result`에 담긴다.
 - 상태: Answered
 
