@@ -11,6 +11,7 @@
   - `docs/screen-api-integration-plan.md`
   - `docs/api-swagger-reference.md`
   - `docs/backend-api-open-questions.md`
+  - `docs/accepted-implementation-risks.md`
   - `docs/feature-development-guide.md`
   - `docs/state-management-guide.md`
   - `docs/form-validation-error-guide.md`
@@ -32,11 +33,14 @@
 - 장소 생성 Controller 결과가 생성된 code를 보존하고 친구 추가 route에 전달합니다.
 - API 비사용 모드도 생성된 local place id를 같은 후속 흐름에 전달합니다.
 - 수정 성공 결과를 소비한 뒤 목록·상세 Provider 갱신 정책을 유지합니다.
+- 선택한 친구 이름과 생성된 place code로 신규 요청을 전송하고 중복 submit과
+  실패 상태를 처리합니다.
 
-## 보류 경계
+## 위험 수용과 보류 경계
 
-- 신규 친구 요청 전송은 표시 이름 중복 오매칭 위험이 해결될 때까지 연결하지
-  않습니다.
+- 2026-08-26 사용자 결정에 따라 신규 친구 요청은 우선 연결합니다.
+- 표시 이름 부분 검색으로 인한 오초대, 일괄 요청의 부분 성공, 원격 smoke 부재는
+  `docs/accepted-implementation-risks.md`의 `FRIEND-RISK-01`~`03`으로 추적합니다.
 - 주소 검색 adapter, 이미지 picker·플랫폼 권한, 원격 인증 smoke는 이번 범위에
   포함하지 않습니다.
 
@@ -56,6 +60,7 @@
 | `1af3893` | 작업 기준, API 계약, 구현·보류 경계 | `git diff --check` |
 | `c5fbca2` | 생성 code·수정 장소 mapper와 typed datasource·repository | Place data test 18개 |
 | `d38e031` | Form submit 결과와 친구 추가 route의 place code 전달 | 관련 test 19개 |
-| 이 문서의 최종 커밋 | 계획·API·routing 상태와 전체 검증 이력 | format 289개, analyze, 전체 test 337개 통과·기존 skip 1개 |
+| `3b2198c` | 선택 친구 이름·place code 요청과 중복 submit·실패 처리 | Controller·widget test 14개 |
+| 이 문서의 최종 커밋 | 계획·API·routing·위험 상태와 전체 검증 이력 | format 291개, analyze, 전체 test 344개 통과·기존 skip 1개 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있습니다.

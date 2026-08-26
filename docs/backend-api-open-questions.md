@@ -23,7 +23,7 @@
 | PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 API mode에서 member 나가기 action 숨김 | Blocked |
 | FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | 요청 목록 수직 슬라이스 진행 가능 | Answered |
 | FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | 성공 result 확인, invalidate 정책은 화면 작업에서 결정 | Answered |
-| FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | 표시 이름 사용 확인, 중복 이름 오매칭 위험은 백엔드 확인 필요 | Answered |
+| FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | #243에서 위험 수용 후 연결, 고유 ID 전환 필요 | Answered |
 | FRIEND-04 | Friend | `friendDecisionReq.friendId`는 요청 id인가, 사용자 id인가? | 요청 PK 사용 확인, 수락·거절 연결 가능 | Answered |
 | IMAGE-01 | Image | `/s3/images` upload/download/update/delete 성공 response schema는 무엇인가? | image key/url mapper 보류 | Open |
 | IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | 프로필/장소/식물/메모 이미지 흐름 확정 불가 | Open |
@@ -152,9 +152,9 @@
 ### FRIEND-03. `receiverName` 의미
 
 - 현재 근거: `FriendServiceImpl`은 `receiverName`의 각 문자열을 사용자 이름 검색에 넣고 첫 결과를 receiver로 사용한다.
-- 프론트 영향: payload 타입은 확정됐지만 표시 이름이 중복되면 잘못된 사용자가 선택될 수 있어 신규 초대 전송을 안전하게 완료할 수 없다.
+- 프론트 영향: payload 타입은 확정됐지만 표시 이름이 중복되면 화면에서 선택한 사용자와 다른 사용자가 초대될 수 있다.
 - 확인 질문: receiver를 고유 user id로 바꾸거나 exact unique name을 보장할지 백엔드 결정이 필요하다.
-- 프론트 반영: 요청 DTO는 표시 이름 배열로 유지하되, 중복 이름 정책이 해결되기 전 실제 전송 화면 연결은 보류한다.
+- 프론트 반영: 사용자 결정에 따라 #243에서 표시 이름 배열 전송을 화면에 연결했다. 오초대·부분 성공 위험과 중단 조건은 `docs/accepted-implementation-risks.md`에서 추적한다.
 - 답변: 현재 구현은 사용자 표시 이름 배열이며 부분 검색 결과의 첫 사용자를 선택한다.
 - 상태: Answered
 

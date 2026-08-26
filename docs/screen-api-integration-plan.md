@@ -30,7 +30,7 @@
 | P2 | Plant 핵심 동선 | 목록, 상세, 생성, 수정 API와 각 화면 상태 연결 | #229, #231 병합 완료 |
 | P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | #237 / PR #238 병합 완료, 이미지 파일 선택 정책과 분리 |
 | P4 | Place 목록·상세 | Home 장소 목록, 상세 owner·멤버·식물 실데이터 연결 | #239 / PR #240 병합 완료 |
-| P5 | Friend 수신 요청 | 요청 목록, 수락, 거절 API와 화면 상태 연결 | #241 / PR #242 In Review |
+| P5 | Friend 수신 요청 | 요청 목록, 수락, 거절 API와 화면 상태 연결 | #241 / PR #242 병합 완료 |
 | 보류 | Image, Memo | 성공 response 또는 endpoint가 불충분한 영역 | 백엔드 확인 필요 |
 
 P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기준으로 했습니다. #239는 live Swagger에 누락된 Place schema를 백엔드 main `7d572cb`의 Controller·DTO와 대조해 목록·상세 응답 계약을 연결했고, #241은 같은 source에서 확인한 Friend 수신 요청 계약을 화면까지 연결합니다.
@@ -44,9 +44,9 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Home | Home `/` | User·Place·Plant 목록과 Friend 수신 요청 수 API 모드 연결 | 배지 조회 실패 표현 고도화 | Friend 요청 목록 source 계약 #241 반영 | #232, #239, #241 연결 |
 | User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴 Controller와 세 화면 연결 | 실제 이미지 파일 선택, 알림 설정 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 / PR #238 병합 완료 |
 | Place | 장소 친구 요청 | API 목록·프로필·loading/empty/error와 수락·거절 연결, fixture 모드 유지 | 원격 인증 smoke | `GET /friends/requests`, `POST /friends/accept`, `POST /friends/decline` #241 반영 | #241 연결 |
-| Place | 장소 등록 | 이름·주소 create API와 생성 code·친구 추가 route 문맥 연결 | 실제 이미지, 친구 요청 submit | 생성 result code #243 반영, receiver 이름 중복 정책 필요 | #243 연결 |
+| Place | 장소 등록 | 이름·주소 create API, 생성 code, 친구 추가 route와 요청 submit 연결 | 실제 이미지 | 생성 result code #243 반영, 이름 기반 요청 위험 수용 | #243 연결 |
 | Place | 주소 검색 | fixture 검색 | 검색 adapter와 선택 결과 | 백엔드 endpoint 또는 외부 주소 서비스 결정 필요 | 보류 |
-| Place | 장소 등록 중 친구 추가 | User 검색과 생성된 place code route 문맥 연결 | 선택 사용자 요청 submit, 장소 초대와 친구 요청 관계 | `GET /users/{keyword}`, `POST /friends/request`; 동명이인 정책 필요 | #243 문맥 연결, submit 제한 |
+| Place | 장소 등록 중 친구 추가 | User 검색, 생성된 place code, 선택 사용자 요청 submit 연결 | 고유 사용자 식별자와 대상별 결과 검증 | `GET /users/{keyword}`, `POST /friends/request`; 동명이인 위험은 별도 등록 | #243 위험 수용 연결 |
 | Place | 장소 수정 | 상세 조회·update API와 typed 수정 결과 연결 | image key/file | source update result #243 반영, 상세에는 image key 미제공 | #243 연결 |
 | Place | 장소 상세 | API 장소·owner·멤버·식물 연결, fixture 병합 제거 | 서버 미제공 환경 수치와 물주기 액션 | `GET /place/{code}` source 계약 #239 반영 | #239 / PR #240 병합 완료 |
 | Place | 친구 관리 | fixture 검색·선택·삭제 | 멤버 목록 조회, 추가·삭제 submit | `{ name, image }[]` 확인, 고유 member id와 변경 endpoint 없음 | 보류 |
@@ -131,8 +131,11 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
   전달합니다.
 - 수정 성공은 서버가 반환한 canonical code를 보존하고 기존 목록·상세 Provider
   invalidate 정책을 유지합니다.
-- 실제 친구 요청 전송, 주소 검색 adapter와 이미지 선택은 정책·endpoint가
-  준비될 때까지 분리합니다.
+- 선택한 프로필의 표시 이름과 생성된 place code로 `POST /friends/request`를
+  호출하고 전송 중 중복 submit과 실패 재시도를 처리합니다.
+- 이름 기반 오초대와 일괄 요청의 부분 성공 위험은
+  `docs/accepted-implementation-risks.md`에 수용 상태와 중단 조건을 기록합니다.
+- 주소 검색 adapter와 이미지 선택은 정책·endpoint가 준비될 때까지 분리합니다.
 
 ## Friend 수신 요청 수직 슬라이스
 
@@ -149,8 +152,9 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
   동일한 미처리 요청 수로 갱신합니다.
 - API 비사용 모드는 Figma 처리 결과와 Android smoke를 위해 기존 fixture 흐름을
   유지합니다.
-- 신규 요청 전송은 표시 이름 부분 검색의 첫 결과를 사용하는 서버 정책 때문에
-  동명이인 오초대 위험이 남아 있어 연결하지 않습니다.
+- 신규 요청 전송은 #243에서 우선 연결했습니다. 표시 이름 부분 검색의 첫 결과를
+  사용하는 서버 정책으로 인한 오초대 위험은 해결되지 않았으며 별도 위험 등록부의
+  `FRIEND-RISK-01`로 추적합니다.
 
 ## 완료 기준
 
@@ -182,6 +186,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #241 | - | API 문서 상태와 전체 검증 이력 갱신 | format 289개, analyze, 전체 test 332개·기존 skip 1개 |
 | #243 | `c5fbca2` | Place 생성 code·수정 요약 mapper와 typed repository | Place data test 18개 |
 | #243 | `d38e031` | Form 결과와 친구 추가 route의 place code 전달 | 관련 test 19개 |
-| #243 | - | OpenAPI 재확인과 전체 검증 이력 갱신 | format 289개, analyze, 전체 test 337개·기존 skip 1개 |
+| #243 | `3b2198c` | 선택 친구 이름과 place code 요청 submit, 중복 전송·실패 처리 | Controller·widget test 14개 |
+| #243 | - | OpenAPI 재확인, 위험 수용 기록과 전체 검증 이력 갱신 | format 291개, analyze, 전체 test 344개·기존 skip 1개 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.
