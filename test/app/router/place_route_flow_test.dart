@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/app/router/app_router.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
+import 'package:commonplant_frontend/features/place/presentation/pages/place_friend_add_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -36,6 +37,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('친구 추가'), findsOneWidget);
+    expect(
+      tester
+          .widget<PlaceFriendAddPage>(find.byType(PlaceFriendAddPage))
+          .placeCode,
+      'place-1',
+    );
 
     await tester.ensureVisible(find.text('완료'));
     await tester.tap(find.text('완료'));
@@ -116,6 +123,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('친구 추가'), findsOneWidget);
+    expect(
+      tester
+          .widget<PlaceFriendAddPage>(find.byType(PlaceFriendAddPage))
+          .placeCode,
+      'place-1',
+    );
     expect(find.text('닉네임 검색'), findsOneWidget);
     expect(find.text('커먼 파파'), findsNothing);
 

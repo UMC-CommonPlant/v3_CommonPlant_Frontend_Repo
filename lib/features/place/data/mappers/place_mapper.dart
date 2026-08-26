@@ -24,6 +24,24 @@ List<PlaceSummary> placeSummariesFromResponse(Object? data) {
   return [for (final item in items) placeSummaryFromJson(item)];
 }
 
+String placeCodeFromCreateResponse(Object? data) {
+  final response = jsonObjectFromResponse(data, context: '장소 생성');
+  final result = response['result'];
+
+  if (result is String && result.trim().isNotEmpty) {
+    return result.trim();
+  }
+
+  throw const ApiException(message: '장소 생성 응답에 장소 코드가 없습니다.');
+}
+
+PlaceSummary updatedPlaceFromResponse(
+  Object? data, {
+  required String fallbackCode,
+}) {
+  return placeSummaryFromResponse(data, fallbackId: fallbackCode);
+}
+
 PlaceSummary placeSummaryFromResponse(
   Object? data, {
   required String fallbackId,

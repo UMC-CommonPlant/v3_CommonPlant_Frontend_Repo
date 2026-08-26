@@ -18,14 +18,16 @@ final placeFormControllerProvider = NotifierProvider.autoDispose
 enum PlaceFormSubmitDestination { home, friendAdd }
 
 class PlaceFormSubmitResult {
-  const PlaceFormSubmitResult._(this.destination);
+  const PlaceFormSubmitResult._(this.destination, this.placeCode);
 
-  const PlaceFormSubmitResult.home() : this._(PlaceFormSubmitDestination.home);
+  const PlaceFormSubmitResult.home(String placeCode)
+    : this._(PlaceFormSubmitDestination.home, placeCode);
 
-  const PlaceFormSubmitResult.friendAdd()
-    : this._(PlaceFormSubmitDestination.friendAdd);
+  const PlaceFormSubmitResult.friendAdd(String placeCode)
+    : this._(PlaceFormSubmitDestination.friendAdd, placeCode);
 
   final PlaceFormSubmitDestination destination;
+  final String placeCode;
 }
 
 class PlaceFormController extends Notifier<PlaceFormState> {
@@ -129,34 +131,38 @@ class PlaceFormController extends Notifier<PlaceFormState> {
   Future<PlaceFormSubmitResult> _create() async {
     final name = state.currentName.trim();
     final address = _normalizeAddress(state.currentAddress);
+    final String placeCode;
 
     if (ref.read(useRemoteApiProvider)) {
       final requiredAddress = _requiredAddress(address);
 
-      await ref
+      placeCode = await ref
           .read(placeRepositoryProvider)
           .createPlace(name: name, address: requiredAddress);
       ref.invalidate(remotePlaceListProvider);
     } else {
-      ref
+      placeCode = ref
           .read(placeListProvider.notifier)
-          .addPlace(name: name, address: address);
+          .addPlace(name: name, address: address)
+          .id;
     }
 
-    return const PlaceFormSubmitResult.friendAdd();
+    return PlaceFormSubmitResult.friendAdd(placeCode);
   }
 
   Future<PlaceFormSubmitResult> _update() async {
     final placeId = state.placeId!;
     final name = state.currentName.trim();
     final address = _normalizeAddress(state.currentAddress);
+    var resultPlaceCode = placeId;
 
     if (ref.read(useRemoteApiProvider)) {
       final requiredAddress = _requiredAddress(address);
 
-      await ref
+      final updatedPlace = await ref
           .read(placeRepositoryProvider)
           .updatePlace(code: placeId, name: name, address: requiredAddress);
+      resultPlaceCode = updatedPlace.id;
       ref.invalidate(placeDetailProvider(placeId));
       ref.invalidate(placeSummaryProvider(placeId));
       ref.invalidate(remotePlaceListProvider);
@@ -167,7 +173,7 @@ class PlaceFormController extends Notifier<PlaceFormState> {
           .updatePlace(id: placeId, name: name, address: address);
     }
 
-    return const PlaceFormSubmitResult.home();
+    return PlaceFormSubmitResult.home(resultPlaceCode);
   }
 }
 

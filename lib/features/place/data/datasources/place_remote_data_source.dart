@@ -11,9 +11,12 @@ abstract interface class PlaceRemoteDataSource {
 
   Future<Object?> getPlace(String code);
 
-  Future<void> createPlace(CreatePlaceRequest request, {MultipartFile? image});
+  Future<Object?> createPlace(
+    CreatePlaceRequest request, {
+    MultipartFile? image,
+  });
 
-  Future<void> updatePlace({
+  Future<Object?> updatePlace({
     required String code,
     required UpdatePlaceRequest request,
     MultipartFile? image,
@@ -61,12 +64,12 @@ class DioPlaceRemoteDataSource implements PlaceRemoteDataSource {
   }
 
   @override
-  Future<void> createPlace(
+  Future<Object?> createPlace(
     CreatePlaceRequest request, {
     MultipartFile? image,
   }) async {
     try {
-      await _dio.post<Object?>(
+      final response = await _dio.post<Object?>(
         '/place/create',
         data: FormData.fromMap({
           'place': MultipartFile.fromString(
@@ -76,19 +79,21 @@ class DioPlaceRemoteDataSource implements PlaceRemoteDataSource {
           if (image != null) 'image': image,
         }),
       );
+
+      return response.data;
     } on DioException catch (error) {
       throw ApiException.fromDio(error);
     }
   }
 
   @override
-  Future<void> updatePlace({
+  Future<Object?> updatePlace({
     required String code,
     required UpdatePlaceRequest request,
     MultipartFile? image,
   }) async {
     try {
-      await _dio.put<Object?>(
+      final response = await _dio.put<Object?>(
         '/place/update/$code',
         data: FormData.fromMap({
           'place': MultipartFile.fromString(
@@ -98,6 +103,8 @@ class DioPlaceRemoteDataSource implements PlaceRemoteDataSource {
           if (image != null) 'image': image,
         }),
       );
+
+      return response.data;
     } on DioException catch (error) {
       throw ApiException.fromDio(error);
     }

@@ -23,7 +23,7 @@
 | PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 API mode에서 member 나가기 action 숨김 | Blocked |
 | FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | 요청 목록 수직 슬라이스 진행 가능 | Answered |
 | FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | 성공 result 확인, invalidate 정책은 화면 작업에서 결정 | Answered |
-| FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | 표시 이름 사용 확인, 중복 이름 오매칭 위험은 백엔드 확인 필요 | Answered |
+| FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | #243에서 위험 수용 후 연결, 고유 ID 전환 필요 | Answered |
 | FRIEND-04 | Friend | `friendDecisionReq.friendId`는 요청 id인가, 사용자 id인가? | 요청 PK 사용 확인, 수락·거절 연결 가능 | Answered |
 | IMAGE-01 | Image | `/s3/images` upload/download/update/delete 성공 response schema는 무엇인가? | image key/url mapper 보류 | Open |
 | IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | 프로필/장소/식물/메모 이미지 흐름 확정 불가 | Open |
@@ -82,10 +82,11 @@
 
 ### PLACE-01. Place 성공 response body 구조
 
-- 현재 근거: 2026-08-25 dev Swagger의 machine-readable schema는 여전히 없지만, 백엔드 `7d572cb`의 `PlaceController`와 `PlaceDto`가 각 성공 응답을 `JsonResponse.result`로 반환한다.
+- 현재 근거: 2026-08-26 dev Swagger의 machine-readable schema는 여전히 없지만, 백엔드 `7d572cb`의 `PlaceController`와 `PlaceDto`가 각 성공 응답을 `JsonResponse.result`로 반환한다.
 - 프론트 영향: 조회 mapper를 실제 필드로 좁힐 수 있고 생성 code, 수정 결과, 삭제 null 계약을 구분할 수 있다.
 - 확인 질문: 해결됨. 단, dev 배포와 백엔드 main commit의 동기화는 실제 인증 smoke 전까지 별도 검증한다.
-- 프론트 반영: #239에서 목록·상세 응답을 실제 도메인 모델로 연결했다. 생성 code와 수정 결과 소비는 친구 추가·수정 후속 이슈에서 연결한다.
+- 프론트 반영: #239에서 목록·상세 응답을 연결했고, #243에서 생성 code와
+  수정 결과를 typed repository·Form 결과·친구 추가 route 문맥에 연결했다.
 - 답변: 생성은 place code 문자열, 상세는 `getPlaceRes`, 수정은 `updatePlaceRes`, 삭제는 null이며 모두 공통 `JsonResponse.result`에 담긴다.
 - 상태: Answered
 
@@ -151,9 +152,9 @@
 ### FRIEND-03. `receiverName` 의미
 
 - 현재 근거: `FriendServiceImpl`은 `receiverName`의 각 문자열을 사용자 이름 검색에 넣고 첫 결과를 receiver로 사용한다.
-- 프론트 영향: payload 타입은 확정됐지만 표시 이름이 중복되면 잘못된 사용자가 선택될 수 있어 신규 초대 전송을 안전하게 완료할 수 없다.
+- 프론트 영향: payload 타입은 확정됐지만 표시 이름이 중복되면 화면에서 선택한 사용자와 다른 사용자가 초대될 수 있다.
 - 확인 질문: receiver를 고유 user id로 바꾸거나 exact unique name을 보장할지 백엔드 결정이 필요하다.
-- 프론트 반영: 요청 DTO는 표시 이름 배열로 유지하되, 중복 이름 정책이 해결되기 전 실제 전송 화면 연결은 보류한다.
+- 프론트 반영: 사용자 결정에 따라 #243에서 표시 이름 배열 전송을 화면에 연결했다. 오초대·부분 성공 위험과 중단 조건은 `docs/accepted-implementation-risks.md`에서 추적한다.
 - 답변: 현재 구현은 사용자 표시 이름 배열이며 부분 검색 결과의 첫 사용자를 선택한다.
 - 상태: Answered
 

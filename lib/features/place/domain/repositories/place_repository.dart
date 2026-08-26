@@ -10,9 +10,9 @@ abstract interface class PlaceRepository {
 
   Future<PlaceDetail> fetchPlaceDetail(String code);
 
-  Future<void> createPlace({required String name, required String address});
+  Future<String> createPlace({required String name, required String address});
 
-  Future<void> updatePlace({
+  Future<PlaceSummary> updatePlace({
     required String code,
     required String name,
     required String address,

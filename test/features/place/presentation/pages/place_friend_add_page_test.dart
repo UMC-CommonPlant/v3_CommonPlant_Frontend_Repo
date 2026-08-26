@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/friend/data/datasources/friend_remote_data_source.dart';
+import 'package:commonplant_frontend/features/friend/data/dtos/friend_requests.dart';
+import 'package:commonplant_frontend/features/friend/data/repositories/friend_repository.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_friend_add_page.dart';
 import 'package:commonplant_frontend/features/user/data/datasources/user_remote_data_source.dart';
 import 'package:commonplant_frontend/features/user/data/repositories/user_repository.dart';
@@ -9,6 +12,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   testWidgets('친구 추가 기본 화면은 검색 전 결과 없이 액션을 표시한다', (WidgetTester tester) async {
@@ -138,6 +142,55 @@ void main() {
     );
     expect(find.byIcon(Icons.check_circle), findsOneWidget);
   });
+
+  testWidgets('완료하면 선택한 친구 이름과 장소 코드로 요청하고 홈으로 이동한다', (
+    WidgetTester tester,
+  ) async {
+    final repository = _RecordingFriendRepository();
+    final harness = _friendAddRemoteRouterApp(
+      userRepository: _StaticUserRepository(const [
+        UserProfile(id: 'user-1', name: '커먼맘'),
+      ]),
+      friendRepository: repository,
+      placeCode: 'place-code',
+    );
+    addTearDown(harness.router.dispose);
+    await tester.pumpWidget(harness.app);
+
+    await tester.enterText(find.byType(TextField), '커먼');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('커먼맘'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('완료'));
+    await tester.pumpAndSettle();
+
+    expect(repository.latestRequest?.receiverNames, ['커먼맘']);
+    expect(repository.latestRequest?.placeCode, 'place-code');
+    expect(find.text('홈 완료'), findsOneWidget);
+  });
+
+  testWidgets('건너뛰기는 선택 항목을 전송하지 않고 홈으로 이동한다', (WidgetTester tester) async {
+    final repository = _RecordingFriendRepository();
+    final harness = _friendAddRemoteRouterApp(
+      userRepository: _StaticUserRepository(const [
+        UserProfile(id: 'user-1', name: '커먼맘'),
+      ]),
+      friendRepository: repository,
+      placeCode: 'place-code',
+    );
+    addTearDown(harness.router.dispose);
+    await tester.pumpWidget(harness.app);
+
+    await tester.enterText(find.byType(TextField), '커먼');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('커먼맘'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('건너뛰기'));
+    await tester.pumpAndSettle();
+
+    expect(repository.latestRequest, isNull);
+    expect(find.text('홈 완료'), findsOneWidget);
+  });
 }
 
 Widget _friendAddApp() {
@@ -151,6 +204,38 @@ Widget _friendAddRemoteApp(UserRepository repository) {
       userRepositoryProvider.overrideWithValue(repository),
     ],
     child: const MaterialApp(home: PlaceFriendAddPage()),
+  );
+}
+
+({GoRouter router, Widget app}) _friendAddRemoteRouterApp({
+  required UserRepository userRepository,
+  required FriendRepository friendRepository,
+  required String? placeCode,
+}) {
+  final router = GoRouter(
+    initialLocation: '/friends',
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const Scaffold(body: Text('홈 완료')),
+      ),
+      GoRoute(
+        path: '/friends',
+        builder: (context, state) => PlaceFriendAddPage(placeCode: placeCode),
+      ),
+    ],
+  );
+
+  return (
+    router: router,
+    app: ProviderScope(
+      overrides: [
+        useRemoteApiProvider.overrideWithValue(true),
+        userRepositoryProvider.overrideWithValue(userRepository),
+        friendRepositoryProvider.overrideWithValue(friendRepository),
+      ],
+      child: MaterialApp.router(routerConfig: router),
+    ),
   );
 }
 
@@ -191,5 +276,16 @@ class _RetryUserRepository extends UserRepository {
     }
 
     return const [UserProfile(id: 'user-1', name: '커먼맘')];
+  }
+}
+
+class _RecordingFriendRepository extends FriendRepository {
+  _RecordingFriendRepository() : super(FriendRemoteDataSource(Dio()));
+
+  SendFriendRequest? latestRequest;
+
+  @override
+  Future<void> sendRequest(SendFriendRequest request) async {
+    latestRequest = request;
   }
 }

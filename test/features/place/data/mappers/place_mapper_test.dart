@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/features/place/data/mappers/place_mapper.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -52,6 +53,37 @@ void main() {
 
       expect(summary.id, 'fallback-place');
       expect(summary.name, '루프탑');
+    });
+  });
+
+  group('place form responses', () {
+    test('장소 생성 wrapper의 result 문자열을 place code로 만든다', () {
+      final code = placeCodeFromCreateResponse({'result': '  Abc123  '});
+
+      expect(code, 'Abc123');
+    });
+
+    test('장소 생성 result가 비어 있으면 ApiException을 던진다', () {
+      expect(
+        () => placeCodeFromCreateResponse({'result': ''}),
+        throwsA(isA<ApiException>()),
+      );
+    });
+
+    test('장소 수정 wrapper를 수정된 장소 요약으로 만든다', () {
+      final place = updatedPlaceFromResponse({
+        'result': {
+          'code': 'Abc123',
+          'name': '루프탑',
+          'address': '서울시 성북구',
+          'imgUrl': 'https://example.com/place.png',
+        },
+      }, fallbackCode: 'fallback');
+
+      expect(place.id, 'Abc123');
+      expect(place.name, '루프탑');
+      expect(place.address, '서울시 성북구');
+      expect(place.imageUrl, 'https://example.com/place.png');
     });
   });
 
