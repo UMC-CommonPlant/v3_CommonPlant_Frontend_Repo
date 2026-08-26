@@ -29,11 +29,11 @@
 | P1 | Home 초기 데이터 | 인증 사용자 정보와 장소·식물 요약을 화면 상태로 연결 | #232 / PR #233 병합 완료 |
 | P2 | Plant 핵심 동선 | 목록, 상세, 생성, 수정 API와 각 화면 상태 연결 | #229, #231 병합 완료 |
 | P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | #237 / PR #238 병합 완료, 이미지 파일 선택 정책과 분리 |
-| P4 | Place 목록·상세 | Home 장소 목록, 상세 owner·멤버·식물 실데이터 연결 | #239 진행 중 |
-| P5 후보 | Friend 요청 | 요청 목록, 수락, 거절 API와 화면 상태 연결 | 백엔드 source 계약 확인, #239 이후 진행 가능 |
+| P4 | Place 목록·상세 | Home 장소 목록, 상세 owner·멤버·식물 실데이터 연결 | #239 / PR #240 병합 완료 |
+| P5 | Friend 수신 요청 | 요청 목록, 수락, 거절 API와 화면 상태 연결 | #241 / PR #242 In Review |
 | 보류 | Image, Memo | 성공 response 또는 endpoint가 불충분한 영역 | 백엔드 확인 필요 |
 
-P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기준으로 했습니다. #239는 live Swagger에 누락된 Place schema를 백엔드 main `7d572cb`의 Controller·DTO와 대조해 목록·상세 응답 계약을 확인한 뒤 후속 연결합니다.
+P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기준으로 했습니다. #239는 live Swagger에 누락된 Place schema를 백엔드 main `7d572cb`의 Controller·DTO와 대조해 목록·상세 응답 계약을 연결했고, #241은 같은 source에서 확인한 Friend 수신 요청 계약을 화면까지 연결합니다.
 
 ## 화면 연결 매트릭스
 
@@ -41,14 +41,14 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 | 도메인 | 화면·route | 현재 상태 | 남은 연결 | API·선행 조건 | 판정 |
 | --- | --- | --- | --- | --- | --- |
-| Home | Home `/` | User·Place·Plant 목록 API 모드 연결, Place 대표 이미지 표시 | 초대 수 API 연결, 목록 재시도 정책 | Friend 요청 목록 source 계약 확인 | #232, #239 연결 |
+| Home | Home `/` | User·Place·Plant 목록과 Friend 수신 요청 수 API 모드 연결 | 배지 조회 실패 표현 고도화 | Friend 요청 목록 source 계약 #241 반영 | #232, #239, #241 연결 |
 | User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴 Controller와 세 화면 연결 | 실제 이미지 파일 선택, 알림 설정 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 / PR #238 병합 완료 |
-| Place | 장소 친구 요청 | fixture 목록과 로컬 수락·거절 | 목록 DTO, loading/empty/error, 수락·거절 submit | backend source에서 `requests[]`, 요청 PK, accept/decline null result 확인 | P5 후보 |
+| Place | 장소 친구 요청 | API 목록·프로필·loading/empty/error와 수락·거절 연결, fixture 모드 유지 | 원격 인증 smoke | `GET /friends/requests`, `POST /friends/accept`, `POST /friends/decline` #241 반영 | #241 연결 |
 | Place | 장소 등록 | 이름·주소 create API 연결 | 생성된 place code 소비, 실제 이미지, 친구 추가 후속 흐름 | source에서 생성 result code 확인, receiver 이름 중복 정책 필요 | 부분 연결 |
 | Place | 주소 검색 | fixture 검색 | 검색 adapter와 선택 결과 | 백엔드 endpoint 또는 외부 주소 서비스 결정 필요 | 보류 |
 | Place | 장소 등록 중 친구 추가 | User 검색만 API 모드 연결 | 선택 사용자 요청 submit, 장소 초대와 친구 요청 관계 | `GET /users/{keyword}`, `POST /friends/request`; 도메인 관계 확인 | 제한 |
 | Place | 장소 수정 | 상세 조회와 update API 연결 | image key/file, 수정 결과 즉시 반영 | source에서 update result 확인, 상세에는 image key 미제공 | 부분 연결 |
-| Place | 장소 상세 | API 장소·owner·멤버·식물 연결, fixture 병합 제거 | 서버 미제공 환경 수치와 물주기 액션 | `GET /place/{code}` source 계약 #239 반영 | #239 진행 중 |
+| Place | 장소 상세 | API 장소·owner·멤버·식물 연결, fixture 병합 제거 | 서버 미제공 환경 수치와 물주기 액션 | `GET /place/{code}` source 계약 #239 반영 | #239 / PR #240 병합 완료 |
 | Place | 친구 관리 | fixture 검색·선택·삭제 | 멤버 목록 조회, 추가·삭제 submit | `{ name, image }[]` 확인, 고유 member id와 변경 endpoint 없음 | 보류 |
 | Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
 | Plant | 식물 등록 검색 | fixture 검색 | 실제 검색 모델과 상태 | 식물 종 검색 endpoint 필요 | 보류 |
@@ -117,6 +117,24 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 - 구성원 leave endpoint가 없어 API 모드의 구성원에게는 동작하지 않는 나가기 action을 노출하지 않습니다.
 - API 비사용 모드는 Android smoke와 화면 개발을 위해 기존 fixture 흐름을 유지합니다.
 
+## Friend 수신 요청 수직 슬라이스
+
+#241은 백엔드 main `7d572cb`에서 확인한 Friend 요청 계약을 typed entity와
+장소 친구 요청 화면에 연결합니다.
+
+- `GET /friends/requests`의 `result.requests`를 요청 PK, 발신자 프로필,
+  장소 code·이름·주소, 상태를 가진 `FriendInvitation`으로 변환합니다.
+- 요청 화면은 API 모드에서 loading·empty·error·success를 구분하고 조회 오류의
+  재시도 action을 제공합니다.
+- 수락·거절은 목록의 `friendId`를 `POST /friends/accept` 또는
+  `POST /friends/decline`에 전달하며 항목별 중복 submit을 막습니다.
+- 성공한 원격 요청은 화면에서 제거하고 목록을 invalidate하며, Home 요청 배지도
+  동일한 미처리 요청 수로 갱신합니다.
+- API 비사용 모드는 Figma 처리 결과와 Android smoke를 위해 기존 fixture 흐름을
+  유지합니다.
+- 신규 요청 전송은 표시 이름 부분 검색의 첫 결과를 사용하는 서버 정책 때문에
+  동명이인 오초대 위험이 남아 있어 연결하지 않습니다.
+
 ## 완료 기준
 
 각 수직 슬라이스는 아래 항목을 모두 충족해야 완료로 판단합니다.
@@ -141,5 +159,9 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #237 | `3063230` | Figma frame map, route, Swagger 연결 상태와 User 구현 경계 문서화 | `git diff --check` |
 | #239 | `893d201` | Place 목록·상세 모델, mapper, Provider와 remote 실데이터 UI 연결 | Place test 81개, analyze |
 | #239 | `7ac4bc1` | owner 전체 삭제와 구성원 나가기 미지원 경계 분리 | format 286개, analyze, 전체 test 321개·기존 skip 1개 |
+| #241 | `24079a6` | Friend 요청 entity·mapper와 typed repository 연결 | Friend data test 13개 |
+| #241 | `a1761a8` | 요청 상태·수락·거절과 Home 동적 요청 수 연결 | Provider·Home test 9개 |
+| #241 | `0141f74` | 요청 화면 loading·empty·error·submit UI 연결 | 관련 test 17개, analyze |
+| #241 | - | API 문서 상태와 전체 검증 이력 갱신 | format 289개, analyze, 전체 test 332개·기존 skip 1개 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.

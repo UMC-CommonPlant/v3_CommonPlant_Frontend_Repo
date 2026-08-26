@@ -1,6 +1,8 @@
 import 'package:commonplant_frontend/core/network/api_client.dart';
 import 'package:commonplant_frontend/features/friend/data/datasources/friend_remote_data_source.dart';
 import 'package:commonplant_frontend/features/friend/data/dtos/friend_requests.dart';
+import 'package:commonplant_frontend/features/friend/data/mappers/friend_mapper.dart';
+import 'package:commonplant_frontend/features/friend/domain/entities/friend_invitation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final friendRemoteDataSourceProvider = Provider<FriendRemoteDataSource>((ref) {
@@ -16,8 +18,10 @@ class FriendRepository {
 
   final FriendRemoteDataSource _remoteDataSource;
 
-  Future<Object?> fetchRequestsRaw() {
-    return _remoteDataSource.getRequestsRaw();
+  Future<List<FriendInvitation>> fetchRequests() async {
+    final data = await _remoteDataSource.getRequestsRaw();
+
+    return friendInvitationsFromResponse(data);
   }
 
   Future<void> sendRequest(SendFriendRequest request) {

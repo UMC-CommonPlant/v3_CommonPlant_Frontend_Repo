@@ -6,20 +6,33 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('FriendRepository', () {
-    test('친구 요청 목록 raw 응답은 datasource 값 그대로 반환한다', () async {
+    test('친구 요청 목록 응답을 typed entity로 변환한다', () async {
       final dataSource = _RecordingFriendRemoteDataSource(
         requestsRawResponse: const {
           'success': true,
-          'result': [
-            {'friendId': 1},
-          ],
+          'result': {
+            'requests': [
+              {
+                'friendId': 1,
+                'senderName': '커먼맘',
+                'senderImgUrl': null,
+                'placeCode': 'place-code',
+                'placeName': '거실 정원',
+                'placeAddress': '서울시 노원구',
+                'status': 'PENDING',
+              },
+            ],
+          },
         },
       );
       final repository = FriendRepository(dataSource);
 
-      final response = await repository.fetchRequestsRaw();
+      final response = await repository.fetchRequests();
 
-      expect(response, same(dataSource.requestsRawResponse));
+      expect(response, hasLength(1));
+      expect(response.single.id, 1);
+      expect(response.single.senderName, '커먼맘');
+      expect(response.single.placeCode, 'place-code');
     });
 
     test('친구 요청 전송은 datasource에 request를 위임한다', () async {
