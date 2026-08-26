@@ -40,35 +40,38 @@ class PlaceRepositoryImpl implements PlaceRepository {
   }
 
   @override
-  Future<void> createPlace({
+  Future<String> createPlace({
     required String name,
     required String address,
     MultipartFile? image,
-  }) {
+  }) async {
     final request = CreatePlaceRequest(name: name, address: address);
+    final data = await _remoteDataSource.createPlace(request, image: image);
 
-    return _remoteDataSource.createPlace(request, image: image);
+    return placeCodeFromCreateResponse(data);
   }
 
   @override
-  Future<void> updatePlace({
+  Future<PlaceSummary> updatePlace({
     required String code,
     required String name,
     required String address,
     String? imageKey,
     MultipartFile? image,
-  }) {
+  }) async {
     final request = UpdatePlaceRequest(
       name: name,
       address: address,
       imageKey: imageKey,
     );
 
-    return _remoteDataSource.updatePlace(
+    final data = await _remoteDataSource.updatePlace(
       code: code,
       request: request,
       image: image,
     );
+
+    return updatedPlaceFromResponse(data, fallbackCode: code);
   }
 
   @override

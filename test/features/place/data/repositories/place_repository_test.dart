@@ -63,12 +63,13 @@ void main() {
         filename: 'place.png',
       );
 
-      await repository.createPlace(
+      final code = await repository.createPlace(
         name: '거실',
         address: '서울시 성북구',
         image: image,
       );
 
+      expect(code, 'created-place');
       expect(dataSource.latestCreateImage, same(image));
       expect(dataSource.latestCreateRequest?.toJson(), {
         'name': '거실',
@@ -84,13 +85,16 @@ void main() {
         filename: 'place.png',
       );
 
-      await repository.updatePlace(
+      final place = await repository.updatePlace(
         code: 'place-1',
         name: '거실',
         address: '서울시 성북구',
         image: image,
       );
 
+      expect(place.id, 'place-1');
+      expect(place.name, '거실');
+      expect(place.imageUrl, 'https://example.com/place.png');
       expect(dataSource.latestUpdateImage, same(image));
       expect(dataSource.latestUpdateRequest?.toJson(), {
         'name': '거실',
@@ -122,21 +126,32 @@ class _ImagePlaceRemoteDataSource extends Fake
   MultipartFile? latestUpdateImage;
 
   @override
-  Future<void> createPlace(
+  Future<Object?> createPlace(
     CreatePlaceRequest request, {
     MultipartFile? image,
   }) async {
     latestCreateRequest = request;
     latestCreateImage = image;
+
+    return {'result': 'created-place'};
   }
 
   @override
-  Future<void> updatePlace({
+  Future<Object?> updatePlace({
     required String code,
     required UpdatePlaceRequest request,
     MultipartFile? image,
   }) async {
     latestUpdateRequest = request;
     latestUpdateImage = image;
+
+    return {
+      'result': {
+        'code': code,
+        'name': request.name,
+        'address': request.address,
+        'imgUrl': 'https://example.com/place.png',
+      },
+    };
   }
 }

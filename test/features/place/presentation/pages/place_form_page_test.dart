@@ -124,11 +124,11 @@ Widget _remotePlaceEditApp(PlaceRepository repository) {
 }
 
 class _PendingPlaceRepository extends Fake implements PlaceRepository {
-  final Completer<void> _completer = Completer<void>();
+  final Completer<String> _completer = Completer<String>();
   int createCalls = 0;
 
   @override
-  Future<void> createPlace({required String name, required String address}) {
+  Future<String> createPlace({required String name, required String address}) {
     createCalls++;
     return _completer.future;
   }
@@ -149,7 +149,7 @@ class _EditablePlaceRepository extends Fake implements PlaceRepository {
   }
 
   @override
-  Future<void> updatePlace({
+  Future<PlaceSummary> updatePlace({
     required String code,
     required String name,
     required String address,
@@ -159,5 +159,7 @@ class _EditablePlaceRepository extends Fake implements PlaceRepository {
     latestUpdateCode = code;
     latestUpdateName = name;
     latestUpdateAddress = address;
+
+    return PlaceSummary(id: code, name: name, address: address);
   }
 }

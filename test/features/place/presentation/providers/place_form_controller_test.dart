@@ -160,17 +160,19 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
   }
 
   @override
-  Future<void> createPlace({
+  Future<String> createPlace({
     required String name,
     required String address,
   }) async {
     createCalls++;
     latestCreateName = name;
     latestCreateAddress = address;
+
+    return 'created-place';
   }
 
   @override
-  Future<void> updatePlace({
+  Future<PlaceSummary> updatePlace({
     required String code,
     required String name,
     required String address,
@@ -180,5 +182,7 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
     latestUpdateCode = code;
     latestUpdateName = name;
     latestUpdateAddress = address;
+
+    return PlaceSummary(id: code, name: name, address: address);
   }
 }
