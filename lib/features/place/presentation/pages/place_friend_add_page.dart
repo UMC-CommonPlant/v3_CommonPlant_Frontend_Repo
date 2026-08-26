@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_friend_request_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_friend_selection_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_bottom_actions.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_candidate_list.dart';
@@ -33,13 +34,42 @@ class PlaceFriendAddPage extends ConsumerWidget {
     context.go(AppRoutePaths.home);
   }
 
-  void _complete(BuildContext context) {
+  void _finish(BuildContext context) {
     context.go(AppRoutePaths.home);
+  }
+
+  Future<void> _complete(
+    BuildContext context,
+    WidgetRef ref,
+    List<PlaceFriendProfile> friends,
+  ) async {
+    final succeeded = await ref
+        .read(placeFriendRequestControllerProvider.notifier)
+        .submit(placeCode: placeCode, friends: friends);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (succeeded) {
+      _finish(context);
+      return;
+    }
+
+    final errorMessage = ref
+        .read(placeFriendRequestControllerProvider)
+        .errorMessage;
+    if (errorMessage != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectionState = ref.watch(placeFriendSelectionControllerProvider);
+    final requestState = ref.watch(placeFriendRequestControllerProvider);
     final searchState = ref.watch(placeFriendSearchProvider);
     final controller = ref.read(
       placeFriendSelectionControllerProvider.notifier,
@@ -60,7 +90,9 @@ class PlaceFriendAddPage extends ConsumerWidget {
                   fontWeight: FontWeight.w700,
                 ),
                 trailing: _FriendAddSkipButton(
-                  onPressed: () => _complete(context),
+                  onPressed: requestState.isSubmitting
+                      ? null
+                      : () => _finish(context),
                 ),
               ),
               if (selectionState.selectedFriends.isNotEmpty)
@@ -83,7 +115,9 @@ class PlaceFriendAddPage extends ConsumerWidget {
               ),
               PlaceFriendBottomActions(
                 onCancel: () => _cancel(context),
-                onComplete: () => _complete(context),
+                onComplete: () =>
+                    _complete(context, ref, selectionState.selectedFriends),
+                isSubmitting: requestState.isSubmitting,
               ),
             ],
           ),
@@ -145,7 +179,7 @@ class _FriendCandidateResults extends StatelessWidget {
 class _FriendAddSkipButton extends StatelessWidget {
   const _FriendAddSkipButton({required this.onPressed});
 
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {

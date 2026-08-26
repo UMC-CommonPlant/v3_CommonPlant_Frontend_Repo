@@ -10,10 +10,12 @@ class PlaceFriendBottomActions extends StatelessWidget {
     super.key,
     required this.onCancel,
     required this.onComplete,
+    this.isSubmitting = false,
   });
 
   final VoidCallback onCancel;
   final VoidCallback onComplete;
+  final bool isSubmitting;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class PlaceFriendBottomActions extends StatelessWidget {
               size: CommonButtonSize.medium,
               backgroundColor: AppColors.textBody,
               foregroundColor: AppColors.white,
-              onPressed: onCancel,
+              onPressed: isSubmitting ? null : onCancel,
             ),
           ),
           const SizedBox(width: placeFriendActionGap),
@@ -42,7 +44,8 @@ class PlaceFriendBottomActions extends StatelessWidget {
               size: CommonButtonSize.medium,
               backgroundColor: AppColors.brandAccent,
               foregroundColor: AppColors.white,
-              onPressed: onComplete,
+              isLoading: isSubmitting,
+              onPressed: isSubmitting ? null : onComplete,
             ),
           ),
         ],
