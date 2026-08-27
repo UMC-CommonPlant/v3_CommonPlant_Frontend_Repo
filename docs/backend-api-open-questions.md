@@ -19,7 +19,7 @@
 | PLACE-01 | Place | Place 조회/생성/수정/삭제 성공 response body 구조는 무엇인가? | #239 목록·상세 반영, 생성·수정 결과 소비는 후속 | Answered |
 | PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | #239 목록·상세 mapper와 화면 반영 | Done |
 | PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | API 경계는 `code`, 기존 route 모델명은 `id` 유지 | Answered |
-| PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | 멤버 목록 계약 확인, 친구 관리 연결은 후속 | Answered |
+| PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #245 친구 관리 조회 연결, 멤버 변경은 별도 계약 필요 | Answered |
 | PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 API mode에서 member 나가기 action 숨김 | Blocked |
 | FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | 요청 목록 수직 슬라이스 진행 가능 | Answered |
 | FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | 성공 result 확인, invalidate 정책은 화면 작업에서 결정 | Answered |
@@ -113,7 +113,7 @@
 - 현재 근거: 백엔드 Controller는 `List<PlaceDto.getPlaceResUser>`를 `JsonResponse.result`로 반환한다.
 - 프론트 영향: 이름과 프로필 이미지는 연결할 수 있지만 member id, 역할, 가입일은 응답에 없어 삭제·권한 UI에 사용할 수 없다.
 - 확인 질문: 부분 해결됨. 멤버 변경 endpoint와 고유 member id가 필요하면 백엔드 확장이 필요하다.
-- 프론트 반영: #239 상세 화면은 `/place/{code}`에 포함된 동일 멤버 타입을 표시한다. 친구 관리 화면의 조회·변경은 후속 이슈로 남긴다.
+- 프론트 반영: #239 상세 화면은 `/place/{code}`에 포함된 동일 멤버 타입을 표시한다. #245는 2026-08-28 동일 source 계약을 재확인하고 친구 관리 조회·검색·이미지와 상태 UI를 연결했다. 변경 endpoint가 없어 API 모드의 추가·삭제는 제공하지 않는다.
 - 답변: 멤버 항목은 `{ name, image }`이며 가입 순서 배열이다.
 - 상태: Answered
 

@@ -20,7 +20,7 @@ class PlaceFriendCandidateList extends StatelessWidget {
 
   final List<PlaceFriendProfile> friends;
   final Set<String> selectedIds;
-  final ValueChanged<PlaceFriendProfile> onToggle;
+  final ValueChanged<PlaceFriendProfile>? onToggle;
   final double topPadding;
   final double bottomPadding;
 
@@ -41,7 +41,7 @@ class PlaceFriendCandidateList extends StatelessWidget {
         return _FriendCandidateTile(
           friend: friend,
           isSelected: isSelected,
-          onTap: () => onToggle(friend),
+          onTap: onToggle == null ? null : () => onToggle!(friend),
         );
       },
     );
@@ -57,14 +57,16 @@ class _FriendCandidateTile extends StatelessWidget {
 
   final PlaceFriendProfile friend;
   final bool isSelected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      button: true,
-      selected: isSelected,
-      label: '${friend.name} ${isSelected ? '선택됨' : '선택 안됨'}',
+      button: onTap != null,
+      selected: onTap == null ? null : isSelected,
+      label: onTap == null
+          ? friend.name
+          : '${friend.name} ${isSelected ? '선택됨' : '선택 안됨'}',
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -86,8 +88,10 @@ class _FriendCandidateTile extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.x16),
-              _FriendSelectionIcon(isSelected: isSelected),
+              if (onTap != null) ...[
+                const SizedBox(width: AppSpacing.x16),
+                _FriendSelectionIcon(isSelected: isSelected),
+              ],
             ],
           ),
         ),

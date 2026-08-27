@@ -12,6 +12,7 @@
 - OpenAPI JSON: https://commonplant-dev.okbear.dev/api/v1/api-docs/json
 - Swagger config: https://commonplant-dev.okbear.dev/api/v1/api-docs/json/swagger-config
 - 확인일: 2026-08-25
+- OpenAPI·Place 멤버 source 재확인: 2026-08-28 (19 paths·27 operations, backend main 동일)
 - 접속 결과: Swagger UI, OpenAPI JSON, Swagger config HTTP 200
 - 개발 서버 루트: HTTP 404. 루트 route가 없다는 의미이며 Swagger/API endpoint 상태와 분리한다.
 - 인증 endpoint 확인: token 없이 `GET /api/v1/users` 요청 시 HTTP 401, code `A009`로 인증 요구 응답
@@ -44,6 +45,13 @@
 - Place와 Friend는 백엔드 source의 `JsonResponse.result` 반환 타입을 추가 근거로 사용한다. machine-readable Swagger가 아니라는 점과 실제 인증 응답 smoke가 남았다는 점은 구분한다.
 
 ## Swagger 변경 요약
+
+### 2026-08-28 장소 멤버 조회 연결
+
+- live OpenAPI의 `GET /place/{code}/members` endpoint와 가입 순서 설명은 동일하다.
+- backend main `7d572cb`는 `JsonResponse.result`에 `{ name, image }[]`를 반환한다.
+- #245에서 typed 멤버 목록과 친구 관리 조회·검색·상태 UI를 연결했다.
+- 멤버 고유 ID·역할·변경 endpoint는 없어 API 화면은 조회 전용이다.
 
 ### 2026-08-25 live Swagger·백엔드 source 재확인
 
@@ -305,6 +313,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
   - `403`: 장소 접근 권한 없음
   - `404`: 장소 없음
 - 고유 member id와 역할은 제공되지 않으므로 멤버 변경·권한 UI에는 별도 endpoint 또는 응답 확장이 필요하다.
+- #245는 이름·이미지·가입 순서를 보존하는 typed 목록과 친구 관리 조회 전용 화면을 연결한다.
 
 #### POST `/place/create`
 
@@ -571,7 +580,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | 장소 친구 요청 | `/places/invitations` | `GET /friends/requests` | #241에서 `requests[]` typed mapper와 화면 상태 연결 |
 | 장소 친구 요청 | `/places/invitations` | `POST /friends/accept`, `POST /friends/decline` | #241에서 요청 PK submit·목록 갱신 연결 |
 | 장소 상세 | `/places/:placeId` | `GET /place/{code}` | #239에서 장소·owner·멤버·식물 실데이터 연결 |
-| 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members` | 이름·이미지 조회 가능, 고유 id와 멤버 변경 endpoint는 없음 |
+| 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members` | #245 실제 멤버·이미지 조회와 필터·상태 UI 연결, 변경 endpoint는 없음 |
 | 장소 수정 | `/places/:placeId/edit` | `PUT /place/update/{code}` | #243에서 수정 result를 typed 장소 요약으로 연결, image key 조회는 별도 확인 필요 |
 | 식물 등록 정보 입력 | `/plants/new/details` | `POST /plants` | `placeCode` 기준으로 현재 코드 DTO 수정 필요 |
 | 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}` | query parameter 제거 필요 |
@@ -637,6 +646,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: #239 remote 상세에서는 서버가 주지 않는 햇빛·습도와 fixture 멤버·식물을 표시하지 않는다.
 - 반영: #243에서 `POST /place/create`의 result 문자열을 place code로 파싱하고 친구 추가 route에 전달한다.
 - 반영: #243에서 `PUT /place/update/{code}`의 result를 typed `PlaceSummary`로 파싱한다.
+- 반영: #245에서 `GET /place/{code}/members`의 result 배열을 `PlaceMember`로 파싱하고 친구 관리 조회·검색에 연결했다. API 모드는 임시 렌더링 키를 사용자 ID로 사용하지 않고 멤버 변경을 제공하지 않는다.
 - 반영: #241에서 `GET /friends/requests`를 typed `FriendInvitation` 목록으로 파싱하고 Home 요청 수와 장소 친구 요청 화면에 연결했다.
 - 반영: #241에서 `POST /friends/accept`, `POST /friends/decline`을 항목별 submit 상태와 목록 invalidate 정책에 연결했다.
 - 반영: `POST /plants`와 `PUT /plants/{plantId}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
@@ -692,5 +702,6 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | #227 | `111373a`, `a065188`, `e9543fc` | Auth 세션과 social credential 경계, 로그인·회원가입 화면 submit, 인증 route redirect 연결 | format 270개 파일, analyze, 전체 test 280개 통과·기존 skip 1개 |
 | #241 | `24079a6`, `a1761a8`, `0141f74` | Friend 수신 요청 typed mapper, 수락·거절 상태, Home 요청 수와 화면 상태 연결 | format 289개 파일, analyze, 전체 test 332개 통과·기존 skip 1개 |
 | #243 | `c5fbca2`, `d38e031`, `3b2198c` | Place 생성 code·수정 요약, 친구 추가 route와 이름 기반 요청 submit 연결 | format 291개, analyze, 전체 test 344개 통과·기존 skip 1개 |
+| #245 | `b090581`, `8e46fd8` | 장소 멤버 typed 조회와 친구 관리 read-only·filter·상태 UI 연결 | format 294개, analyze, 전체 test 362개 통과·기존 skip 1개 |
 
 작업 이력만 갱신하는 후속 문서 커밋은 자기 자신의 해시를 생략할 수 있다.

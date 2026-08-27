@@ -96,6 +96,22 @@ PlaceMember placeMemberFromJson(JsonMap json) {
   );
 }
 
+List<PlaceMember> placeMembersFromResponse(Object? data) {
+  final response = jsonObjectFromResponse(data, context: '장소 멤버 조회');
+  final members = response['result'];
+
+  if (members is! List) {
+    throw const ApiException(message: '장소 멤버 조회 응답이 목록 형식이 아닙니다.');
+  }
+
+  return List.unmodifiable([
+    for (final (index, member) in members.indexed)
+      placeMemberFromJson(
+        _requireJsonMap(member, context: '장소 멤버 ${index + 1}번째 항목'),
+      ),
+  ]);
+}
+
 PlacePlant placePlantFromJson(JsonMap json) {
   return PlacePlant(
     id: readRequiredString(json, const ['plantId', 'id'], '장소 식물 ID'),

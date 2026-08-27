@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/friend_management_fixture.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,25 +13,28 @@ class FriendManagementState {
     required this.placeId,
     required this.query,
     required this.selectedIds,
+    required this.isReadOnly,
   });
 
   final String placeId;
   final String query;
   final Set<String> selectedIds;
+  final bool isReadOnly;
 
-  List<PlaceFriendProfile> get results {
+  List<PlaceFriendProfile> filter(List<PlaceFriendProfile> friends) {
     if (query.isEmpty) {
-      return friendManagementFixture;
+      return friends;
     }
 
     return List.unmodifiable(
-      friendManagementFixture.where((friend) => friend.name.contains(query)),
+      friends.where((friend) => friend.name.contains(query)),
     );
   }
 
-  List<PlaceFriendProfile> get selectedFriends => List.unmodifiable(
-    friendManagementFixture.where((friend) => selectedIds.contains(friend.id)),
-  );
+  List<PlaceFriendProfile> selectedFrom(List<PlaceFriendProfile> friends) =>
+      List.unmodifiable(
+        friends.where((friend) => selectedIds.contains(friend.id)),
+      );
 
   bool isSelected(String friendId) {
     return selectedIds.contains(friendId);
@@ -41,6 +45,7 @@ class FriendManagementState {
       placeId: placeId,
       query: query ?? this.query,
       selectedIds: selectedIds ?? this.selectedIds,
+      isReadOnly: isReadOnly,
     );
   }
 }
@@ -52,12 +57,17 @@ class FriendManagementController extends Notifier<FriendManagementState> {
 
   @override
   FriendManagementState build() {
+    final isReadOnly = ref.watch(useRemoteApiProvider);
+
     return FriendManagementState(
       placeId: placeId,
       query: '',
-      selectedIds: Set.unmodifiable(
-        friendManagementFixture.map((friend) => friend.id),
-      ),
+      selectedIds: isReadOnly
+          ? const {}
+          : Set.unmodifiable(
+              friendManagementFixture.map((friend) => friend.id),
+            ),
+      isReadOnly: isReadOnly,
     );
   }
 
@@ -66,7 +76,7 @@ class FriendManagementController extends Notifier<FriendManagementState> {
   }
 
   void select(PlaceFriendProfile friend) {
-    if (state.isSelected(friend.id)) {
+    if (state.isReadOnly || state.isSelected(friend.id)) {
       return;
     }
 
@@ -76,7 +86,7 @@ class FriendManagementController extends Notifier<FriendManagementState> {
   }
 
   void remove(PlaceFriendProfile friend) {
-    if (!state.isSelected(friend.id)) {
+    if (state.isReadOnly || !state.isSelected(friend.id)) {
       return;
     }
 

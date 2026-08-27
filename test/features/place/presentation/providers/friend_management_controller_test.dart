@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/friend_management_fixture.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/friend_management_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,8 +12,9 @@ void main() {
     final state = container.read(friendManagementControllerProvider('place-1'));
 
     expect(state.placeId, 'place-1');
-    expect(state.selectedFriends, hasLength(2));
-    expect(state.results, hasLength(2));
+    expect(state.selectedFrom(friendManagementFixture), hasLength(2));
+    expect(state.filter(friendManagementFixture), hasLength(2));
+    expect(state.isReadOnly, isFalse);
   });
 
   test('검색어로 친구 목록을 필터링한다', () {
@@ -22,8 +24,9 @@ void main() {
 
     container.read(provider.notifier).updateQuery('파파');
 
-    expect(container.read(provider).results, hasLength(1));
-    expect(container.read(provider).results.single.name, '커먼 파파');
+    final results = container.read(provider).filter(friendManagementFixture);
+    expect(results, hasLength(1));
+    expect(results.single.name, '커먼 파파');
   });
 
   test('친구를 삭제하고 다시 선택할 수 있다', () {
@@ -38,5 +41,20 @@ void main() {
 
     controller.select(friend);
     expect(container.read(provider).isSelected(friend.id), isTrue);
+  });
+
+  test('API 모드에서는 조회 전용이며 멤버 선택·삭제 상태를 만들지 않는다', () {
+    final container = ProviderContainer(
+      overrides: [useRemoteApiProvider.overrideWithValue(true)],
+    );
+    addTearDown(container.dispose);
+    final provider = friendManagementControllerProvider('place-1');
+    final controller = container.read(provider.notifier);
+
+    controller.select(friendManagementFixture.first);
+    controller.remove(friendManagementFixture.first);
+
+    expect(container.read(provider).isReadOnly, isTrue);
+    expect(container.read(provider).selectedIds, isEmpty);
   });
 }

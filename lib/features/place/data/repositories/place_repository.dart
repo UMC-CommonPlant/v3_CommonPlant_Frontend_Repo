@@ -40,6 +40,13 @@ class PlaceRepositoryImpl implements PlaceRepository {
   }
 
   @override
+  Future<List<PlaceMember>> fetchPlaceMembers(String code) async {
+    final data = await _remoteDataSource.getPlaceMembers(code);
+
+    return placeMembersFromResponse(data);
+  }
+
+  @override
   Future<String> createPlace({
     required String name,
     required String address,

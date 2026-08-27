@@ -31,6 +31,8 @@
 | P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | #237 / PR #238 병합 완료, 이미지 파일 선택 정책과 분리 |
 | P4 | Place 목록·상세 | Home 장소 목록, 상세 owner·멤버·식물 실데이터 연결 | #239 / PR #240 병합 완료 |
 | P5 | Friend 수신 요청 | 요청 목록, 수락, 거절 API와 화면 상태 연결 | #241 / PR #242 병합 완료 |
+| P6 | Place 생성·수정 후속 흐름 | 생성 code·수정 결과와 친구 요청 전송 연결 | #243 / PR #244 병합 완료 |
+| P7 | Place 친구 관리 조회 | 실제 멤버 목록·이미지·닉네임 필터와 상태 UI | #245 / PR #246 In Review |
 | 보류 | Image, Memo | 성공 response 또는 endpoint가 불충분한 영역 | 백엔드 확인 필요 |
 
 P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기준으로 했습니다. #239는 live Swagger에 누락된 Place schema를 백엔드 main `7d572cb`의 Controller·DTO와 대조해 목록·상세 응답 계약을 연결했고, #241은 같은 source에서 확인한 Friend 수신 요청 계약을 화면까지 연결합니다.
@@ -49,12 +51,12 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Place | 장소 등록 중 친구 추가 | User 검색, 생성된 place code, 선택 사용자 요청 submit 연결 | 고유 사용자 식별자와 대상별 결과 검증 | `GET /users/{keyword}`, `POST /friends/request`; 동명이인 위험은 별도 등록 | #243 위험 수용 연결 |
 | Place | 장소 수정 | 상세 조회·update API와 typed 수정 결과 연결 | image key/file | source update result #243 반영, 상세에는 image key 미제공 | #243 연결 |
 | Place | 장소 상세 | API 장소·owner·멤버·식물 연결, fixture 병합 제거 | 서버 미제공 환경 수치와 물주기 액션 | `GET /place/{code}` source 계약 #239 반영 | #239 / PR #240 병합 완료 |
-| Place | 친구 관리 | fixture 검색·선택·삭제 | 멤버 목록 조회, 추가·삭제 submit | `{ name, image }[]` 확인, 고유 member id와 변경 endpoint 없음 | 보류 |
+| Place | 친구 관리 | 실제 멤버·이미지 조회, 닉네임 필터, loading/empty/error/retry 연결 | 멤버 추가·삭제·권한 변경 | `GET /place/{code}/members` 연결, 고유 member id와 변경 endpoint 없음 | #245 조회 전용 연결 |
 | Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
 | Plant | 식물 등록 검색 | fixture 검색 | 실제 검색 모델과 상태 | 식물 종 검색 endpoint 필요 | 보류 |
-| Plant | 식물 등록 | create API 부분 연결, 물주기 날짜 고정 | 날짜 상태·request, 학명/별칭 분리, image file | `POST /plants` 사용 가능; 검색·이미지 정책 별도 | #229 즉시 진행 |
-| Plant | 식물 수정 | edit info와 update API 부분 연결 | 기존/변경 물주기 날짜, image key/file | `GET /plants/{id}/edit`, `PUT /plants/{id}` 사용 가능 | #229 즉시 진행 |
-| Plant | 식물 상세 | detail/delete API와 fixture 표시값 혼합 | 등록일 계산, 실제 값/미제공 값 분리, fixture memo 제거 | `GET/DELETE /plants/{id}` 사용 가능; Memo·물주기 API 없음 | #231 즉시 진행 |
+| Plant | 식물 등록 | 장소·애칭·선택 날짜 상태와 create submit 연결 | 학명/애칭 분리, image file | `POST /plants` 연결; 검색·이미지 정책 별도 | #229 날짜 연결 완료 |
+| Plant | 식물 수정 | edit info·날짜 복원/변경과 update submit 연결 | image key/file | `GET /plants/{id}/edit`, `PUT /plants/{id}` 연결 | #229 날짜 연결 완료 |
+| Plant | 식물 상세 | detail/delete, 등록일 계산과 실제 값 연결, remote fixture 제거 | Memo CRUD·물주기 액션 | `GET/DELETE /plants/{id}` 연결; Memo·물주기 API 없음 | #231 연결 완료 |
 | Memo | 메모 작성 | 로컬 Provider 저장 | DTO, repository, submit, 실제 image file | Memo 생성 endpoint 필요 | Blocked |
 | Memo | 메모 목록·수정·삭제 | 로컬 fixture·상태 | 목록, pagination, 수정·삭제, 상세 갱신 | Memo CRUD endpoint 필요 | Blocked |
 | Onboarding | 온보딩 | 정적 화면 완료 | 필요 시 최초 실행 여부 로컬 저장 | 서버 API 불필요 | 연결 제외 |
@@ -156,6 +158,21 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
   사용하는 서버 정책으로 인한 오초대 위험은 해결되지 않았으며 별도 위험 등록부의
   `FRIEND-RISK-01`로 추적합니다.
 
+## Place 친구 관리 조회 수직 슬라이스
+
+#245는 `GET /place/{code}/members`의 가입 순서 멤버 목록을 친구 관리 화면에
+연결합니다. 2026-08-28 live OpenAPI와 backend main `7d572cb`의 계약을 재확인했습니다.
+
+- `result` 배열을 기존 `PlaceMember`로 변환하고 이름과 프로필 이미지 URL을
+  화면에 전달합니다. 동명이인 항목은 합치지 않습니다.
+- 서버 조회와 검색 query를 분리해 필터 입력 시 재요청하지 않고, 오류 재시도 시
+  현재 query를 유지합니다.
+- API 모드는 조회 전용 안내, 실제 멤버 목록과 확인 버튼을 표시합니다. 서버에
+  반영되지 않는 선택·삭제 UI는 노출하지 않습니다.
+- fixture 모드의 기존 선택·삭제 흐름은 그대로 유지합니다.
+- 멤버 고유 ID·변경 endpoint와 실제 인증 응답 검증의 한계는
+  `docs/accepted-implementation-risks.md`에 기록합니다.
+
 ## 완료 기준
 
 각 수직 슬라이스는 아래 항목을 모두 충족해야 완료로 판단합니다.
@@ -188,5 +205,9 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #243 | `d38e031` | Form 결과와 친구 추가 route의 place code 전달 | 관련 test 19개 |
 | #243 | `3b2198c` | 선택 친구 이름과 place code 요청 submit, 중복 전송·실패 처리 | Controller·widget test 14개 |
 | #243 | - | OpenAPI 재확인, 위험 수용 기록과 전체 검증 이력 갱신 | format 291개, analyze, 전체 test 344개·기존 skip 1개 |
+| #245 | `b090581` | 장소 멤버 datasource·mapper·typed repository | Place data test 24개 |
+| #245 | `8e46fd8` | 조회 Provider·검색 상태와 친구 관리 API 화면 | 관련 test 28개, analyze |
+| #245 | `1611fd0` | 최신 API·위험·매트릭스와 전체 검증 기록 | format 294개, analyze, 전체 test 362개·기존 skip 1개 |
+| #245 | - | PR #246·Project In Review 연결 기록 | `git diff --check` |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.
