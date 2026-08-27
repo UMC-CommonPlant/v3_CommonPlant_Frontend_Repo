@@ -50,5 +50,6 @@
 | MEMBER-RISK-02 | `Accepted` | live Swagger에 성공 schema가 없고 인증 smoke가 없어 source와 배포 계약이 다른지 확인하지 못했습니다. | backend main `7d572cb`를 근거로 strict result 배열을 파싱하고 오류 시 fixture 대신 실패·재시도를 표시합니다. | machine-readable schema와 인증된 dev 조회 검증이 확보되면 해소합니다. |
 
 - 관련 이슈: #245 `[Feature] 친구 관리 멤버 목록 API 연결`
+- 관련 PR: [#246](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/246)
 - 구현 커밋: `b090581`, `8e46fd8`
 - 관련 확인 항목: `PLACE-04`, `TESTENV-01`~`05`

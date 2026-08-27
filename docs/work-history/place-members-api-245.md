@@ -3,6 +3,7 @@
 ## 작업 기준
 
 - 이슈: #245 `[Feature] 친구 관리 멤버 목록 API 연결`
+- PR: [#246](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/246) (`develop` 대상, In Review)
 - 상위 이슈: #226 `[Epic] MVP 화면·API 실연동 전환`
 - 작업일: 2026-08-28
 - 기준 develop: `9281f06539c4738196a4308b30910e1166d137d1`
@@ -43,6 +44,7 @@
 | `f6178ba` | 작업 기준·계약·위험 경계 | `git diff --check` |
 | `b090581` | 장소 멤버 datasource·mapper·typed repository | Place data test 24개 |
 | `8e46fd8` | 조회 Provider·검색 상태·친구 관리 화면 | 관련 test 28개, analyze |
-| 이 문서의 최종 커밋 | API·위험·매트릭스와 전체 검증 기록 | format 294개, analyze, 전체 test 362개 통과·기존 skip 1개 |
+| `1611fd0` | API·위험·매트릭스와 전체 검증 기록 | format 294개, analyze, 전체 test 362개 통과·기존 skip 1개 |
+| 이 문서의 최종 커밋 | PR #246·Project In Review 연결 기록 | `git diff --check` |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있습니다.

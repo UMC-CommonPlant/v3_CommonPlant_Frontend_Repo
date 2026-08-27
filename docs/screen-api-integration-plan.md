@@ -32,7 +32,7 @@
 | P4 | Place 목록·상세 | Home 장소 목록, 상세 owner·멤버·식물 실데이터 연결 | #239 / PR #240 병합 완료 |
 | P5 | Friend 수신 요청 | 요청 목록, 수락, 거절 API와 화면 상태 연결 | #241 / PR #242 병합 완료 |
 | P6 | Place 생성·수정 후속 흐름 | 생성 code·수정 결과와 친구 요청 전송 연결 | #243 / PR #244 병합 완료 |
-| P7 | Place 친구 관리 조회 | 실제 멤버 목록·이미지·닉네임 필터와 상태 UI | #245 구현·검증 완료, PR 준비 |
+| P7 | Place 친구 관리 조회 | 실제 멤버 목록·이미지·닉네임 필터와 상태 UI | #245 / PR #246 In Review |
 | 보류 | Image, Memo | 성공 response 또는 endpoint가 불충분한 영역 | 백엔드 확인 필요 |
 
 P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기준으로 했습니다. #239는 live Swagger에 누락된 Place schema를 백엔드 main `7d572cb`의 Controller·DTO와 대조해 목록·상세 응답 계약을 연결했고, #241은 같은 source에서 확인한 Friend 수신 요청 계약을 화면까지 연결합니다.
@@ -207,6 +207,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #243 | - | OpenAPI 재확인, 위험 수용 기록과 전체 검증 이력 갱신 | format 291개, analyze, 전체 test 344개·기존 skip 1개 |
 | #245 | `b090581` | 장소 멤버 datasource·mapper·typed repository | Place data test 24개 |
 | #245 | `8e46fd8` | 조회 Provider·검색 상태와 친구 관리 API 화면 | 관련 test 28개, analyze |
-| #245 | - | 최신 API·위험·매트릭스와 전체 검증 기록 | format 294개, analyze, 전체 test 362개·기존 skip 1개 |
+| #245 | `1611fd0` | 최신 API·위험·매트릭스와 전체 검증 기록 | format 294개, analyze, 전체 test 362개·기존 skip 1개 |
+| #245 | - | PR #246·Project In Review 연결 기록 | `git diff --check` |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.
