@@ -3,7 +3,7 @@
 ## 작업 기준
 
 - 이슈: #245 `[Feature] 친구 관리 멤버 목록 API 연결`
-- PR: [#246](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/246) (`develop` 대상, In Review)
+- PR: [#246](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/246) (`develop` 병합 완료, `2a01babb185ef5056b361c477717759194c53ec1`)
 - 상위 이슈: #226 `[Epic] MVP 화면·API 실연동 전환`
 - 작업일: 2026-08-28
 - 기준 develop: `9281f06539c4738196a4308b30910e1166d137d1`
@@ -45,6 +45,8 @@
 | `b090581` | 장소 멤버 datasource·mapper·typed repository | Place data test 24개 |
 | `8e46fd8` | 조회 Provider·검색 상태·친구 관리 화면 | 관련 test 28개, analyze |
 | `1611fd0` | API·위험·매트릭스와 전체 검증 기록 | format 294개, analyze, 전체 test 362개 통과·기존 skip 1개 |
-| 이 문서의 최종 커밋 | PR #246·Project In Review 연결 기록 | `git diff --check` |
+| `4815274` | PR #246·Project In Review 연결 기록(당시 상태) | `git diff --check` |
+
+2026-08-28 문서 정리 #247에서 PR #246의 병합을 확인했습니다. 후속 회귀 수정은 [개발 감사 체크리스트](../development-audit-checklist.md)에서 별도로 추적합니다.
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있습니다.

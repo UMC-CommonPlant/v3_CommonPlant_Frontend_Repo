@@ -12,7 +12,7 @@
 - OpenAPI JSON: https://commonplant-dev.okbear.dev/api/v1/api-docs/json
 - Swagger config: https://commonplant-dev.okbear.dev/api/v1/api-docs/json/swagger-config
 - 확인일: 2026-08-25
-- OpenAPI·Place 멤버 source 재확인: 2026-08-28 (19 paths·27 operations, backend main 동일)
+- OpenAPI·Place 멤버·Place/Plant 이미지 수정 계약 재확인: 2026-08-28 (19 paths·27 operations, backend main 동일)
 - 접속 결과: Swagger UI, OpenAPI JSON, Swagger config HTTP 200
 - 개발 서버 루트: HTTP 404. 루트 route가 없다는 의미이며 Swagger/API endpoint 상태와 분리한다.
 - 인증 endpoint 확인: token 없이 `GET /api/v1/users` 요청 시 HTTP 401, code `A009`로 인증 요구 응답
@@ -21,7 +21,7 @@
 - 서버 base path: `/api/v1`
 - endpoint inventory: 19 paths, 27 operations
 - 기존 문서 비교 기준: `docs/api-swagger-summary-43` 브랜치의 `docs/api-swagger-reference.md` 확인일 2026-05-20
-- 코드 비교 기준: `feature/api-integration-45` 브랜치의 `lib/core/network`, `features/*/data` API 계층
+- 최초 코드 비교 기준: `feature/api-integration-45` 브랜치의 API 계층. 현재 화면·계층 대조 기준은 PR #246 병합 커밋 `2a01bab`이다.
 - 백엔드 소스 비교 기준: `UMC-CommonPlant/v3_CommonPlant_Backend_Repo` main `7d572cbcabc81a65926738b2a09e8479d0bd0c79`
 - 참고: 2026-05-25의 상세 schema 비교 기록을 보존하고, 2026-08-25에는 live OpenAPI와 백엔드 Controller·DTO·Service를 함께 재검증했다.
 
@@ -45,6 +45,12 @@
 - Place와 Friend는 백엔드 source의 `JsonResponse.result` 반환 타입을 추가 근거로 사용한다. machine-readable Swagger가 아니라는 점과 실제 인증 응답 smoke가 남았다는 점은 구분한다.
 
 ## Swagger 변경 요약
+
+### 2026-08-28 감사 — 이미지 수정 계약과 프론트 누락
+
+- Place/Plant의 `imageKey` 생략/null은 기존 이미지 삭제를 뜻한다. 새 파일 없이 유지하려면 기존 key를 보내야 한다.
+- Plant edit 응답의 key가 Form 상태로 전달되지 않고 Place Form도 key를 누락하므로 #248에서 수정한다. 이는 새 endpoint 변경이 아니라 기존 계약의 누락을 발견한 것이다.
+- 연결 PR의 병합 상태와 실제 남은 화면 동선은 [화면·API 매트릭스](screen-api-integration-plan.md), 수정 순서는 [개발 감사 체크리스트](development-audit-checklist.md)에서 관리한다.
 
 ### 2026-08-28 장소 멤버 조회 연결
 
@@ -344,7 +350,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
   - `name`
   - `address`
 - `updatePlaceReq` properties:
-  - `imageKey`
+  - `imageKey`: 새 image 파일이 없으면 기존 key는 유지, 생략/null은 삭제. 새 파일이 있으면 교체
   - `name`: 최대 10자
   - `address`
 - live Swagger 성공 response body schema는 없다.
@@ -480,7 +486,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
   - `plant`: `UpdateRequest`
   - `image`: binary, optional
 - `UpdateRequest` properties:
-  - `imageKey`
+  - `imageKey`: 새 image 파일이 없으면 기존 key는 유지, 생략/null은 삭제. 새 파일이 있으면 교체
   - `nickname`: 최대 20자
   - `lastWateredDate`: `yyyy-MM-dd`
 - 성공 response: `EditInfoJsonResponse.result` -> `EditInfoResponse`
@@ -619,7 +625,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | refresh token 재발급 API | 없음 | 남음 |
 | 로그아웃 API | 없음 | 남음 |
 | pagination 응답 구조와 total count | `PlantPageContent`에 `items`, `totalCount`, `page`, `size` 추가 | 해소 |
-| 이미지 key 저장 주체와 업로드 후 반환 값 | Image API response schema 없음 | 남음 |
+| 이미지 key 저장 주체와 업로드 후 반환 값 | Place/Plant 도메인 수정의 유지·교체·삭제 계약은 확인, 독립 Image 응답과 Place key 조회는 미확정 | 일부 해소, 프론트 #248 수정 필요 |
 | 앱 flavor별 full base URL 정책 | 프론트 환경 전략은 `docs/release-workflow.md`에서 flavor와 CI/CD 주입 분리로 정리. Swagger server는 여전히 `/api/v1`만 제공 | 일부 해소 |
 
 ## API 연계 코드에 반영 가능한 부분
@@ -656,13 +662,26 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 ### Image 화면 연결 판단
 
-현재 화면에서 안전하게 열어둘 수 있는 범위는 도메인 API의 optional `image` multipart part까지이다. 프로필 수정, 장소 생성/수정, 식물 생성/수정은 실제 파일 선택기가 `MultipartFile`을 제공하면 repository에 전달할 수 있다.
+프로필 수정, 장소 생성/수정, 식물 생성/수정은 실제 파일 선택기가 `MultipartFile`을 제공하면 repository의 optional `image` part로 전달할 수 있다. 파일 선택기 도입과 기존 이미지 보존은 별도 작업이다.
+
+Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아니다.
+
+| 요청 | 확인된 서버 처리 |
+| --- | --- |
+| 새 image 파일 있음 | 기존 이미지 교체 |
+| 새 파일 없음 + 기존과 동일한 key | 기존 이미지 유지 |
+| 새 파일 없음 + key 생략/null | 기존 이미지 삭제 |
+| 새 파일 없음 + 기존과 다른 key | 잘못된 요청으로 거절 |
+
+근거: [dev OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)의 두 update schema와 backend `7d572cb`의 [PlaceServiceImpl](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/blob/7d572cbcabc81a65926738b2a09e8479d0bd0c79/src/main/java/com/commonplant/garden/place/service/PlaceServiceImpl.java), [PlantServiceImpl](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/blob/7d572cbcabc81a65926738b2a09e8479d0bd0c79/src/main/java/com/commonplant/garden/plant/service/PlantServiceImpl.java)의 `resolveUpdatedImageKey`를 대조했다. 실제 원격 삭제 요청은 실행하지 않았다.
+
+현재 Form은 기존 key를 전달하지 않으므로 [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 텍스트 수정 시 이미지가 유실되지 않도록 수정해야 한다. Plant edit 응답은 key를 제공하지만 Place 상세는 URL만 제공하므로, Place key 확보 계약은 [IMAGE-04](backend-api-open-questions.md#image-04-이미지-key-생명주기)로 남긴다. URL에서 key를 추측하지 않는다.
 
 독립형 Image API(`/s3/images`)는 response schema가 없어 화면에서 반환된 image key/url을 확정적으로 읽을 수 없다. 따라서 프로필, 장소, 식물, 메모 화면에서 `/s3/images` 업로드 결과를 `imageKey`, `imgUrl`, `imageUrl`로 임의 매핑하지 않는다.
 
 현재 보류 범위:
 
-- 프로필 설정의 회원가입 multipart datasource/repository는 #216에서 반영했으며 실제 image picker 파일과 submit 연결은 별도 UI 작업으로 진행한다.
+- 프로필 설정의 회원가입 multipart는 #216, 화면 submit은 #227에서 연결했다. 실제 image picker 파일 연결은 남아 있다.
 - 장소/식물 화면은 도메인 multipart `image` part 전달 경계까지만 열어두고, 실제 파일 선택기 도입은 별도 UI 작업에서 진행한다.
 - 메모 화면은 아직 Memo API가 없어 로컬 사진 상태만 유지한다.
 - `/s3/images` 다운로드 URL 조회는 성공 response의 URL 필드 또는 wrapper 구조가 확정된 뒤 화면 fallback 정책과 함께 연결한다.
@@ -684,14 +703,11 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | Memo | 메모 CRUD API, 이미지 첨부, 목록 response 구조 | 메모 화면 실데이터 연결 보류 |
 | 환경 | dev URL은 확인, staging/prod full base URL과 API versioning 정책은 미확정 | dev 로컬 실행 가능, release 검증 보류 |
 
-## 첫 API 연계 보강 우선순위 제안
+## 현재 후속 작업 안내
 
-1. #227에서 Auth login/register repository를 로그인·프로필·약관 화면, 앱 세션, 인증 redirect까지 연결한다. 실제 소셜 SDK token 공급은 `SocialAuthCredentialGateway` 구현으로 분리한다.
-2. 로그인 직후 Home은 response schema가 있는 User 조회와 Plant 목록부터 상태 Provider와 loading/empty/error UI에 연결한다.
-3. Plant 목록·상세·생성·수정은 보강된 Swagger DTO를 기준으로 화면 동선을 순차 전환한다.
-4. Place 목록·상세와 생성·수정 source 계약은 #239·#243에서 화면까지 연결했고, 이미지·주소 검색·구성원 변경은 정책과 endpoint 확인 전까지 분리한다.
-5. Friend 수신 목록·수락·거절은 #241에서, 신규 요청 전송은 위험 수용 조건으로 #243에서 화면에 연결했다. 고유 사용자 식별자와 대상별 성공 결과가 제공되면 위험을 해소한다.
-6. Memo는 Swagger endpoint가 추가되기 전까지 mock 화면 상태와 실제 API 코드를 섞지 않는다.
+초기 Auth·Home·Plant·User·Place·Friend 연결 PR은 병합됐다. 현행 우선순위는 [개발 감사 체크리스트](development-audit-checklist.md)의 문서 정리와 회귀 수정이며, 화면별 연결 범위·미완료 동선은 [화면·API 매트릭스](screen-api-integration-plan.md)를 따른다.
+
+소셜 SDK credential 획득, 실제 주소·식물 검색, 이미지 파일 선택·key 조회, Memo CRUD와 멤버 변경은 여전히 별도 준비가 필요하다. 이미 수용한 Friend 이름 오매칭 위험은 위험 등록부로 추적하고, 이번에 발견한 이미지 유실 등 프론트 결함을 자동으로 수용한 것으로 해석하지 않는다.
 
 ## DEV API 문서화 작업 이력
 

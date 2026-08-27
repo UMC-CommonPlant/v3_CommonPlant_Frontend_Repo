@@ -86,7 +86,7 @@ CommonTextField(
 - 포커스가 벗어난 뒤 최종 성공/실패 메시지를 보여주는 방식을 우선합니다.
 - 제출 시점에는 모든 필수 입력의 오류를 한 번에 확인할 수 있어야 합니다.
 
-현재 `HomeScreen` 샘플은 포커스 중에는 normal, 포커스 해제 후 success를 보여주는 흐름을 사용합니다.
+입력값과 제출 가능 여부는 각 feature의 Form Controller 상태로 관리하고, focus와 helper 표시처럼 Flutter 생명주기에 연결된 처리는 field widget에서 맡습니다.
 
 ## 제출 버튼 상태
 
@@ -98,6 +98,8 @@ CommonTextField(
 - API 실패 후에는 사용자가 다시 제출할 수 있어야 함
 
 버튼 UI는 `CommonButton`의 `onPressed: null` 상태를 활용합니다.
+
+현재 구현에는 입력 변경이 진행 중 submit 상태를 해제하는 경로가 있습니다. 버튼 상태만으로 중복 전송이 방지됐다고 판단하지 않고, [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250)에서 Controller의 in-flight 잠금과 실패 후 재시도를 검증합니다. disabled 입력의 clear 동작은 [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255)로 추적합니다.
 
 여러 폼에서 제출 상태가 반복되면 `shared/forms/form_submit_state.dart`의
 `FormSubmitState`를 feature별 Riverpod Controller 상태로 사용합니다.
