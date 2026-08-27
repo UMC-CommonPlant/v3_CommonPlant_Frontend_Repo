@@ -1,5 +1,7 @@
 # PR 47 Conflict Resolution Plan
 
+> 보관 문서(Archived): 2026-05-25 PR #47의 충돌 해결 기록입니다. 아래 명령과 파일 상태를 현재 작업에 적용하지 않습니다. 현행 규칙은 [Git 가이드](git-workflow.md), 문서 분류는 [인덱스](README.md)를 확인합니다.
+
 ## Context
 
 - PR: #47 `Feat: API 연계 보강 #45`

@@ -1,6 +1,6 @@
 # Code Readability Refactoring Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> 보관 문서(Archived): 2026-06-28 완료된 1차 계획입니다. 아래 체크박스·명령은 당시 실행 기록이며 새 작업 지시가 아닙니다. 현행 문서는 [인덱스](README.md), 다음 작업은 [개발 감사 체크리스트](development-audit-checklist.md)를 확인합니다.
 
 **Goal:** 현재 Flutter 코드의 동작을 유지하면서 사람이 읽고 리뷰하고 수정하기 쉬운 구조로 단계적으로 정리한다.
 

@@ -1,6 +1,6 @@
 # Code Readability Refactoring Round 2 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> 보관 문서(Archived): 2026-08-04 완료된 2차 계획입니다. 아래 체크박스·명령은 당시 실행 기록이며 새 작업 지시가 아닙니다. 현행 문서는 [인덱스](README.md), 다음 작업은 [개발 감사 체크리스트](development-audit-checklist.md)를 확인합니다.
 
 **Goal:** 1차 가독성 리팩토링 이후에도 남은 큰 page, feature 전용 widget, 라우팅 파라미터, fixture/API 경계를 단계적으로 줄인다.
 

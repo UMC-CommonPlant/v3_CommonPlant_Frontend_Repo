@@ -293,7 +293,9 @@ const CommonSvgIcon(
 
 ## 소유권 감사 결과
 
-2026-08-12 기준 `lib/shared/widgets`의 production/test 사용처를 다시 확인한 결과입니다. 사용처가 없던 `features/common`의 Phase 0 보조 위젯은 제거했으며, 공용 UI는 `shared/widgets`, 도메인 UI는 각 feature의 `presentation/widgets`에서 소유합니다.
+2026-08-12의 소유권 정리 이후 2026-08-28 `develop` PR #246 기준으로 다시 확인했습니다. 과거 사용처가 없던 `features/common`의 Phase 0 보조 위젯은 이미 제거됐으며, 공용 UI는 `shared/widgets`, 도메인 UI는 각 feature의 `presentation/widgets`에서 소유합니다.
+
+2026-08-28 사용자 결정에 따라 현재 미사용 공용 위젯 5개는 삭제하지 않습니다. `CommonAddTile`, `CommonPlaceGuideBanner`, `CommonPlusIconButton`, `CommonSectionHeader`는 직접 화면·테스트 사용처가 없고, `CommonPlusMark`는 미사용 `CommonPlusIconButton` 내부에서만 참조됩니다. 보존을 위해 새 화면에 억지로 연결하지 않으며, 새 사용처가 생길 때 의미와 소유권을 검토합니다.
 
 | 분류 | 대상 | 판단 |
 | --- | --- | --- |
@@ -301,7 +303,9 @@ const CommonSvgIcon(
 | 공용 primitive로 유지 | `CommonPlusMark` | `CommonPlusIconButton` 내부 primitive로만 사용합니다. 화면별 조합 로직은 넣지 않습니다. |
 | 공용 image input 후보 | `CommonCircleImageBox`, `CommonPhotoAddButton`, `CommonPlaceImageAddButton` | 이미지 선택 UI라는 공통성이 있습니다. 다만 `CommonPlaceImageAddButton`처럼 특정 도메인 이름이 들어간 위젯은 다른 feature로 확장하기 전에 generic variant 추가 또는 feature 내부 이동을 먼저 검토합니다. |
 | 공용 display 후보 | `CommonPlaceCard`, `CommonPlantCard`, `CommonPlacePlantCard`, `CommonMemoCard`, `CommonWateringButton` | Home, Place, Plant, Memo 사이에서 같은 카드 표현을 공유할 가능성이 있어 당장은 유지합니다. API 상태, route 이동, 권한 정책이 들어가기 시작하면 feature 내부 widget으로 내리거나 domain-agnostic display model을 주입하는 방식으로 정리합니다. |
-| 신규 사용 전 재검토 | `CommonAddTile`, `CommonPlaceGuideBanner`, `CommonPlusIconButton`, `CommonSectionHeader` | 2026-08-12 감사 기준 production/test 직접 사용처가 없습니다. 새 사용처에 바로 연결하지 않고 도메인 전용이면 feature로 이동하며, 반복 사용 근거가 없으면 제거를 검토합니다. |
+| 미사용 상태로 보존 | `CommonAddTile`, `CommonPlaceGuideBanner`, `CommonPlusIconButton`, `CommonSectionHeader` | 사용자 결정으로 유지합니다. 사용처가 생기면 도메인 전용인지 공용인지 재검토하며, 이번 정리에서는 삭제·이동하지 않습니다. |
+
+공용 위젯 보존과 동작 오류 수정은 별개입니다. 비활성 `CommonTextField`의 삭제 버튼 문제는 [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255)에서 수정하고, 기존 버튼 variant 등 public API를 단순 미사용이라는 이유로 축소하지 않습니다. 실행 순서는 [개발 감사 체크리스트](development-audit-checklist.md)를 따릅니다.
 
 ### Phase 0 구조 정리 결과
 

@@ -1,8 +1,10 @@
 # lib 구조 리팩토링 개선 방향
 
+> 보관 문서(Archived): 리팩토링 1~3차 이전의 진단과 제안을 보존합니다. 아래 파일 수·구조·문제는 현재 상태가 아닙니다. 현행 구조는 [Feature 가이드](feature-development-guide.md), 다음 수정은 [개발 감사 체크리스트](development-audit-checklist.md), 전체 문서는 [인덱스](README.md)를 확인합니다.
+
 ## 목적
 
-현재 `lib` 폴더의 구조, Riverpod 활용, 라우팅 연결, 화면 파일 책임, feature 경계를 점검하고 MVP 이후 리팩토링을 어떤 순서로 진행할지 정리합니다.
+진단 당시 `lib` 폴더의 구조, Riverpod 활용, 라우팅 연결, 화면 파일 책임, feature 경계를 점검하고 리팩토링 순서를 제안한 기록입니다.
 
 이 문서는 즉시 전체 구조를 갈아엎기 위한 설계서가 아니라, 기존 테스트와 화면 동작을 유지하면서 작은 PR 단위로 개선하기 위한 기준입니다.
 
@@ -15,7 +17,7 @@
 - `docs/testing-guide.md`
 - `docs/git-workflow.md`
 
-## 현재 상태 요약
+## 진단 당시 상태 요약
 
 - `lib`에는 Dart 파일 90개, 약 13,441줄이 있습니다.
 - `features` 바로 아래에는 `common`, `friend`, `home`, `image`, `login`, `memo`, `onboarding`, `place`, `plant`, `terms`, `user` 11개 영역이 있습니다.

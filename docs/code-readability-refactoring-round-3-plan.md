@@ -1,6 +1,6 @@
 # Code Readability Refactoring Round 3 Implementation Plan
 
-> **For agentic workers:** 각 Task는 독립 GitHub 이슈와 브랜치, PR로 진행한다. 구현 전 해당 Task의 기존 테스트를 먼저 실행하고, 동작 변경 없이 상태 소유권과 의존 방향만 정리한다.
+> 보관 문서(Archived): 2026-08-12 완료된 3차 계획입니다. 아래 체크박스·명령은 당시 실행 기록이며 새 작업 지시가 아닙니다. 현행 문서는 [인덱스](README.md), 다음 작업은 [개발 감사 체크리스트](development-audit-checklist.md)를 확인합니다.
 
 **Goal:** feature route page의 mutable state를 Riverpod Controller와 불변 상태 모델로 이동하고, fixture/view data, feature 소유권, repository 계약을 읽기 쉬운 경계로 정리한다.
 
@@ -38,7 +38,7 @@
 - [코드 가독성 리팩토링 2차 계획](code-readability-refactoring-round-2-plan.md)
 - [후속 결정 체크리스트](follow-up-decision-checklist.md)
 
-## 현재 기준선
+## 작업 시작 당시 기준선
 
 2026-08-04 `develop` 기준:
 

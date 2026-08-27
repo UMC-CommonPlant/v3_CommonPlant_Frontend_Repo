@@ -98,6 +98,8 @@ fvm flutter run \
 | `go_router` | `^17.2.0` | 앱 라우팅 및 라우트 구조 관리 |
 | `flutter_riverpod` | `^3.3.1` | 상태관리 및 의존성 주입 |
 | `flutter_svg` | `^2.2.0` | SVG 아이콘 렌더링 |
+| `dio` | `^5.9.2` | 공통 HTTP client와 multipart API 요청 |
+| `flutter_secure_storage` | `^10.2.0` | 인증 access/refresh token 보관 |
 
 ### Development
 
@@ -153,22 +155,26 @@ tool/
 - `main`은 실제 publish/production 브랜치로 사용하고 직접 작업하지 않습니다.
 - 배포 후보는 `develop`에서 `release/*` 브랜치를 생성해 안정화한 뒤 `main`으로 PR을 보냅니다.
 - 운영 긴급 수정만 예외적으로 `main`에서 `hotfix/*` 브랜치를 생성하고, 배포 후 `develop`에 되돌려 반영합니다.
-- HTTP 클라이언트는 API 연동 시점에 `dio`를 기준으로 도입합니다.
+- HTTP 클라이언트는 `core/network`의 공통 `dio` client를 사용하며 feature datasource에 주입합니다.
 - MVP 앱은 `커먼플랜트`, Android/iOS 식별자 `com.plant.common`인 단일 prod 앱으로 운영합니다.
 - 실제 API 사용 여부와 base URL은 `dart-define` 또는 CI/CD 환경값으로 주입합니다. dev/staging flavor는 별도 설치·배포 채널·환경별 Firebase가 필요해질 때 도입합니다.
 - dev API base URL은 `https://commonplant-dev.okbear.dev/api/v1`이며, staging/prod URL은 별도 확인 전까지 확정하지 않습니다.
 - 앱 version과 build number는 `pubspec.yaml`의 `X.Y.Z+N`을 단일 원본으로 사용하고 release 브랜치에서 수동 증가합니다. store 이력 확인 전에는 CI 실행 번호로 덮어쓰지 않습니다.
 - Production 제출은 내부 테스트에서 검증한 동일 artifact를 승격하고, 심사 제출과 사용자 공개를 분리해 실행자 외 승인을 받습니다. 최초 MVP 출시는 Android/iOS 모두 수동 공개하며 unattended full rollout은 사용하지 않습니다.
-- API 모델은 `freezed`와 `json_serializable` 기반 생성을 기본 방향으로 삼되, 실제 패키지 추가는 첫 API 연동 PR에서 함께 진행합니다.
-- 인증 토큰은 `flutter_secure_storage` 기반 보관을 기본 방향으로 합니다.
+- 현재 API 모델은 수기 DTO·mapper로 구현되어 있습니다. `freezed`·`json_serializable` 도입은 미적용 제안이며, 별도 이슈에서 필요성과 생성 규칙을 정하기 전까지 현행 방식을 따릅니다.
+- 인증 토큰은 `flutter_secure_storage`에 보관합니다. 서버 token 갱신·로그아웃 API는 미확정이며, 계정 전환 시 데이터 캐시 격리는 [개선 체크리스트](docs/development-audit-checklist.md)의 후속 수정 대상입니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
 - Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 사용합니다.
 - Integration test는 remote API를 사용하지 않는 Home 진입과 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 [remote integration test 준비 계약](docs/remote-integration-test-readiness.md)의 인증, 데이터 격리, cleanup, secret 승인 gate가 충족되기 전까지 end-to-end 범위는 `Blocked`입니다.
 
 ## 프로젝트 문서
 
+새 작업은 현행 가이드와 실행 체크리스트를 기준으로 시작합니다. 완료된 리팩토링 계획과 커밋 이력은 [문서 인덱스](docs/README.md)에서 별도로 찾을 수 있습니다.
+
 | 문서 | 설명 |
 | --- | --- |
+| [문서 인덱스](docs/README.md) | 현행 가이드, 실행 계획, 과거 기록, 작업 이력의 진입점 |
+| [개발 감사·개선 체크리스트](docs/development-audit-checklist.md) | 문서 우선 정리, 순차 수정할 문제와 개별 이슈, 미사용 위젯 보존 결정 |
 | [에이전트 작업 지침](AGENTS.md) | 작업 유형별 필수 참고 문서와 에이전트 작업 기준 |
 | [디자인 토큰 규칙](docs/design-token-rules.md) | 색상, 폰트, 여백, radius, size 토큰 사용 기준 |
 | [공용 위젯 사용 가이드](docs/shared-widget-guide.md) | `shared/widgets` 컴포넌트 사용법과 추가 기준 |
@@ -182,11 +188,6 @@ tool/
 | [테스트 작성 기준](docs/testing-guide.md) | unit/widget test 작성 기준, 실행 명령, CI/pre-commit 연계 |
 | [품질·테스트 후속 작업 계획](docs/quality-testing-follow-up-plan.md) | QA 필수 viewport, golden/integration test 도입 순서, Ready/Blocked 경계 |
 | [Remote integration test 준비 계약](docs/remote-integration-test-readiness.md) | dev API E2E의 인증, fixture, cleanup, secret과 단계별 도입 gate |
-| [lib 구조 리팩토링 개선 방향](docs/lib-refactoring-direction.md) | `lib` 구조, Riverpod, 라우팅, feature 경계 리팩토링 진단과 단계별 개선안 |
-| [코드 가독성 리팩토링 실행 계획](docs/code-readability-refactoring-plan.md) | 사람이 읽기 쉬운 코드로 개선하기 위한 파일 분해, 우선순위, PR 단위, 리뷰 기준 |
-| [코드 가독성 리팩토링 2차 계획](docs/code-readability-refactoring-round-2-plan.md) | 1차 완료 후 남은 Place 중심 대형 화면, 라우팅 파라미터, detail action, mapper 경계 개선 계획 |
-| [코드 가독성 리팩토링 3차 계획](docs/code-readability-refactoring-round-3-plan.md) | Riverpod-first 화면 상태, ViewData, feature/repository 경계를 정리하는 실행 계획 |
-| [코드 가독성 리팩토링 검증 기준](docs/code-readability-refactoring-validation.md) | 리팩토링 구조 감사, 회귀 테스트, 플랫폼 빌드, 실제 기기/API smoke 판정 기준과 검증 기록 |
 | [화면·모델·API 실연동 전환 계획](docs/screen-api-integration-plan.md) | mock 화면을 사용자 동선별 상태·모델·dev API 수직 슬라이스로 전환하는 우선순위와 완료 기준 |
 | [API Swagger 연계 참고 문서](docs/api-swagger-reference.md) | 서버 Swagger 변경사항, API 계층 반영 가능 항목, 백엔드 확인 필요 항목 |
 | [백엔드 API 확인 질문 목록](docs/backend-api-open-questions.md) | Swagger와 API 계층 기준으로 분리한 백엔드 확인 질문 목록 |
@@ -236,23 +237,15 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 
 `Android Integration Smoke`는 Android emulator에서 API 비사용 앱 시작과 route 이동을 확인하는 수동 workflow입니다. #218에서 `develop` 수동 실행 3회가 재시도 없이 연속 성공했고 job 실행 시간은 5분 1초~7분 32초였습니다. #224에서 기본 Flutter CI만 필수 게이트로 사용하고 Android smoke는 관련 변경과 release candidate에서 선택 실행하기로 결정했습니다.
 
-## 진행해야 할 작업 내역
+## 현재 진행 상태와 다음 작업
 
-기존 [남은 작업 진행 계획](docs/remaining-work-plan.md)의 0~15번 항목은 2026-06-28 기준 모두 완료되었습니다.
-완료된 항목은 작업 기록 보존용으로 남기고, 코드 가독성 리팩토링 1차 라운드는 [코드 가독성 리팩토링 실행 계획](docs/code-readability-refactoring-plan.md)의 Task 1~7 기준으로 완료되었습니다. 2차 라운드도 2026-08-04에 [코드 가독성 리팩토링 2차 계획](docs/code-readability-refactoring-round-2-plan.md)의 Task 1~8 기준으로 완료되었습니다. 3차 라운드는 2026-08-12에 [코드 가독성 리팩토링 3차 계획](docs/code-readability-refactoring-round-3-plan.md)의 Task 1~11과 코드 수준 검증을 완료했습니다.
+2026-08-28 `develop`의 PR #246 병합 상태를 기준으로 합니다. Epic #226에서 Auth, Home, Plant, User 프로필, Place 목록·상세·폼 결과, Friend 요청 및 멤버 조회의 API 연결 PR이 병합됐습니다. 이는 실제 인증 E2E나 모든 화면 동선의 완성을 뜻하지 않습니다. 소셜 SDK 자격 증명 획득, 이미지 선택, 주소 검색과 아래 회귀 문제는 남아 있습니다.
 
-이후 새 작업은 아래 기준으로 범위를 다시 정합니다. 2026-08-25부터 배포 자동화보다 [화면·모델·API 실연동 전환 계획](docs/screen-api-integration-plan.md)을 MVP 최우선으로 진행합니다.
+현재 우선순위는 사용자 결정에 따라 다음과 같습니다.
 
-- 후속 결정/확인 항목은 [후속 결정 체크리스트](docs/follow-up-decision-checklist.md)를 기준으로 새 이슈로 분리합니다.
-- 구조 개선 후보는 [lib 구조 리팩토링 개선 방향](docs/lib-refactoring-direction.md)의 남은 진단 항목을 기준으로 재평가합니다.
-- 가독성 리팩토링 1~3차 완료 후 새 범위는 기존 계획을 연장하지 않고 별도 이슈나 Epic으로 분리합니다.
-- 새 작업도 `이슈 생성 -> Project 10 등록 -> develop 기반 브랜치 생성 -> 작업 -> 검증 -> 커밋/푸시 -> PR 생성` 순서로 진행합니다.
+1. #247에서 현행 문서를 정리하고 [개발 감사·개선 체크리스트](docs/development-audit-checklist.md)를 실행 기준으로 만듭니다.
+2. 체크리스트의 동작 문제 #248~#253을 순서대로 별도 PR에서 해결합니다. 미사용 공용 위젯 5개는 보존합니다.
+3. 추가 파서·위젯·Provider 개선 #254~#256을 진행한 뒤 [화면·모델·API 연결 매트릭스](docs/screen-api-integration-plan.md)의 남은 동선을 이어갑니다.
+4. 외부 답변이 필요한 Image·Memo·검색·인증 정책은 [백엔드 질문](docs/backend-api-open-questions.md), 팀 결정은 [후속 결정 체크리스트](docs/follow-up-decision-checklist.md)로 분리합니다. 배포와 원격 E2E는 준비 조건 충족 전까지 보류합니다.
 
-우선순위:
-
-1. [ ] Epic #226에서 화면, 상태·모델, dev API를 사용자 동선별 수직 슬라이스로 연결합니다.
-2. [ ] #227 Auth 로그인·회원가입·세션·라우팅 연결을 완료합니다.
-3. [ ] 로그인 직후 Home에 User와 Plant의 확인된 API 데이터를 연결합니다.
-4. [ ] Plant 목록·상세·생성·수정 동선을 실제 API로 전환합니다.
-5. [ ] Swagger가 불충분한 Place, Friend, Image, Memo는 확인된 범위만 구현하고 나머지는 백엔드 질문으로 유지합니다.
-6. [ ] 릴리즈와 원격 E2E는 기존 정책을 보존하되 외부 준비 조건이 충족될 때 재개합니다.
+완료된 초기 작업과 리팩토링 1~3차 계획은 [문서 인덱스](docs/README.md)의 과거 기록으로 보존하며 새 작업 큐로 재사용하지 않습니다. 새 작업도 `중복 확인·이슈 생성 -> Project 10 등록 -> develop 기반 브랜치 -> 검증·커밋·푸시 -> PR` 순서를 따르고, PR 병합은 사용자가 진행합니다.
