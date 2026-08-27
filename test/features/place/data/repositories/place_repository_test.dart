@@ -6,6 +6,23 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PlaceRepository', () {
+    test('장소 멤버 응답을 code별 typed 목록으로 반환한다', () async {
+      final dataSource = _ResponsePlaceRemoteDataSource(
+        membersResponse: {
+          'result': [
+            {'name': 'API 멤버', 'image': 'https://example.com/member.png'},
+          ],
+        },
+      );
+      final repository = PlaceRepositoryImpl(dataSource);
+
+      final members = await repository.fetchPlaceMembers('place-1');
+
+      expect(dataSource.requestedMembersCode, 'place-1');
+      expect(members.single.name, 'API 멤버');
+      expect(members.single.imageUrl, 'https://example.com/member.png');
+    });
+
     test('myGarden 응답의 장소 목록을 반환한다', () async {
       final repository = PlaceRepositoryImpl(
         _ResponsePlaceRemoteDataSource(
@@ -106,16 +123,28 @@ void main() {
 
 class _ResponsePlaceRemoteDataSource extends Fake
     implements PlaceRemoteDataSource {
-  _ResponsePlaceRemoteDataSource({this.myGardenResponse, this.placeResponse});
+  _ResponsePlaceRemoteDataSource({
+    this.myGardenResponse,
+    this.placeResponse,
+    this.membersResponse,
+  });
 
   final Object? myGardenResponse;
   final Object? placeResponse;
+  final Object? membersResponse;
+  String? requestedMembersCode;
 
   @override
   Future<Object?> getMyGarden() async => myGardenResponse;
 
   @override
   Future<Object?> getPlace(String code) async => placeResponse;
+
+  @override
+  Future<Object?> getPlaceMembers(String code) async {
+    requestedMembersCode = code;
+    return membersResponse;
+  }
 }
 
 class _ImagePlaceRemoteDataSource extends Fake

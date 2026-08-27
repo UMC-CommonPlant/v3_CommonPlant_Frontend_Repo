@@ -7,6 +7,17 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PlaceRemoteDataSource', () {
+    test('장소 멤버는 code를 인코딩한 GET path로 조회하고 응답을 보존한다', () async {
+      final adapter = _CapturingAdapter(responseBody: '{"result":[]}');
+      final dataSource = DioPlaceRemoteDataSource(_dioWith(adapter));
+
+      final response = await dataSource.getPlaceMembers('place/A B');
+
+      expect(adapter.latestOptions.method, 'GET');
+      expect(adapter.latestOptions.path, '/place/place%2FA%20B/members');
+      expect(response, {'result': <Object?>[]});
+    });
+
     test('장소 수정은 multipart PUT /place/update/{code}로 요청한다', () async {
       final adapter = _CapturingAdapter();
       final dataSource = DioPlaceRemoteDataSource(_dioWith(adapter));
@@ -69,6 +80,9 @@ Dio _dioWith(HttpClientAdapter adapter) {
 }
 
 class _CapturingAdapter implements HttpClientAdapter {
+  _CapturingAdapter({this.responseBody = '{}'});
+
+  final String responseBody;
   late RequestOptions latestOptions;
 
   @override
@@ -83,7 +97,7 @@ class _CapturingAdapter implements HttpClientAdapter {
     latestOptions = options;
 
     return ResponseBody.fromString(
-      '{}',
+      responseBody,
       200,
       headers: {
         Headers.contentTypeHeader: [Headers.jsonContentType],

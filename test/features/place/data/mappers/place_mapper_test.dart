@@ -3,6 +3,47 @@ import 'package:commonplant_frontend/features/place/data/mappers/place_mapper.da
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('placeMembersFromResponse', () {
+    test('result 배열의 가입 순서와 중복 이름을 보존한다', () {
+      final members = placeMembersFromResponse({
+        'result': [
+          {'name': '같은 이름', 'image': 'https://example.com/member.png'},
+          {'name': '같은 이름', 'image': null},
+        ],
+      });
+
+      expect(members.map((member) => member.name), ['같은 이름', '같은 이름']);
+      expect(members.first.imageUrl, 'https://example.com/member.png');
+      expect(members.last.imageUrl, isNull);
+    });
+
+    test('빈 result 배열은 빈 멤버 목록이다', () {
+      expect(placeMembersFromResponse({'result': <Object?>[]}), isEmpty);
+    });
+
+    test('result가 목록이 아니면 오류로 처리한다', () {
+      expect(
+        () => placeMembersFromResponse({'result': null}),
+        throwsA(isA<ApiException>()),
+      );
+    });
+
+    test('잘못된 항목을 조용히 누락하지 않는다', () {
+      expect(
+        () => placeMembersFromResponse({
+          'result': ['invalid'],
+        }),
+        throwsA(isA<ApiException>()),
+      );
+      expect(
+        () => placeMembersFromResponse({
+          'result': [<String, Object?>{}],
+        }),
+        throwsA(isA<ApiException>()),
+      );
+    });
+  });
+
   group('placeSummariesFromResponse', () {
     test('myGarden wrapper의 placeList를 장소 요약 목록으로 만든다', () {
       final summaries = placeSummariesFromResponse({

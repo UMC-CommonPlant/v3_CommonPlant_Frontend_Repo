@@ -11,6 +11,8 @@ abstract interface class PlaceRemoteDataSource {
 
   Future<Object?> getPlace(String code);
 
+  Future<Object?> getPlaceMembers(String code);
+
   Future<Object?> createPlace(
     CreatePlaceRequest request, {
     MultipartFile? image,
@@ -56,6 +58,19 @@ class DioPlaceRemoteDataSource implements PlaceRemoteDataSource {
   Future<Object?> getPlace(String code) async {
     try {
       final response = await _dio.get<Object?>('/place/$code');
+
+      return response.data;
+    } on DioException catch (error) {
+      throw ApiException.fromDio(error);
+    }
+  }
+
+  @override
+  Future<Object?> getPlaceMembers(String code) async {
+    try {
+      final response = await _dio.get<Object?>(
+        '/place/${Uri.encodeComponent(code)}/members',
+      );
 
       return response.data;
     } on DioException catch (error) {
