@@ -4,9 +4,11 @@ import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/friend_management_controller.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/friend_management_members_provider.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/friend_management_members_view.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_bottom_actions.dart';
-import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_candidate_list.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_selected_strip.dart';
+import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
@@ -95,6 +97,8 @@ class FriendManagementPage extends ConsumerWidget {
     final provider = friendManagementControllerProvider(placeId);
     final state = ref.watch(provider);
     final controller = ref.read(provider.notifier);
+    final members = ref.watch(friendManagementMembersProvider(placeId));
+    final selectedFriends = state.selectedFrom(members.value ?? const []);
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -111,9 +115,22 @@ class FriendManagementPage extends ConsumerWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              if (state.selectedFriends.isNotEmpty)
+              if (state.isReadOnly)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.x20,
+                    vertical: AppSpacing.x8,
+                  ),
+                  child: Text(
+                    '현재는 멤버 조회와 검색만 지원해요. 추가·삭제 기능은 준비 중이에요.',
+                    style: AppTextStyles.size12Medium.copyWith(
+                      color: AppColors.textBody,
+                    ),
+                  ),
+                ),
+              if (!state.isReadOnly && selectedFriends.isNotEmpty)
                 PlaceSelectedFriendMarkStrip(
-                  friends: state.selectedFriends,
+                  friends: selectedFriends,
                   onRemove: (friend) => _showDeleteDialog(context, ref, friend),
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.x20,
@@ -130,18 +147,38 @@ class FriendManagementPage extends ConsumerWidget {
                 onChanged: controller.updateQuery,
               ),
               Expanded(
-                child: PlaceFriendCandidateList(
-                  friends: state.results,
+                child: FriendManagementMembersView(
+                  members: members.whenData(state.filter),
+                  hasQuery: state.query.isNotEmpty,
                   selectedIds: state.selectedIds,
-                  topPadding: 0,
-                  onToggle: (friend) =>
-                      _toggleFriend(context, ref, state, friend),
+                  onToggle: state.isReadOnly
+                      ? null
+                      : (friend) => _toggleFriend(context, ref, state, friend),
+                  onRetry: () => ref.invalidate(
+                    remoteFriendManagementMembersProvider(placeId),
+                  ),
                 ),
               ),
-              PlaceFriendBottomActions(
-                onCancel: () => _leavePage(context),
-                onComplete: () => _leavePage(context),
-              ),
+              if (state.isReadOnly)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.x20,
+                    0,
+                    AppSpacing.x20,
+                    AppSpacing.x16,
+                  ),
+                  child: CommonButton(
+                    label: '확인',
+                    size: CommonButtonSize.medium,
+                    fullWidth: true,
+                    onPressed: () => _leavePage(context),
+                  ),
+                )
+              else
+                PlaceFriendBottomActions(
+                  onCancel: () => _leavePage(context),
+                  onComplete: () => _leavePage(context),
+                ),
             ],
           ),
         ),
