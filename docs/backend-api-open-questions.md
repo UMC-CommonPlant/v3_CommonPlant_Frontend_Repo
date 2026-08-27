@@ -4,10 +4,11 @@
 
 ## 관리 기준
 
-- 상태는 `Open`, `Answered`, `Blocked`, `Done` 중 하나로 관리한다.
+- 상태는 `Open`, `Partial`, `Answered`, `Blocked`, `Done` 중 하나로 관리한다. `Partial`은 질문 범위의 일부만 확인된 경우다.
 - 백엔드 답변 또는 배포 기준과 일치하는 백엔드 Controller·DTO·Service 근거를 확인하면 `답변`과 `프론트 반영` 칸을 갱신한다.
 - Swagger가 갱신되면 `docs/api-swagger-reference.md`의 최신 명세와 이 문서를 함께 갱신한다.
 - 구현은 이 문서의 질문이 `Answered`가 된 뒤 별도 이슈에서 진행한다.
+- 일부 계약이 확인됐거나 사용자가 위험을 수용한 경우에는 확인된 범위와 남은 위험을 분리한다. 알려진 프론트 회귀 문제는 [개발 감사 체크리스트](development-audit-checklist.md)에서 추적하며 백엔드 질문으로만 남기지 않는다.
 
 ## 질문 요약
 
@@ -16,19 +17,19 @@
 | AUTH-01 | Auth | `POST /auth/register` request part의 실제 schema는 무엇인가? | #216 multipart datasource/repository 반영 완료 | Done |
 | AUTH-02 | Auth | 회원가입은 이미지가 없어도 항상 multipart로 보내야 하는가? | #216 image optional 전송 기준 반영 완료 | Done |
 | MULTIPART-01 | 공통 | multipart JSON part의 `Content-Type`은 `application/json`이 필수인가? | Auth/Place/Plant/User multipart 일관성 확인 필요 | Open |
-| PLACE-01 | Place | Place 조회/생성/수정/삭제 성공 response body 구조는 무엇인가? | #239 목록·상세 반영, 생성·수정 결과 소비는 후속 | Answered |
+| PLACE-01 | Place | Place 조회/생성/수정/삭제 성공 response body 구조는 무엇인가? | #239 목록·상세, #243 생성 code·수정 결과 반영 | Answered |
 | PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | #239 목록·상세 mapper와 화면 반영 | Done |
 | PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | API 경계는 `code`, 기존 route 모델명은 `id` 유지 | Answered |
 | PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #245 친구 관리 조회 연결, 멤버 변경은 별도 계약 필요 | Answered |
 | PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 API mode에서 member 나가기 action 숨김 | Blocked |
-| FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | 요청 목록 수직 슬라이스 진행 가능 | Answered |
-| FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | 성공 result 확인, invalidate 정책은 화면 작업에서 결정 | Answered |
+| FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | #241 요청 목록·Home 배지 연결 | Answered |
+| FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | #241 수락·거절·갱신, #243 전송 연결 | Answered |
 | FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | #243에서 위험 수용 후 연결, 고유 ID 전환 필요 | Answered |
 | FRIEND-04 | Friend | `friendDecisionReq.friendId`는 요청 id인가, 사용자 id인가? | 요청 PK 사용 확인, 수락·거절 연결 가능 | Answered |
 | IMAGE-01 | Image | `/s3/images` upload/download/update/delete 성공 response schema는 무엇인가? | image key/url mapper 보류 | Open |
 | IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | 프로필/장소/식물/메모 이미지 흐름 확정 불가 | Open |
 | IMAGE-03 | Image | presigned download URL 응답 필드와 wrapper 구조는 무엇인가? | 네트워크 이미지 fallback 정책 보류 | Open |
-| IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | 이미지 생명주기와 cleanup 정책 보류 | Open |
+| IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | Place/Plant 수정 계약 확인, 기존 이미지 보존 #248과 Place key 조회 확인 필요 | Partial |
 | ERROR-01 | Error | 에러 response body의 공통 `code`, `message` 필드명은 무엇인가? | 사용자 메시지 매핑 제한 | Open |
 | ERROR-02 | Error | 도메인별 에러 코드 표준과 의미는 무엇인가? | `ApiException` mapping table 보류 | Open |
 | TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | 인증 만료 복구 흐름 보류 | Open |
@@ -63,7 +64,7 @@
 - 현재 근거: 2026-08-23 dev Swagger는 request content type을 `multipart/form-data` 하나로 정의하고 `register`를 required, `image`를 optional로 명시한다.
 - 프론트 영향: 이미지 유무와 관계없이 `register` JSON part를 포함한 multipart로 전송해야 한다.
 - 확인 질문: 해결됨.
-- 프론트 반영: #216에서 `FormData` 기반으로 바꾸고 image가 있을 때만 binary part를 추가했다. 실제 파일 생성과 화면 submit 연결은 별도 UI 작업이다.
+- 프론트 반영: #216에서 `FormData` 기반으로 바꾸고 image가 있을 때만 binary part를 추가했다. #227에서 화면 submit을 연결했으며 실제 이미지 파일 선택은 별도 UI 작업으로 남아 있다.
 - 답변: 이미지가 없어도 multipart이며 `image` part만 생략한다.
 - 상태: Done
 
@@ -199,12 +200,12 @@
 
 ### IMAGE-04. 이미지 key 생명주기
 
-- 현재 근거: Place/Plant update request에는 `imageKey`가 있고, User update에는 `imgUrl`이 있다.
-- 프론트 영향: 이미지 교체/삭제 시 기존 key cleanup과 도메인 데이터 저장 주체가 불명확하다.
-- 확인 질문: 이미지 key 저장, 교체, 삭제는 도메인 API가 처리하는가, `/s3/images`를 별도로 호출해야 하는가?
-- 프론트 반영: 답변 후 삭제/교체 UI의 API 호출 순서를 확정한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 2026-08-28 dev OpenAPI의 `updatePlaceReq.imageKey`와 `UpdateRequest.imageKey`, backend `7d572cb`의 `PlaceServiceImpl`·`PlantServiceImpl` 수정 로직을 대조했다. 자세한 근거는 [Swagger 참고](api-swagger-reference.md#image-화면-연결-판단)에 있다.
+- 답변: Place/Plant 도메인 수정 API는 새 파일이 있으면 교체하고, 파일이 없으면 기존 key와 같은 값일 때 유지한다. key 생략/null은 기존 이미지 삭제를 뜻하며, 다른 key는 허용하지 않는다. 이는 독립 `/s3/images` 응답 계약이 확인됐다는 의미가 아니다.
+- 프론트 영향: 이미지 선택기가 없어도 텍스트 수정 요청에서 기존 key를 잃으면 이미지가 삭제될 수 있다. Plant edit 응답은 key를 제공하지만 Place 상세에는 `imgUrl`만 있다.
+- 확인 질문: Place의 기존 image key를 안전하게 조회하는 계약은 무엇인가? User·Memo와 독립 `/s3/images`의 생명주기 정책은 별도 확인이 필요하다.
+- 프론트 반영: 현재 Form은 key를 누락하므로 [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 보존·삭제 의도를 분리한다. URL에서 key를 추측하지 않으며, 이번 문서 변경은 코드 수정이나 원격 삭제 검증을 포함하지 않는다.
+- 상태: Partial
 
 ## Error
 

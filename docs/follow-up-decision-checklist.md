@@ -1,10 +1,10 @@
 # 후속 결정 체크리스트
 
-이 문서는 `docs/remaining-work-plan.md`의 0~15번 작업이 끝난 뒤 남은 결정/확인 항목을 새 이슈나 Epic으로 분리하기 쉽게 모아둔 체크리스트이다.
+이 문서는 팀 결정·외부 승인·백엔드 답변이 필요한 항목을 관리한다. 즉시 수정할 동작 문제와 실행 순서는 [개발 감사·개선 체크리스트](development-audit-checklist.md), 화면 연결 상태는 [화면·API 매트릭스](screen-api-integration-plan.md)에서 관리한다. 아래 미결정 항목을 현재 최우선 작업으로 해석하지 않는다.
 
 ## 관리 기준
 
-- 상태는 `Open`, `Ready`, `Decided`, `Blocked`, `Done` 중 하나로 관리한다.
+- 상태는 `Open`, `Ready`, `Partial`, `Decided`, `Blocked`, `Done` 중 하나로 관리한다. `Partial`은 일부 계약·구현만 완료된 상태다.
 - 외부 답변이나 팀 결정이 필요한 항목은 임의로 확정하지 않는다.
 - 결론이 나면 이 문서와 원본 문서를 함께 갱신한다.
 - 구현 작업이 필요한 결론은 별도 GitHub 이슈로 분리한다.
@@ -44,7 +44,7 @@
 | --- | --- | --- | --- | --- | --- |
 | [ ] | UX-01 | 백엔드 에러 코드와 앱 사용자 메시지 매핑표 | `docs/form-validation-error-guide.md`, `docs/state-management-guide.md` | 백엔드 에러 코드 표준 확인 후 공통 메시지 매핑표를 만든다. | Open |
 | [ ] | UX-02 | Toast, Snackbar, Dialog 피드백 사용 기준 | `docs/form-validation-error-guide.md` | 성공, 경고, 차단 오류, 복구 가능 오류별 UI 피드백 정책을 정한다. | Open |
-| [ ] | STATE-01 | API 공통 에러 타입과 사용자 메시지 매핑 기준 | `docs/state-management-guide.md` | `ApiException` 계층과 화면 노출 메시지 변환 경계를 정한다. | Open |
+| [ ] | STATE-01 | API 공통 에러 타입과 사용자 메시지 매핑 기준 | `docs/state-management-guide.md` | `ApiException`은 구현돼 있다. 백엔드 에러 코드 표준과 화면 메시지 매핑 정책을 추가로 정한다. | Open |
 | [ ] | ROUTING-01 | 하단 탭 도입 시 `ShellRoute`와 단순 탭 상태 중 선택 | `docs/routing-guide.md` | bottom navigation 화면 범위가 확정되면 라우팅 구조를 결정한다. | Open |
 | [ ] | GIT-01 | PR template 파일 추가 여부 | `docs/git-workflow.md` | 현재 PR 본문 기준을 `.github/pull_request_template.md`로 고정할지 결정한다. | Open |
 
@@ -54,11 +54,11 @@
 
 | 체크 | ID | 범위 | 관련 질문 ID | 현재 막힌 작업 | 상태 |
 | --- | --- | --- | --- | --- | --- |
-| [x] | API-AUTH | Auth 회원가입 전송 정책 | AUTH-01, AUTH-02 | #216에서 `RegisterRequest` JSON part와 optional image multipart datasource/repository를 반영했다. 실제 파일 생성과 화면 submit은 별도 구현으로 분리한다. | Done |
+| [x] | API-AUTH | Auth 회원가입 전송 정책 | AUTH-01, AUTH-02 | #216의 multipart 경계를 #227에서 화면 submit·세션·redirect에 연결했다. 실제 소셜 SDK credential 획득과 이미지 파일 선택은 남아 있다. | Done |
 | [ ] | API-MULTIPART | Place multipart JSON part 정책 | MULTIPART-01 | Auth/User/Plant의 `application/json` encoding은 확인됐고 Place encoding은 백엔드 확인이 필요하다. | Open |
 | [ ] | API-PLACE | Place response와 식별자 정책 | PLACE-01, PLACE-02, PLACE-03, PLACE-04 | #239·#243 목록/상세/생성/수정, #245 멤버 조회 연결 완료; 멤버 변경은 보류 | Partial |
 | [ ] | API-FRIEND | Friend 요청 목록과 액션 정책 | FRIEND-01, FRIEND-02, FRIEND-03, FRIEND-04 | #241 수신 처리와 #243 발신 연결 완료, 이름 오매칭은 수용 위험으로 추적 | Partial |
-| [ ] | API-IMAGE | Image upload/download/update/delete 정책 | IMAGE-01, IMAGE-02, IMAGE-03, IMAGE-04 | 프로필/장소/식물/메모 이미지 key/url 매핑 | Open |
+| [ ] | API-IMAGE | Image upload/download/update/delete 정책 | IMAGE-01, IMAGE-02, IMAGE-03, IMAGE-04 | Place/Plant 수정 시 기존 key 유지·생략 시 삭제 계약은 확인했고 #248에서 반영한다. 독립 Image 응답·Place key 조회는 미확정이다. | Partial |
 | [ ] | API-ERROR | 공통/도메인 에러 response 정책 | ERROR-01, ERROR-02 | 사용자 메시지와 field error 매핑 | Open |
 | [ ] | API-TOKEN | refresh token과 로그아웃 정책 | TOKEN-01, TOKEN-02 | 인증 만료 복구와 세션 종료 처리 | Open |
 | [ ] | API-SEARCH | 주소/식물/사용자 검색 정책 | SEARCH-01, SEARCH-02, SEARCH-03 | 주소 검색, 식물 검색, 친구 추가 검색 UX | Open |

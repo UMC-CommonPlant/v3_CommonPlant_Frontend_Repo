@@ -1,15 +1,17 @@
 # 남은 작업 완료 현황
 
+> 보관 문서(Archived): 2026-06-28 완료된 0~15번 작업의 기록입니다. 신규 작업 큐는 [개발 감사 체크리스트](development-audit-checklist.md), 현행 문서는 [인덱스](README.md)를 확인합니다.
+
 이 문서는 #47 API 연계 보강과 #49 폼 UX 보강이 `develop`에 병합된 뒤 진행한 후속 작업의 완료 현황을 기록한다.
 각 항목은 별도 GitHub 이슈, Project 10 항목, 브랜치, PR로 분리해 진행했다.
 
-## 현재 상태
+## 완료 당시 상태
 
 - 2026-06-28 기준 아래 작업 순서의 0~15번 항목은 모두 완료되어 `develop`에 병합되었다.
 - 이 문서의 작업 순서 표는 신규 작업 큐가 아니라 완료 기록이다.
-- 이후 작업은 [후속 결정 체크리스트](follow-up-decision-checklist.md)와 [lib 구조 리팩토링 개선 방향](lib-refactoring-direction.md)을 기준으로 새 이슈 또는 상위 Epic 범위를 다시 정한 뒤 진행한다.
+- 이후 작업은 현행 [개발 감사 체크리스트](development-audit-checklist.md)와 [후속 결정 체크리스트](follow-up-decision-checklist.md)에서 별도 이슈로 정한다. 과거 구조 진단은 현재 코드와 재대조 없이 실행하지 않는다.
 
-## 진행 규칙
+## 당시 진행 규칙
 
 - 작업 전 `README.md`의 프로젝트 문서 섹션과 작업 유형별 필수 문서를 확인한다.
 - 모든 작업 브랜치는 최신 `develop`에서 생성한다.
