@@ -14,6 +14,7 @@ class PlaceFormState {
     required this.currentAddress,
     required this.loadStatus,
     required this.submitState,
+    this.initialImageUrl,
     this.loadErrorMessage,
   });
 
@@ -45,6 +46,7 @@ class PlaceFormState {
     required String placeId,
     required String name,
     required String? address,
+    String? imageUrl,
   }) : this(
          placeId: placeId,
          mode: PlaceFormMode.edit,
@@ -52,6 +54,7 @@ class PlaceFormState {
          currentName: name,
          initialAddress: address,
          currentAddress: address,
+         initialImageUrl: imageUrl,
          loadStatus: PlaceFormLoadStatus.ready,
          submitState: const FormSubmitState.idle(),
        );
@@ -87,6 +90,7 @@ class PlaceFormState {
   final String currentName;
   final String? initialAddress;
   final String? currentAddress;
+  final String? initialImageUrl;
   final PlaceFormLoadStatus loadStatus;
   final FormSubmitState submitState;
   final String? loadErrorMessage;
@@ -96,6 +100,8 @@ class PlaceFormState {
   bool get isSubmitting => submitState.isSubmitting;
 
   String? get submitErrorMessage => submitState.errorMessage;
+
+  bool get hasExistingImage => initialImageUrl?.trim().isNotEmpty ?? false;
 
   bool get hasChanges =>
       currentName.trim() != initialName || currentAddress != initialAddress;
@@ -119,6 +125,7 @@ class PlaceFormState {
       initialName: initialName,
       currentName: currentName ?? this.currentName,
       initialAddress: initialAddress,
+      initialImageUrl: initialImageUrl,
       currentAddress: identical(currentAddress, _unset)
           ? this.currentAddress
           : currentAddress as String?,

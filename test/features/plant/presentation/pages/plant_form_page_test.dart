@@ -6,12 +6,44 @@ import 'package:commonplant_frontend/features/plant/domain/repositories/plant_re
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_registration_place_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('사진 key가 없는 식물 수정은 안내를 표시하고 API를 호출하지 않는다', (tester) async {
+    final repository = _StaticEditInfoPlantRepository(
+      const PlantEditInfo(
+        name: '몬테',
+        imageUrl: 'https://example.com/plant.png',
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: const MaterialApp(
+          home: PlantFormPage(plantId: 'plant-1', placeId: 'place-1'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '몬테라');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, '완료'));
+    await tester.pumpAndSettle();
+
+    expect(repository.updateCalls, 0);
+    expect(find.text(plantFormImagePreservationMessage), findsOneWidget);
+    expect(find.text('몬테라'), findsOneWidget);
+    expect(find.byType(PlantFormPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('식물 등록 정보 입력 화면은 Figma 기준 필드를 표시한다', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: PlantFormPage())),
@@ -421,6 +453,18 @@ class _StaticEditInfoPlantRepository extends Fake implements PlantRepository {
   _StaticEditInfoPlantRepository(this.editInfo);
 
   final PlantEditInfo editInfo;
+  int updateCalls = 0;
+
+  @override
+  Future<void> updatePlant({
+    required String plantId,
+    required String placeCode,
+    String? imageKey,
+    String? nickname,
+    String? lastWateredDate,
+  }) async {
+    updateCalls++;
+  }
 
   @override
   Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {

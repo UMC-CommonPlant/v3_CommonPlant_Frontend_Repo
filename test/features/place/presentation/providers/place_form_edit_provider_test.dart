@@ -18,11 +18,17 @@ void main() {
       expect(info?.id, 'place-1');
       expect(info?.name, '스윗 홈_ 거실');
       expect(info?.address, isNull);
+      expect(info?.imageUrl, isNull);
     });
 
     test('remote mode는 장소 상세 summary를 수정 정보로 변환한다', () async {
       final repository = _StaticPlaceRepository(
-        const PlaceSummary(id: 'remote-place', name: '루프탑', address: '서울시 성북구'),
+        const PlaceSummary(
+          id: 'remote-place',
+          name: '루프탑',
+          address: '서울시 성북구',
+          imageUrl: 'https://example.com/place.png',
+        ),
       );
       final container = ProviderContainer(
         overrides: [
@@ -43,6 +49,7 @@ void main() {
       expect(info?.id, 'remote-place');
       expect(info?.name, '루프탑');
       expect(info?.address, '서울시 성북구');
+      expect(info?.imageUrl, 'https://example.com/place.png');
       expect(repository.fetchCalls, 1);
     });
 
