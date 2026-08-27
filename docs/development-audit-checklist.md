@@ -2,6 +2,8 @@
 
 2026-08-28 사용자 결정과 `develop`의 PR #246 병합 커밋 `2a01babb185ef5056b361c477717759194c53ec1`을 기준으로 합니다. 문서 정리는 [#247](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/247), 상위 개발 범위는 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)입니다.
 
+문서 PR: [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257), `develop` 대상. #247과 PR은 Project 10의 `In Review`이며 사용자 병합을 기다립니다. 기본 CI 결과는 PR checks에서 확인합니다.
+
 ## 결정과 작업 경계
 
 1. 문서 정리를 먼저 완료합니다. 현행 가이드, 실행 체크리스트, 과거 계획, 작업 이력을 [문서 인덱스](README.md)에서 구분합니다.
@@ -19,7 +21,7 @@
 - [x] 동작 문제 6개와 추가 개선 3개를 중복 확인 후 개별 이슈로 등록
 - [x] 화면·API 매트릭스와 이미지 유지·삭제 계약의 현황 대조
 - [x] 문서 링크와 변경 범위·공백 검증
-- [ ] PR·검증·커밋 이력과 Project 상태 기록
+- [x] PR·검증·커밋 이력과 Project 상태 기록
 
 ## 실행 순서
 
@@ -102,5 +104,7 @@
 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- |
 | `155b093` | 현행 가이드·인덱스·과거 기록 분리와 개선 체크리스트 | `git diff --check`, Markdown 37개·로컬 링크 126개·미연결 문서 0개 |
+| `6f368a8` | 화면·API 상태, 이미지 유지·삭제 계약, PR #246 병합 현황 정정 | `git diff --check`, 로컬 링크 138개·anchor 3개, 변경 파일 19개 모두 Markdown |
+| 이 문서의 최종 커밋 | PR #257·Project In Review 연결과 커밋별 이력 기록 | `git diff --check`, 이슈 #247~#256의 Type·담당자·milestone·parent·Project 필드 확인 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있습니다.
