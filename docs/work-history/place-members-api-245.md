@@ -38,4 +38,11 @@
 
 ## 커밋과 검증
 
-구현 커밋별 해시와 검증 결과를 완료 시 갱신합니다.
+| 커밋 | 변경 범위 | 검증 |
+| --- | --- | --- |
+| `f6178ba` | 작업 기준·계약·위험 경계 | `git diff --check` |
+| `b090581` | 장소 멤버 datasource·mapper·typed repository | Place data test 24개 |
+| `8e46fd8` | 조회 Provider·검색 상태·친구 관리 화면 | 관련 test 28개, analyze |
+| 이 문서의 최종 커밋 | API·위험·매트릭스와 전체 검증 기록 | format 294개, analyze, 전체 test 362개 통과·기존 skip 1개 |
+
+작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있습니다.

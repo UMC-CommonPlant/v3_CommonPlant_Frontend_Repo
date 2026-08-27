@@ -56,7 +56,7 @@
 | --- | --- | --- | --- | --- | --- |
 | [x] | API-AUTH | Auth 회원가입 전송 정책 | AUTH-01, AUTH-02 | #216에서 `RegisterRequest` JSON part와 optional image multipart datasource/repository를 반영했다. 실제 파일 생성과 화면 submit은 별도 구현으로 분리한다. | Done |
 | [ ] | API-MULTIPART | Place multipart JSON part 정책 | MULTIPART-01 | Auth/User/Plant의 `application/json` encoding은 확인됐고 Place encoding은 백엔드 확인이 필요하다. | Open |
-| [ ] | API-PLACE | Place response와 식별자 정책 | PLACE-01, PLACE-02, PLACE-03, PLACE-04 | #239·#243에서 목록/상세/생성/수정 연결, 친구 관리 변경은 보류 | Partial |
+| [ ] | API-PLACE | Place response와 식별자 정책 | PLACE-01, PLACE-02, PLACE-03, PLACE-04 | #239·#243 목록/상세/생성/수정, #245 멤버 조회 연결 완료; 멤버 변경은 보류 | Partial |
 | [ ] | API-FRIEND | Friend 요청 목록과 액션 정책 | FRIEND-01, FRIEND-02, FRIEND-03, FRIEND-04 | #241 수신 처리와 #243 발신 연결 완료, 이름 오매칭은 수용 위험으로 추적 | Partial |
 | [ ] | API-IMAGE | Image upload/download/update/delete 정책 | IMAGE-01, IMAGE-02, IMAGE-03, IMAGE-04 | 프로필/장소/식물/메모 이미지 key/url 매핑 | Open |
 | [ ] | API-ERROR | 공통/도메인 에러 response 정책 | ERROR-01, ERROR-02 | 사용자 메시지와 field error 매핑 | Open |
