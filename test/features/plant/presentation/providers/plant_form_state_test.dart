@@ -10,6 +10,26 @@ void main() {
   ];
 
   group('PlantFormState', () {
+    test('이름·날짜·제출 상태가 바뀌어도 초기 이미지 정보를 보존한다', () {
+      const state = PlantFormState.edit(
+        plantId: 'plant-1',
+        placeId: 'place-1',
+        name: '몬테',
+        lastWateredDate: null,
+        imageKey: 'images/existing.png',
+        imageUrl: 'https://example.com/existing.png',
+      );
+      final changed = state.copyWith(
+        currentName: '몬테라',
+        currentLastWateredDate: '2026-08-28',
+        submitState: const FormSubmitState.failure('요청 실패'),
+      );
+
+      expect(changed.initialImageKey, state.initialImageKey);
+      expect(changed.initialImageUrl, state.initialImageUrl);
+      expect(changed.hasUnresolvedImage, isFalse);
+    });
+
     test('생성 상태는 첫 장소를 선택하고 제출할 수 있다', () {
       final state = PlantFormState.create(plantName: '몬스테라', places: places);
 

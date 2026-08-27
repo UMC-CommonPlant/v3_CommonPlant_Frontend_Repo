@@ -155,11 +155,143 @@ void main() {
       expect(repository.latestUpdatePlaceCode, 'place-1');
       expect(repository.latestUpdateNickname, '몬테라');
       expect(repository.latestUpdateLastWateredDate, '2026-08-24');
+      expect(repository.updatedImageKeys, [null]);
+    });
+
+    for (final changeName in [true, false]) {
+      test('${changeName ? '이름' : '날짜'}만 수정해도 기존 이미지 key를 전달한다', () async {
+        final repository = _RecordingPlantRepository(
+          editInfo: const PlantEditInfo(
+            name: '몬테',
+            lastWateredDate: '2026-05-25',
+            imageKey: 'images/existing.png',
+            imageUrl: 'https://example.com/existing.png?signature=old',
+          ),
+        );
+        final container = ProviderContainer(
+          overrides: [
+            useRemoteApiProvider.overrideWithValue(true),
+            plantRepositoryProvider.overrideWithValue(repository),
+          ],
+        );
+        addTearDown(container.dispose);
+        const args = PlantFormArgs(plantId: 'plant-1', placeId: 'place-1');
+        final subscription = container.listen(
+          plantFormControllerProvider(args),
+          (previous, next) {},
+        );
+        addTearDown(subscription.close);
+        await container.read(remotePlantFormEditInfoProvider('plant-1').future);
+        await container.pump();
+        final controller = container.read(
+          plantFormControllerProvider(args).notifier,
+        );
+
+        if (changeName) {
+          controller.updateName('몬테라');
+        } else {
+          controller.updateLastWateredDate(DateTime(2026, 8, 24));
+        }
+        final result = await controller.submit();
+
+        expect(result?.destination, PlantFormSubmitDestination.plantDetail);
+        expect(repository.updatedImageKeys, ['images/existing.png']);
+      });
+    }
+
+    for (final imageKey in [null, '   ']) {
+      test('사진 URL만 있고 유효한 key가 없으면 수정 요청을 막는다 ($imageKey)', () async {
+        final repository = _RecordingPlantRepository(
+          editInfo: PlantEditInfo(
+            name: '몬테',
+            imageKey: imageKey,
+            imageUrl: 'https://example.com/existing.png',
+          ),
+        );
+        final container = ProviderContainer(
+          overrides: [
+            useRemoteApiProvider.overrideWithValue(true),
+            plantRepositoryProvider.overrideWithValue(repository),
+          ],
+        );
+        addTearDown(container.dispose);
+        const args = PlantFormArgs(plantId: 'plant-1', placeId: 'place-1');
+        final subscription = container.listen(
+          plantFormControllerProvider(args),
+          (previous, next) {},
+        );
+        addTearDown(subscription.close);
+        await container.read(remotePlantFormEditInfoProvider('plant-1').future);
+        await container.pump();
+        final controller = container.read(
+          plantFormControllerProvider(args).notifier,
+        );
+
+        controller.updateName('몬테라');
+        final result = await controller.submit();
+
+        expect(result, isNull);
+        expect(repository.updateCalls, 0);
+        final state = container.read(plantFormControllerProvider(args));
+        expect(state.submitErrorMessage, contains('기존 사진'));
+        expect(state.currentName, '몬테라');
+        expect(state.isSubmitting, isFalse);
+      });
+    }
+
+    test('수정 실패 후 입력을 바꿔 재시도해도 기존 이미지 key를 보존한다', () async {
+      final repository = _RecordingPlantRepository(
+        editInfo: const PlantEditInfo(
+          name: '몬테',
+          imageKey: 'images/existing.png',
+        ),
+        failFirstUpdate: true,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      const args = PlantFormArgs(plantId: 'plant-1', placeId: 'place-1');
+      final subscription = container.listen(
+        plantFormControllerProvider(args),
+        (previous, next) {},
+      );
+      addTearDown(subscription.close);
+      await container.read(remotePlantFormEditInfoProvider('plant-1').future);
+      await container.pump();
+      final controller = container.read(
+        plantFormControllerProvider(args).notifier,
+      );
+
+      controller.updateName('몬테라');
+      expect(await controller.submit(), isNull);
+      controller.updateLastWateredDate(DateTime(2026, 8, 24));
+      final result = await controller.submit();
+
+      expect(result?.destination, PlantFormSubmitDestination.plantDetail);
+      expect(repository.updatedImageKeys, [
+        'images/existing.png',
+        'images/existing.png',
+      ]);
     });
   });
 }
 
 class _RecordingPlantRepository extends Fake implements PlantRepository {
+  _RecordingPlantRepository({
+    this.editInfo = const PlantEditInfo(
+      name: '몬테',
+      lastWateredDate: '2026-05-25',
+    ),
+    this.failFirstUpdate = false,
+  });
+
+  final PlantEditInfo editInfo;
+  final bool failFirstUpdate;
+  final List<String?> updatedImageKeys = [];
   int createCalls = 0;
   int updateCalls = 0;
   String? latestUpdatePlantId;
@@ -173,7 +305,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
 
   @override
   Future<PlantEditInfo> fetchPlantEditInfo({required String plantId}) async {
-    return const PlantEditInfo(name: '몬테', lastWateredDate: '2026-05-25');
+    return editInfo;
   }
 
   @override
@@ -201,9 +333,14 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
     String? lastWateredDate,
   }) async {
     updateCalls++;
+    updatedImageKeys.add(imageKey);
     latestUpdatePlantId = plantId;
     latestUpdatePlaceCode = placeCode;
     latestUpdateNickname = nickname;
     latestUpdateLastWateredDate = lastWateredDate;
+
+    if (failFirstUpdate && updateCalls == 1) {
+      throw StateError('첫 수정 실패');
+    }
   }
 }
