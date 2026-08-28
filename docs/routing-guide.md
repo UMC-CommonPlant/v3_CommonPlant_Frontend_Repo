@@ -171,6 +171,12 @@ lib/app/router/
 | 저장 완료 후 이전 화면 갱신이 필요함 | `context.pop(result)` 또는 상태 Provider invalidate |
 | 로그인 완료 후 홈 진입 | `context.go(...)` |
 
+### 주소 선택 반환 계약
+
+장소 생성·수정은 기존 `/places/new/address-search`를 `push<AddressSearchResult>`로 열고 선택 시 같은 모델을 `pop` 결과로 받습니다. 뒤로 가기·취소는 `null`이며, 표시용 제목이 아닌 `address`를 폼에 반영합니다. route path나 query는 추가하지 않습니다.
+
+`AddressSearchResult.source`는 `fixture`와 `searchService`를 구분합니다. API 모드의 기본 검색은 아직 미연결 안내만 표시하며 fixture 결과를 반환하지 않습니다. 폼 Controller에서도 API 모드의 fixture·빈 주소를 거부합니다. 화면은 `context.mounted`, Controller는 검색 시작 시 Ref·사용자 데이터 세션을 확인하므로 폐기된 폼이나 이전 계정의 결과는 무시합니다. [#253 검증·제한](work-history/place-address-result-253.md)을 참고하며 실제 검색 서비스 연결 완료를 뜻하지 않습니다.
+
 ## 새 라우트 추가 체크리스트
 
 - [ ] route path가 도메인 관계를 드러내는가?

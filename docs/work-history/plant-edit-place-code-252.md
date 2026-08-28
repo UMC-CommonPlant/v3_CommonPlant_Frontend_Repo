@@ -8,10 +8,10 @@
 - 작업일: 2026-08-29
 - 기준 `develop`: `ebf6dc41e5f959b9f9f8ba2c772d5de790cc7d7a` (사용자 PR #261 병합)
 - 브랜치: `fix/plant-edit-place-code-252`
-- 상태: 구현·로컬 검증 완료, 사용자 병합 전. 이슈·PR은 Project 10의 `In Review`, category `Plant`, priority `high`로 관리합니다.
+- 상태: 2026-08-29 사용자 PR #262 병합 완료(`5fc01405a91bc715a5a87ce8e40c2e8c58815714`). 이슈는 Closed, 이슈·PR은 Project 10의 `Done`, category `Plant`, priority `high`입니다.
 - 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [폼 검증](../form-validation-error-guide.md), [라우팅](../routing-guide.md), [퍼블리싱](../screen-publishing-rules.md), [Figma 매핑](../figma-frame-map.md), [공용 위젯](../shared-widget-guide.md), [테스트](../testing-guide.md), [Git](../git-workflow.md), [Swagger](../api-swagger-reference.md)
 
-열린 이슈 중복을 확인하고 기존 #252를 재사용했습니다. #251 종료와 PR #261 병합·Project `Done`을 확인한 뒤 최신 `develop`에서 분기했습니다. 상위 #226의 완료 하위 이슈는 15/20이며 #252는 병합 전 완료로 세지 않습니다. 미사용 공용 위젯과 #248 이미지 보호·#249 세션 격리·#250 제출 잠금·#251 등록 장소 검증을 유지합니다.
+열린 이슈 중복을 확인하고 기존 #252를 재사용했습니다. #251 종료와 PR #261 병합·Project `Done`을 확인한 뒤 최신 `develop`에서 분기했습니다. 시작 당시 상위 #226의 완료 하위 이슈는 15/20이었고, #252 병합·종료 뒤 16/20으로 갱신됐습니다. 미사용 공용 위젯과 #248 이미지 보호·#249 세션 격리·#250 제출 잠금·#251 등록 장소 검증을 유지합니다.
 
 ## 원인과 계약 근거
 
@@ -59,7 +59,7 @@ Controller 10개·widget/router 9개, 총 19개 회귀 테스트를 추가했습
 - `fvm flutter test --reporter expanded`: 476개 통과, 기존 non-Linux golden skip 1개
 - `git diff --check`: 통과
 - 프로젝트 Markdown 44개(미입력 링크가 있는 `.github` 이슈 템플릿 제외), 로컬 링크 257개·anchor 14개: 누락 링크·미연결 문서 0개
-- 최종 HEAD의 GitHub CI 결과는 [PR checks](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/262/checks)와 이슈 검증 코멘트에 기록합니다.
+- 최종 PR CI: [Flutter CI quality](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/actions/runs/33187800256/job/98905228730) 통과, 2분 12초. Ubuntu golden 포함 477개 통과이며 실제 인증 E2E 검증은 아닙니다.
 
 테스트에는 실제 Provider 체인과 Plant route builder에 fake repository를 주입했습니다. 실제 dev API 쓰기·인증 E2E·Android/iOS 수동 smoke는 실행하지 않았습니다. 플랫폼 back·SafeArea 등의 수동 QA나 새로운 Figma 시각 일치 검증을 완료한 작업이 아닙니다.
 
@@ -79,6 +79,6 @@ Controller 10개·widget/router 9개, 총 19개 회귀 테스트를 추가했습
 | `464b9b3` | 원격 수정 code 검증·누락 상태, 성공 후 관련 캐시 갱신과 Controller 회귀 10개 | 신규 Controller·기존 Plant Form 대상 40개 통과 |
 | `4dcb910` | 3개 viewport의 실제 Plant route 전달·갱신·실패 재시도 회귀 | 신규 widget/router 9개, 전체 476개·기존 skip 1개, format·analyze |
 | `1c8ec04` | #251 병합·#252 구현 상태, API 경계·백엔드 질문·가이드·매트릭스와 검증·위험 기록 | Markdown 44개·로컬 링크 257개·anchor 14개, `git diff --check` |
-| 이 문서의 최종 커밋 | PR #262·Project In Review 연결과 커밋별 이력 기록 | `git diff --check`, 담당자·milestone·Bug type·parent·Project 필드 확인 |
+| `92c660a` | 당시 PR #262·Project In Review 연결과 커밋별 이력 기록 | `git diff --check`, 담당자·milestone·Bug type·parent·Project 필드 확인 |
 
 문서·PR 이력만 기록하는 마지막 커밋은 자기 자신의 해시를 생략할 수 있습니다.

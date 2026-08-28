@@ -2,7 +2,7 @@
 
 2026-08-28 사용자 결정과 `develop`의 PR #246 병합 커밋 `2a01babb185ef5056b361c477717759194c53ec1`을 기준으로 합니다. 문서 정리는 [#247](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/247), 상위 개발 범위는 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)입니다.
 
-문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249 / [PR #259](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259) 계정별 캐시·요청 격리(`b15cdd7`, [이력](work-history/session-cache-isolation-249.md))와 #250 / [PR #260](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/260) 입력 변경 중 제출 잠금도 병합됐습니다(`bc6e68d`, [이력](work-history/form-submit-lock-250.md)). 2026-08-29 기준 #251 / [PR #261](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/261) 원격 식물 등록 장소 상태도 병합됐습니다(`ebf6dc4`, [이력](work-history/remote-plant-places-251.md)). #252 장소 code 없는 수정 차단은 구현·로컬 검증 완료, 사용자 병합 전입니다([이력](work-history/plant-edit-place-code-252.md)).
+문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249 / [PR #259](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259) 계정별 캐시·요청 격리(`b15cdd7`, [이력](work-history/session-cache-isolation-249.md))와 #250 / [PR #260](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/260) 입력 변경 중 제출 잠금도 병합됐습니다(`bc6e68d`, [이력](work-history/form-submit-lock-250.md)). 2026-08-29 기준 #251 / [PR #261](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/261) 원격 식물 등록 장소 상태도 병합됐습니다(`ebf6dc4`, [이력](work-history/remote-plant-places-251.md)). #252 / [PR #262](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/262) 장소 code 없는 수정 차단도 병합됐습니다(`5fc0140`, [이력](work-history/plant-edit-place-code-252.md)). #253 주소 결과 전달은 구현·검증 후 사용자 병합을 기다립니다([이력](work-history/place-address-result-253.md)).
 
 ## 결정과 작업 경계
 
@@ -25,7 +25,7 @@
 
 ## 실행 순서
 
-표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248~#251은 병합 완료, #252는 구현·검증 완료 후 병합 전, #253~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
+표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248~#252는 병합 완료, #253은 구현·검증 후 사용자 병합 대기, #254~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
 
 | 체크 | 순서 | 이슈 | 우선도 | 문제·완료 기준 요약 |
 | --- | --- | --- | --- | --- |
@@ -33,8 +33,8 @@
 | [x] | AUDIT-02 | [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249) | P1 | PR #259 병합: 계정별 조회·초안·후처리 격리와 늦은 토큰 저장 방지 |
 | [x] | AUDIT-03 | [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250) | P1 | PR #260 병합: 입력 변경 중 제출 잠금·제출값 고정·실패 후 수정값 재시도 |
 | [x] | AUDIT-04 | [#251](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/251) | P1 | PR #261 병합: 실제 장소만 선택·등록, loading/error/empty 차단과 조회 재시도 |
-| [ ] | AUDIT-05 | [#252](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/252) | P1 | PR #262 구현·검증 완료, 병합 전: code 누락 안내·제출 차단, API 성공 후 관련 목록·상세·편집 정보 갱신 |
-| [ ] | AUDIT-06 | [#253](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/253) | P2 | 주소 선택·취소 결과를 장소 폼 상태와 검증에 연결 |
+| [x] | AUDIT-05 | [#252](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/252) | P1 | PR #262 병합: code 누락 안내·제출 차단, API 성공 후 관련 목록·상세·편집 정보 갱신 |
+| [ ] | AUDIT-06 | [#253](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/253) | P2 | 구현·검증 완료, 병합 대기: 주소 반환·폼 연결, API fixture 차단, 실제 검색 서비스 미연결 |
 | [ ] | AUDIT-07 | [#254](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/254) | P2 | 잘못된 목록 항목을 빈 목록 성공으로 숨기지 않고 오류 처리 |
 | [ ] | AUDIT-08 | [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255) | P2 | 비활성 입력창에서 clear 버튼으로 값이 바뀌지 않도록 차단 |
 | [ ] | AUDIT-09 | [#256](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/256) | P3 | 수정 정보 Provider의 전달 단계를 줄이되 비동기 상태·재시도·fixture 유지 |
@@ -87,9 +87,10 @@
 ### AUDIT-06 — 주소 선택 결과 전달
 
 - 위치: [주소 검색 Page](../lib/features/place/presentation/pages/address_search_page.dart), [Place Form Page](../lib/features/place/presentation/pages/place_form_page.dart).
-- 재현: 주소를 선택해도 결과 없이 pop하며 장소 폼의 주소는 null로 남습니다. API 생성 요청은 주소를 필수로 요구합니다.
-- 완료: 선택 결과를 반환·소비하고, 취소 시 기존 값을 유지하며, 필수 검증과 submit에 연결하는 widget/router 테스트를 추가합니다.
-- 경계: 외부 주소 검색 서비스·키·과금 결정은 별도입니다. 결과 전달 수정만으로 실서비스 검색이 완료됐다고 표시하거나 fixture 주소를 원격 검색 결과로 취급하지 않습니다.
+- 감사 당시 재현: 주소를 선택해도 결과 없이 pop하며 장소 폼의 주소는 null로 남았습니다. API 생성·수정 요청은 주소를 필수로 요구합니다.
+- #253 구현: `AddressSearchResult`를 typed route 결과로 반환하고 출처를 구분합니다. 생성·수정 폼은 취소·빈 값·폐기된 폼·이전 계정 결과를 무시하며, 유효한 주소를 기존 `updateAddress`와 제출에 전달합니다. 제출 중 주소 변경은 잠금과 최초 요청값을 유지합니다.
+- 검증: 신규 회귀 26개와 기존 제출 잠금·이미지 보호 테스트를 보강했습니다. 3개 viewport의 route 선택·취소·필수 검증·요청 DTO, 실제 Auth Controller의 계정 전환과 화면 폐기 경계를 [작업 이력](work-history/place-address-result-253.md)에 기록합니다.
+- 경계: API 모드는 검색 미연결 안내만 표시하고 Controller에서도 fixture 결과를 거부합니다. 기존 서버 주소는 유지하지만 새 주소 검색은 여전히 불가능하므로 API 장소 생성 전체가 완료된 것은 아닙니다. 외부 주소 검색 서비스·키·과금·실제 adapter 도입은 별도 결정입니다.
 
 ## 추가 개선의 근거와 경계
 
