@@ -169,7 +169,7 @@ feature 내부에 남기는 경우:
 
 ## 네트워크 계층 기준
 
-현재 `core/network`에 공통 Dio client, 인증 token 저장소, interceptor와 응답 파서가 있습니다.
+현재 `core/network`에 공통 Dio client, 사용자 데이터 세션, 인증 token 저장소·저장 순서 관리, interceptor와 응답 파서가 있습니다.
 
 ```text
 lib/core/network/
@@ -178,17 +178,23 @@ lib/core/network/
   api_response_parser.dart
   auth_interceptor.dart
   auth_token_store.dart
+  auth_token_writer.dart
+  user_data_session.dart
 ```
 
 | 파일 | 역할 |
 | --- | --- |
-| `api_client.dart` | base URL, timeout, Dio instance Provider 구성 |
+| `api_client.dart` | base URL, timeout, 데이터 세션별 Dio 구성·이전 client 종료 |
 | `api_exception.dart` | 서버 오류, 네트워크 오류, 인증 오류를 앱 공통 타입으로 변환 |
 | `api_response_parser.dart` | 확인된 wrapper·필드 추출과 응답 형식 검증 |
-| `auth_interceptor.dart` | 저장된 access token을 요청 header에 주입. 자동 refresh나 서버 logout은 미구현 |
+| `auth_interceptor.dart` | 활성 세션의 access token만 주입하고 세션이 바뀐 요청·응답은 취소 처리. 자동 refresh나 서버 logout은 미구현 |
 | `auth_token_store.dart` | `flutter_secure_storage` 기반 access/refresh token 읽기·저장·제거 |
+| `auth_token_writer.dart` | 인증 시도 유효성 검사와 token 저장·삭제 직렬화. 세션이 바뀌어도 같은 큐 유지 |
+| `user_data_session.dart` | 토큰을 담지 않는 세대·활성 상태, 사용자 조회의 세션 의존성과 늦은 후처리 검사 |
 
 feature의 datasource는 공통 Dio client를 주입받아 사용하고, 화면이나 Controller에서 직접 Dio를 생성하지 않습니다.
+
+사용자별 조회 Provider는 API 모드에서 `requireUserDataSession(ref)`로 세션을 구독합니다. 화면용 `AsyncValue`는 `unwrapPrevious()`로 이전 계정 데이터를 숨기고, 변경 Controller는 await 전후의 세션과 Ref를 확인합니다. 인증 저장·삭제는 `AuthTokenWriter`를 거치며 feature가 저장소에 직접 쓰지 않습니다. [상태관리의 세션 격리 기준](state-management-guide.md#사용자-데이터-세션-격리)을 따릅니다.
 
 실제 API 호출은 기본 개발/테스트 흐름을 깨지 않도록 `COMMONPLANT_USE_API` 환경값으로 켭니다.
 확인된 dev API base URL은 `https://commonplant-dev.okbear.dev/api/v1`이며 `COMMONPLANT_API_BASE_URL`로 명시적으로 주입합니다.
@@ -207,7 +213,7 @@ fvm flutter run --dart-define-from-file=env/local.api.json
 
 Swagger에 성공 response body schema가 없는 API는 mapper에서 확인 가능한 필드만 사용하고, 필수 필드가 없으면 공통 API 오류로 처리합니다. 응답 구조가 확정되기 전까지 화면에서 임의 필드를 직접 읽지 않습니다.
 
-감사에서 확인한 이미지 key 누락은 #248에서 Plant key 보존과 Place 사진 수정의 안전 차단으로 보완했습니다. 원격 목록의 fixture 혼입, 세션 캐시와 응답 파서 문제 등은 [개발 감사 체크리스트](development-audit-checklist.md)에서 계속 추적합니다. 위 기준을 이미 모든 경로가 충족한 것으로 해석하지 않습니다.
+감사에서 확인한 이미지 key 누락은 #248에서 Plant key 보존과 Place 사진 수정의 안전 차단으로, 계정별 캐시는 #249에서 세션 격리로 보완했습니다. 중복 제출, 원격 목록의 fixture 혼입과 응답 파서 문제 등은 [개발 감사 체크리스트](development-audit-checklist.md)에서 계속 추적합니다. 위 기준을 이미 모든 경로가 충족한 것으로 해석하지 않습니다.
 
 ## 작업 순서
 

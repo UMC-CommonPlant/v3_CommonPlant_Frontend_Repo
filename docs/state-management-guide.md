@@ -8,6 +8,9 @@
 | --- | --- |
 | `lib/main.dart` | `ProviderScope` 적용 |
 | `lib/app/router/app_router.dart` | `appRouterProvider` 정의 |
+| `lib/core/network/user_data_session.dart` | 인증과 분리된 사용자 데이터 세대·활성 상태 |
+| `lib/core/network/auth_token_writer.dart` | 세션 전환을 넘어서 공유하는 token 저장·삭제 순서 |
+| `lib/features/login/presentation/providers` | Auth 세션·로그인·회원가입 Controller |
 | `lib/features/place/presentation/providers` | Place 목록/상세/form/action Provider와 Controller |
 | `lib/features/plant/presentation/providers` | Plant 목록/상세/form/action Provider와 Controller |
 | `lib/features/memo/presentation/providers` | local Memo 목록 상태 Provider |
@@ -153,9 +156,9 @@ lib/features/login/
 ```
 
 - 토큰 저장은 `core/network/auth_token_store.dart`의 `AuthTokenStore`와 `flutter_secure_storage` 구현으로 관리합니다.
-- access token과 refresh token의 읽기/쓰기/삭제는 token store로 캡슐화합니다.
+- access token과 refresh token의 읽기는 token store, 인증 결과의 쓰기·삭제 순서는 `AuthTokenWriter`로 캡슐화합니다.
 - 라우터는 인증 Provider의 결과만 보고 redirect하며, storage에 직접 접근하지 않습니다.
-- 로그아웃 또는 token clear 시 인증 상태를 unauthenticated로 전환합니다.
+- 로그아웃 또는 token clear 요청 시 사용자 데이터 세션과 인증 상태를 먼저 닫고 저장소 삭제를 기다립니다. 느린 삭제 완료가 새 인증 상태를 덮지 않습니다.
 
 ### Auth state Provider 설계
 
@@ -173,15 +176,43 @@ Provider 책임은 아래처럼 나눕니다.
 | 대상 | 책임 |
 | --- | --- |
 | `AuthTokenStore` | access token, refresh token의 저장/읽기/삭제만 담당합니다. UI나 라우터 상태를 알지 않습니다. |
-| `AuthInterceptor` | 요청 직전 access token을 `Authorization: Bearer ...` header에 첨부합니다. redirect를 직접 수행하지 않습니다. |
-| `authSessionControllerProvider` | token store와 로그인/회원가입 결과를 바탕으로 앱 인증 상태를 노출합니다. |
+| `AuthTokenWriter` | 같은 ProviderScope의 인증 시도와 token 저장·삭제를 순서대로 처리합니다. 새 인증 시도·세션 전환 후 이전 저장을 차단합니다. |
+| `AuthInterceptor` | 활성 데이터 세션의 요청에만 token을 첨부합니다. token 읽기 전후와 응답 시 세션을 검사하며 redirect는 직접 수행하지 않습니다. |
+| `userDataSessionProvider` | token·개인정보 없이 데이터 수명의 세대와 활성 여부를 노출합니다. |
+| `authSessionControllerProvider` | token 복원·인증 결과·로그아웃으로 route 상태와 데이터 세션을 전환합니다. |
 | `SocialAuthCredentialGateway` | Kakao/Google/Apple SDK에서 받은 provider token을 로그인 Controller에 전달합니다. SDK 미설정 기본 구현은 설정 안내 오류를 반환합니다. |
-| 로그인/회원가입 Controller | repository 호출, token 저장, `signupRequired` 또는 `authenticated` 전환을 담당합니다. |
-| 로그아웃 Controller | 로컬 token clear 후 `unauthenticated`로 전환합니다. 서버 로그아웃 API는 `TOKEN-02` 답변 후 추가합니다. |
+| 로그인/회원가입 Controller | repository 호출과 유효한 결과의 인증 전환을 담당합니다. 실제 token 저장은 repository가 `AuthTokenWriter`를 통해 수행합니다. |
+| 로그아웃 Controller | 즉시 `unauthenticated`로 전환하고 로컬 token clear를 기다립니다. 서버 로그아웃 API는 `TOKEN-02` 답변 후 추가합니다. |
 
 `authSessionControllerProvider`와 `socialAuthCredentialGatewayProvider`는 테스트에서 override할 수 있으며, router test는 `unauthenticated`, `signupRequired`, `authenticated` 상태별 redirect를 직접 검증합니다.
 
 `TOKEN-01` refresh API가 확정되기 전까지 access token 만료 자동 복구는 구현하지 않습니다. 401 응답을 받은 뒤 token을 갱신하는 interceptor 재시도 정책은 백엔드 endpoint와 error code가 확정된 뒤 별도 이슈에서 다룹니다.
+
+### 사용자 데이터 세션 격리
+
+인증 상태의 `authenticated` 값만 구독하면 A에서 B로 바뀌어도 같은 상태로 보일 수 있습니다. #249는 로그인·회원가입 성공, 복원과 로그아웃·탈퇴에 새 `UserDataSession`을 부여합니다. `signupRequired`도 이전 데이터 세션을 닫습니다. 계정 ID나 token을 캐시 key에 넣지 않습니다.
+
+- 사용자별 원격 조회의 build는 `requireUserDataSession(ref)`로 활성 세션을 확인하고 구독합니다. 비활성 상태에서는 repository를 호출하지 않습니다.
+- API 모드의 폼·선택·알림 설정과 로컬 추가 상태도 세션을 구독해 초기화합니다. API 비사용 fixture 모드는 기존 상태 수명을 유지합니다.
+- 원격 `FutureProvider`는 재로딩 중 이전 `AsyncValue` 값을 보존할 수 있습니다. 화면이나 화면용 Provider는 `unwrapPrevious()`로 loading/error 중 이전 사용자 데이터가 보이지 않도록 합니다. 원격 Provider의 `.value`를 바로 UI에 사용하지 않습니다.
+- 변경 요청은 시작 시점의 `Ref`와 세션을 캡처하고 await 이후 성공·실패·캐시 갱신·이동 결과 반환 전에 검사합니다. Notifier가 재사용될 수 있으므로 완료 시점의 `ref.mounted`만 확인하는 것으로 대체하지 않습니다.
+
+```dart
+final requestRef = ref;
+final session = ref.read(userDataSessionProvider);
+if (!session.isActive) return;
+
+await repository.update(request);
+if (!isCurrentUserDataSession(requestRef, session)) return;
+
+// 현재 세션에서만 상태 반영·캐시 갱신·이동 결과 반환
+```
+
+조회 의존성은 User 정보·검색, Place 목록·상세·요약·멤버, Plant 목록·상세·수정 정보, Friend 수신 요청에 적용됩니다. 수정 폼과 식물 등록 장소처럼 이를 변환하는 Provider도 같은 의존성을 이어받습니다.
+
+`dioProvider`는 세션별 client를 생성하고 이전 client를 닫습니다. `AuthTokenWriter`는 반대로 세션마다 재생성하지 않아 진행 중 저장 뒤에 삭제 또는 새 계정 저장이 이어지도록 합니다. 새 로그인과 회원가입 요청은 저장 전에 인증 시도 번호도 확인합니다.
+
+이 처리는 클라이언트 격리이며 서버에 이미 도착한 쓰기의 rollback을 보장하지 않습니다. OS 보안 저장소 삭제가 실패하면 현재 앱은 비인증을 유지하지만 재시작 시 남은 token 복원 가능성이 있습니다. [#249 검증·제한](work-history/session-cache-isolation-249.md)을 참고합니다.
 
 ## Provider 네이밍
 
@@ -219,6 +250,8 @@ Provider 이름은 feature와 역할을 함께 드러냅니다.
 - [ ] 버튼 중복 탭 방지 상태가 있는가?
 - [ ] Provider 이름이 도메인과 역할을 설명하는가?
 - [ ] 테스트에서 Provider override가 가능한 구조인가?
+- [ ] 사용자별 조회·초안·변경 결과가 데이터 세션을 따르고 이전 계정의 값이 로딩 중 표시되지 않는가?
+- [ ] 같은 ProviderScope의 계정 전환과 지연 응답·저장 순서를 검증했는가?
 
 ## 결정 필요
 
