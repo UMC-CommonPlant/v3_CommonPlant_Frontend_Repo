@@ -8,10 +8,12 @@ import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_registration_place_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_form_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/test_viewport.dart';
 import '../../../../helpers/user_data_session.dart';
 
 void main() {
@@ -167,35 +169,71 @@ void main() {
     expect(find.text(displayDate), findsOneWidget);
   });
 
-  testWidgets('식물 등록 화면은 원격 제출 중 등록 버튼을 잠근다', (tester) async {
-    final repository = _PendingPlantCreateRepository();
+  for (final viewport in [
+    TestViewports.reference,
+    TestViewports.compactWidth,
+    TestViewports.shortHeight,
+  ]) {
+    testWidgets('식물 등록 중 장소 변경·재탭도 잠금을 유지하고 실패하면 해제한다 ($viewport)', (
+      tester,
+    ) async {
+      configureTestViewport(tester, viewport);
+      final repository = _PendingPlantCreateRepository();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          authenticatedUserDataSession,
-          useRemoteApiProvider.overrideWithValue(true),
-          plantRepositoryProvider.overrideWithValue(repository),
-          plantRegistrationPlaceProvider.overrideWith(
-            (ref) => [plantRegistrationPlaceFallbacks.first],
-          ),
-        ],
-        child: const MaterialApp(home: PlantFormPage()),
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authenticatedUserDataSession,
+            useRemoteApiProvider.overrideWithValue(true),
+            plantRepositoryProvider.overrideWithValue(repository),
+            plantRegistrationPlaceProvider.overrideWith(
+              (ref) => plantRegistrationPlaceFallbacks.take(2).toList(),
+            ),
+          ],
+          child: const MaterialApp(home: PlantFormPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(FilledButton, '등록'));
-    await tester.pump();
+      final button = find.widgetWithText(FilledButton, '등록');
+      final repeatSubmit = tester.widget<FilledButton>(button).onPressed!;
+      await tester.tap(button);
+      await tester.pump();
+      final nextPlace = find.text(plantRegistrationPlaceFallbacks[1].name);
+      await tester.ensureVisible(nextPlace);
+      await tester.pump();
+      await tester.tap(nextPlace);
+      await tester.pump();
+      repeatSubmit();
+      await tester.pump();
 
-    expect(repository.createCalls, 1);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(repository.createCalls, 1);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    final submitButton = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, '등록'),
-    );
-    expect(submitButton.onPressed, isNull);
-  });
+      final submitButton = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, '등록'),
+      );
+      expect(submitButton.onPressed, isNull);
+      expect(
+        tester
+            .widget<PlantCreateScaffold>(find.byType(PlantCreateScaffold))
+            .selectedPlaceId,
+        plantRegistrationPlaceFallbacks[1].id,
+      );
+
+      repository._completer.completeError(StateError('첫 요청 실패'));
+      await tester.pumpAndSettle();
+      expect(find.text('식물 등록에 실패했어요'), findsOneWidget);
+      expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
+      expect(
+        tester
+            .widget<PlantCreateScaffold>(find.byType(PlantCreateScaffold))
+            .selectedPlaceId,
+        plantRegistrationPlaceFallbacks[1].id,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('식물 등록 실패는 사용자 오류를 표시하고 재시도할 수 있다', (tester) async {
     final repository = _FailingPlantCreateRepository();
@@ -228,38 +266,61 @@ void main() {
     expect(submitButton.onPressed, isNotNull);
   });
 
-  testWidgets('식물 수정 화면은 원격 제출 중 완료 버튼을 잠근다', (tester) async {
-    final repository = _PendingPlantRepository();
+  for (final viewport in [
+    TestViewports.reference,
+    TestViewports.compactWidth,
+    TestViewports.shortHeight,
+  ]) {
+    testWidgets('식물 수정 중 이름 변경·재탭도 잠금을 유지하고 실패하면 해제한다 ($viewport)', (
+      tester,
+    ) async {
+      configureTestViewport(tester, viewport);
+      final repository = _PendingPlantRepository();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          authenticatedUserDataSession,
-          useRemoteApiProvider.overrideWithValue(true),
-          plantRepositoryProvider.overrideWithValue(repository),
-        ],
-        child: const MaterialApp(
-          home: PlantFormPage(plantId: 'plant-1', placeId: 'place-1'),
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authenticatedUserDataSession,
+            useRemoteApiProvider.overrideWithValue(true),
+            plantRepositoryProvider.overrideWithValue(repository),
+          ],
+          child: const MaterialApp(
+            home: PlantFormPage(plantId: 'plant-1', placeId: 'place-1'),
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), '몬테라');
-    await tester.pump();
+      await tester.enterText(find.byType(TextField), '몬테라');
+      await tester.pump();
 
-    await tester.tap(find.widgetWithText(FilledButton, '완료'));
-    await tester.pump();
+      final button = find.widgetWithText(FilledButton, '완료');
+      final repeatSubmit = tester.widget<FilledButton>(button).onPressed!;
+      await tester.tap(button);
+      await tester.pump();
+      await tester.enterText(find.byType(TextField), '다음 이름');
+      await tester.pump();
+      repeatSubmit();
+      await tester.pump();
 
-    expect(repository.updateCalls, 1);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(repository.updateCalls, 1);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    final completeButton = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, '완료'),
-    );
+      final completeButton = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, '완료'),
+      );
 
-    expect(completeButton.onPressed, isNull);
-  });
+      expect(completeButton.onPressed, isNull);
+      expect(find.text('다음 이름'), findsOneWidget);
+
+      repository._completer.completeError(StateError('첫 요청 실패'));
+      await tester.pumpAndSettle();
+      expect(find.text('식물 수정에 실패했어요'), findsOneWidget);
+      expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
+      expect(find.text('다음 이름'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('식물 수정 실패는 공통 제출 오류 메시지를 표시하고 재시도 가능하다', (tester) async {
     final repository = _FailingPlantUpdateRepository();

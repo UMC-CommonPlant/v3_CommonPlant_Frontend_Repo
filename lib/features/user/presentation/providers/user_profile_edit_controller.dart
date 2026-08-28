@@ -40,7 +40,9 @@ class UserProfileEditController extends Notifier<UserProfileEditState> {
   void updateName(String name) {
     state = state.copyWith(
       currentName: name,
-      submitState: const FormSubmitState.idle(),
+      submitState: state.isSubmitting
+          ? state.submitState
+          : const FormSubmitState.idle(),
     );
   }
 

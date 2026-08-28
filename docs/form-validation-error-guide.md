@@ -99,7 +99,14 @@ CommonTextField(
 
 버튼 UI는 `CommonButton`의 `onPressed: null` 상태를 활용합니다.
 
-현재 구현에는 입력 변경이 진행 중 submit 상태를 해제하는 경로가 있습니다. 버튼 상태만으로 중복 전송이 방지됐다고 판단하지 않고, [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250)에서 Controller의 in-flight 잠금과 실패 후 재시도를 검증합니다. disabled 입력의 clear 동작은 [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255)로 추적합니다.
+[#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250)에서 Place·Plant·회원정보 수정·가입 프로필의 입력 변경이 진행 중 제출 상태를 유지하도록 수정했습니다. 입력 자체는 계속 수정할 수 있지만, 완료 전 다시 호출한 `submit()`은 API를 추가 호출하거나 성공 이동 결과를 반환하지 않습니다.
+
+- 입력 변경은 진행 중 `submitting` 상태를 `idle`로 바꾸지 않습니다. 실패 안내를 지우는 동작과 요청 잠금 해제를 구분합니다.
+- 요청에 사용할 값은 첫 `await` 전에 확정합니다. 가입 프로필도 인증 세션을 기다리기 전에 닉네임을 캡처합니다.
+- 실패하면 수정 중이던 입력을 보존하고 유효성 검증에 따라 재시도합니다. 성공 시 기존 화면 이동을 유지하며, 대기 중 새로 입력한 값을 자동으로 추가 저장하지 않습니다.
+- 버튼뿐 아니라 Controller 호출 경계도 `Completer` 회귀 테스트로 확인합니다. [검증·제한](work-history/form-submit-lock-250.md)을 참고하며, 서버의 중복 처리 방지까지 보장하는 계약은 아닙니다.
+
+disabled 입력의 clear 동작은 [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255)로 별도 추적합니다.
 
 여러 폼에서 제출 상태가 반복되면 `shared/forms/form_submit_state.dart`의
 `FormSubmitState`를 feature별 Riverpod Controller 상태로 사용합니다.
@@ -129,7 +136,7 @@ API 연동이 들어오면 아래 순서로 처리합니다.
 - [ ] 필수값, 길이, 형식 검증이 명확한가?
 - [ ] 서버 에러 문자열을 화면에 그대로 노출하지 않는가?
 - [ ] field error와 form-level error가 분리되어 있는가?
-- [ ] 제출 중 중복 탭을 막는가?
+- [ ] 요청 중 입력을 바꿔도 중복 제출이 차단되고 실패 후 수정값으로 재시도할 수 있는가?
 - [ ] 키보드 타입과 maxLength가 입력 목적에 맞는가?
 - [ ] helper text가 작은 화면에서 overflow 되지 않는가?
 - [ ] 테스트에서 정상/오류 입력을 검증했는가?

@@ -102,6 +102,15 @@ API 모드의 사용자별 조회·변경은 활성 `userDataSessionProvider`가
 
 #249의 [작업 이력](work-history/session-cache-isolation-249.md)에 세션·네트워크·화면별 회귀 테스트를 연결합니다.
 
+### 폼 제출 잠금 회귀 테스트
+
+- fake repository의 `Completer`로 첫 요청을 지연하고 이름·주소·날짜·선택값을 변경한 뒤 `submit()`을 다시 호출합니다. 요청 횟수는 1회, payload는 첫 제출값, 두 번째 호출 결과는 비성공이어야 합니다.
+- 첫 요청의 성공·실패를 각각 완료합니다. 성공 결과는 최초 호출에만 반환되고, 실패 후에는 수정된 초안으로 새 요청을 보낼 수 있어야 합니다.
+- widget test에서는 입력 변경 뒤에도 disabled/loading이 유지되는지 확인하고, 이전 프레임의 버튼 콜백을 다시 전달해 Controller 경계도 검사합니다. 성공 이동과 오류 표시·재시도를 함께 확인합니다.
+- 로딩 indicator가 계속 도는 동안 `pumpAndSettle`로 대기하지 않습니다. 필요한 프레임만 `pump`하고, fake 응답을 완료한 후 화면 전환을 기다립니다.
+
+[#250 작업 이력](work-history/form-submit-lock-250.md)에 대상 Controller와 Reference·Compact width·Short height 화면 검증을 기록합니다. 실제 원격 쓰기나 서버 멱등성 검증은 포함하지 않습니다.
+
 ## Unit test 기준
 
 아래 로직은 화면 테스트보다 unit test를 우선합니다.

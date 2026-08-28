@@ -2,7 +2,7 @@
 
 이 문서는 화면 퍼블리싱 이후 남아 있는 mock 흐름을 실제 상태와 API 계층으로 전환하는 순서와 완료 기준을 관리합니다. 배포 자동화와 원격 E2E 준비는 필요한 외부 조건이 충족될 때까지 유지하되, 현재 MVP 최우선 작업은 사용자 동선별 수직 슬라이스 완성입니다.
 
-2026-08-28 감사 후 문서 정리 #247 / PR #257과 이미지 보존 #248 / PR #258이 병합됐습니다. 계정별 캐시 격리 #249는 구현·로컬 검증 완료, 사용자 병합 전입니다. [개발 감사·개선 체크리스트](development-audit-checklist.md)의 다음 수정은 #250 중복 제출입니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
+2026-08-28 감사 후 문서 정리 #247 / PR #257, 이미지 보존 #248 / PR #258과 계정별 캐시 격리 #249 / PR #259가 병합됐습니다. 입력 변경 중 제출 잠금 #250은 구현·로컬 검증 완료, 사용자 병합 전입니다. [개발 감사·개선 체크리스트](development-audit-checklist.md)의 다음 수정은 #251 원격 식물 등록의 샘플 장소 혼입입니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
 
 ## 목표
 
@@ -47,19 +47,19 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 | 도메인 | 화면·route | 현재 상태 | 남은 연결 | API·선행 조건 | 판정 |
 | --- | --- | --- | --- | --- | --- |
-| Home | Home `/` | User·Place·Plant 목록·Friend 요청 수 연결, #249 계정별 캐시 격리 구현 | #249 사용자 병합, 배지 조회 실패 표현 | Friend 요청 목록 source 계약 #241 반영 | 연결 PR 병합, 세션 격리 검증 완료 |
-| User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴와 세 화면 연결, #249 이전 프로필·초안·후처리 격리 | #249 사용자 병합, 중복 제출 #250, 이미지 파일 선택·알림 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 병합, 세션 격리 검증 완료 |
+| Home | Home `/` | User·Place·Plant 목록·Friend 요청 수 연결, #249 계정별 캐시 격리 병합 | 배지 조회 실패 표현 | Friend 요청 목록 source 계약 #241 반영 | 연결·세션 격리 PR 병합 |
+| User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴와 세 화면 연결, #249 세션 격리 병합, #250 이름 변경 중 제출 잠금 구현 | #250 사용자 병합, 이미지 파일 선택·알림 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237·#249 병합, 제출 잠금 검증 완료 |
 | Place | 장소 친구 요청 | API 목록·프로필·loading/empty/error와 수락·거절 연결, fixture 모드 유지 | 원격 인증 smoke | `GET /friends/requests`, `POST /friends/accept`, `POST /friends/decline` #241 반영 | #241 연결 |
-| Place | 장소 등록 | create API와 생성 code·친구 추가 route 연결, 주소 선택 결과 미연결 | 필수 주소 전달 #253, 중복 제출 #250, 실제 이미지 | 생성 result code #243 반영, 이름 기반 요청 위험 수용 | API 계층 연결, 주소 입력 동선 미완료 |
+| Place | 장소 등록 | create API와 생성 code·친구 추가 route 연결, #250 입력 중 제출 잠금 구현, 주소 선택 결과 미연결 | #250 사용자 병합, 필수 주소 전달 #253, 실제 이미지 | 생성 result code #243 반영, 이름 기반 요청 위험 수용 | API 계층 연결, 주소 입력 동선 미완료 |
 | Place | 주소 검색 | fixture 검색, 선택해도 결과 없이 복귀 | 선택 결과 반환·소비 #253, 실제 검색 adapter | route 결과 연결은 즉시 수정 가능, 실서비스 검색은 별도 결정 필요 | 동작 수정과 외부 결정 분리 |
 | Place | 장소 등록 중 친구 추가 | User 검색, 생성된 place code, 선택 사용자 요청 submit 연결 | 고유 사용자 식별자와 대상별 결과 검증 | `GET /users/{keyword}`, `POST /friends/request`; 동명이인 위험은 별도 등록 | #243 위험 수용 연결 |
-| Place | 장소 수정 | #248에서 사진 URL을 폼에 보존하고 사진이 있으면 수정 요청 차단·안내 | key 조회 계약 후 제한 해제, 중복 제출 #250, 주소 전달 #253 | imageKey 생략은 삭제 의미, 상세에는 key 미제공 | 사진 없는 장소 수정 유지, 사진 있는 장소는 임시 제한 |
+| Place | 장소 수정 | #248에서 사진 URL 보존·사진 있는 수정 차단, #250 입력 중 제출 잠금 구현 | #250 사용자 병합, key 조회 계약 후 제한 해제, 주소 전달 #253 | imageKey 생략은 삭제 의미, 상세에는 key 미제공 | 사진 없는 장소 수정 유지, 사진 있는 장소는 임시 제한 |
 | Place | 장소 상세 | API 장소·owner·멤버·식물 연결, fixture 병합 제거 | 서버 미제공 환경 수치와 물주기 액션 | `GET /place/{code}` source 계약 #239 반영 | #239 / PR #240 병합 완료 |
 | Place | 친구 관리 | 실제 멤버·이미지 조회, 닉네임 필터, loading/empty/error/retry 연결 | 멤버 추가·삭제·권한 변경 | `GET /place/{code}/members` 연결, 고유 member id와 변경 endpoint 없음 | #245 조회 전용 연결 |
 | Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
 | Plant | 식물 등록 검색 | fixture 검색 | 실제 검색 모델과 상태 | 식물 종 검색 endpoint 필요 | 보류 |
-| Plant | 식물 등록 | 장소·애칭·선택 날짜와 create submit 연결, 원격 장소 조회 실패·빈 목록에 fixture 혼입 | 실제 장소·비동기 상태 #251, 중복 제출 #250, 학명/이미지 | `POST /plants` 연결, 유효한 서버 장소 code 필요 | 날짜 연결 완료, 원격 장소 처리 수정 필요 |
-| Plant | 식물 수정 | #248에서 초기 imageKey 보존·전송, URL만 있고 key가 없으면 차단 | 중복 제출 #250, code 검증 #252, 이미지 선택·삭제 UI | `GET /plants/{id}/edit`, `PUT /plants/{id}` | 이미지 보존 구현·검증, code 없는 거짓 성공은 후속 수정 |
+| Plant | 식물 등록 | 장소·애칭·선택 날짜와 create submit 연결, #250 제출 잠금 구현, 원격 장소 조회 실패·빈 목록에 fixture 혼입 | #250 사용자 병합, 실제 장소·비동기 상태 #251, 학명/이미지 | `POST /plants` 연결, 유효한 서버 장소 code 필요 | 날짜 연결 완료, 원격 장소 처리 수정 필요 |
+| Plant | 식물 수정 | #248 이미지 key 보존·불완전 정보 차단, #250 입력 중 제출 잠금 구현 | #250 사용자 병합, code 검증 #252, 이미지 선택·삭제 UI | `GET /plants/{id}/edit`, `PUT /plants/{id}` | 이미지 보존·제출 잠금 검증, code 없는 거짓 성공은 후속 수정 |
 | Plant | 식물 상세 | detail/delete, 등록일 계산과 실제 값 연결, remote fixture 제거 | Memo CRUD·물주기 액션 | `GET/DELETE /plants/{id}` 연결; Memo·물주기 API 없음 | #231 연결 완료 |
 | Memo | 메모 작성 | 로컬 Provider 저장 | DTO, repository, submit, 실제 image file | Memo 생성 endpoint 필요 | Blocked |
 | Memo | 메모 목록·수정·삭제 | 로컬 fixture·상태 | 목록, pagination, 수정·삭제, 상세 갱신 | Memo CRUD endpoint 필요 | Blocked |
@@ -99,6 +99,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 - 프로필 샘플 이미지는 로컬 UI 상태이므로 서버 multipart 이미지로 임의 전송하지 않습니다. 실제 파일 선택 결과가 준비될 때 optional image 경계에 연결합니다.
 - API 모드는 secure storage의 access/refresh token 쌍으로 세션을 복원합니다. refresh와 서버 로그아웃은 endpoint 확정 전까지 추가하지 않습니다.
 - #249에서 로그인·회원가입 결과마다 사용자 데이터 세션을 교체합니다. 늦은 SDK·API 결과는 이전 세션에 반영하지 않으며 token 저장·삭제는 같은 큐에서 순서대로 처리합니다.
+- #250에서 가입 프로필 입력 중에도 제출 잠금을 유지하고 세션 확인 전 닉네임을 캡처합니다. 실패 후 새 입력값으로 재시도하며, 인증·이미지 계약은 바꾸지 않습니다.
 - 라우터는 `unauthenticated`, `signupRequired`, `authenticated` 세션에 따라 접근을 제어하고 로그인 전 target을 보존합니다.
 
 ## 계정별 데이터 격리 #249
@@ -107,7 +108,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 프로필·Place·Plant 폼, 친구 선택·처리 상태, 알림 설정과 로컬 추가 데이터도 API 모드에서 초기화합니다. 늦은 변경 응답은 현재 세션을 확인한 뒤에만 상태·캐시·이동 결과를 반영하며, 탈퇴 응답으로 새 계정을 로그아웃시키지 않습니다. API 비사용 fixture는 유지합니다.
 
-검증은 fake repository·token store·Dio adapter와 widget test로 수행했습니다. 서버에 이미 전달된 변경의 취소·롤백, OS 저장소 장애, 실제 인증 E2E는 [작업 이력의 제한](work-history/session-cache-isolation-249.md#남은-제한과-위험)과 구분합니다. 중복 제출·fixture 혼입·code 누락 등 #250~#256은 별도 수정입니다.
+검증은 fake repository·token store·Dio adapter와 widget test로 수행했습니다. 서버에 이미 전달된 변경의 취소·롤백, OS 저장소 장애, 실제 인증 E2E는 [작업 이력의 제한](work-history/session-cache-isolation-249.md#남은-제한과-위험)과 구분합니다. 중복 제출은 [#250 별도 이력](work-history/form-submit-lock-250.md)에서 보완하며 fixture 혼입·code 누락 등 #251~#256은 남아 있습니다.
 
 ## User 프로필 수직 슬라이스
 
@@ -225,5 +226,6 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #247 | - | PR #246 병합 확인(`2a01bab`), API 연결과 미완료 동선·감사 이슈 분리 | [문서 정리 이력](development-audit-checklist.md) |
 | #248 | `7aee5e8`, `cda0aa2` | Plant 이미지 key 보존·불완전 정보 차단, Place 사진 수정 요청 차단과 회귀 테스트 | [이미지 보존 이력](work-history/form-image-preservation-248.md), 전체 376개 통과·기존 skip 1개 |
 | #249 | `59c7d7d`, `a3e9711` | PR #258 병합 확인(`a630c66`), 인증·토큰 저장과 사용자별 캐시·늦은 후처리 격리 | [계정 격리 이력](work-history/session-cache-isolation-249.md), 전체 410개 통과·기존 skip 1개 |
+| #250 | `2103498`, `8ff9cf5` | PR #259 병합 확인(`b15cdd7`), Place·Plant·User·가입 프로필 입력 중 제출 잠금과 회귀 테스트 | [제출 잠금 이력](work-history/form-submit-lock-250.md), 전체 436개 통과·기존 skip 1개 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.

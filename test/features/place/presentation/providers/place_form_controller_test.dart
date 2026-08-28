@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
@@ -13,6 +15,107 @@ import '../../../../helpers/user_data_session.dart';
 
 void main() {
   group('PlaceFormController', () {
+    for (final isEdit in [false, true]) {
+      for (final fails in [false, true]) {
+        test(
+          '장소 ${isEdit ? '수정' : '생성'} 중 입력해도 한 번만 제출하고 ${fails ? '실패 후 재시도한다' : '이동 결과를 한 번 반환한다'}',
+          () async {
+            final barrier = Completer<void>();
+            final repository = _RecordingPlaceRepository()
+              ..writeBarrier = barrier;
+            final container = ProviderContainer(
+              overrides: [
+                authenticatedUserDataSession,
+                useRemoteApiProvider.overrideWithValue(true),
+                placeRepositoryProvider.overrideWithValue(repository),
+              ],
+            );
+            addTearDown(container.dispose);
+            final provider = placeFormControllerProvider(
+              isEdit ? 'place-1' : null,
+            );
+            container.listen(provider, (_, _) {});
+            if (isEdit) {
+              await container.read(
+                remotePlaceFormEditInfoProvider('place-1').future,
+              );
+              await container.pump();
+            }
+            final controller = container.read(provider.notifier);
+            controller.updateName('첫 제출');
+            controller.updateAddress('서울시 성북구');
+            final first = controller.submit();
+            final duplicates = <Future<PlaceFormSubmitResult?>>[];
+            final pendingStates = <PlaceFormState>[];
+
+            for (final edit in <void Function()>[
+              () => controller.updateName('다음 제출'),
+              () => controller.updateAddress('서울시 강남구'),
+              controller.clearAddress,
+              () => controller.updateAddress('서울시 종로구'),
+            ]) {
+              edit();
+              pendingStates.add(container.read(provider));
+              duplicates.add(controller.submit());
+            }
+            if (fails) {
+              barrier.completeError(StateError('첫 요청 실패'));
+            } else {
+              barrier.complete();
+            }
+            final results = await Future.wait([first, ...duplicates]);
+
+            expect(pendingStates.every((state) => state.isSubmitting), isTrue);
+            expect(pendingStates.every((state) => !state.canSubmit), isTrue);
+            expect(pendingStates.last.currentName, '다음 제출');
+            expect(pendingStates.last.currentAddress, '서울시 종로구');
+            expect(isEdit ? repository.updateCalls : repository.createCalls, 1);
+            expect(
+              isEdit
+                  ? repository.latestUpdateName
+                  : repository.latestCreateName,
+              '첫 제출',
+            );
+            expect(
+              isEdit
+                  ? repository.latestUpdateAddress
+                  : repository.latestCreateAddress,
+              '서울시 성북구',
+            );
+            expect(results.skip(1), everyElement(isNull));
+            if (!fails) {
+              expect(
+                results.first?.destination,
+                isEdit
+                    ? PlaceFormSubmitDestination.home
+                    : PlaceFormSubmitDestination.friendAdd,
+              );
+              return;
+            }
+
+            expect(results.first, isNull);
+            expect(container.read(provider).submitErrorMessage, isNotNull);
+            expect(container.read(provider).canSubmit, isTrue);
+            repository.writeBarrier = null;
+            expect(await controller.submit(), isNotNull);
+            expect(isEdit ? repository.updateCalls : repository.createCalls, 2);
+            expect(
+              isEdit
+                  ? repository.latestUpdateName
+                  : repository.latestCreateName,
+              '다음 제출',
+            );
+            expect(
+              isEdit
+                  ? repository.latestUpdateAddress
+                  : repository.latestCreateAddress,
+              '서울시 종로구',
+            );
+          },
+        );
+      }
+    }
+
     test('local 장소 생성은 draft를 목록에 추가하고 친구 추가 결과를 반환한다', () async {
       final container = ProviderContainer();
       final subscription = container.listen(
@@ -219,6 +322,7 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
   _RecordingPlaceRepository({this.imageUrl});
 
   final String? imageUrl;
+  Completer<void>? writeBarrier;
   int createCalls = 0;
   int updateCalls = 0;
   String? latestUpdateCode;
@@ -247,6 +351,8 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
     latestCreateName = name;
     latestCreateAddress = address;
 
+    await writeBarrier?.future;
+
     return 'created-place';
   }
 
@@ -262,6 +368,8 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
     latestUpdateName = name;
     latestUpdateAddress = address;
     latestUpdateImageKey = imageKey;
+
+    await writeBarrier?.future;
 
     return PlaceSummary(id: code, name: name, address: address);
   }

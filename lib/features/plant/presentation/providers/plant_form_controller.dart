@@ -117,7 +117,9 @@ class PlantFormController extends Notifier<PlantFormState> {
 
     state = state.copyWith(
       currentName: name,
-      submitState: const FormSubmitState.idle(),
+      submitState: state.isSubmitting
+          ? state.submitState
+          : const FormSubmitState.idle(),
     );
   }
 
@@ -128,7 +130,9 @@ class PlantFormController extends Notifier<PlantFormState> {
 
     state = state.copyWith(
       currentLastWateredDate: _formatPlantWateringDate(date),
-      submitState: const FormSubmitState.idle(),
+      submitState: state.isSubmitting
+          ? state.submitState
+          : const FormSubmitState.idle(),
     );
   }
 
@@ -139,7 +143,9 @@ class PlantFormController extends Notifier<PlantFormState> {
 
     state = state.copyWith(
       selectedPlaceId: place.id,
-      submitState: const FormSubmitState.idle(),
+      submitState: state.isSubmitting
+          ? state.submitState
+          : const FormSubmitState.idle(),
     );
   }
 

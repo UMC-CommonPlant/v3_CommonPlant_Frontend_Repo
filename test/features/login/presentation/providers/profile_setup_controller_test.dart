@@ -13,6 +13,99 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  for (final fails in [false, true]) {
+    test(
+      '가입 프로필 요청 중 닉네임·사진·동의 변경은 잠금을 유지하고 ${fails ? '실패 후 재시도한다' : '성공을 한 번 반환한다'}',
+      () async {
+        final container = ProviderContainer(
+          overrides: [useRemoteApiProvider.overrideWithValue(false)],
+        );
+        addTearDown(container.dispose);
+        container.listen(profileSetupControllerProvider, (_, _) {});
+        final controller = container.read(
+          profileSetupControllerProvider.notifier,
+        );
+        controller.updateNickname('첫 제출');
+        final barrier = Completer<void>();
+        var calls = 0;
+        Future<void> action() {
+          calls++;
+          return barrier.future;
+        }
+
+        final first = controller.submit(action: action);
+        final duplicates = <Future<bool>>[];
+        final pendingStates = <ProfileSetupState>[];
+        for (final edit in <void Function()>[
+          () => controller.updateNickname('다음 제출'),
+          controller.selectProfileImage,
+          controller.resetProfileImage,
+          () => controller.setPrivacyTermsAccepted(true),
+          controller.togglePrivacyTermsAccepted,
+        ]) {
+          edit();
+          pendingStates.add(container.read(profileSetupControllerProvider));
+          duplicates.add(controller.submit(action: action));
+        }
+        if (fails) {
+          barrier.completeError(StateError('첫 요청 실패'));
+        } else {
+          barrier.complete();
+        }
+        final results = await Future.wait([first, ...duplicates]);
+
+        expect(pendingStates.every((state) => state.isSubmitting), isTrue);
+        expect(pendingStates.every((state) => !state.canSubmit), isTrue);
+        expect(pendingStates.last.nickname, '다음 제출');
+        expect(calls, 1);
+        expect(results.first, !fails);
+        expect(results.skip(1), everyElement(isFalse));
+        if (!fails) return;
+
+        expect(
+          container.read(profileSetupControllerProvider).errorMessage,
+          profileSetupSubmitFailureMessage,
+        );
+        expect(
+          container.read(profileSetupControllerProvider).canSubmit,
+          isTrue,
+        );
+        expect(
+          await controller.submit(
+            action: () async {
+              calls++;
+            },
+          ),
+          isTrue,
+        );
+        expect(calls, 2);
+      },
+    );
+  }
+
+  test('회원가입 요청은 세션 확인 중 이름을 바꿔도 제출 시점 이름을 사용한다', () async {
+    final result = Completer<AuthResult>();
+    final repository = _FakeAuthRepository(pendingResult: result);
+    final container = _remoteSignupContainer(repository);
+    addTearDown(container.dispose);
+    await container.read(authSessionControllerProvider.future);
+    container.listen(profileSetupControllerProvider, (_, _) {});
+    final controller = container.read(profileSetupControllerProvider.notifier);
+    controller.updateNickname('첫 제출');
+    final first = controller.submit();
+    controller.updateNickname('다음 제출');
+    final duplicate = controller.submit();
+    await repository.started.future;
+    result.complete(
+      const AuthenticatedResult(accessToken: 'access', refreshToken: 'refresh'),
+    );
+
+    expect(await first, isTrue);
+    expect(await duplicate, isFalse);
+    expect(repository.registerCalls, 1);
+    expect(repository.latestRequest?.name, '첫 제출');
+  });
+
   test('닉네임 입력에 따라 제출 가능 상태를 계산한다', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -204,6 +297,7 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
 
   final Completer<AuthResult>? pendingResult;
   final started = Completer<void>();
+  int registerCalls = 0;
   RegisterRequest? latestRequest;
 
   @override
@@ -211,6 +305,7 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
     RegisterRequest request, {
     MultipartFile? image,
   }) async {
+    registerCalls++;
     latestRequest = request;
     if (!started.isCompleted) started.complete();
     return pendingResult?.future ??
