@@ -1,3 +1,5 @@
+import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/address_search_result.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/address_search_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,38 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../../helpers/test_viewport.dart';
 
 void main() {
+  for (final viewport in [
+    TestViewports.reference,
+    TestViewports.compactWidth,
+    TestViewports.shortHeight,
+  ]) {
+    testWidgets('API 모드에서는 검색 미연결 안내만 표시한다 ($viewport)', (tester) async {
+      configureTestViewport(tester, viewport);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [useRemoteApiProvider.overrideWithValue(true)],
+          child: const MaterialApp(home: AddressSearchPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('주소 검색 서비스가 아직 연결되지 않았어요'), findsOneWidget);
+      expect(find.byType(TextField), findsNothing);
+      expect(find.text('선택'), findsNothing);
+      expect(find.textContaining('신도림역', findRichText: true), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('일치하는 샘플 주소가 없으면 빈 결과를 안내한다', (tester) async {
+    await _pumpPage(tester);
+    await tester.enterText(find.byType(TextField), '없는 주소');
+    await tester.pumpAndSettle();
+
+    expect(find.text('검색 결과가 없어요'), findsOneWidget);
+    expect(find.text('선택'), findsNothing);
+  });
+
   testWidgets('주소 검색 화면은 Figma 기준 검색어와 결과 목록을 표시한다', (
     WidgetTester tester,
   ) async {
@@ -35,8 +69,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('주소 검색 결과를 선택하면 이전 화면으로 돌아간다', (WidgetTester tester) async {
+  testWidgets('주소 검색 결과를 선택하면 주소와 출처를 반환한다', (WidgetTester tester) async {
     final navigatorKey = GlobalKey<NavigatorState>();
+    AddressSearchResult? selection;
 
     await tester.pumpWidget(
       ProviderScope(
@@ -46,12 +81,13 @@ void main() {
             builder: (context) {
               return Scaffold(
                 body: TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const AddressSearchPage(),
-                      ),
-                    );
+                  onPressed: () async {
+                    selection = await Navigator.of(context)
+                        .push<AddressSearchResult>(
+                          MaterialPageRoute<AddressSearchResult>(
+                            builder: (_) => const AddressSearchPage(),
+                          ),
+                        );
                   },
                   child: const Text('주소 검색 열기'),
                 ),
@@ -70,6 +106,8 @@ void main() {
 
     expect(find.text('주소 검색 열기'), findsOneWidget);
     expect(navigatorKey.currentState?.canPop(), isFalse);
+    expect(selection?.address, '서울 구로구 경인로 688');
+    expect(selection?.source, AddressSearchResultSource.fixture);
   });
 }
 

@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/address_search_fixture.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/address_search_result.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,15 +11,28 @@ final addressSearchControllerProvider =
     );
 
 class AddressSearchState {
-  const AddressSearchState({required this.query, required this.results});
+  const AddressSearchState({
+    required this.query,
+    required this.results,
+    this.isAvailable = true,
+  });
+
+  const AddressSearchState.unavailable()
+    : this(query: '', results: const [], isAvailable: false);
 
   final String query;
   final List<AddressSearchResult> results;
+  final bool isAvailable;
 }
 
 class AddressSearchController extends Notifier<AddressSearchState> {
   @override
   AddressSearchState build() {
+    // 실제 검색 adapter가 연결되기 전에는 fixture로 대체하지 않는다.
+    if (ref.watch(useRemoteApiProvider)) {
+      return const AddressSearchState.unavailable();
+    }
+
     return AddressSearchState(
       query: initialAddressSearchQuery,
       results: _matchingAddresses(initialAddressSearchQuery),
@@ -26,6 +40,8 @@ class AddressSearchController extends Notifier<AddressSearchState> {
   }
 
   void updateQuery(String query) {
+    if (!state.isAvailable) return;
+
     state = AddressSearchState(
       query: query,
       results: _matchingAddresses(query),

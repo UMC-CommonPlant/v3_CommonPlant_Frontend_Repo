@@ -24,6 +24,16 @@ class AddressSearchPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final searchState = ref.watch(addressSearchControllerProvider);
 
+    if (!searchState.isAvailable) {
+      return CommonScaffold(
+        title: '주소 검색',
+        child: Text(
+          '주소 검색 서비스가 아직 연결되지 않았어요.\n연결 전에는 새 주소를 선택할 수 없어요.',
+          style: AppTextStyles.size16Medium.copyWith(color: AppColors.textBody),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
@@ -44,22 +54,33 @@ class AddressSearchPage extends ConsumerWidget {
             ),
             const SizedBox(height: _addressSearchResultGap),
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.only(
-                  bottom: AppSpacing.x40 + AppSizes.navigationBarHeight,
-                ),
-                itemCount: searchState.results.length,
-                separatorBuilder: (_, _) =>
-                    const SizedBox(height: _addressSearchResultGap),
-                itemBuilder: (context, index) {
-                  final result = searchState.results[index];
+              child: searchState.results.isEmpty
+                  ? Center(
+                      child: Text(
+                        '검색 결과가 없어요',
+                        style: AppTextStyles.size16Medium.copyWith(
+                          color: AppColors.textBody,
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.only(
+                        bottom: AppSpacing.x40 + AppSizes.navigationBarHeight,
+                      ),
+                      itemCount: searchState.results.length,
+                      separatorBuilder: (_, _) =>
+                          const SizedBox(height: _addressSearchResultGap),
+                      itemBuilder: (context, index) {
+                        final result = searchState.results[index];
 
-                  return _AddressSearchResultTile(
-                    result: result,
-                    onSelect: () => Navigator.of(context).maybePop(),
-                  );
-                },
-              ),
+                        return _AddressSearchResultTile(
+                          result: result,
+                          onSelect: () => Navigator.of(
+                            context,
+                          ).maybePop<AddressSearchResult>(result),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/address_search_result.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_state.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_form_scaffold.dart';
@@ -52,7 +53,8 @@ class PlaceFormPage extends ConsumerWidget {
         isSubmitting: formState.isSubmitting,
         onNameChanged: controller.updateName,
         onImageTap: () {},
-        onAddressTap: () => context.push(AppRoutePaths.addressSearch),
+        onAddressTap: () =>
+            controller.applyAddressSelection(_searchAddress(context)),
         onAddressClear: controller.clearAddress,
         onNext: () => _submit(context, ref),
       );
@@ -65,10 +67,18 @@ class PlaceFormPage extends ConsumerWidget {
       isSubmitting: formState.isSubmitting,
       onNameChanged: controller.updateName,
       onImageTap: () {},
-      onAddressTap: () => context.push(AppRoutePaths.addressSearch),
+      onAddressTap: () =>
+          controller.applyAddressSelection(_searchAddress(context)),
       onAddressClear: controller.clearAddress,
       onComplete: () => _submit(context, ref),
     );
+  }
+
+  Future<AddressSearchResult?> _searchAddress(BuildContext context) async {
+    final result = await context.push<AddressSearchResult>(
+      AppRoutePaths.addressSearch,
+    );
+    return context.mounted ? result : null;
   }
 
   Future<void> _submit(BuildContext context, WidgetRef ref) async {

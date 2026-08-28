@@ -2,6 +2,7 @@ import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/place/place_feature_provider.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/address_search_result.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_edit_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_state.dart';
@@ -97,6 +98,27 @@ class PlaceFormController extends Notifier<PlaceFormState> {
   }
 
   void clearAddress() => updateAddress(null);
+
+  Future<void> applyAddressSelection(
+    Future<AddressSearchResult?> selection,
+  ) async {
+    final requestRef = ref;
+    final session = ref.read(userDataSessionProvider);
+    final isRemote = ref.read(useRemoteApiProvider);
+    final result = await selection;
+
+    // Notifier가 재사용되어도 검색을 시작한 폼·계정의 결과만 반영한다.
+    if (!requestRef.mounted || result == null) return;
+    if (isRemote &&
+        (!session.isActive ||
+            !isCurrentUserDataSession(requestRef, session) ||
+            result.source != AddressSearchResultSource.searchService)) {
+      return;
+    }
+
+    final address = _normalizeAddress(result.address);
+    if (address != null) updateAddress(address);
+  }
 
   void retryLoad() {
     final placeId = this.placeId;
