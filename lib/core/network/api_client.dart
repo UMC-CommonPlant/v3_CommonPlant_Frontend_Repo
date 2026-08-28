@@ -1,10 +1,12 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/auth_interceptor.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final dioProvider = Provider<Dio>((ref) {
+  final session = ref.watch(userDataSessionProvider);
   final dio = Dio(
     BaseOptions(
       baseUrl: ref.watch(apiBaseUrlProvider),
@@ -15,7 +17,14 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
 
-  dio.interceptors.add(AuthInterceptor(ref.watch(authTokenStoreProvider)));
+  dio.interceptors.add(
+    AuthInterceptor(
+      ref.watch(authTokenStoreProvider),
+      isCurrentSession: () => isCurrentUserDataSession(ref, session),
+      attachAccessToken: session.isActive,
+    ),
+  );
+  ref.onDispose(() => dio.close(force: true));
 
   return dio;
 });

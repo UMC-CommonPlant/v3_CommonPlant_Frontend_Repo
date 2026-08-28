@@ -10,6 +10,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   const friends = [
     PlaceFriendProfile(id: 'user-1', name: ' 커먼맘 '),
@@ -117,6 +119,7 @@ void main() {
 ProviderContainer _remoteContainer(FriendRepository repository) {
   return ProviderContainer(
     overrides: [
+      authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       friendRepositoryProvider.overrideWithValue(repository),
     ],

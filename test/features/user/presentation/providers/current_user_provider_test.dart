@@ -5,11 +5,14 @@ import 'package:commonplant_frontend/features/user/presentation/providers/curren
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   test('API 비사용 모드에서 Figma 기본 회원 정보를 제공한다', () async {
     final repository = _RecordingUserRepository();
     final container = ProviderContainer(
       overrides: [
+        authenticatedUserDataSession,
         useRemoteApiProvider.overrideWithValue(false),
         userRepositoryProvider.overrideWithValue(repository),
       ],
@@ -30,6 +33,7 @@ void main() {
     );
     final container = ProviderContainer(
       overrides: [
+        authenticatedUserDataSession,
         useRemoteApiProvider.overrideWithValue(true),
         userRepositoryProvider.overrideWithValue(repository),
       ],
@@ -47,6 +51,7 @@ void main() {
     final repository = _RecordingUserRepository(error: StateError('조회 실패'));
     final container = ProviderContainer(
       overrides: [
+        authenticatedUserDataSession,
         useRemoteApiProvider.overrideWithValue(true),
         userRepositoryProvider.overrideWithValue(repository),
       ],
@@ -69,7 +74,10 @@ void main() {
 
   test('수정 완료 회원 정보로 현재 사용자 상태를 교체한다', () async {
     final container = ProviderContainer(
-      overrides: [useRemoteApiProvider.overrideWithValue(false)],
+      overrides: [
+        authenticatedUserDataSession,
+        useRemoteApiProvider.overrideWithValue(false),
+      ],
     );
     addTearDown(container.dispose);
     final subscription = container.listen(currentUserProvider, (_, _) {});

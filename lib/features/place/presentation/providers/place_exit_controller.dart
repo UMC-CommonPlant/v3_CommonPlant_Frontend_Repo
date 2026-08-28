@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/place/place_feature_provider.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
@@ -24,6 +25,7 @@ class PlaceExitResult {
 class PlaceExitController extends Notifier<FormSubmitState> {
   @override
   FormSubmitState build() {
+    if (ref.watch(useRemoteApiProvider)) ref.watch(userDataSessionProvider);
     return const FormSubmitState.idle();
   }
 
@@ -37,10 +39,14 @@ class PlaceExitController extends Notifier<FormSubmitState> {
       return null;
     }
 
+    final requestRef = ref;
+    final session = ref.read(userDataSessionProvider);
+    if (!session.isActive) return null;
     state = const FormSubmitState.submitting();
 
     try {
       await ref.read(placeRepositoryProvider).deletePlace(placeId);
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       ref.invalidate(placeDetailProvider(placeId));
       ref.invalidate(placeSummaryProvider(placeId));
       ref.invalidate(remotePlaceListProvider);
@@ -49,6 +55,7 @@ class PlaceExitController extends Notifier<FormSubmitState> {
 
       return const PlaceExitResult.home();
     } catch (_) {
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       state = const FormSubmitState.failure('장소 삭제에 실패했어요');
 
       return null;

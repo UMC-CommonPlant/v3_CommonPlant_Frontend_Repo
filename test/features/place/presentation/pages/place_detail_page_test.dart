@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../helpers/test_app.dart';
 import '../../../../helpers/test_viewport.dart';
+import '../../../../helpers/user_data_session.dart';
 
 void main() {
   testWidgets('리더는 FAB에서 장소 수정 액션을 확인할 수 있다', (tester) async {
@@ -130,6 +131,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(_PendingPlaceRepository()),
         ],
@@ -148,6 +150,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(
             _StaticPlaceRepository(
@@ -176,6 +179,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(
             _StaticPlaceRepository(
@@ -227,6 +231,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(
             _StaticPlaceRepository(
@@ -257,6 +262,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],
@@ -327,6 +333,7 @@ Widget _remotePlaceDetailApp(PlaceRepository repository) {
 
   return ProviderScope(
     overrides: [
+      authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       placeRepositoryProvider.overrideWithValue(repository),
     ],

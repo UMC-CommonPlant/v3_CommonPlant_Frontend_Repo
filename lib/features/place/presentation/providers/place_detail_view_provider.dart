@@ -17,7 +17,7 @@ final placeDetailViewProvider =
         return AsyncData(ref.watch(placeLocalDetailViewProvider(request)));
       }
 
-      return ref.watch(placeRemoteDetailViewProvider(request));
+      return ref.watch(placeRemoteDetailViewProvider(request)).unwrapPrevious();
     });
 
 final placeLocalDetailViewProvider =

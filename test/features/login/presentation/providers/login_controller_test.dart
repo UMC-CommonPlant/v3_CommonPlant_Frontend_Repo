@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
@@ -110,6 +112,77 @@ void main() {
     expect(state.submitStatus, LoginSubmitStatus.failure);
     expect(state.errorMessage, socialLoginNotConfiguredMessage);
   });
+
+  test('이전 세션의 늦은 SDK 결과로 로그인 요청을 시작하지 않는다', () async {
+    final gateway = _DelayedSocialAuthCredentialGateway();
+    final repository = _FakeAuthRepository(
+      const AuthenticatedResult(accessToken: 'A', refreshToken: 'A'),
+    );
+    final container = _remoteContainer(
+      repository: repository,
+      gateway: gateway,
+    );
+    addTearDown(container.dispose);
+    container.listen(loginControllerProvider, (_, _) {});
+    await container.read(authSessionControllerProvider.future);
+    final pending = container
+        .read(loginControllerProvider.notifier)
+        .login(SocialAuthProvider.kakao);
+    await gateway.started.future;
+
+    container
+        .read(authSessionControllerProvider.notifier)
+        .applyAuthResult(const SignupRequiredResult(signupToken: 'signup-B'));
+    gateway.credential.complete(
+      const SocialAuthCredential(
+        provider: SocialAuthProvider.kakao,
+        token: 'social-A',
+      ),
+    );
+
+    expect(await pending, isNull);
+    expect(repository.latestRequest, isNull);
+    expect(
+      container.read(authSessionControllerProvider).requireValue.signupToken,
+      'signup-B',
+    );
+  });
+
+  test('이전 로그인 응답이 새 회원가입 세션을 인증 상태로 덮지 않는다', () async {
+    final result = Completer<AuthResult>();
+    final repository = _FakeAuthRepository(
+      const AuthenticatedResult(accessToken: 'A', refreshToken: 'A'),
+      pendingResult: result,
+    );
+    final container = _remoteContainer(
+      repository: repository,
+      gateway: const _StaticSocialAuthCredentialGateway(
+        SocialAuthCredential(
+          provider: SocialAuthProvider.kakao,
+          token: 'social-A',
+        ),
+      ),
+    );
+    addTearDown(container.dispose);
+    container.listen(loginControllerProvider, (_, _) {});
+    await container.read(authSessionControllerProvider.future);
+    final pending = container
+        .read(loginControllerProvider.notifier)
+        .login(SocialAuthProvider.kakao);
+    await repository.started.future;
+
+    container
+        .read(authSessionControllerProvider.notifier)
+        .applyAuthResult(const SignupRequiredResult(signupToken: 'signup-B'));
+    result.complete(repository.result);
+
+    expect(await pending, isNull);
+    expect(
+      container.read(authSessionControllerProvider).requireValue.signupToken,
+      'signup-B',
+    );
+    expect(container.read(loginControllerProvider).errorMessage, isNull);
+  });
 }
 
 ProviderContainer _remoteContainer({
@@ -139,15 +212,30 @@ class _StaticSocialAuthCredentialGateway
 }
 
 class _FakeAuthRepository extends Fake implements AuthRepository {
-  _FakeAuthRepository(this.result);
+  _FakeAuthRepository(this.result, {this.pendingResult});
 
   final AuthResult result;
+  final Completer<AuthResult>? pendingResult;
+  final started = Completer<void>();
   LoginRequest? latestRequest;
 
   @override
   Future<AuthResult> login(LoginRequest request) async {
     latestRequest = request;
-    return result;
+    if (!started.isCompleted) started.complete();
+    return pendingResult?.future ?? result;
+  }
+}
+
+class _DelayedSocialAuthCredentialGateway
+    implements SocialAuthCredentialGateway {
+  final started = Completer<void>();
+  final credential = Completer<SocialAuthCredential>();
+
+  @override
+  Future<SocialAuthCredential> authorize(SocialAuthProvider provider) {
+    started.complete();
+    return credential.future;
   }
 }
 

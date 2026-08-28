@@ -6,6 +6,8 @@ import 'package:commonplant_frontend/features/place/place_repository_provider.da
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers/user_data_session.dart';
+
 void main() {
   group('userPlaceSummariesProvider', () {
     test('remote mode는 소속 장소 조회를 repository에 위임한다', () async {
@@ -15,6 +17,7 @@ void main() {
       ]);
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],

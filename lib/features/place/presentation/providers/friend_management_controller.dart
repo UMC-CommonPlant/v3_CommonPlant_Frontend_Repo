@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/friend_management_fixture.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,6 +59,9 @@ class FriendManagementController extends Notifier<FriendManagementState> {
   @override
   FriendManagementState build() {
     final isReadOnly = ref.watch(useRemoteApiProvider);
+    if (isReadOnly) {
+      ref.watch(userDataSessionProvider);
+    }
 
     return FriendManagementState(
       placeId: placeId,

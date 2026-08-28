@@ -6,12 +6,15 @@ import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   group('PlantDeleteController', () {
     test('remote 식물 삭제는 repository를 호출하고 홈 이동 결과를 반환한다', () async {
       final repository = _RecordingPlantRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],
@@ -37,6 +40,7 @@ void main() {
       final repository = _FailingPlantRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],
@@ -60,6 +64,7 @@ void main() {
       final repository = _RecordingPlantRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],
@@ -83,6 +88,7 @@ void main() {
       final repository = _RecordingPlantRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(false),
           plantRepositoryProvider.overrideWithValue(repository),
         ],

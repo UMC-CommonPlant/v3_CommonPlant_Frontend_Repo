@@ -88,6 +88,20 @@ await tester.pumpWidget(
 
 특정 fake repository 조합이 한 테스트 파일에서만 의미가 있다면 로컬 helper로 유지합니다. 공용 helper가 Given/When/Then을 숨기거나 서로 다른 테스트 조건을 하나의 옵션 집합으로 만들지 않습니다.
 
+### 사용자 데이터 세션 테스트
+
+API 모드의 사용자별 조회·변경은 활성 `userDataSessionProvider`가 필요합니다. 인증 자체가 대상이 아닌 domain test에서는 `test/helpers/user_data_session.dart`의 `authenticatedUserDataSession` override와 fake repository를 함께 사용합니다. 실제 token이나 네트워크 권한을 부여하는 helper가 아닙니다.
+
+인증·계정 전환 회귀 테스트에서는 위 helper로 인증 과정을 대체하지 않고, 메모리 token store와 실제 `AuthSessionController`를 사용합니다.
+
+- 같은 ProviderContainer를 유지한 채 A 조회 → 로그아웃 또는 B 로그인 → 같은 code/id/query 재조회를 검증합니다.
+- 이전 Future와 Controller를 살려 둔 채 `Completer`로 A의 늦은 성공·실패를 전달하고 B의 상태·캐시·이동 결과가 바뀌지 않는지 확인합니다.
+- 로딩·실패 중 이전 `AsyncValue` 데이터가 실제 화면에 남지 않는지 widget test로 확인합니다.
+- token 읽기·저장·삭제 지연은 메모리 저장소, 전송 경계는 fake Dio adapter로 검증합니다. 서버 요청 취소나 OS secure storage 영속 삭제를 검증한 것으로 해석하지 않습니다.
+- API 비사용 fixture와 기존 route 회귀 테스트는 유지합니다.
+
+#249의 [작업 이력](work-history/session-cache-isolation-249.md)에 세션·네트워크·화면별 회귀 테스트를 연결합니다.
+
 ## Unit test 기준
 
 아래 로직은 화면 테스트보다 unit test를 우선합니다.

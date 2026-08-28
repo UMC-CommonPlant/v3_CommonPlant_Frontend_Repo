@@ -156,7 +156,9 @@ lib/app/router/
 | 회원가입 진행 route | `profileSetup`, `terms` |
 | 인증 필요 route | `home`, `placeInvitations`, `placeCreate`, `addressSearch`, `placeFriendAdd`, `placeEdit`, `placeDetail`, `friendManagement`, `plantSearch`, `plantCreateDetails`, `plantEdit`, `plantDetail`, `memoWrite`, `memoList`, `userProfile`, `userSettings`, `userProfileEdit` |
 
-`TOKEN-01`, `TOKEN-02`가 답변되기 전까지 refresh token 재발급과 서버 로그아웃 invalidation은 redirect 구현 범위에 넣지 않습니다. 그 전에는 토큰이 없거나 명시적으로 clear된 경우만 `unauthenticated`로 전환합니다.
+`TOKEN-01`, `TOKEN-02`가 답변되기 전까지 refresh token 재발급과 서버 로그아웃 invalidation은 redirect 구현 범위에 넣지 않습니다. 토큰이 없거나 명시적으로 로그아웃·clear를 요청하면 `unauthenticated`로 전환합니다.
+
+#249부터 로그아웃·탈퇴 성공 시 저장소 삭제 완료를 기다리기 전에 인증 상태와 사용자 데이터 세션을 닫습니다. 기존 redirect 규칙은 그대로 사용하며, 느린 token 삭제 완료나 이전 계정의 요청 결과가 새 인증 상태를 변경하지 않도록 Controller에서 검사합니다. 데이터 수명은 [상태관리의 세션 격리 기준](state-management-guide.md#사용자-데이터-세션-격리)을 따릅니다.
 
 ## 화면 이동 기준
 

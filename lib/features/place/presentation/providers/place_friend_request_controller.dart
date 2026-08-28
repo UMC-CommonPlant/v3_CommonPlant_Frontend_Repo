@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/friend/data/dtos/friend_requests.dart';
 import 'package:commonplant_frontend/features/friend/data/repositories/friend_repository.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
@@ -12,7 +13,10 @@ final placeFriendRequestControllerProvider =
 
 class PlaceFriendRequestController extends Notifier<FormSubmitState> {
   @override
-  FormSubmitState build() => const FormSubmitState.idle();
+  FormSubmitState build() {
+    if (ref.watch(useRemoteApiProvider)) ref.watch(userDataSessionProvider);
+    return const FormSubmitState.idle();
+  }
 
   Future<bool> submit({
     required String? placeCode,
@@ -26,6 +30,9 @@ class PlaceFriendRequestController extends Notifier<FormSubmitState> {
       return true;
     }
 
+    final requestRef = ref;
+    final session = ref.read(userDataSessionProvider);
+    if (!session.isActive) return false;
     final normalizedPlaceCode = placeCode?.trim();
     if (normalizedPlaceCode == null || normalizedPlaceCode.isEmpty) {
       state = const FormSubmitState.failure('장소 정보를 확인할 수 없어요');
@@ -52,14 +59,14 @@ class PlaceFriendRequestController extends Notifier<FormSubmitState> {
               placeCode: normalizedPlaceCode,
             ),
           );
-      if (!ref.mounted) {
-        return true;
+      if (!isCurrentUserDataSession(requestRef, session)) {
+        return false;
       }
 
       state = const FormSubmitState.idle();
       return true;
     } catch (_) {
-      if (!ref.mounted) {
+      if (!isCurrentUserDataSession(requestRef, session)) {
         return false;
       }
 

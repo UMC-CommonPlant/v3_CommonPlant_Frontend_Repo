@@ -162,7 +162,7 @@ tool/
 - 앱 version과 build number는 `pubspec.yaml`의 `X.Y.Z+N`을 단일 원본으로 사용하고 release 브랜치에서 수동 증가합니다. store 이력 확인 전에는 CI 실행 번호로 덮어쓰지 않습니다.
 - Production 제출은 내부 테스트에서 검증한 동일 artifact를 승격하고, 심사 제출과 사용자 공개를 분리해 실행자 외 승인을 받습니다. 최초 MVP 출시는 Android/iOS 모두 수동 공개하며 unattended full rollout은 사용하지 않습니다.
 - 현재 API 모델은 수기 DTO·mapper로 구현되어 있습니다. `freezed`·`json_serializable` 도입은 미적용 제안이며, 별도 이슈에서 필요성과 생성 규칙을 정하기 전까지 현행 방식을 따릅니다.
-- 인증 토큰은 `flutter_secure_storage`에 보관합니다. 서버 token 갱신·로그아웃 API는 미확정이며, 계정 전환 시 데이터 캐시 격리는 [개선 체크리스트](docs/development-audit-checklist.md)의 후속 수정 대상입니다.
+- 인증 토큰은 `flutter_secure_storage`에 보관합니다. #249에서 계정별 데이터 세션과 토큰 저장·삭제 순서를 분리해 이전 계정의 조회·후처리가 새 계정에 섞이지 않도록 구현했습니다. 서버 token 갱신·로그아웃 API와 실제 인증 E2E는 별도이며, [작업 이력](docs/work-history/session-cache-isolation-249.md)에서 검증 범위와 제한을 확인합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
 - Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 사용합니다.
 - Integration test는 remote API를 사용하지 않는 Home 진입과 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 [remote integration test 준비 계약](docs/remote-integration-test-readiness.md)의 인증, 데이터 격리, cleanup, secret 승인 gate가 충족되기 전까지 end-to-end 범위는 `Blocked`입니다.
@@ -239,12 +239,12 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 
 ## 현재 진행 상태와 다음 작업
 
-2026-08-28 `develop`의 PR #246 병합 상태를 기준으로 합니다. Epic #226에서 Auth, Home, Plant, User 프로필, Place 목록·상세·폼 결과, Friend 요청 및 멤버 조회의 API 연결 PR이 병합됐습니다. 이는 실제 인증 E2E나 모든 화면 동선의 완성을 뜻하지 않습니다. 소셜 SDK 자격 증명 획득, 이미지 선택, 주소 검색과 아래 회귀 문제는 남아 있습니다.
+2026-08-28 `develop`의 PR #258 병합 상태(`a630c66`)와 후속 #249 구현을 기준으로 합니다. Epic #226에서 Auth, Home, Plant, User 프로필, Place 목록·상세·폼 결과, Friend 요청 및 멤버 조회의 API 연결 PR이 병합됐습니다. 이는 실제 인증 E2E나 모든 화면 동선의 완성을 뜻하지 않습니다. 소셜 SDK 자격 증명 획득, 이미지 선택, 주소 검색과 아래 회귀 문제는 남아 있습니다.
 
 현재 우선순위는 사용자 결정에 따라 다음과 같습니다.
 
 1. #247 / PR #257 문서 정리는 병합 완료했으며 [개발 감사·개선 체크리스트](docs/development-audit-checklist.md)를 실행 기준으로 사용합니다.
-2. #248에서 식물의 기존 이미지 key 보존과 사진이 있는 장소의 수정 요청 차단을 구현했습니다. 사진이 있는 장소의 수정 재개는 key 조회 계약 확인 후 진행합니다. 병합 후 #249~#253을 순서대로 해결하며, 미사용 공용 위젯 5개는 보존합니다.
+2. #248 / PR #258 이미지 보존 수정은 병합됐습니다. #249 / PR #259 계정별 캐시·늦은 응답·토큰 저장 격리는 구현·검증 완료, 사용자 병합 전입니다. 병합 후 #250 중복 제출부터 #253까지 순서대로 해결하며, 사진이 있는 장소의 수정 제한과 미사용 공용 위젯 5개는 유지합니다.
 3. 추가 파서·위젯·Provider 개선 #254~#256을 진행한 뒤 [화면·모델·API 연결 매트릭스](docs/screen-api-integration-plan.md)의 남은 동선을 이어갑니다.
 4. 외부 답변이 필요한 Image·Memo·검색·인증 정책은 [백엔드 질문](docs/backend-api-open-questions.md), 팀 결정은 [후속 결정 체크리스트](docs/follow-up-decision-checklist.md)로 분리합니다. 배포와 원격 E2E는 준비 조건 충족 전까지 보류합니다.
 

@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/user/data/dtos/user_requests.dart';
 import 'package:commonplant_frontend/features/user/data/repositories/user_repository.dart';
 import 'package:commonplant_frontend/features/user/domain/entities/user_profile.dart';
@@ -18,9 +19,23 @@ class UserProfileEditController extends Notifier<UserProfileEditState> {
   UserProfileEditController(this.args);
 
   final UserProfileEditArgs args;
+  UserDataSession? _initialSession;
 
   @override
-  UserProfileEditState build() => UserProfileEditState.initial(args.user);
+  UserProfileEditState build() {
+    if (ref.watch(useRemoteApiProvider)) {
+      final session = ref.watch(userDataSessionProvider);
+      _initialSession ??= session;
+      if (!identical(_initialSession, session)) {
+        return const UserProfileEditState(
+          initialName: '',
+          currentName: '',
+          submitState: FormSubmitState.idle(),
+        );
+      }
+    }
+    return UserProfileEditState.initial(args.user);
+  }
 
   void updateName(String name) {
     state = state.copyWith(
@@ -34,19 +49,27 @@ class UserProfileEditController extends Notifier<UserProfileEditState> {
       return false;
     }
 
+    final requestRef = ref;
+    final session = ref.read(userDataSessionProvider);
+    if (ref.read(useRemoteApiProvider) &&
+        (!session.isActive || !identical(_initialSession, session))) {
+      return false;
+    }
     state = state.copyWith(submitState: const FormSubmitState.submitting());
 
     try {
       final updatedUser = await _updateUser(state.normalizedName);
-      ref.read(currentUserProvider.notifier).replace(updatedUser);
+      if (!isCurrentUserDataSession(requestRef, session)) return false;
       state = state.copyWith(
         initialName: updatedUser.name.trim(),
         currentName: updatedUser.name.trim(),
         submitState: const FormSubmitState.idle(),
       );
+      ref.read(currentUserProvider.notifier).replace(updatedUser);
 
       return true;
     } catch (_) {
+      if (!isCurrentUserDataSession(requestRef, session)) return false;
       state = state.copyWith(
         submitState: const FormSubmitState.failure('회원 정보를 수정하지 못했어요'),
       );

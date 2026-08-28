@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../helpers/test_app.dart';
 import '../../../../helpers/test_viewport.dart';
+import '../../../../helpers/user_data_session.dart';
 
 void main() {
   testWidgets('식물 상세는 Figma 주요 정보와 더보기 메뉴를 표시한다', (tester) async {
@@ -108,6 +109,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(_PendingPlantRepository()),
         ],
@@ -126,6 +128,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(
             _StaticPlantRepository(
@@ -149,6 +152,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],
@@ -186,6 +190,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
           plantDetailNowProvider.overrideWithValue(() => DateTime(2026, 5, 25)),
@@ -258,6 +263,7 @@ Widget _remotePlantDetailApp(PlantRepository repository) {
 
   return ProviderScope(
     overrides: [
+      authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       plantRepositoryProvider.overrideWithValue(repository),
     ],

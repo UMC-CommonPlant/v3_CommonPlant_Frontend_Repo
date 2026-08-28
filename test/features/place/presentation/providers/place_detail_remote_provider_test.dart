@@ -5,6 +5,8 @@ import 'package:commonplant_frontend/features/place/presentation/providers/place
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   group('placeDetailProvider', () {
     test('장소 상세 조회를 repository에 위임한다', () async {
@@ -19,7 +21,10 @@ void main() {
         ),
       );
       final container = ProviderContainer(
-        overrides: [placeRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          authenticatedUserDataSession,
+          placeRepositoryProvider.overrideWithValue(repository),
+        ],
       );
       addTearDown(container.dispose);
 

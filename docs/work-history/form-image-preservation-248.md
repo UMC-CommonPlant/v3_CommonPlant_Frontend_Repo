@@ -3,7 +3,7 @@
 ## 작업 기준
 
 - 이슈: [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248), AUDIT-01
-- PR: [#258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258), `develop` 대상. 사용자 병합 전이며 이슈·PR은 Project 10의 `In Review`로 관리합니다. 기본 CI 결과는 최신 PR checks에서 확인합니다.
+- PR: [#258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258), 2026-08-28 사용자 병합 완료. `develop` 병합 커밋은 `a630c66e3facb52f2a0f83d0f1aaa834c0cab7f0`이며 이슈·PR은 Project 10의 `Done`입니다.
 - 상위 이슈: #226
 - 작업일: 2026-08-28
 - 기준 `develop`: `f1331b2e850bea19793c708c183417b1554bc172` (문서 PR #257 병합)
@@ -55,6 +55,8 @@ Place 조회의 `imgUrl`은 [PlaceFacade](https://github.com/UMC-CommonPlant/v3_
 | `7aee5e8` | Plant 이미지 초기값·submit key 보존, 불완전 이미지 정보 차단 | Plant Controller·State 15개 통과, format |
 | `cda0aa2` | Place 이미지 정보 전달·요청 차단, 화면 안내와 multipart 계약 테스트 | Place·Plant 205개, format 294개, analyze, 전체 376개 통과·기존 skip 1개 |
 | `d6340d9` | 감사·화면/API 현황, IMAGE-04의 제한과 전체 검증 기록 | `git diff --check`, Markdown 38개·로컬 링크 153개·anchor 5개, 미연결 문서 0개 |
-| 이 문서의 최종 커밋 | PR #258·Project In Review 연결과 커밋별 이력 기록 | `git diff --check`, 이슈·PR Type·담당자·milestone·parent·Project 필드 확인 |
+| `549972d` | PR #258·Project In Review 연결과 커밋별 이력 기록(당시 상태) | `git diff --check`, 이슈·PR Type·담당자·milestone·parent·Project 필드 확인 |
 
 문서·PR 이력만 기록하는 마지막 커밋은 자기 자신의 해시를 생략할 수 있습니다.
+
+병합 확인과 다음 #249 진행 기록은 [계정별 캐시 격리 이력](session-cache-isolation-249.md)에서 이어갑니다.

@@ -140,6 +140,40 @@ void main() {
       AuthSessionStatus.authenticated,
     );
   });
+
+  test('회원가입 계정이 바뀌면 초안을 교체하고 이전 제출 결과를 무시한다', () async {
+    final result = Completer<AuthResult>();
+    final repository = _FakeAuthRepository(pendingResult: result);
+    final container = _remoteSignupContainer(repository);
+    addTearDown(container.dispose);
+    await container.read(authSessionControllerProvider.future);
+    container.listen(profileSetupControllerProvider, (_, _) {});
+    final controller = container.read(profileSetupControllerProvider.notifier);
+    controller.updateNickname('A 초안');
+    final pending = controller.submit();
+    await repository.started.future;
+
+    container
+        .read(authSessionControllerProvider.notifier)
+        .applyAuthResult(
+          const SignupRequiredResult(
+            signupToken: 'signup-B',
+            suggestedName: '새 계정',
+          ),
+        );
+    expect(container.read(profileSetupControllerProvider).nickname, '새 계정');
+    result.complete(
+      const AuthenticatedResult(accessToken: 'A', refreshToken: 'A'),
+    );
+
+    expect(await pending, isFalse);
+    expect(
+      container.read(authSessionControllerProvider).requireValue.signupToken,
+      'signup-B',
+    );
+    expect(container.read(profileSetupControllerProvider).nickname, '새 계정');
+    expect(container.read(profileSetupControllerProvider).errorMessage, isNull);
+  });
 }
 
 ProviderContainer _remoteSignupContainer(AuthRepository repository) {
@@ -166,6 +200,10 @@ class _SignupAuthSessionController extends AuthSessionController {
 }
 
 class _FakeAuthRepository extends Fake implements AuthRepository {
+  _FakeAuthRepository({this.pendingResult});
+
+  final Completer<AuthResult>? pendingResult;
+  final started = Completer<void>();
   RegisterRequest? latestRequest;
 
   @override
@@ -174,9 +212,11 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
     MultipartFile? image,
   }) async {
     latestRequest = request;
-    return const AuthenticatedResult(
-      accessToken: 'access-token',
-      refreshToken: 'refresh-token',
-    );
+    if (!started.isCompleted) started.complete();
+    return pendingResult?.future ??
+        const AuthenticatedResult(
+          accessToken: 'access-token',
+          refreshToken: 'refresh-token',
+        );
   }
 }

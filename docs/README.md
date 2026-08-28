@@ -1,6 +1,6 @@
 # 문서 인덱스
 
-문서 분류 기준일: 2026-08-28, `develop` PR #257 병합 및 #248 작업 반영.
+문서 분류 기준일: 2026-08-28, `develop` PR #258 병합 및 #249 작업 반영.
 
 작업 전 저장소 [README](../README.md)와 [에이전트 지침](../AGENTS.md)을 먼저 확인합니다. 현재 코드를 기준으로 판단하며, 과거 계획의 파일 수·상태·명령은 현행 지침으로 해석하지 않습니다.
 
@@ -68,6 +68,7 @@
 | Place 폼 결과 #243 | [Place Form Result](work-history/place-form-result-flow-243.md) |
 | Place 멤버 조회 #245 | [Place Members](work-history/place-members-api-245.md) |
 | Place·Plant 이미지 보존 #248 | [Form Image Preservation](work-history/form-image-preservation-248.md) |
+| 계정별 캐시·진행 중 요청 격리 #249 | [Session Cache Isolation](work-history/session-cache-isolation-249.md) |
 
 Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 작업 이력](screen-api-integration-plan.md#작업-이력), 문서 정리 #247은 [개발 감사 체크리스트](development-audit-checklist.md)에서 확인합니다.
 

@@ -14,6 +14,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   testWidgets('친구 추가 기본 화면은 검색 전 결과 없이 액션을 표시한다', (WidgetTester tester) async {
     await tester.pumpWidget(_friendAddApp());
@@ -200,6 +202,7 @@ Widget _friendAddApp() {
 Widget _friendAddRemoteApp(UserRepository repository) {
   return ProviderScope(
     overrides: [
+      authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       userRepositoryProvider.overrideWithValue(repository),
     ],
@@ -230,6 +233,7 @@ Widget _friendAddRemoteApp(UserRepository repository) {
     router: router,
     app: ProviderScope(
       overrides: [
+        authenticatedUserDataSession,
         useRemoteApiProvider.overrideWithValue(true),
         userRepositoryProvider.overrideWithValue(userRepository),
         friendRepositoryProvider.overrideWithValue(friendRepository),

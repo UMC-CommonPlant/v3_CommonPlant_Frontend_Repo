@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/test_viewport.dart';
+import '../../../../helpers/user_data_session.dart';
 
 void main() {
   testWidgets('API 멤버 조회 중 로딩 상태를 표시한다', (tester) async {
@@ -194,6 +195,7 @@ void main() {
 Widget _remoteApp(PlaceRepository repository) {
   return ProviderScope(
     overrides: [
+      authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       placeRepositoryProvider.overrideWithValue(repository),
     ],

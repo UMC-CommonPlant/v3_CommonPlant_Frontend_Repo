@@ -5,6 +5,8 @@ import 'package:commonplant_frontend/features/plant/presentation/providers/plant
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   group('plantFormEditInfoProvider', () {
     test('local mode는 기본 수정 정보를 즉시 반환한다', () {
@@ -24,6 +26,7 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],
@@ -48,7 +51,10 @@ void main() {
         const PlantEditInfo(name: '필로덴드론', lastWateredDate: '2026-05-25'),
       );
       final container = ProviderContainer(
-        overrides: [plantRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          authenticatedUserDataSession,
+          plantRepositoryProvider.overrideWithValue(repository),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -64,6 +70,7 @@ void main() {
       final repository = _StaticPlantRepository(const PlantEditInfo(name: ''));
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],

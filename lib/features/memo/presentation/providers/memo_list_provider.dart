@@ -1,4 +1,6 @@
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
+import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -43,6 +45,8 @@ class MemoListNotifier extends Notifier<Map<String, List<MemoItem>>> {
 
   @override
   Map<String, List<MemoItem>> build() {
+    if (ref.watch(useRemoteApiProvider)) ref.watch(userDataSessionProvider);
+    _nextId = 1;
     return const {'plant-1': _defaultMemoItems};
   }
 

@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +15,9 @@ final plantFormEditInfoProvider =
         return const AsyncData(PlantEditInfo(name: plantFormDefaultEditName));
       }
 
-      return ref.watch(remotePlantFormEditInfoProvider(plantId));
+      return ref
+          .watch(remotePlantFormEditInfoProvider(plantId))
+          .unwrapPrevious();
     });
 
 final remotePlantFormEditInfoProvider =
@@ -29,9 +32,9 @@ final remotePlantFormEditInfoProvider =
     }, retry: (retryCount, error) => null);
 
 final remotePlantEditInfoProvider =
-    FutureProvider.family<PlantEditInfo, String>(
-      (ref, plantId) => ref
+    FutureProvider.family<PlantEditInfo, String>((ref, plantId) {
+      requireUserDataSession(ref);
+      return ref
           .watch(plantRepositoryProvider)
-          .fetchPlantEditInfo(plantId: plantId),
-      retry: (retryCount, error) => null,
-    );
+          .fetchPlantEditInfo(plantId: plantId);
+    }, retry: (retryCount, error) => null);

@@ -5,6 +5,8 @@ import 'package:commonplant_frontend/features/plant/presentation/providers/plant
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   group('remotePlantDetailProvider', () {
     test('식물 상세 조회를 repository에 위임한다', () async {
@@ -12,7 +14,10 @@ void main() {
         const PlantDetail(id: 'plant-1', name: '몬스테라'),
       );
       final container = ProviderContainer(
-        overrides: [plantRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          authenticatedUserDataSession,
+          plantRepositoryProvider.overrideWithValue(repository),
+        ],
       );
       addTearDown(container.dispose);
 

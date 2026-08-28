@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/user/data/repositories/user_repository.dart';
 import 'package:commonplant_frontend/features/user/domain/entities/user_profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +23,7 @@ class CurrentUserController extends AsyncNotifier<UserProfile> {
       return _localUserProfile;
     }
 
+    requireUserDataSession(ref);
     return ref.watch(userRepositoryProvider).fetchMe();
   }
 

@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/friend/data/dtos/friend_requests.dart';
 import 'package:commonplant_frontend/features/friend/data/repositories/friend_repository.dart';
 import 'package:commonplant_frontend/features/friend/domain/entities/friend_invitation.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final remotePlaceInvitationsProvider =
     FutureProvider.autoDispose<List<PlaceInvitation>>((ref) async {
+      requireUserDataSession(ref);
       final invitations = await ref
           .watch(friendRepositoryProvider)
           .fetchRequests();
@@ -19,7 +21,7 @@ final remotePlaceInvitationsProvider =
 final placeInvitationsProvider =
     Provider.autoDispose<AsyncValue<List<PlaceInvitation>>>((ref) {
       if (ref.watch(useRemoteApiProvider)) {
-        return ref.watch(remotePlaceInvitationsProvider);
+        return ref.watch(remotePlaceInvitationsProvider).unwrapPrevious();
       }
 
       return const AsyncData(placeInvitationFixture);
@@ -71,6 +73,7 @@ class PlaceInvitationState {
 class PlaceInvitationController extends Notifier<PlaceInvitationState> {
   @override
   PlaceInvitationState build() {
+    if (ref.watch(useRemoteApiProvider)) ref.watch(userDataSessionProvider);
     return const PlaceInvitationState.initial();
   }
 
@@ -110,6 +113,9 @@ class PlaceInvitationController extends Notifier<PlaceInvitationState> {
       return;
     }
 
+    final requestRef = ref;
+    final session = ref.read(userDataSessionProvider);
+    if (!session.isActive) return;
     if (friendId == null) {
       _setActionFailure('친구 요청 정보를 확인할 수 없어요');
       return;
@@ -119,9 +125,11 @@ class PlaceInvitationController extends Notifier<PlaceInvitationState> {
 
     try {
       await remoteAction(FriendDecisionRequest(friendId: friendId));
+      if (!isCurrentUserDataSession(requestRef, session)) return;
       _setResult(invitationId, result);
       ref.invalidate(remotePlaceInvitationsProvider);
     } catch (_) {
+      if (!isCurrentUserDataSession(requestRef, session)) return;
       _setActionFailure('친구 요청을 처리하지 못했어요', invitationId);
     }
   }

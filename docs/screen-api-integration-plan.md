@@ -2,7 +2,7 @@
 
 이 문서는 화면 퍼블리싱 이후 남아 있는 mock 흐름을 실제 상태와 API 계층으로 전환하는 순서와 완료 기준을 관리합니다. 배포 자동화와 원격 E2E 준비는 필요한 외부 조건이 충족될 때까지 유지하되, 현재 MVP 최우선 작업은 사용자 동선별 수직 슬라이스 완성입니다.
 
-2026-08-28 감사 후 문서 정리 #247 / PR #257은 병합됐으며 [개발 감사·개선 체크리스트](development-audit-checklist.md)의 회귀 문제를 순서대로 해결합니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
+2026-08-28 감사 후 문서 정리 #247 / PR #257과 이미지 보존 #248 / PR #258이 병합됐습니다. 계정별 캐시 격리 #249는 구현·로컬 검증 완료, 사용자 병합 전입니다. [개발 감사·개선 체크리스트](development-audit-checklist.md)의 다음 수정은 #250 중복 제출입니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
 
 ## 목표
 
@@ -47,8 +47,8 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 | 도메인 | 화면·route | 현재 상태 | 남은 연결 | API·선행 조건 | 판정 |
 | --- | --- | --- | --- | --- | --- |
-| Home | Home `/` | User·Place·Plant 목록과 Friend 수신 요청 수 API 모드 연결 | 계정 전환 시 사용자 캐시 격리 #249, 배지 조회 실패 표현 | Friend 요청 목록 source 계약 #241 반영 | 연결 PR 병합, 회귀 수정 필요 |
-| User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴 Controller와 세 화면 연결 | 세션 캐시 #249, 중복 제출 #250, 이미지 파일 선택·알림 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 병합, 회귀 수정 필요 |
+| Home | Home `/` | User·Place·Plant 목록·Friend 요청 수 연결, #249 계정별 캐시 격리 구현 | #249 사용자 병합, 배지 조회 실패 표현 | Friend 요청 목록 source 계약 #241 반영 | 연결 PR 병합, 세션 격리 검증 완료 |
+| User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴와 세 화면 연결, #249 이전 프로필·초안·후처리 격리 | #249 사용자 병합, 중복 제출 #250, 이미지 파일 선택·알림 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | #237 병합, 세션 격리 검증 완료 |
 | Place | 장소 친구 요청 | API 목록·프로필·loading/empty/error와 수락·거절 연결, fixture 모드 유지 | 원격 인증 smoke | `GET /friends/requests`, `POST /friends/accept`, `POST /friends/decline` #241 반영 | #241 연결 |
 | Place | 장소 등록 | create API와 생성 code·친구 추가 route 연결, 주소 선택 결과 미연결 | 필수 주소 전달 #253, 중복 제출 #250, 실제 이미지 | 생성 result code #243 반영, 이름 기반 요청 위험 수용 | API 계층 연결, 주소 입력 동선 미완료 |
 | Place | 주소 검색 | fixture 검색, 선택해도 결과 없이 복귀 | 선택 결과 반환·소비 #253, 실제 검색 adapter | route 결과 연결은 즉시 수정 가능, 실서비스 검색은 별도 결정 필요 | 동작 수정과 외부 결정 분리 |
@@ -98,7 +98,16 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 - 약관 동의 후 프로필 이름과 `signupToken`으로 `/auth/register`를 호출하고 인증 세션으로 전환합니다.
 - 프로필 샘플 이미지는 로컬 UI 상태이므로 서버 multipart 이미지로 임의 전송하지 않습니다. 실제 파일 선택 결과가 준비될 때 optional image 경계에 연결합니다.
 - API 모드는 secure storage의 access/refresh token 쌍으로 세션을 복원합니다. refresh와 서버 로그아웃은 endpoint 확정 전까지 추가하지 않습니다.
+- #249에서 로그인·회원가입 결과마다 사용자 데이터 세션을 교체합니다. 늦은 SDK·API 결과는 이전 세션에 반영하지 않으며 token 저장·삭제는 같은 큐에서 순서대로 처리합니다.
 - 라우터는 `unauthenticated`, `signupRequired`, `authenticated` 세션에 따라 접근을 제어하고 로그인 전 target을 보존합니다.
+
+## 계정별 데이터 격리 #249
+
+기존 User/Place/Plant/Friend endpoint와 DTO 계약은 변경하지 않습니다. 같은 `ProviderScope`에서 사용자별 조회와 파생 정보 14개 경로를 세션에 연결하고, 비인증 상태에서는 새 요청을 시작하지 않습니다. 화면 loading/error에서는 이전 계정의 `AsyncValue` 데이터를 숨깁니다.
+
+프로필·Place·Plant 폼, 친구 선택·처리 상태, 알림 설정과 로컬 추가 데이터도 API 모드에서 초기화합니다. 늦은 변경 응답은 현재 세션을 확인한 뒤에만 상태·캐시·이동 결과를 반영하며, 탈퇴 응답으로 새 계정을 로그아웃시키지 않습니다. API 비사용 fixture는 유지합니다.
+
+검증은 fake repository·token store·Dio adapter와 widget test로 수행했습니다. 서버에 이미 전달된 변경의 취소·롤백, OS 저장소 장애, 실제 인증 E2E는 [작업 이력의 제한](work-history/session-cache-isolation-249.md#남은-제한과-위험)과 구분합니다. 중복 제출·fixture 혼입·code 누락 등 #250~#256은 별도 수정입니다.
 
 ## User 프로필 수직 슬라이스
 
@@ -106,9 +115,9 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 - 마이페이지는 `GET /users`의 loading/error/success 상태를 표시하고 Home 하단 My 탭에서 진입합니다.
 - 이름 수정은 2~10자 검증과 변경 여부를 기준으로 `PUT /users`를 호출하며, 성공 응답으로 현재 사용자 상태를 즉시 교체합니다.
-- 회원 탈퇴는 확인 dialog 뒤 `DELETE /users` 성공 시 secure token과 인증 세션을 제거합니다.
-- 서버 logout endpoint가 없어 로그아웃은 secure token과 로컬 인증 세션만 제거합니다.
-- 알림 설정 endpoint가 없어 토글은 설정 화면이 유지되는 동안의 로컬 Provider 상태로 둡니다.
+- 회원 탈퇴는 확인 dialog 뒤 `DELETE /users` 성공 시 인증·데이터 세션을 먼저 닫고 secure token 삭제를 기다립니다.
+- 서버 logout endpoint가 없어 로그아웃은 로컬 인증·데이터 세션과 secure token만 제거합니다.
+- 알림 설정 endpoint가 없어 토글은 로컬 Provider 상태로 둡니다. 화면 폐기 또는 API 모드의 계정 전환 때 초기화합니다.
 - 프로필 이미지는 기존 optional multipart 경계를 유지하지만, 파일 선택기와 플랫폼 권한 정책이 확정되지 않아 현재 이미지와 카메라 진입 안내까지만 제공합니다.
 
 ## Place 목록·상세 수직 슬라이스
@@ -215,5 +224,6 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #245 | - | PR #246·Project In Review 연결 기록 | `git diff --check` |
 | #247 | - | PR #246 병합 확인(`2a01bab`), API 연결과 미완료 동선·감사 이슈 분리 | [문서 정리 이력](development-audit-checklist.md) |
 | #248 | `7aee5e8`, `cda0aa2` | Plant 이미지 key 보존·불완전 정보 차단, Place 사진 수정 요청 차단과 회귀 테스트 | [이미지 보존 이력](work-history/form-image-preservation-248.md), 전체 376개 통과·기존 skip 1개 |
+| #249 | `59c7d7d`, `a3e9711` | PR #258 병합 확인(`a630c66`), 인증·토큰 저장과 사용자별 캐시·늦은 후처리 격리 | [계정 격리 이력](work-history/session-cache-isolation-249.md), 전체 410개 통과·기존 skip 1개 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.

@@ -6,11 +6,16 @@ import 'package:commonplant_frontend/features/place/presentation/providers/frien
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   test('local 모드는 원격 조회 없이 fixture 멤버를 제공한다', () {
     final repository = _MembersRepository();
     final container = ProviderContainer(
-      overrides: [placeRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        authenticatedUserDataSession,
+        placeRepositoryProvider.overrideWithValue(repository),
+      ],
     );
     addTearDown(container.dispose);
 
@@ -62,6 +67,7 @@ void main() {
 ProviderContainer _remoteContainer(PlaceRepository repository) {
   return ProviderContainer(
     overrides: [
+      authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       placeRepositoryProvider.overrideWithValue(repository),
     ],

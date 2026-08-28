@@ -8,6 +8,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   test('fixture 초대를 수락하면 결과와 미처리 요청 수를 갱신한다', () async {
     final container = ProviderContainer();
@@ -85,6 +87,7 @@ void main() {
 ProviderContainer _remoteContainer(FriendRemoteDataSource dataSource) {
   return ProviderContainer(
     overrides: [
+      authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       friendRemoteDataSourceProvider.overrideWithValue(dataSource),
     ],

@@ -2,7 +2,7 @@
 
 2026-08-28 사용자 결정과 `develop`의 PR #246 병합 커밋 `2a01babb185ef5056b361c477717759194c53ec1`을 기준으로 합니다. 문서 정리는 [#247](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/247), 상위 개발 범위는 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)입니다.
 
-문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)은 이미지 key 보존과 안전 차단 구현·로컬 검증을 완료했으며 [작업 이력](work-history/form-image-preservation-248.md)에서 범위와 제한을 확인합니다.
+문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249의 계정별 캐시·요청 격리는 구현·로컬 검증 완료, 사용자 병합 전이며 [작업 이력](work-history/session-cache-isolation-249.md)에 범위를 기록합니다.
 
 ## 결정과 작업 경계
 
@@ -25,12 +25,12 @@
 
 ## 실행 순서
 
-표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248은 구현·검증 후 병합 전 상태이고 #249~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
+표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248은 병합 완료, #249는 구현·검증 완료 후 병합 전, #250~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
 
 | 체크 | 순서 | 이슈 | 우선도 | 문제·완료 기준 요약 |
 | --- | --- | --- | --- | --- |
-| [ ] | AUDIT-01 | [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248) | P1 | 구현·검증 완료, 병합 전: Plant key 보존·미확인 key 차단, 사진이 있는 Place 수정은 임시 제한 |
-| [ ] | AUDIT-02 | [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249) | P1 | 로그아웃·계정 전환 후 이전 사용자 캐시와 진행 중 요청의 영향 차단 |
+| [x] | AUDIT-01 | [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248) | P1 | PR #258 병합: Plant key 보존·미확인 key 차단, 사진이 있는 Place 수정은 임시 제한 |
+| [ ] | AUDIT-02 | [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249) | P1 | PR #259 구현·검증 완료, 병합 전: 계정별 조회·초안·후처리 격리와 늦은 토큰 저장 방지 |
 | [ ] | AUDIT-03 | [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250) | P1 | 요청 중 입력 변경으로 submit 잠금이 풀리지 않도록 수정 |
 | [ ] | AUDIT-04 | [#251](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/251) | P1 | API 모드 식물 등록의 loading/error/empty에서 샘플 장소 사용 금지 |
 | [ ] | AUDIT-05 | [#252](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/252) | P1 | 장소 코드가 없어 API를 생략한 식물 수정의 거짓 성공 방지 |
@@ -54,9 +54,10 @@
 ### AUDIT-02 — 계정별 캐시 격리
 
 - 위치: [인증 세션 Controller](../lib/features/login/presentation/providers/auth_session_controller.dart), 사용자별 원격 목록·상세 Provider.
-- 재현: 같은 `ProviderScope`에서 A의 장소를 조회한 뒤 로그아웃하고 B로 바꾸면 A의 캐시를 재사용할 수 있습니다.
-- 완료: 로그아웃·탈퇴·계정 전환 때 User/Place/Plant/Friend 등 사용자 데이터를 초기화하거나 세션별로 격리합니다. A의 늦은 응답이 B의 상태를 덮지 않도록 검증합니다.
-- 경계: 클라이언트 상태 격리는 미확정 서버 refresh/logout endpoint와 무관하게 진행합니다.
+- 감사 당시 재현: 같은 `ProviderScope`에서 A의 장소를 조회한 뒤 로그아웃하고 B로 바꾸면 A의 캐시를 재사용했습니다. 토큰 저장이 늦으면 새 계정 토큰을 덮거나 로그아웃 뒤 이전 토큰을 되살리는 사례도 추가 재현했습니다.
+- #249 구현: 로그인·회원가입 결과와 로그아웃·탈퇴 때 데이터 세션을 교체하고 User/Place/Plant/Friend의 조회, 폼·선택·로컬 추가 상태를 격리합니다. 진행 중 요청의 후처리는 시작 세션과 Ref가 유지될 때만 실행하고, 화면에서는 이전 `AsyncValue` 데이터를 표시하지 않습니다.
+- 검증: 동일 컨테이너의 조회 14개 경로, 늦은 변경 응답 10개 사례, 토큰 읽기·저장·삭제 경쟁과 프로필 loading/error/retry를 포함해 회귀 테스트 34개 추가, 전체 410개 통과·기존 skip 1개입니다.
+- 경계: 서버에 이미 도착한 쓰기 요청의 취소·롤백, refresh/logout endpoint, OS 저장소 삭제 실패 시 영속 삭제 보장은 별도입니다. [제한과 위험](work-history/session-cache-isolation-249.md#남은-제한과-위험)을 따르며 #250~#256은 해결한 것으로 표시하지 않습니다.
 
 ### AUDIT-03 — 입력 중 중복 제출
 
