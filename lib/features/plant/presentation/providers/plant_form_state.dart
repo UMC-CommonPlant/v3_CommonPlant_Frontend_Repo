@@ -3,7 +3,14 @@ import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 
 enum PlantFormMode { create, edit }
 
-enum PlantFormLoadStatus { loading, ready, empty, notFound, failure }
+enum PlantFormLoadStatus {
+  loading,
+  ready,
+  empty,
+  notFound,
+  missingPlace,
+  failure,
+}
 
 class PlantFormArgs {
   const PlantFormArgs({this.plantId, this.placeId, this.initialPlantName});
@@ -138,6 +145,21 @@ class PlantFormState {
          submitState: const FormSubmitState.idle(),
          loadErrorMessage: message,
        );
+
+  const PlantFormState.missingPlace({required String plantId})
+    : this(
+        plantId: plantId,
+        placeId: null,
+        mode: PlantFormMode.edit,
+        initialName: '',
+        currentName: '',
+        initialLastWateredDate: null,
+        currentLastWateredDate: null,
+        places: const [],
+        selectedPlaceId: null,
+        loadStatus: PlantFormLoadStatus.missingPlace,
+        submitState: const FormSubmitState.idle(),
+      );
 
   final String? plantId;
   final String? placeId;
