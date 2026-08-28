@@ -33,7 +33,7 @@
 | [x] | AUDIT-02 | [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249) | P1 | PR #259 병합: 계정별 조회·초안·후처리 격리와 늦은 토큰 저장 방지 |
 | [x] | AUDIT-03 | [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250) | P1 | PR #260 병합: 입력 변경 중 제출 잠금·제출값 고정·실패 후 수정값 재시도 |
 | [x] | AUDIT-04 | [#251](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/251) | P1 | PR #261 병합: 실제 장소만 선택·등록, loading/error/empty 차단과 조회 재시도 |
-| [ ] | AUDIT-05 | [#252](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/252) | P1 | 구현·검증 완료, 병합 전: code 누락 안내·제출 차단, API 성공 후 관련 목록·상세·편집 정보 갱신 |
+| [ ] | AUDIT-05 | [#252](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/252) | P1 | PR #262 구현·검증 완료, 병합 전: code 누락 안내·제출 차단, API 성공 후 관련 목록·상세·편집 정보 갱신 |
 | [ ] | AUDIT-06 | [#253](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/253) | P2 | 주소 선택·취소 결과를 장소 폼 상태와 검증에 연결 |
 | [ ] | AUDIT-07 | [#254](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/254) | P2 | 잘못된 목록 항목을 빈 목록 성공으로 숨기지 않고 오류 처리 |
 | [ ] | AUDIT-08 | [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255) | P2 | 비활성 입력창에서 clear 버튼으로 값이 바뀌지 않도록 차단 |
