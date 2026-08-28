@@ -15,4 +15,4 @@ final plantRegistrationPlaceProvider =
             imageAsset: AppImageAssets.placeEditLivingRoom,
           ),
       ]);
-    });
+    }, retry: (retryCount, error) => null);

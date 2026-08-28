@@ -106,6 +106,8 @@ CommonTextField(
 - 실패하면 수정 중이던 입력을 보존하고 유효성 검증에 따라 재시도합니다. 성공 시 기존 화면 이동을 유지하며, 대기 중 새로 입력한 값을 자동으로 추가 저장하지 않습니다.
 - 버튼뿐 아니라 Controller 호출 경계도 `Completer` 회귀 테스트로 확인합니다. [검증·제한](work-history/form-submit-lock-250.md)을 참고하며, 서버의 중복 처리 방지까지 보장하는 계약은 아닙니다.
 
+식물 등록처럼 필수 선택지를 원격에서 가져오는 폼은 목록의 loading/error/empty에서도 제출할 수 없습니다. #251은 `canSubmit`을 버튼에 연결하고, 선택·제출 직전에 최신 장소 상태를 재확인합니다. 조회 재시도와 홈 안내는 기존 상태 화면을 사용하며, API 비사용 fixture만 유지합니다([상태 기준](state-management-guide.md#폼에-필요한-원격-목록)).
+
 disabled 입력의 clear 동작은 [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255)로 별도 추적합니다.
 
 여러 폼에서 제출 상태가 반복되면 `shared/forms/form_submit_state.dart`의

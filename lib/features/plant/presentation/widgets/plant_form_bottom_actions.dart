@@ -13,7 +13,7 @@ class PlantFormBottomActions extends StatelessWidget {
 
   final bool isSubmitting;
   final VoidCallback onCancel;
-  final VoidCallback onSubmit;
+  final VoidCallback? onSubmit;
 
   @override
   Widget build(BuildContext context) {

@@ -28,21 +28,33 @@ class PlantFormPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formState = ref.watch(plantFormControllerProvider(_args));
+    final title = formState.isEdit ? '식물 수정' : '식물 등록 (2/2)';
 
     return switch (formState.loadStatus) {
-      PlantFormLoadStatus.loading => const PlantStateScaffold(
-        title: '식물 수정',
-        statusTitle: '식물 수정 정보를 불러오고 있어요',
-        message: '식물 이름과 사진 정보를 준비하고 있어요',
+      PlantFormLoadStatus.loading => PlantStateScaffold(
+        title: title,
+        statusTitle: formState.isEdit
+            ? '식물 수정 정보를 불러오고 있어요'
+            : '등록할 장소를 불러오고 있어요',
+        message: formState.isEdit
+            ? '식물 이름과 사진 정보를 준비하고 있어요'
+            : '소속된 장소 목록을 확인하고 있어요',
         isLoading: true,
       ),
       PlantFormLoadStatus.failure => PlantStateScaffold(
-        title: '식물 수정',
-        statusTitle: '식물 수정 정보를 불러오지 못했어요',
+        title: title,
+        statusTitle: formState.loadErrorMessage!,
         message: '잠시 후 다시 시도해 주세요',
         actionLabel: '다시 시도',
         onAction: () =>
             ref.read(plantFormControllerProvider(_args).notifier).retryLoad(),
+      ),
+      PlantFormLoadStatus.empty => PlantStateScaffold(
+        title: title,
+        statusTitle: '등록할 장소가 없어요',
+        message: '홈에서 장소를 먼저 등록해 주세요',
+        actionLabel: '홈으로',
+        onAction: () => context.go(AppRoutePaths.home),
       ),
       PlantFormLoadStatus.notFound => const PlantStateScaffold(
         title: '식물 수정',
@@ -73,7 +85,7 @@ class PlantFormPage extends ConsumerWidget {
           formState.currentLastWateredDate,
         ),
         onCancel: () => _cancelCreate(context),
-        onSubmit: () => _submit(context, ref),
+        onSubmit: formState.canSubmit ? () => _submit(context, ref) : null,
       );
     }
 
