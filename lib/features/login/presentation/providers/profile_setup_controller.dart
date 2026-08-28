@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
 import 'package:commonplant_frontend/features/login/data/repositories/auth_repository.dart';
@@ -17,7 +18,9 @@ final profileSetupControllerProvider =
 class ProfileSetupController extends Notifier<ProfileSetupState> {
   @override
   ProfileSetupState build() {
-    final session = ref.read(authSessionControllerProvider).value;
+    final session = ref.watch(useRemoteApiProvider)
+        ? ref.watch(authSessionControllerProvider).unwrapPrevious().value
+        : ref.read(authSessionControllerProvider).value;
 
     if (session case AuthSessionState(
       status: AuthSessionStatus.signupRequired,
@@ -62,6 +65,8 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
       return false;
     }
 
+    final requestRef = ref;
+    final dataSession = ref.read(userDataSessionProvider);
     state = state.copyWith(
       submitStatus: ProfileSetupSubmitStatus.submitting,
       clearErrorMessage: true,
@@ -71,11 +76,13 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
       if (action != null) {
         await action();
       } else if (ref.read(useRemoteApiProvider)) {
-        await _register();
+        return await _register(requestRef, dataSession);
       }
+      if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
       state = state.copyWith(submitStatus: ProfileSetupSubmitStatus.success);
       return true;
     } catch (_) {
+      if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
       state = state.copyWith(
         submitStatus: ProfileSetupSubmitStatus.failure,
         errorMessage: profileSetupSubmitFailureMessage,
@@ -84,8 +91,9 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
     }
   }
 
-  Future<void> _register() async {
+  Future<bool> _register(Ref requestRef, UserDataSession dataSession) async {
     final session = await ref.read(authSessionControllerProvider.future);
+    if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
     final signupToken = session.signupToken;
 
     if (!session.isSignupRequired || signupToken == null) {
@@ -101,10 +109,13 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
           ),
         );
 
+    if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
     if (result is! AuthenticatedResult) {
       throw StateError('회원가입 후 인증 결과가 없습니다.');
     }
 
+    state = state.copyWith(submitStatus: ProfileSetupSubmitStatus.success);
     ref.read(authSessionControllerProvider.notifier).applyAuthResult(result);
+    return true;
   }
 }

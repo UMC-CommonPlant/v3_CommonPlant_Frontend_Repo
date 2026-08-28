@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
 import 'package:commonplant_frontend/features/login/data/gateways/social_auth_credential_gateway.dart';
@@ -53,13 +54,18 @@ final loginControllerProvider =
 
 class LoginController extends Notifier<LoginState> {
   @override
-  LoginState build() => const LoginState();
+  LoginState build() {
+    if (ref.watch(useRemoteApiProvider)) ref.watch(userDataSessionProvider);
+    return const LoginState();
+  }
 
   Future<LoginOutcome?> login(SocialAuthProvider provider) async {
     if (state.isSubmitting) {
       return null;
     }
 
+    final requestRef = ref;
+    UserDataSession? requestSession;
     state = state.copyWith(
       submitStatus: LoginSubmitStatus.submitting,
       submittingProvider: provider,
@@ -76,9 +82,13 @@ class LoginController extends Notifier<LoginState> {
       }
 
       await ref.read(authSessionControllerProvider.future);
+      if (!requestRef.mounted) return null;
+      final session = ref.read(userDataSessionProvider);
+      requestSession = session;
       final credential = await ref
           .read(socialAuthCredentialGatewayProvider)
           .authorize(provider);
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       final result = await ref
           .read(authRepositoryProvider)
           .login(
@@ -88,23 +98,34 @@ class LoginController extends Notifier<LoginState> {
             ),
           );
 
-      ref.read(authSessionControllerProvider.notifier).applyAuthResult(result);
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       state = state.copyWith(
         submitStatus: LoginSubmitStatus.success,
         clearSubmittingProvider: true,
       );
+      ref.read(authSessionControllerProvider.notifier).applyAuthResult(result);
 
       return switch (result) {
         SignupRequiredResult() => LoginOutcome.signupRequired,
         AuthenticatedResult() => LoginOutcome.authenticated,
       };
     } on SocialAuthNotConfiguredException {
+      if (!requestRef.mounted ||
+          (requestSession != null &&
+              !isCurrentUserDataSession(requestRef, requestSession))) {
+        return null;
+      }
       state = state.copyWith(
         submitStatus: LoginSubmitStatus.failure,
         errorMessage: socialLoginNotConfiguredMessage,
         clearSubmittingProvider: true,
       );
     } catch (_) {
+      if (!requestRef.mounted ||
+          (requestSession != null &&
+              !isCurrentUserDataSession(requestRef, requestSession))) {
+        return null;
+      }
       state = state.copyWith(
         submitStatus: LoginSubmitStatus.failure,
         errorMessage: socialLoginFailureMessage,
