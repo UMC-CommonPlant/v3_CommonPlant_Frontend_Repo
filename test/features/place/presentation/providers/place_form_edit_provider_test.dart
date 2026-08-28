@@ -6,6 +6,8 @@ import 'package:commonplant_frontend/features/place/presentation/providers/place
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   group('placeFormEditInfoProvider', () {
     test('local mode는 기본 수정 정보를 즉시 반환한다', () {
@@ -32,6 +34,7 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],
@@ -59,6 +62,7 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],

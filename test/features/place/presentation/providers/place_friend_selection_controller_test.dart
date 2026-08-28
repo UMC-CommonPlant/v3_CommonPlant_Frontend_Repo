@@ -9,6 +9,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   test('local 검색어에 맞는 Place friend 목록을 보여준다', () {
     final container = ProviderContainer();
@@ -51,6 +53,7 @@ void main() {
     ]);
     final container = ProviderContainer(
       overrides: [
+        authenticatedUserDataSession,
         useRemoteApiProvider.overrideWithValue(true),
         userRepositoryProvider.overrideWithValue(repository),
       ],

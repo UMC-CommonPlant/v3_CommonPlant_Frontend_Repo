@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,12 +12,13 @@ final placeListProvider =
     );
 
 final remotePlaceListProvider = FutureProvider<List<PlaceSummary>>((ref) {
+  requireUserDataSession(ref);
   return ref.watch(placeRepositoryProvider).fetchMyGardenPlaces();
-});
+}, retry: (retryCount, error) => null);
 
 final placeSummariesProvider = Provider<AsyncValue<List<PlaceSummary>>>((ref) {
   if (ref.watch(useRemoteApiProvider)) {
-    return ref.watch(remotePlaceListProvider);
+    return ref.watch(remotePlaceListProvider).unwrapPrevious();
   }
 
   return AsyncData(ref.watch(placeListProvider));
@@ -27,6 +29,8 @@ class PlaceListNotifier extends Notifier<List<PlaceSummary>> {
 
   @override
   List<PlaceSummary> build() {
+    if (ref.watch(useRemoteApiProvider)) ref.watch(userDataSessionProvider);
+    _nextId = 1;
     return const [];
   }
 

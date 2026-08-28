@@ -11,6 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   testWidgets('사진이 있는 장소 수정은 안내를 표시하고 화면과 입력을 유지한다', (tester) async {
     final repository = _EditablePlaceRepository(
@@ -84,6 +86,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],
@@ -143,6 +146,7 @@ Widget _remotePlaceEditApp(PlaceRepository repository) {
 
   return ProviderScope(
     overrides: [
+      authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       placeRepositoryProvider.overrideWithValue(repository),
     ],

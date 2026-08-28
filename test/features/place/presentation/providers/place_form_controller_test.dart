@@ -9,6 +9,8 @@ import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   group('PlaceFormController', () {
     test('local 장소 생성은 draft를 목록에 추가하고 친구 추가 결과를 반환한다', () async {
@@ -80,6 +82,7 @@ void main() {
       final repository = _RecordingPlaceRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],
@@ -111,6 +114,7 @@ void main() {
       final repository = _RecordingPlaceRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],
@@ -140,6 +144,7 @@ void main() {
       final repository = _RecordingPlaceRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],
@@ -182,6 +187,7 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],

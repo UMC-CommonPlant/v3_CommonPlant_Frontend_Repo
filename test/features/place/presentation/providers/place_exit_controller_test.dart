@@ -6,12 +6,15 @@ import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   group('PlaceExitController', () {
     test('remote 장소 삭제는 repository를 호출하고 홈 이동 결과를 반환한다', () async {
       final repository = _RecordingPlaceRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],
@@ -36,6 +39,7 @@ void main() {
       final repository = _FailingPlaceRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           placeRepositoryProvider.overrideWithValue(repository),
         ],
@@ -58,7 +62,10 @@ void main() {
     test('local 장소 나가기는 원격 요청 없이 idle 상태를 유지한다', () async {
       final repository = _RecordingPlaceRepository();
       final container = ProviderContainer(
-        overrides: [placeRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          authenticatedUserDataSession,
+          placeRepositoryProvider.overrideWithValue(repository),
+        ],
       );
 
       addTearDown(container.dispose);

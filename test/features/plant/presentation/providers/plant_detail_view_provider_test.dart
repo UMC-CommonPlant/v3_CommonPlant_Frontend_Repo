@@ -6,6 +6,8 @@ import 'package:commonplant_frontend/features/plant/presentation/providers/plant
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   group('plantDetailViewProvider', () {
     test('local mode는 fixture 상세를 즉시 반환한다', () {
@@ -36,6 +38,7 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
           plantDetailNowProvider.overrideWithValue(() => DateTime(2026, 5, 25)),
@@ -68,6 +71,7 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],

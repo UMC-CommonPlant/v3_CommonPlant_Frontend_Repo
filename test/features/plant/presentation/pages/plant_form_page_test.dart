@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   testWidgets('사진 key가 없는 식물 수정은 안내를 표시하고 API를 호출하지 않는다', (tester) async {
     final repository = _StaticEditInfoPlantRepository(
@@ -23,6 +25,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],
@@ -103,6 +106,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(
             _StaticEditInfoPlantRepository(
@@ -130,6 +134,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(
             _StaticEditInfoPlantRepository(
@@ -168,6 +173,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
           plantRegistrationPlaceProvider.overrideWith(
@@ -197,6 +203,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
           plantRegistrationPlaceProvider.overrideWith(
@@ -227,6 +234,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],
@@ -259,6 +267,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],
@@ -288,6 +297,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(
             _PendingEditInfoPlantRepository(),
@@ -306,6 +316,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(
             _StaticEditInfoPlantRepository(const PlantEditInfo(name: '')),
@@ -327,6 +338,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],

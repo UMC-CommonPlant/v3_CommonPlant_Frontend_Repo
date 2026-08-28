@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_edit_provider.dart';
@@ -24,6 +25,7 @@ class PlantDeleteResult {
 class PlantDeleteController extends Notifier<FormSubmitState> {
   @override
   FormSubmitState build() {
+    if (ref.watch(useRemoteApiProvider)) ref.watch(userDataSessionProvider);
     return const FormSubmitState.idle();
   }
 
@@ -40,6 +42,9 @@ class PlantDeleteController extends Notifier<FormSubmitState> {
       return null;
     }
 
+    final requestRef = ref;
+    final session = ref.read(userDataSessionProvider);
+    if (!session.isActive) return null;
     final effectivePlaceCode = placeCode?.trim();
 
     if (effectivePlaceCode == null || effectivePlaceCode.isEmpty) {
@@ -53,6 +58,7 @@ class PlantDeleteController extends Notifier<FormSubmitState> {
       await ref
           .read(plantRepositoryProvider)
           .deletePlant(plantId: plantId, placeCode: effectivePlaceCode);
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       ref.invalidate(remotePlantListProvider);
       ref.invalidate(remotePlantDetailProvider(plantId));
       ref.invalidate(remotePlantEditInfoProvider(plantId));
@@ -60,6 +66,7 @@ class PlantDeleteController extends Notifier<FormSubmitState> {
 
       return const PlantDeleteResult.home();
     } catch (_) {
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       state = const FormSubmitState.failure('식물 삭제에 실패했어요');
 
       return null;

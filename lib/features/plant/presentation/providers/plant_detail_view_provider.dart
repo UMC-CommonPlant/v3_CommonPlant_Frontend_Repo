@@ -20,7 +20,7 @@ final plantDetailViewProvider =
         return AsyncData(ref.watch(plantLocalDetailViewProvider(request)));
       }
 
-      return ref.watch(plantRemoteDetailViewProvider(request));
+      return ref.watch(plantRemoteDetailViewProvider(request)).unwrapPrevious();
     });
 
 final plantLocalDetailViewProvider =

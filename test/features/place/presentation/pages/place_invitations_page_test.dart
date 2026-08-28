@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/test_viewport.dart';
+import '../../../../helpers/user_data_session.dart';
 
 void main() {
   testWidgets('장소 친구 요청 기본 화면을 Figma 항목과 버튼으로 표시한다', (
@@ -97,6 +98,7 @@ void main() {
       settle: false,
       scopeBuilder: (child) => ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           remotePlaceInvitationsProvider.overrideWith((ref) => loading.future),
         ],
@@ -113,6 +115,7 @@ void main() {
       tester,
       scopeBuilder: (child) => ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           remotePlaceInvitationsProvider.overrideWith((ref) async => const []),
         ],
@@ -130,6 +133,7 @@ void main() {
       tester,
       scopeBuilder: (child) => ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           remotePlaceInvitationsProvider.overrideWith(
             (ref) => Future.error(StateError('load failed')),
@@ -152,6 +156,7 @@ void main() {
       tester,
       scopeBuilder: (child) => ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           friendRemoteDataSourceProvider.overrideWithValue(dataSource),
         ],
@@ -180,6 +185,7 @@ void main() {
       tester,
       scopeBuilder: (child) => ProviderScope(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           friendRemoteDataSourceProvider.overrideWithValue(dataSource),
         ],

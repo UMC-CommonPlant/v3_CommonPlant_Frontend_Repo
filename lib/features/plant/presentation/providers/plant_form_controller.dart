@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_registration_place.dart';
@@ -50,6 +51,9 @@ class PlantFormController extends Notifier<PlantFormState> {
 
   @override
   PlantFormState build() {
+    if (ref.watch(useRemoteApiProvider)) {
+      ref.watch(userDataSessionProvider);
+    }
     final plantId = args.plantId;
 
     if (plantId != null) {
@@ -88,7 +92,7 @@ class PlantFormController extends Notifier<PlantFormState> {
     }
 
     ref.listen(plantRegistrationPlaceProvider, (previous, next) {
-      final places = _effectivePlaces(next.value ?? const []);
+      final places = _effectivePlaces(next.unwrapPrevious().value ?? const []);
       final selectedPlaceId = _effectiveSelectedPlaceId(
         places,
         state.selectedPlaceId,
@@ -100,7 +104,8 @@ class PlantFormController extends Notifier<PlantFormState> {
     return PlantFormState.create(
       plantName: _normalizedInitialPlantName(args.initialPlantName),
       places: _effectivePlaces(
-        ref.read(plantRegistrationPlaceProvider).value ?? const [],
+        ref.read(plantRegistrationPlaceProvider).unwrapPrevious().value ??
+            const [],
       ),
     );
   }
@@ -154,6 +159,9 @@ class PlantFormController extends Notifier<PlantFormState> {
       return null;
     }
 
+    final requestRef = ref;
+    final session = ref.read(userDataSessionProvider);
+    if (ref.read(useRemoteApiProvider) && !session.isActive) return null;
     if (state.isEdit &&
         ref.read(useRemoteApiProvider) &&
         state.hasUnresolvedImage) {
@@ -169,11 +177,17 @@ class PlantFormController extends Notifier<PlantFormState> {
     state = state.copyWith(submitState: const FormSubmitState.submitting());
 
     try {
-      final result = isEdit ? await _update() : await _create();
+      final result = isEdit
+          ? await _update(requestRef, session)
+          : await _create(requestRef, session);
+      if (result == null || !isCurrentUserDataSession(requestRef, session)) {
+        return null;
+      }
       state = state.copyWith(submitState: const FormSubmitState.idle());
 
       return result;
     } catch (_) {
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       state = state.copyWith(
         submitState: FormSubmitState.failure(
           isEdit ? '식물 수정에 실패했어요' : '식물 등록에 실패했어요',
@@ -184,7 +198,10 @@ class PlantFormController extends Notifier<PlantFormState> {
     }
   }
 
-  Future<PlantFormSubmitResult> _create() async {
+  Future<PlantFormSubmitResult?> _create(
+    Ref requestRef,
+    UserDataSession session,
+  ) async {
     final plantName = state.currentName.trim();
     final selectedPlace = state.selectedPlace!;
 
@@ -196,6 +213,7 @@ class PlantFormController extends Notifier<PlantFormState> {
             nickname: plantName,
             lastWateredDate: state.currentLastWateredDate,
           );
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       ref.invalidate(remotePlantListProvider);
     }
 
@@ -210,7 +228,10 @@ class PlantFormController extends Notifier<PlantFormState> {
     return const PlantFormSubmitResult.home();
   }
 
-  Future<PlantFormSubmitResult> _update() async {
+  Future<PlantFormSubmitResult?> _update(
+    Ref requestRef,
+    UserDataSession session,
+  ) async {
     final plantId = state.plantId!;
     final plantName = state.currentName.trim();
     final placeId = state.placeId;
@@ -225,6 +246,7 @@ class PlantFormController extends Notifier<PlantFormState> {
             nickname: plantName,
             lastWateredDate: state.currentLastWateredDate,
           );
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       ref.invalidate(remotePlantListProvider);
     }
 

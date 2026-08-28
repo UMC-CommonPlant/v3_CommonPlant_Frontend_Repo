@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   testWidgets('Home hero에 현재 사용자 이름을 표시한다', (tester) async {
     final repository = _StaticUserRepository(
@@ -52,6 +54,7 @@ void main() {
 Widget _buildHero(UserRepository repository, {double width = 375}) {
   return ProviderScope(
     overrides: [
+      authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       userRepositoryProvider.overrideWithValue(repository),
     ],

@@ -11,6 +11,8 @@ import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   group('PlantFormController', () {
     test('local 식물 생성은 선택 장소와 plant draft를 목록에 저장한다', () async {
@@ -48,6 +50,7 @@ void main() {
       final repository = _RecordingPlantRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
           plantRegistrationPlaceProvider.overrideWith(
@@ -121,6 +124,7 @@ void main() {
       final repository = _RecordingPlantRepository();
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],
@@ -170,6 +174,7 @@ void main() {
         );
         final container = ProviderContainer(
           overrides: [
+            authenticatedUserDataSession,
             useRemoteApiProvider.overrideWithValue(true),
             plantRepositoryProvider.overrideWithValue(repository),
           ],
@@ -210,6 +215,7 @@ void main() {
         );
         final container = ProviderContainer(
           overrides: [
+            authenticatedUserDataSession,
             useRemoteApiProvider.overrideWithValue(true),
             plantRepositoryProvider.overrideWithValue(repository),
           ],
@@ -249,6 +255,7 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
+          authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],

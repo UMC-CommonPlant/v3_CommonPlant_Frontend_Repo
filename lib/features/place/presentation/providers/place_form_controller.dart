@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/place/place_feature_provider.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
@@ -39,6 +40,9 @@ class PlaceFormController extends Notifier<PlaceFormState> {
 
   @override
   PlaceFormState build() {
+    if (ref.watch(useRemoteApiProvider)) {
+      ref.watch(userDataSessionProvider);
+    }
     final placeId = this.placeId;
 
     if (placeId == null) {
@@ -106,21 +110,36 @@ class PlaceFormController extends Notifier<PlaceFormState> {
       return null;
     }
 
+    final requestRef = ref;
+    final session = ref.read(userDataSessionProvider);
+    final isRemote = ref.read(useRemoteApiProvider);
+    if (isRemote && !session.isActive) return null;
     final isEdit = state.isEdit;
     state = state.copyWith(submitState: const FormSubmitState.submitting());
 
     try {
       final result = isEdit ? await _update() : await _create();
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       state = state.copyWith(submitState: const FormSubmitState.idle());
+      if (isRemote) {
+        ref.invalidate(remotePlaceListProvider);
+        if (isEdit) {
+          ref.invalidate(placeDetailProvider(placeId!));
+          ref.invalidate(placeSummaryProvider(placeId!));
+          ref.invalidate(userPlaceSummariesProvider);
+        }
+      }
 
       return result;
     } on _PlaceFormValidationException catch (error) {
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       state = state.copyWith(
         submitState: FormSubmitState.failure(error.message),
       );
 
       return null;
     } catch (_) {
+      if (!isCurrentUserDataSession(requestRef, session)) return null;
       state = state.copyWith(
         submitState: FormSubmitState.failure(
           isEdit ? '장소 수정에 실패했어요' : '장소 생성에 실패했어요',
@@ -142,7 +161,6 @@ class PlaceFormController extends Notifier<PlaceFormState> {
       placeCode = await ref
           .read(placeRepositoryProvider)
           .createPlace(name: name, address: requiredAddress);
-      ref.invalidate(remotePlaceListProvider);
     } else {
       placeCode = ref
           .read(placeListProvider.notifier)
@@ -173,10 +191,6 @@ class PlaceFormController extends Notifier<PlaceFormState> {
           .read(placeRepositoryProvider)
           .updatePlace(code: placeId, name: name, address: requiredAddress);
       resultPlaceCode = updatedPlace.id;
-      ref.invalidate(placeDetailProvider(placeId));
-      ref.invalidate(placeSummaryProvider(placeId));
-      ref.invalidate(remotePlaceListProvider);
-      ref.invalidate(userPlaceSummariesProvider);
     } else {
       ref
           .read(placeListProvider.notifier)

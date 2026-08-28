@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/user/data/repositories/user_repository.dart';
 import 'package:commonplant_frontend/features/user/domain/entities/user_profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,5 +13,6 @@ final userSearchProvider = FutureProvider.family<List<UserProfile>, String>((
     return const <UserProfile>[];
   }
 
+  requireUserDataSession(ref);
   return ref.watch(userRepositoryProvider).searchUsers(normalizedKeyword);
 }, retry: (retryCount, error) => null);

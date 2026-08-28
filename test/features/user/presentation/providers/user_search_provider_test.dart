@@ -6,11 +6,16 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   test('빈 검색어는 repository를 호출하지 않고 빈 목록을 반환한다', () async {
     final repository = _UserSearchRepository();
     final container = ProviderContainer(
-      overrides: [userRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        authenticatedUserDataSession,
+        userRepositoryProvider.overrideWithValue(repository),
+      ],
     );
     addTearDown(container.dispose);
 
@@ -28,7 +33,10 @@ void main() {
       ],
     );
     final container = ProviderContainer(
-      overrides: [userRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        authenticatedUserDataSession,
+        userRepositoryProvider.overrideWithValue(repository),
+      ],
     );
     addTearDown(container.dispose);
 

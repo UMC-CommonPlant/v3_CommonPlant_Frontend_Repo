@@ -36,7 +36,9 @@ final placeFormEditInfoProvider =
         );
       }
 
-      return ref.watch(remotePlaceFormEditInfoProvider(placeId));
+      return ref
+          .watch(remotePlaceFormEditInfoProvider(placeId))
+          .unwrapPrevious();
     });
 
 final remotePlaceFormEditInfoProvider =

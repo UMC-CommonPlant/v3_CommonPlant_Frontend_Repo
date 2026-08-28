@@ -9,6 +9,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   const initialUser = UserProfile(
     id: 'user-237',
@@ -19,7 +21,10 @@ void main() {
 
   test('변경되지 않거나 유효하지 않은 이름은 제출할 수 없다', () async {
     final container = ProviderContainer(
-      overrides: [useRemoteApiProvider.overrideWithValue(false)],
+      overrides: [
+        authenticatedUserDataSession,
+        useRemoteApiProvider.overrideWithValue(false),
+      ],
     );
     addTearDown(container.dispose);
     final currentUserSubscription = container.listen(
@@ -53,7 +58,10 @@ void main() {
 
   test('API 비사용 모드 수정은 현재 사용자 화면 상태를 갱신한다', () async {
     final container = ProviderContainer(
-      overrides: [useRemoteApiProvider.overrideWithValue(false)],
+      overrides: [
+        authenticatedUserDataSession,
+        useRemoteApiProvider.overrideWithValue(false),
+      ],
     );
     addTearDown(container.dispose);
     final currentUserSubscription = container.listen(
@@ -81,6 +89,7 @@ void main() {
     final repository = _RecordingUserRepository(initialUser: initialUser);
     final container = ProviderContainer(
       overrides: [
+        authenticatedUserDataSession,
         useRemoteApiProvider.overrideWithValue(true),
         userRepositoryProvider.overrideWithValue(repository),
       ],
@@ -116,6 +125,7 @@ void main() {
     );
     final container = ProviderContainer(
       overrides: [
+        authenticatedUserDataSession,
         useRemoteApiProvider.overrideWithValue(true),
         userRepositoryProvider.overrideWithValue(repository),
       ],

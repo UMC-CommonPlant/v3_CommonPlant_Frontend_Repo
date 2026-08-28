@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/place_friend_fixture.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
 import 'package:commonplant_frontend/features/user/presentation/providers/user_search_provider.dart';
@@ -31,6 +32,7 @@ final placeFriendSearchProvider = Provider.autoDispose<PlaceFriendSearchState>((
 
   final result = ref
       .watch(userSearchProvider(query))
+      .unwrapPrevious()
       .whenData(
         (users) => List<PlaceFriendProfile>.unmodifiable(
           users.map((user) => PlaceFriendProfile(id: user.id, name: user.name)),
@@ -103,6 +105,9 @@ class PlaceFriendSelectionController
     extends Notifier<PlaceFriendSelectionState> {
   @override
   PlaceFriendSelectionState build() {
+    if (ref.watch(useRemoteApiProvider)) {
+      ref.watch(userDataSessionProvider);
+    }
     return const PlaceFriendSelectionState.initial();
   }
 

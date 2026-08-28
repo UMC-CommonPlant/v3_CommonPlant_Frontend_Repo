@@ -1,3 +1,5 @@
+import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/memo/presentation/providers/memo_list_provider.dart';
 import 'package:commonplant_frontend/features/memo/presentation/providers/memo_write_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +18,7 @@ class MemoWriteController extends Notifier<MemoWriteState> {
 
   @override
   MemoWriteState build() {
+    if (ref.watch(useRemoteApiProvider)) ref.watch(userDataSessionProvider);
     return MemoWriteState.initial(plantId);
   }
 

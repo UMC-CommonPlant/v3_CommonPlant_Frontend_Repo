@@ -20,7 +20,7 @@ class UserProfileEditPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentUser = ref.watch(currentUserProvider);
+    final currentUser = ref.watch(currentUserProvider).unwrapPrevious();
 
     return currentUser.when(
       data: (user) => _UserProfileEditForm(user: user),

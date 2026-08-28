@@ -4,6 +4,8 @@ import 'package:commonplant_frontend/features/place/presentation/providers/frien
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/user_data_session.dart';
+
 void main() {
   test('친구 관리는 placeId별 초기 선택 상태를 제공한다', () {
     final container = ProviderContainer();
@@ -45,7 +47,10 @@ void main() {
 
   test('API 모드에서는 조회 전용이며 멤버 선택·삭제 상태를 만들지 않는다', () {
     final container = ProviderContainer(
-      overrides: [useRemoteApiProvider.overrideWithValue(true)],
+      overrides: [
+        authenticatedUserDataSession,
+        useRemoteApiProvider.overrideWithValue(true),
+      ],
     );
     addTearDown(container.dispose);
     final provider = friendManagementControllerProvider('place-1');
