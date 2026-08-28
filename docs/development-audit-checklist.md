@@ -2,7 +2,7 @@
 
 2026-08-28 사용자 결정과 `develop`의 PR #246 병합 커밋 `2a01babb185ef5056b361c477717759194c53ec1`을 기준으로 합니다. 문서 정리는 [#247](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/247), 상위 개발 범위는 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)입니다.
 
-문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248은 이미지 key 보존과 안전 차단 구현·로컬 검증을 완료했으며 [작업 이력](work-history/form-image-preservation-248.md)에서 범위와 제한을 확인합니다.
+문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)은 이미지 key 보존과 안전 차단 구현·로컬 검증을 완료했으며 [작업 이력](work-history/form-image-preservation-248.md)에서 범위와 제한을 확인합니다.
 
 ## 결정과 작업 경계
 
