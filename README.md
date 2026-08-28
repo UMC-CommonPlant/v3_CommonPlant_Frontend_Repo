@@ -243,8 +243,8 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 
 현재 우선순위는 사용자 결정에 따라 다음과 같습니다.
 
-1. #247에서 현행 문서를 정리하고 [개발 감사·개선 체크리스트](docs/development-audit-checklist.md)를 실행 기준으로 만듭니다.
-2. 체크리스트의 동작 문제 #248~#253을 순서대로 별도 PR에서 해결합니다. 미사용 공용 위젯 5개는 보존합니다.
+1. #247 / PR #257 문서 정리는 병합 완료했으며 [개발 감사·개선 체크리스트](docs/development-audit-checklist.md)를 실행 기준으로 사용합니다.
+2. #248에서 식물의 기존 이미지 key 보존과 사진이 있는 장소의 수정 요청 차단을 구현했습니다. 사진이 있는 장소의 수정 재개는 key 조회 계약 확인 후 진행합니다. 병합 후 #249~#253을 순서대로 해결하며, 미사용 공용 위젯 5개는 보존합니다.
 3. 추가 파서·위젯·Provider 개선 #254~#256을 진행한 뒤 [화면·모델·API 연결 매트릭스](docs/screen-api-integration-plan.md)의 남은 동선을 이어갑니다.
 4. 외부 답변이 필요한 Image·Memo·검색·인증 정책은 [백엔드 질문](docs/backend-api-open-questions.md), 팀 결정은 [후속 결정 체크리스트](docs/follow-up-decision-checklist.md)로 분리합니다. 배포와 원격 E2E는 준비 조건 충족 전까지 보류합니다.
 

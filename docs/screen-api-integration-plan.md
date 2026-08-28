@@ -2,7 +2,7 @@
 
 이 문서는 화면 퍼블리싱 이후 남아 있는 mock 흐름을 실제 상태와 API 계층으로 전환하는 순서와 완료 기준을 관리합니다. 배포 자동화와 원격 E2E 준비는 필요한 외부 조건이 충족될 때까지 유지하되, 현재 MVP 최우선 작업은 사용자 동선별 수직 슬라이스 완성입니다.
 
-2026-08-28 감사 후에는 문서 정리 #247과 [개발 감사·개선 체크리스트](development-audit-checklist.md)의 회귀 문제 해결을 먼저 진행합니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
+2026-08-28 감사 후 문서 정리 #247 / PR #257은 병합됐으며 [개발 감사·개선 체크리스트](development-audit-checklist.md)의 회귀 문제를 순서대로 해결합니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
 
 ## 목표
 
@@ -53,13 +53,13 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Place | 장소 등록 | create API와 생성 code·친구 추가 route 연결, 주소 선택 결과 미연결 | 필수 주소 전달 #253, 중복 제출 #250, 실제 이미지 | 생성 result code #243 반영, 이름 기반 요청 위험 수용 | API 계층 연결, 주소 입력 동선 미완료 |
 | Place | 주소 검색 | fixture 검색, 선택해도 결과 없이 복귀 | 선택 결과 반환·소비 #253, 실제 검색 adapter | route 결과 연결은 즉시 수정 가능, 실서비스 검색은 별도 결정 필요 | 동작 수정과 외부 결정 분리 |
 | Place | 장소 등록 중 친구 추가 | User 검색, 생성된 place code, 선택 사용자 요청 submit 연결 | 고유 사용자 식별자와 대상별 결과 검증 | `GET /users/{keyword}`, `POST /friends/request`; 동명이인 위험은 별도 등록 | #243 위험 수용 연결 |
-| Place | 장소 수정 | 상세 조회·update API와 typed 수정 결과 연결 | 기존 이미지 유지 #248, 중복 제출 #250, 주소 전달 #253 | imageKey 생략은 삭제 의미, 상세에는 key 미제공 | 연결 PR 병합, 이미지 유실 방지 필요 |
+| Place | 장소 수정 | #248에서 사진 URL을 폼에 보존하고 사진이 있으면 수정 요청 차단·안내 | key 조회 계약 후 제한 해제, 중복 제출 #250, 주소 전달 #253 | imageKey 생략은 삭제 의미, 상세에는 key 미제공 | 사진 없는 장소 수정 유지, 사진 있는 장소는 임시 제한 |
 | Place | 장소 상세 | API 장소·owner·멤버·식물 연결, fixture 병합 제거 | 서버 미제공 환경 수치와 물주기 액션 | `GET /place/{code}` source 계약 #239 반영 | #239 / PR #240 병합 완료 |
 | Place | 친구 관리 | 실제 멤버·이미지 조회, 닉네임 필터, loading/empty/error/retry 연결 | 멤버 추가·삭제·권한 변경 | `GET /place/{code}/members` 연결, 고유 member id와 변경 endpoint 없음 | #245 조회 전용 연결 |
 | Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
 | Plant | 식물 등록 검색 | fixture 검색 | 실제 검색 모델과 상태 | 식물 종 검색 endpoint 필요 | 보류 |
 | Plant | 식물 등록 | 장소·애칭·선택 날짜와 create submit 연결, 원격 장소 조회 실패·빈 목록에 fixture 혼입 | 실제 장소·비동기 상태 #251, 중복 제출 #250, 학명/이미지 | `POST /plants` 연결, 유효한 서버 장소 code 필요 | 날짜 연결 완료, 원격 장소 처리 수정 필요 |
-| Plant | 식물 수정 | edit info·날짜와 update submit 연결, imageKey 누락·placeId 없는 성공 처리 발견 | 이미지 유지 #248, 중복 제출 #250, code 검증 #252 | `GET /plants/{id}/edit`, `PUT /plants/{id}`의 실제 계약 준수 | 연결 PR 병합, 유실·거짓 성공 수정 필요 |
+| Plant | 식물 수정 | #248에서 초기 imageKey 보존·전송, URL만 있고 key가 없으면 차단 | 중복 제출 #250, code 검증 #252, 이미지 선택·삭제 UI | `GET /plants/{id}/edit`, `PUT /plants/{id}` | 이미지 보존 구현·검증, code 없는 거짓 성공은 후속 수정 |
 | Plant | 식물 상세 | detail/delete, 등록일 계산과 실제 값 연결, remote fixture 제거 | Memo CRUD·물주기 액션 | `GET/DELETE /plants/{id}` 연결; Memo·물주기 API 없음 | #231 연결 완료 |
 | Memo | 메모 작성 | 로컬 Provider 저장 | DTO, repository, submit, 실제 image file | Memo 생성 endpoint 필요 | Blocked |
 | Memo | 메모 목록·수정·삭제 | 로컬 fixture·상태 | 목록, pagination, 수정·삭제, 상세 갱신 | Memo CRUD endpoint 필요 | Blocked |
@@ -141,7 +141,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
   호출하고 전송 중 중복 submit과 실패 재시도를 처리합니다.
 - 이름 기반 오초대와 일괄 요청의 부분 성공 위험은
   `docs/accepted-implementation-risks.md`에 수용 상태와 중단 조건을 기록합니다.
-- 실제 주소 검색 adapter와 이미지 선택은 정책·endpoint가 준비될 때까지 분리합니다. 다만 현재 주소 선택 결과가 폼에 전달되지 않는 문제는 #253, 기존 이미지 key를 보내지 않는 문제는 #248로 별도 수정합니다.
+- 실제 주소 검색 adapter와 이미지 선택은 정책·endpoint가 준비될 때까지 분리합니다. 주소 선택 결과 전달은 #253에서 수정합니다. #248은 사진이 있는 장소의 수정 요청을 차단하며, key 조회 계약 확보 후 별도 작업에서 제한을 해제합니다.
 
 ## Friend 수신 요청 수직 슬라이스
 
@@ -214,5 +214,6 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #245 | `1611fd0` | 최신 API·위험·매트릭스와 전체 검증 기록 | format 294개, analyze, 전체 test 362개·기존 skip 1개 |
 | #245 | - | PR #246·Project In Review 연결 기록 | `git diff --check` |
 | #247 | - | PR #246 병합 확인(`2a01bab`), API 연결과 미완료 동선·감사 이슈 분리 | [문서 정리 이력](development-audit-checklist.md) |
+| #248 | `7aee5e8`, `cda0aa2` | Plant 이미지 key 보존·불완전 정보 차단, Place 사진 수정 요청 차단과 회귀 테스트 | [이미지 보존 이력](work-history/form-image-preservation-248.md), 전체 376개 통과·기존 skip 1개 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.
