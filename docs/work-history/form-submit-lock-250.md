@@ -3,11 +3,12 @@
 ## 작업 기준
 
 - 이슈: [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250), AUDIT-03
+- PR: [#260](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/260), `develop` 대상. 이슈·PR은 Project 10의 `In Review`, category `Story`, priority `high`로 관리합니다.
 - 상위 이슈: [#226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)
 - 작업일: 2026-08-28
 - 기준 `develop`: `b15cdd7b9b73aa5892dbc6e0cddb86fa23c5f2be` (사용자 PR #259 병합)
 - 브랜치: `fix/form-submit-lock-250`
-- 상태: 구현·로컬 검증 완료, 사용자 병합 전. PR과 Project 연결은 생성 후 기록합니다.
+- 상태: 구현·로컬 검증 완료, 사용자 병합 전. 감사 체크리스트와 이슈는 병합 후 완료 처리합니다.
 - 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [폼 검증](../form-validation-error-guide.md), [공용 위젯](../shared-widget-guide.md), [라우팅](../routing-guide.md), [테스트](../testing-guide.md), [Git](../git-workflow.md)
 
 열린 이슈의 중복을 확인하고 기존 #250을 재사용했습니다. #249 종료와 PR #259 병합·Project `Done`을 확인한 뒤 최신 `develop`에서 분기했습니다. 미사용 공용 위젯 5개는 보존하며, 디자인·route·API endpoint·DTO·배포·CI 설정은 변경하지 않습니다.
@@ -48,6 +49,7 @@ Controller 회귀 13개를 추가했습니다. 화면에서는 5개 흐름을 Re
 - `fvm flutter test --reporter expanded`: 436개 통과, 기존 non-Linux golden skip 1개
 - `git diff --check`: 통과
 - Markdown 41개(README·AGENTS 포함), 로컬 링크 206개·anchor 10개: 누락 링크·미연결 문서 0개
+- GitHub CI는 최종 문서 커밋까지 포함한 HEAD에서 확인하며 결과는 [최신 PR checks](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/260/checks)와 이슈 검증 코멘트에 남깁니다.
 
 실제 dev API의 생성·수정·회원가입 요청, 인증 E2E와 Android 수동 smoke는 실행하지 않았습니다. 기존 DTO·repository 계약, 앱 셸·route·공용 위젯 구조는 바뀌지 않았으며 #248 이미지 보존과 #249 세션 격리 회귀를 전체 테스트에 포함했습니다.
 
@@ -65,6 +67,7 @@ Controller 회귀 13개를 추가했습니다. 화면에서는 5개 흐름을 Re
 | --- | --- | --- |
 | `2103498` | Place·Plant 입력 변경 중 제출 상태 유지, 생성·수정 회귀와 화면 잠금 검증 | 관련 Controller 23개·화면 25개 통과 |
 | `8ff9cf5` | 회원정보·가입 프로필 잠금 유지와 닉네임 캡처, 오류 복구·이동 검증 | 관련 Controller 17개·화면 6개 통과 |
-| 이 문서의 검증 커밋 | #249 병합·#250 구현 상태, 가이드·매트릭스와 위험·검증 기록 | 전체 436개 통과·기존 skip 1개, format·analyze·문서 링크 검사 |
+| `69e494d` | #249 병합·#250 구현 상태, 가이드·매트릭스와 위험·검증 기록 | 전체 436개 통과·기존 skip 1개, format·analyze·문서 링크 검사 |
+| 이 문서의 최종 커밋 | PR #260·Project In Review 연결과 커밋별 이력 기록 | `git diff --check`, 담당자·milestone·Bug type·parent·Project 필드 확인 |
 
 문서·PR 이력만 기록하는 마지막 커밋은 자기 자신의 해시를 생략할 수 있습니다.
