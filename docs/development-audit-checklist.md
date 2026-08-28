@@ -2,7 +2,7 @@
 
 2026-08-28 사용자 결정과 `develop`의 PR #246 병합 커밋 `2a01babb185ef5056b361c477717759194c53ec1`을 기준으로 합니다. 문서 정리는 [#247](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/247), 상위 개발 범위는 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)입니다.
 
-문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249의 계정별 캐시·요청 격리는 구현·로컬 검증 완료, 사용자 병합 전이며 [작업 이력](work-history/session-cache-isolation-249.md)에 범위를 기록합니다.
+문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249 / [PR #259](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259) 계정별 캐시·요청 격리도 병합됐습니다(`b15cdd7`, [이력](work-history/session-cache-isolation-249.md)). #250의 입력 변경 중 제출 잠금은 구현·로컬 검증 완료, 사용자 병합 전이며 [작업 이력](work-history/form-submit-lock-250.md)에 범위를 기록합니다.
 
 ## 결정과 작업 경계
 
@@ -25,13 +25,13 @@
 
 ## 실행 순서
 
-표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248은 병합 완료, #249는 구현·검증 완료 후 병합 전, #250~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
+표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248·#249는 병합 완료, #250은 구현·검증 완료 후 병합 전, #251~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
 
 | 체크 | 순서 | 이슈 | 우선도 | 문제·완료 기준 요약 |
 | --- | --- | --- | --- | --- |
 | [x] | AUDIT-01 | [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248) | P1 | PR #258 병합: Plant key 보존·미확인 key 차단, 사진이 있는 Place 수정은 임시 제한 |
-| [ ] | AUDIT-02 | [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249) | P1 | PR #259 구현·검증 완료, 병합 전: 계정별 조회·초안·후처리 격리와 늦은 토큰 저장 방지 |
-| [ ] | AUDIT-03 | [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250) | P1 | 요청 중 입력 변경으로 submit 잠금이 풀리지 않도록 수정 |
+| [x] | AUDIT-02 | [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249) | P1 | PR #259 병합: 계정별 조회·초안·후처리 격리와 늦은 토큰 저장 방지 |
+| [ ] | AUDIT-03 | [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250) | P1 | 구현·검증 완료, 병합 전: 입력 변경 중 제출 잠금·제출값 고정·실패 후 수정값 재시도 |
 | [ ] | AUDIT-04 | [#251](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/251) | P1 | API 모드 식물 등록의 loading/error/empty에서 샘플 장소 사용 금지 |
 | [ ] | AUDIT-05 | [#252](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/252) | P1 | 장소 코드가 없어 API를 생략한 식물 수정의 거짓 성공 방지 |
 | [ ] | AUDIT-06 | [#253](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/253) | P2 | 주소 선택·취소 결과를 장소 폼 상태와 검증에 연결 |
@@ -62,8 +62,10 @@
 ### AUDIT-03 — 입력 중 중복 제출
 
 - 위치: Place/Plant Form, User Profile Edit, Profile Setup Controller의 입력 변경·제출 상태.
-- 재현: 지연된 장소 생성 요청 중 이름을 변경하고 다시 submit하면 repository가 두 번 호출됩니다. 입력 변경이 `FormSubmitState.idle`을 만들기 때문입니다.
-- 완료: 진행 중 요청 잠금과 수정 가능한 입력 상태를 일관되게 관리하고, 실패 후 재시도와 성공 결과의 단일 처리를 테스트합니다. 버튼 비활성화만이 아니라 Controller 호출 경계도 검증합니다.
+- 감사 당시 재현: 지연된 장소 생성 요청 중 이름을 변경하고 다시 submit하면 repository가 두 번 호출됐습니다. 입력 변경이 `FormSubmitState.idle`을 만들기 때문입니다. #250 수정 전 새 Controller 회귀 테스트 13개가 실패하는 것을 확인했습니다.
+- #250 구현: 입력은 수정할 수 있지만 진행 중 제출 상태는 유지합니다. 가입 프로필 이름은 세션 확인을 기다리기 전에 캡처합니다. 실패 후에는 최신 초안으로 재시도하고 성공한 최초 요청만 이동 결과를 반환합니다. 기존 enum·공용 버튼과 #249 세션 보호를 재사용합니다.
+- 검증: Controller 대상 40개, 주요 화면의 3개 viewport를 포함한 전체 436개 통과·기존 skip 1개입니다. 회귀 실행 사례 26개를 추가하고 기존 화면 테스트 2개를 보강했습니다. [#250 이력](work-history/form-submit-lock-250.md)을 참고합니다.
+- 경계: 현재 Controller의 동시 요청을 막는 수정이며, 서버의 멱등성·성공 후 새 요청·다른 화면이나 기기의 중복까지 보장하지 않습니다. #251~#256과 실제 이미지·주소 검색 연결은 별도입니다.
 
 ### AUDIT-04 — 원격 식물 등록의 fixture 혼입
 

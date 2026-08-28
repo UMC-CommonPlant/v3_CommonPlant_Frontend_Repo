@@ -137,6 +137,12 @@ Controller 책임:
 - 성공 결과에 따라 route 이동이나 안내를 수행합니다.
 - dialog, snackbar, navigation처럼 `BuildContext`가 필요한 UI effect를 수행합니다.
 
+### 입력 상태와 진행 중 제출
+
+입력값을 수정하는 메서드는 진행 중 요청의 `submitting` 상태를 유지합니다. Place·Plant·회원정보 수정은 기존 `FormSubmitState`, 가입 프로필은 기존 `ProfileSetupSubmitStatus`를 사용하며, 같은 의미의 별도 잠금 flag나 공용 요청 프레임워크를 추가하지 않습니다.
+
+`submit()`은 요청 중 재호출을 먼저 차단하고 첫 `await` 전에 사용할 입력을 확정합니다. 실패는 최신 초안을 남겨 재시도할 수 있게 하며, 성공은 최초 제출 호출에만 결과를 반환합니다. 이 규칙은 같은 Controller의 동시 요청 보호이며, 서로 다른 화면·기기나 서버 재처리의 멱등성을 보장하지 않습니다. 자세한 동작·검증은 [폼 가이드](form-validation-error-guide.md#제출-버튼-상태)와 [#250 이력](work-history/form-submit-lock-250.md)을 따릅니다.
+
 ## 인증 상태 기준
 
 인증 기능은 `authSessionControllerProvider`와 보안 토큰 저장소를 분리합니다.
