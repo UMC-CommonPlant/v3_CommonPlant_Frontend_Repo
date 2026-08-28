@@ -111,7 +111,7 @@ class PlantCreateScaffold extends StatelessWidget {
   final ValueChanged<PlantRegistrationPlace> onPlaceSelected;
   final VoidCallback onWateringDateTap;
   final VoidCallback onCancel;
-  final VoidCallback onSubmit;
+  final VoidCallback? onSubmit;
 
   @override
   Widget build(BuildContext context) {

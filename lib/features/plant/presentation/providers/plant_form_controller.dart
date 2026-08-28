@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
+import 'package:commonplant_frontend/features/place/place_feature_provider.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_registration_place.dart';
@@ -51,7 +52,8 @@ class PlantFormController extends Notifier<PlantFormState> {
 
   @override
   PlantFormState build() {
-    if (ref.watch(useRemoteApiProvider)) {
+    final useRemoteApi = ref.watch(useRemoteApiProvider);
+    if (useRemoteApi) {
       ref.watch(userDataSessionProvider);
     }
     final plantId = args.plantId;
@@ -92,21 +94,16 @@ class PlantFormController extends Notifier<PlantFormState> {
     }
 
     ref.listen(plantRegistrationPlaceProvider, (previous, next) {
-      final places = _effectivePlaces(next.unwrapPrevious().value ?? const []);
-      final selectedPlaceId = _effectiveSelectedPlaceId(
-        places,
-        state.selectedPlaceId,
-      );
-
-      state = state.copyWith(places: places, selectedPlaceId: selectedPlaceId);
+      state = _withRegistrationPlaces(state, next, useRemoteApi: useRemoteApi);
     });
 
-    return PlantFormState.create(
-      plantName: _normalizedInitialPlantName(args.initialPlantName),
-      places: _effectivePlaces(
-        ref.read(plantRegistrationPlaceProvider).unwrapPrevious().value ??
-            const [],
+    return _withRegistrationPlaces(
+      PlantFormState.create(
+        plantName: _normalizedInitialPlantName(args.initialPlantName),
+        places: const [],
       ),
+      ref.read(plantRegistrationPlaceProvider),
+      useRemoteApi: useRemoteApi,
     );
   }
 
@@ -137,7 +134,10 @@ class PlantFormController extends Notifier<PlantFormState> {
   }
 
   void selectPlace(PlantRegistrationPlace place) {
-    if (state.isEdit || !state.places.any((item) => item.id == place.id)) {
+    _syncRegistrationPlaces();
+    if (state.isEdit ||
+        state.loadStatus != PlantFormLoadStatus.ready ||
+        !state.places.any((item) => item.id == place.id)) {
       return;
     }
 
@@ -153,6 +153,7 @@ class PlantFormController extends Notifier<PlantFormState> {
     final plantId = args.plantId;
 
     if (plantId == null) {
+      ref.invalidate(userPlaceSummariesProvider);
       return;
     }
 
@@ -161,6 +162,7 @@ class PlantFormController extends Notifier<PlantFormState> {
   }
 
   Future<PlantFormSubmitResult?> submit() async {
+    _syncRegistrationPlaces();
     if (!state.canSubmit) {
       return null;
     }
@@ -202,6 +204,14 @@ class PlantFormController extends Notifier<PlantFormState> {
 
       return null;
     }
+  }
+
+  void _syncRegistrationPlaces() {
+    if (args.isEdit || !ref.read(useRemoteApiProvider)) return;
+
+    // 화면 재빌드 전의 콜백도 무효화된 장소 목록으로 등록하지 못하게 한다.
+    final places = ref.read(plantRegistrationPlaceProvider);
+    state = _withRegistrationPlaces(state, places, useRemoteApi: true);
   }
 
   Future<PlantFormSubmitResult?> _create(
@@ -267,10 +277,51 @@ class PlantFormController extends Notifier<PlantFormState> {
   }
 }
 
-List<PlantRegistrationPlace> _effectivePlaces(
+PlantFormState _withRegistrationPlaces(
+  PlantFormState state,
+  AsyncValue<List<PlantRegistrationPlace>> value, {
+  required bool useRemoteApi,
+}) {
+  final current = value.unwrapPrevious();
+  if (!useRemoteApi) {
+    final places = current.value ?? const [];
+    return _withLoadedPlaces(
+      state,
+      places.isEmpty ? plantRegistrationPlaceFallbacks : places,
+    );
+  }
+
+  return current.when(
+    skipLoadingOnRefresh: false,
+    skipLoadingOnReload: false,
+    data: (places) => _withLoadedPlaces(state, places),
+    loading: () => state.copyWith(
+      loadStatus: PlantFormLoadStatus.loading,
+      loadErrorMessage: null,
+      places: const [],
+      selectedPlaceId: null,
+    ),
+    error: (error, stackTrace) => state.copyWith(
+      loadStatus: PlantFormLoadStatus.failure,
+      loadErrorMessage: '등록할 장소를 불러오지 못했어요',
+      places: const [],
+      selectedPlaceId: null,
+    ),
+  );
+}
+
+PlantFormState _withLoadedPlaces(
+  PlantFormState state,
   List<PlantRegistrationPlace> places,
 ) {
-  return places.isEmpty ? plantRegistrationPlaceFallbacks : places;
+  return state.copyWith(
+    loadStatus: places.isEmpty
+        ? PlantFormLoadStatus.empty
+        : PlantFormLoadStatus.ready,
+    loadErrorMessage: null,
+    places: places,
+    selectedPlaceId: _effectiveSelectedPlaceId(places, state.selectedPlaceId),
+  );
 }
 
 String? _effectiveSelectedPlaceId(

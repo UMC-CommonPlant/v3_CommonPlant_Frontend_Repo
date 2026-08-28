@@ -3,7 +3,7 @@ import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 
 enum PlantFormMode { create, edit }
 
-enum PlantFormLoadStatus { loading, ready, notFound, failure }
+enum PlantFormLoadStatus { loading, ready, empty, notFound, failure }
 
 class PlantFormArgs {
   const PlantFormArgs({this.plantId, this.placeId, this.initialPlantName});
@@ -57,7 +57,9 @@ class PlantFormState {
          currentLastWateredDate: null,
          places: List.unmodifiable(places),
          selectedPlaceId: places.isEmpty ? null : places.first.id,
-         loadStatus: PlantFormLoadStatus.ready,
+         loadStatus: places.isEmpty
+             ? PlantFormLoadStatus.empty
+             : PlantFormLoadStatus.ready,
          submitState: const FormSubmitState.idle(),
        );
 
@@ -199,6 +201,8 @@ class PlantFormState {
     Object? currentLastWateredDate = _unset,
     List<PlantRegistrationPlace>? places,
     Object? selectedPlaceId = _unset,
+    PlantFormLoadStatus? loadStatus,
+    Object? loadErrorMessage = _unset,
     FormSubmitState? submitState,
   }) {
     return PlantFormState(
@@ -217,9 +221,11 @@ class PlantFormState {
       selectedPlaceId: identical(selectedPlaceId, _unset)
           ? this.selectedPlaceId
           : selectedPlaceId as String?,
-      loadStatus: loadStatus,
+      loadStatus: loadStatus ?? this.loadStatus,
       submitState: submitState ?? this.submitState,
-      loadErrorMessage: loadErrorMessage,
+      loadErrorMessage: identical(loadErrorMessage, _unset)
+          ? this.loadErrorMessage
+          : loadErrorMessage as String?,
     );
   }
 }
