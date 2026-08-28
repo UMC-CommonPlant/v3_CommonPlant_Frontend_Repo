@@ -3,6 +3,7 @@
 ## 작업 기준
 
 - 이슈: [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249), AUDIT-02
+- PR: [#259](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259), `develop` 대상. 이슈·PR은 Project 10의 `In Review`, category `User`, priority `high`로 관리합니다.
 - 상위 이슈: [#226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)
 - 작업일: 2026-08-28
 - 기준 `develop`: `a630c66e3facb52f2a0f83d0f1aaa834c0cab7f0` (사용자 PR #258 병합)
@@ -62,6 +63,7 @@
 - 신규 조회·변경·초안·화면 세션 테스트: 17개 통과
 - `git diff --check`: 통과
 - Markdown 40개(README·AGENTS 포함), 로컬 링크 178개·anchor 9개: 누락 링크·미연결 문서 0개
+- 구현·검증 문서 커밋 `c5b3d6c`의 [Flutter CI](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/actions/runs/33144026596)는 성공했습니다. 최종 문서 커밋 이후 결과는 [최신 PR checks](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259/checks)와 이슈 검증 코멘트에서 확인합니다.
 
 Android 수동 smoke와 실제 인증 dev E2E는 실행하지 않았습니다. fixture·앱 셸·route 정의를 변경하지 않았고 기존 widget/router 회귀 테스트는 전체 검사에 포함합니다. API endpoint·payload·Swagger 계약을 바꾸는 작업이 아니므로 이번 이슈에서 새로운 원격 인증·변경 요청은 하지 않았습니다.
 
@@ -80,5 +82,7 @@ Android 수동 smoke와 실제 인증 dev E2E는 실행하지 않았습니다. f
 | --- | --- | --- |
 | `59c7d7d` | 데이터 세션·Dio 경계, 인증 결과 검사, token 저장·삭제 직렬화 | 인증·네트워크 대상 34개 통과, format·analyze |
 | `a3e9711` | 사용자별 조회·초안·비동기 후처리 격리와 화면 이전 값 제거, domain fixture 보완 | 신규 세션 대상 17개, 전체 410개 통과·기존 skip 1개 |
+| `c5b3d6c` | #248 병합·#249 구현 상태, 개발 가이드·매트릭스와 위험·검증 기록 | `git diff --check`, Markdown 40개·로컬 링크 178개·anchor 9개, 미연결 문서 0개 |
+| 이 문서의 최종 커밋 | PR #259·Project In Review 연결과 커밋별 이력 기록 | `git diff --check`, 담당자·milestone·Bug type·parent·Project 필드 확인 |
 
 문서·PR 이력만 기록하는 마지막 커밋은 자기 자신의 해시를 생략할 수 있습니다.

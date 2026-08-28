@@ -30,7 +30,7 @@
 | 체크 | 순서 | 이슈 | 우선도 | 문제·완료 기준 요약 |
 | --- | --- | --- | --- | --- |
 | [x] | AUDIT-01 | [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248) | P1 | PR #258 병합: Plant key 보존·미확인 key 차단, 사진이 있는 Place 수정은 임시 제한 |
-| [ ] | AUDIT-02 | [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249) | P1 | 구현·검증 완료, 병합 전: 계정별 조회·초안·후처리 격리와 늦은 토큰 저장 방지 |
+| [ ] | AUDIT-02 | [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249) | P1 | PR #259 구현·검증 완료, 병합 전: 계정별 조회·초안·후처리 격리와 늦은 토큰 저장 방지 |
 | [ ] | AUDIT-03 | [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250) | P1 | 요청 중 입력 변경으로 submit 잠금이 풀리지 않도록 수정 |
 | [ ] | AUDIT-04 | [#251](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/251) | P1 | API 모드 식물 등록의 loading/error/empty에서 샘플 장소 사용 금지 |
 | [ ] | AUDIT-05 | [#252](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/252) | P1 | 장소 코드가 없어 API를 생략한 식물 수정의 거짓 성공 방지 |
