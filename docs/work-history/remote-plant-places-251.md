@@ -3,11 +3,12 @@
 ## 작업 기준
 
 - 이슈: [#251](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/251), AUDIT-04
+- PR: [#261](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/261), `develop` 대상
 - 상위 이슈: [#226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)
 - 작업일: 2026-08-28
 - 기준 `develop`: `bc6e68ddbdc80acb0b923a06798cdaf8926e7a0d` (사용자 PR #260 병합)
 - 브랜치: `fix/remote-plant-places-251`
-- 상태: 구현·로컬 검증 완료, 사용자 병합 전. 이슈는 Project 10의 category `Plant`, priority `high`로 관리합니다.
+- 상태: 구현·로컬 검증 완료, 사용자 병합 전. 이슈·PR은 Project 10의 `In Review`, category `Plant`, priority `high`로 관리합니다.
 - 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [폼 검증](../form-validation-error-guide.md), [퍼블리싱](../screen-publishing-rules.md), [Figma 매핑](../figma-frame-map.md), [공용 위젯](../shared-widget-guide.md), [디자인 토큰](../design-token-rules.md), [라우팅](../routing-guide.md), [테스트](../testing-guide.md), [QA 기준](../quality-testing-follow-up-plan.md), [Git](../git-workflow.md), [Swagger 계약](../api-swagger-reference.md)
 
 열린 이슈 중복을 확인하고 기존 #251을 재사용했습니다. #250 종료와 PR #260 병합·Project `Done`을 확인한 뒤 최신 `develop`에서 분기했습니다. 상위 #226의 완료 하위 이슈는 14/20이며 #251은 병합 전 완료로 세지 않습니다. 미사용 공용 위젯은 보존하고, #252~#256·배포·CI·외부 정책은 변경하지 않습니다.
@@ -45,7 +46,7 @@
 - `fvm flutter test --reporter expanded`: 457개 통과, 기존 non-Linux golden skip 1개
 - `git diff --check`: 통과
 - Markdown 43개, 로컬 링크 229개·anchor 11개: 누락 링크·미연결 문서 0개
-- 최종 HEAD의 GitHub CI 결과는 PR checks와 이슈 검증 코멘트에 기록합니다.
+- 최종 HEAD의 GitHub CI 결과는 [PR checks](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/261/checks)와 이슈 검증 코멘트에 기록합니다.
 
 테스트는 실제 root/파생 Provider 체인에 fake repository를 주입했습니다. 실제 dev API 생성 요청·인증 E2E·Android/iOS 수동 smoke는 실행하지 않았습니다. 기존 화면 구조·공용 위젯·route는 유지했으며 시스템 back·SafeArea 등 플랫폼 수동 QA를 이 테스트로 완료했다고 보지 않습니다. 새 Figma 시안을 구현하거나 시각 일치 검증을 한 작업도 아닙니다.
 
@@ -64,6 +65,7 @@
 | --- | --- | --- |
 | `8e08457` | 원격 장소 상태·선택·제출 보호, 실제 조회 재시도와 기존 상태 화면 연결, Controller 회귀 11개 | 신규 Controller·기존 Plant Form 대상 41개 통과 |
 | `d0ce294` | 4개 viewport의 상태·홈 안내, 이전 버튼과 계정 전환 widget 회귀 | 신규 widget 10개 통과, 전체 457개·기존 skip 1개, format·analyze |
-| 이 문서의 정리 커밋 | #250 병합·#251 구현 상태, 가이드·매트릭스·감사 체크리스트와 검증·위험 기록 | 문서 링크·인덱스 검사, `git diff --check` |
+| `585ac94` | #250 병합·#251 구현 상태, 가이드·매트릭스·감사 체크리스트와 검증·위험 기록 | Markdown 43개·로컬 링크 229개·anchor 11개, `git diff --check` |
+| 이 문서의 최종 커밋 | PR #261·Project In Review 연결과 커밋별 이력 기록 | `git diff --check`, 담당자·milestone·Bug type·parent·Project 필드 확인 |
 
 문서·PR 이력만 기록하는 마지막 커밋은 자기 자신의 해시를 생략할 수 있습니다.
