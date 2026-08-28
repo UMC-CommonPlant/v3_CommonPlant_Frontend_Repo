@@ -77,7 +77,9 @@ class PlaceFormController extends Notifier<PlaceFormState> {
 
     state = state.copyWith(
       currentName: name,
-      submitState: const FormSubmitState.idle(),
+      submitState: state.isSubmitting
+          ? state.submitState
+          : const FormSubmitState.idle(),
     );
   }
 
@@ -88,7 +90,9 @@ class PlaceFormController extends Notifier<PlaceFormState> {
 
     state = state.copyWith(
       currentAddress: address,
-      submitState: const FormSubmitState.idle(),
+      submitState: state.isSubmitting
+          ? state.submitState
+          : const FormSubmitState.idle(),
     );
   }
 

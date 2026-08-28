@@ -11,9 +11,55 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../helpers/test_viewport.dart';
 import '../../../../helpers/user_data_session.dart';
 
 void main() {
+  for (final viewport in [
+    TestViewports.reference,
+    TestViewports.compactWidth,
+    TestViewports.shortHeight,
+  ]) {
+    testWidgets('장소 수정 중 이름 변경·재탭은 요청을 늘리지 않는다 ($viewport)', (tester) async {
+      configureTestViewport(tester, viewport);
+      final response = Completer<PlaceSummary>();
+      final repository = _EditablePlaceRepository(
+        const PlaceSummary(id: 'place-1', name: '루프탑', address: '서울시 성북구'),
+      )..updateResponse = response;
+      await tester.pumpWidget(_remotePlaceEditApp(repository));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), '첫 제출');
+      await tester.pump();
+      final button = find.widgetWithText(FilledButton, '완료');
+      final repeatSubmit = tester.widget<FilledButton>(button).onPressed!;
+      await tester.tap(button);
+      await tester.pump();
+      await tester.enterText(find.byType(TextField), '다음 제출');
+      await tester.pump();
+      // 비활성 프레임 전에 전달된 콜백도 Controller에서 차단해야 한다.
+      repeatSubmit();
+      await tester.pump();
+
+      expect(repository.updateCalls, 1);
+      expect(repository.latestUpdateName, '첫 제출');
+      expect(tester.widget<FilledButton>(button).onPressed, isNull);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('다음 제출'), findsOneWidget);
+      expect(find.text('홈'), findsNothing);
+
+      response.complete(
+        const PlaceSummary(id: 'place-1', name: '첫 제출', address: '서울시 성북구'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(repository.updateCalls, 1);
+      expect(find.text('홈'), findsOneWidget);
+      expect(find.byType(PlaceFormPage), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('사진이 있는 장소 수정은 안내를 표시하고 화면과 입력을 유지한다', (tester) async {
     final repository = _EditablePlaceRepository(
       const PlaceSummary(
@@ -169,6 +215,7 @@ class _EditablePlaceRepository extends Fake implements PlaceRepository {
   _EditablePlaceRepository(this.summary);
 
   final PlaceSummary summary;
+  Completer<PlaceSummary>? updateResponse;
   int updateCalls = 0;
   String? latestUpdateCode;
   String? latestUpdateName;
@@ -191,6 +238,7 @@ class _EditablePlaceRepository extends Fake implements PlaceRepository {
     latestUpdateName = name;
     latestUpdateAddress = address;
 
-    return PlaceSummary(id: code, name: name, address: address);
+    return updateResponse?.future ??
+        PlaceSummary(id: code, name: name, address: address);
   }
 }

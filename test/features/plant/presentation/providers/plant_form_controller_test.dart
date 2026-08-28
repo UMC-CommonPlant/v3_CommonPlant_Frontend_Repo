@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
@@ -15,6 +17,118 @@ import '../../../../helpers/user_data_session.dart';
 
 void main() {
   group('PlantFormController', () {
+    for (final isEdit in [false, true]) {
+      for (final fails in [false, true]) {
+        test(
+          '식물 ${isEdit ? '수정' : '생성'} 중 입력해도 한 번만 제출하고 ${fails ? '실패 후 재시도한다' : '이동 결과를 한 번 반환한다'}',
+          () async {
+            final barrier = Completer<void>();
+            final repository = _RecordingPlantRepository()
+              ..writeBarrier = barrier;
+            final container = ProviderContainer(
+              overrides: [
+                authenticatedUserDataSession,
+                useRemoteApiProvider.overrideWithValue(true),
+                plantRepositoryProvider.overrideWithValue(repository),
+                plantRegistrationPlaceProvider.overrideWith(
+                  (ref) => plantRegistrationPlaceFallbacks,
+                ),
+              ],
+            );
+            addTearDown(container.dispose);
+            final args = PlantFormArgs(
+              plantId: isEdit ? 'plant-1' : null,
+              placeId: isEdit ? 'place-1' : null,
+              initialPlantName: '첫 제출',
+            );
+            final provider = plantFormControllerProvider(args);
+            container.listen(provider, (_, _) {});
+            if (isEdit) {
+              await container.read(
+                remotePlantFormEditInfoProvider('plant-1').future,
+              );
+            } else {
+              await container.read(plantRegistrationPlaceProvider.future);
+            }
+            await container.pump();
+            final controller = container.read(provider.notifier);
+            controller.updateName('첫 제출');
+            controller.updateLastWateredDate(DateTime(2026, 8, 20));
+            final first = controller.submit();
+            final duplicates = <Future<PlantFormSubmitResult?>>[];
+            final pendingStates = <PlantFormState>[];
+
+            for (final edit in <void Function()>[
+              () => controller.updateName('다음 제출'),
+              () => controller.updateLastWateredDate(DateTime(2026, 8, 21)),
+              if (!isEdit)
+                () =>
+                    controller.selectPlace(plantRegistrationPlaceFallbacks[1]),
+            ]) {
+              edit();
+              pendingStates.add(container.read(provider));
+              duplicates.add(controller.submit());
+            }
+            if (fails) {
+              barrier.completeError(StateError('첫 요청 실패'));
+            } else {
+              barrier.complete();
+            }
+            final results = await Future.wait([first, ...duplicates]);
+
+            expect(pendingStates.every((state) => state.isSubmitting), isTrue);
+            expect(pendingStates.every((state) => !state.canSubmit), isTrue);
+            expect(pendingStates.last.currentName, '다음 제출');
+            expect(pendingStates.last.currentLastWateredDate, '2026-08-21');
+            expect(isEdit ? repository.updateCalls : repository.createCalls, 1);
+            expect(
+              isEdit
+                  ? repository.latestUpdateNickname
+                  : repository.latestCreateNickname,
+              '첫 제출',
+            );
+            expect(
+              isEdit
+                  ? repository.latestUpdateLastWateredDate
+                  : repository.latestCreateLastWateredDate,
+              '2026-08-20',
+            );
+            if (!isEdit) expect(repository.latestCreatePlaceCode, 'place-1');
+            expect(results.skip(1), everyElement(isNull));
+            if (!fails) {
+              expect(
+                results.first?.destination,
+                isEdit
+                    ? PlantFormSubmitDestination.plantDetail
+                    : PlantFormSubmitDestination.home,
+              );
+              return;
+            }
+
+            expect(results.first, isNull);
+            expect(container.read(provider).submitErrorMessage, isNotNull);
+            expect(container.read(provider).canSubmit, isTrue);
+            repository.writeBarrier = null;
+            expect(await controller.submit(), isNotNull);
+            expect(isEdit ? repository.updateCalls : repository.createCalls, 2);
+            expect(
+              isEdit
+                  ? repository.latestUpdateNickname
+                  : repository.latestCreateNickname,
+              '다음 제출',
+            );
+            expect(
+              isEdit
+                  ? repository.latestUpdateLastWateredDate
+                  : repository.latestCreateLastWateredDate,
+              '2026-08-21',
+            );
+            if (!isEdit) expect(repository.latestCreatePlaceCode, 'place-2');
+          },
+        );
+      }
+    }
+
     test('local 식물 생성은 선택 장소와 plant draft를 목록에 저장한다', () async {
       final container = ProviderContainer();
       const args = PlantFormArgs(initialPlantName: ' 몬스테라 ');
@@ -298,6 +412,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
 
   final PlantEditInfo editInfo;
   final bool failFirstUpdate;
+  Completer<void>? writeBarrier;
   final List<String?> updatedImageKeys = [];
   int createCalls = 0;
   int updateCalls = 0;
@@ -329,6 +444,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
     latestCreateNickname = nickname;
     latestCreateScientificNameKo = scientificNameKo;
     latestCreateLastWateredDate = lastWateredDate;
+    await writeBarrier?.future;
   }
 
   @override
@@ -345,6 +461,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
     latestUpdatePlaceCode = placeCode;
     latestUpdateNickname = nickname;
     latestUpdateLastWateredDate = lastWateredDate;
+    await writeBarrier?.future;
 
     if (failFirstUpdate && updateCalls == 1) {
       throw StateError('첫 수정 실패');
