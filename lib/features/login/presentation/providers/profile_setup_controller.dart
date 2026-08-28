@@ -39,7 +39,9 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
   void updateNickname(String nickname) {
     state = state.copyWith(
       nickname: nickname,
-      submitStatus: ProfileSetupSubmitStatus.idle,
+      submitStatus: state.isSubmitting
+          ? state.submitStatus
+          : ProfileSetupSubmitStatus.idle,
       clearErrorMessage: true,
     );
   }
@@ -67,6 +69,7 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
 
     final requestRef = ref;
     final dataSession = ref.read(userDataSessionProvider);
+    final nickname = state.nickname.trim();
     state = state.copyWith(
       submitStatus: ProfileSetupSubmitStatus.submitting,
       clearErrorMessage: true,
@@ -76,7 +79,7 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
       if (action != null) {
         await action();
       } else if (ref.read(useRemoteApiProvider)) {
-        return await _register(requestRef, dataSession);
+        return await _register(requestRef, dataSession, nickname);
       }
       if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
       state = state.copyWith(submitStatus: ProfileSetupSubmitStatus.success);
@@ -91,7 +94,11 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
     }
   }
 
-  Future<bool> _register(Ref requestRef, UserDataSession dataSession) async {
+  Future<bool> _register(
+    Ref requestRef,
+    UserDataSession dataSession,
+    String nickname,
+  ) async {
     final session = await ref.read(authSessionControllerProvider.future);
     if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
     final signupToken = session.signupToken;
@@ -102,12 +109,7 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
 
     final result = await ref
         .read(authRepositoryProvider)
-        .register(
-          RegisterRequest(
-            signupToken: signupToken,
-            name: state.nickname.trim(),
-          ),
-        );
+        .register(RegisterRequest(signupToken: signupToken, name: nickname));
 
     if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
     if (result is! AuthenticatedResult) {

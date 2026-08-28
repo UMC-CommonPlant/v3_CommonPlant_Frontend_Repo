@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/user/data/dtos/user_requests.dart';
 import 'package:commonplant_frontend/features/user/data/repositories/user_repository.dart';
@@ -18,6 +20,60 @@ void main() {
     email: 'common@plant.dev',
   );
   const args = UserProfileEditArgs(user: initialUser);
+
+  for (final fails in [false, true]) {
+    test(
+      '회원정보 요청 중 이름을 바꿔도 잠금을 유지하고 ${fails ? '새 입력으로 재시도한다' : '성공을 한 번 반환한다'}',
+      () async {
+        final barrier = Completer<void>();
+        final repository = _RecordingUserRepository(initialUser: initialUser)
+          ..writeBarrier = barrier;
+        final container = ProviderContainer(
+          overrides: [
+            authenticatedUserDataSession,
+            useRemoteApiProvider.overrideWithValue(true),
+            userRepositoryProvider.overrideWithValue(repository),
+          ],
+        );
+        addTearDown(container.dispose);
+        final provider = userProfileEditControllerProvider(args);
+        container.listen(provider, (_, _) {});
+        container.listen(currentUserProvider, (_, _) {});
+        await container.read(currentUserProvider.future);
+        final controller = container.read(provider.notifier);
+        controller.updateName('초록집사');
+        final first = controller.submit();
+        controller.updateName('다음집사');
+        final duringSubmit = container.read(provider);
+        final duplicate = controller.submit();
+        if (fails) {
+          barrier.completeError(StateError('첫 요청 실패'));
+        } else {
+          barrier.complete();
+        }
+        final results = await Future.wait([first, duplicate]);
+
+        expect(duringSubmit.isSubmitting, isTrue);
+        expect(duringSubmit.canSubmit, isFalse);
+        expect(duringSubmit.currentName, '다음집사');
+        expect(repository.updateCalls, 1);
+        expect(repository.latestRequest?.name, '초록집사');
+        expect(results, [!fails, false]);
+        if (!fails) {
+          expect(container.read(currentUserProvider).requireValue.name, '초록집사');
+          return;
+        }
+
+        expect(container.read(provider).submitErrorMessage, isNotNull);
+        expect(container.read(provider).canSubmit, isTrue);
+        repository.writeBarrier = null;
+        expect(await controller.submit(), isTrue);
+        expect(repository.updateCalls, 2);
+        expect(repository.latestRequest?.name, '다음집사');
+        expect(container.read(currentUserProvider).requireValue.name, '다음집사');
+      },
+    );
+  }
 
   test('변경되지 않거나 유효하지 않은 이름은 제출할 수 없다', () async {
     final container = ProviderContainer(
@@ -162,6 +218,7 @@ class _RecordingUserRepository extends Fake implements UserRepository {
 
   final UserProfile initialUser;
   final Object? updateError;
+  Completer<void>? writeBarrier;
   int updateCalls = 0;
   UpdateUserRequest? latestRequest;
 
@@ -175,6 +232,7 @@ class _RecordingUserRepository extends Fake implements UserRepository {
   }) async {
     updateCalls++;
     latestRequest = request;
+    await writeBarrier?.future;
 
     if (updateError != null) {
       return Future<UserProfile>.error(updateError!);
