@@ -49,7 +49,7 @@
 ### 2026-08-28 감사 — 이미지 수정 계약과 프론트 누락
 
 - Place/Plant의 `imageKey` 생략/null은 기존 이미지 삭제를 뜻한다. 새 파일 없이 유지하려면 기존 key를 보내야 한다.
-- Plant edit 응답의 key가 Form 상태로 전달되지 않고 Place Form도 key를 누락하므로 #248에서 수정한다. 이는 새 endpoint 변경이 아니라 기존 계약의 누락을 발견한 것이다.
+- 감사 당시 Plant edit 응답의 key가 Form 상태로 전달되지 않았고 Place Form도 key를 누락했다. #248에서 Plant key 보존과 미확인 key 차단, Place 사진 수정 요청 차단을 구현했다. 이는 새 endpoint 변경이 아니라 기존 계약 누락의 수정이다.
 - 연결 PR의 병합 상태와 실제 남은 화면 동선은 [화면·API 매트릭스](screen-api-integration-plan.md), 수정 순서는 [개발 감사 체크리스트](development-audit-checklist.md)에서 관리한다.
 
 ### 2026-08-28 장소 멤버 조회 연결
@@ -625,7 +625,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | refresh token 재발급 API | 없음 | 남음 |
 | 로그아웃 API | 없음 | 남음 |
 | pagination 응답 구조와 total count | `PlantPageContent`에 `items`, `totalCount`, `page`, `size` 추가 | 해소 |
-| 이미지 key 저장 주체와 업로드 후 반환 값 | Place/Plant 도메인 수정의 유지·교체·삭제 계약은 확인, 독립 Image 응답과 Place key 조회는 미확정 | 일부 해소, 프론트 #248 수정 필요 |
+| 이미지 key 저장 주체와 업로드 후 반환 값 | Place/Plant 도메인 수정의 유지·교체·삭제 계약은 확인, 독립 Image 응답과 Place key 조회는 미확정 | #248 key 보존·안전 차단 구현, 계약 일부 미확정 |
 | 앱 flavor별 full base URL 정책 | 프론트 환경 전략은 `docs/release-workflow.md`에서 flavor와 CI/CD 주입 분리로 정리. Swagger server는 여전히 `/api/v1`만 제공 | 일부 해소 |
 
 ## API 연계 코드에 반영 가능한 부분
@@ -675,7 +675,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 
 근거: [dev OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)의 두 update schema와 backend `7d572cb`의 [PlaceServiceImpl](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/blob/7d572cbcabc81a65926738b2a09e8479d0bd0c79/src/main/java/com/commonplant/garden/place/service/PlaceServiceImpl.java), [PlantServiceImpl](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/blob/7d572cbcabc81a65926738b2a09e8479d0bd0c79/src/main/java/com/commonplant/garden/plant/service/PlantServiceImpl.java)의 `resolveUpdatedImageKey`를 대조했다. 실제 원격 삭제 요청은 실행하지 않았다.
 
-현재 Form은 기존 key를 전달하지 않으므로 [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 텍스트 수정 시 이미지가 유실되지 않도록 수정해야 한다. Plant edit 응답은 key를 제공하지만 Place 상세는 URL만 제공하므로, Place key 확보 계약은 [IMAGE-04](backend-api-open-questions.md#image-04-이미지-key-생명주기)로 남긴다. URL에서 key를 추측하지 않는다.
+[#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 Plant Form의 초기 key·URL을 보존하고 이름·날짜 수정 요청에 key를 전달한다. URL이 있지만 key가 없으면 요청을 차단한다. Place는 key를 조회할 수 없어 사진이 있는 장소의 수정 요청을 차단·안내하며 사진이 없는 장소는 기존 수정 동작을 유지한다. key 확보와 동시 수정의 조건부 보호 계약은 [IMAGE-04](backend-api-open-questions.md#image-04-이미지-key-생명주기)로 남기고, [작업 이력](work-history/form-image-preservation-248.md)에 제한을 기록한다. URL에서 key를 추측하지 않는다.
 
 독립형 Image API(`/s3/images`)는 response schema가 없어 화면에서 반환된 image key/url을 확정적으로 읽을 수 없다. 따라서 프로필, 장소, 식물, 메모 화면에서 `/s3/images` 업로드 결과를 `imageKey`, `imgUrl`, `imageUrl`로 임의 매핑하지 않는다.
 

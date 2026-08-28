@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
@@ -37,6 +38,28 @@ void main() {
         adapter.latestOptions.contentType,
         startsWith('multipart/form-data'),
       );
+      expect(
+        adapter.latestBody,
+        contains('"imageKey":"images/user-nano-id/garden.png"'),
+      );
+      expect(adapter.latestBody, isNot(contains('name="image"')));
+    });
+
+    test('명시적 null key는 삭제 계약대로 key와 파일을 생략한다', () async {
+      final adapter = _CapturingAdapter();
+      final dataSource = DioPlaceRemoteDataSource(_dioWith(adapter));
+
+      await dataSource.updatePlace(
+        code: 'Abc123',
+        request: const UpdatePlaceRequest(
+          name: '정원',
+          address: '서울특별시',
+          imageKey: null,
+        ),
+      );
+
+      expect(adapter.latestBody, isNot(contains('"imageKey"')));
+      expect(adapter.latestBody, isNot(contains('name="image"')));
     });
 
     test('장소 생성은 optional image part를 multipart에 포함한다', () async {
@@ -70,6 +93,8 @@ void main() {
       expect(adapter.latestOptions.method, 'PUT');
       expect(adapter.latestOptions.path, '/place/update/Abc123');
       expect(formData.files.map((file) => file.key), contains('image'));
+      expect(adapter.latestBody, contains('image-bytes'));
+      expect(adapter.latestBody, contains('filename="place.png"'));
     });
   });
 }
@@ -84,6 +109,7 @@ class _CapturingAdapter implements HttpClientAdapter {
 
   final String responseBody;
   late RequestOptions latestOptions;
+  late String latestBody;
 
   @override
   void close({bool force = false}) {}
@@ -95,6 +121,9 @@ class _CapturingAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     latestOptions = options;
+    latestBody = requestStream == null
+        ? ''
+        : await utf8.decoder.bind(requestStream).join();
 
     return ResponseBody.fromString(
       responseBody,

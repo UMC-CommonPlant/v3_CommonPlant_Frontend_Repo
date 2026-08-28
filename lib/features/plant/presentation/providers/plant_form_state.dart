@@ -39,6 +39,8 @@ class PlantFormState {
     required this.selectedPlaceId,
     required this.loadStatus,
     required this.submitState,
+    this.initialImageKey,
+    this.initialImageUrl,
     this.loadErrorMessage,
   });
 
@@ -81,6 +83,8 @@ class PlantFormState {
     required String? placeId,
     required String name,
     required String? lastWateredDate,
+    String? imageKey,
+    String? imageUrl,
   }) : this(
          plantId: plantId,
          placeId: placeId,
@@ -89,6 +93,8 @@ class PlantFormState {
          currentName: name,
          initialLastWateredDate: lastWateredDate,
          currentLastWateredDate: lastWateredDate,
+         initialImageKey: imageKey,
+         initialImageUrl: imageUrl,
          places: const [],
          selectedPlaceId: null,
          loadStatus: PlantFormLoadStatus.ready,
@@ -138,6 +144,8 @@ class PlantFormState {
   final String currentName;
   final String? initialLastWateredDate;
   final String? currentLastWateredDate;
+  final String? initialImageKey;
+  final String? initialImageUrl;
   final List<PlantRegistrationPlace> places;
   final String? selectedPlaceId;
   final PlantFormLoadStatus loadStatus;
@@ -149,6 +157,10 @@ class PlantFormState {
   bool get isSubmitting => submitState.isSubmitting;
 
   String? get submitErrorMessage => submitState.errorMessage;
+
+  bool get hasUnresolvedImage =>
+      (initialImageUrl?.trim().isNotEmpty ?? false) &&
+      (initialImageKey?.trim().isEmpty ?? true);
 
   bool get hasChanges =>
       currentName.trim() != initialName ||
@@ -199,6 +211,8 @@ class PlantFormState {
       currentLastWateredDate: identical(currentLastWateredDate, _unset)
           ? this.currentLastWateredDate
           : currentLastWateredDate as String?,
+      initialImageKey: initialImageKey,
+      initialImageUrl: initialImageUrl,
       places: places == null ? this.places : List.unmodifiable(places),
       selectedPlaceId: identical(selectedPlaceId, _unset)
           ? this.selectedPlaceId

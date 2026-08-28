@@ -29,7 +29,7 @@
 | IMAGE-01 | Image | `/s3/images` upload/download/update/delete 성공 response schema는 무엇인가? | image key/url mapper 보류 | Open |
 | IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | 프로필/장소/식물/메모 이미지 흐름 확정 불가 | Open |
 | IMAGE-03 | Image | presigned download URL 응답 필드와 wrapper 구조는 무엇인가? | 네트워크 이미지 fallback 정책 보류 | Open |
-| IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | Place/Plant 수정 계약 확인, 기존 이미지 보존 #248과 Place key 조회 확인 필요 | Partial |
+| IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | #248 Plant key 보존·Place 사진 수정 차단 구현, Place key 조회·동시 수정 보호 계약 필요 | Partial |
 | ERROR-01 | Error | 에러 response body의 공통 `code`, `message` 필드명은 무엇인가? | 사용자 메시지 매핑 제한 | Open |
 | ERROR-02 | Error | 도메인별 에러 코드 표준과 의미는 무엇인가? | `ApiException` mapping table 보류 | Open |
 | TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | 인증 만료 복구 흐름 보류 | Open |
@@ -203,8 +203,9 @@
 - 현재 근거: 2026-08-28 dev OpenAPI의 `updatePlaceReq.imageKey`와 `UpdateRequest.imageKey`, backend `7d572cb`의 `PlaceServiceImpl`·`PlantServiceImpl` 수정 로직을 대조했다. 자세한 근거는 [Swagger 참고](api-swagger-reference.md#image-화면-연결-판단)에 있다.
 - 답변: Place/Plant 도메인 수정 API는 새 파일이 있으면 교체하고, 파일이 없으면 기존 key와 같은 값일 때 유지한다. key 생략/null은 기존 이미지 삭제를 뜻하며, 다른 key는 허용하지 않는다. 이는 독립 `/s3/images` 응답 계약이 확인됐다는 의미가 아니다.
 - 프론트 영향: 이미지 선택기가 없어도 텍스트 수정 요청에서 기존 key를 잃으면 이미지가 삭제될 수 있다. Plant edit 응답은 key를 제공하지만 Place 상세에는 `imgUrl`만 있다.
-- 확인 질문: Place의 기존 image key를 안전하게 조회하는 계약은 무엇인가? User·Memo와 독립 `/s3/images`의 생명주기 정책은 별도 확인이 필요하다.
-- 프론트 반영: 현재 Form은 key를 누락하므로 [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 보존·삭제 의도를 분리한다. URL에서 key를 추측하지 않으며, 이번 문서 변경은 코드 수정이나 원격 삭제 검증을 포함하지 않는다.
+- 확인 질문: Place의 기존 image key를 안전하게 조회하는 계약은 무엇인가? 조회 이후 다른 클라이언트가 사진을 변경한 경우의 조건부 수정·명시적 유지 동작은 어떻게 보장하는가? User·Memo와 독립 `/s3/images`의 생명주기 정책은 별도 확인이 필요하다.
+- 프론트 반영: [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 Plant의 초기 key를 상태와 요청에 보존하고 URL만 있는 불완전 정보는 차단한다. Place는 기존 사진 URL을 폼까지 전달하고 사진이 있으면 수정 API를 호출하지 않는다. 사진 없는 장소·fixture 수정은 유지하며 URL에서 key를 추측하지 않는다. 원격 삭제 검증은 실행하지 않았다.
+- 제한 해제: Place key 조회 또는 명시적 유지 계약 확인 후 별도 이슈에서 사진이 있는 장소 수정과 동시 수정 보호를 구현한다. [작업 이력](work-history/form-image-preservation-248.md)에 현재 제한과 검증을 기록했다.
 - 상태: Partial
 
 ## Error

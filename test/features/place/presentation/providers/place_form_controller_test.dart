@@ -173,11 +173,46 @@ void main() {
       expect(repository.latestUpdateCode, 'place-1');
       expect(repository.latestUpdateName, '루프탑');
       expect(repository.latestUpdateAddress, '서울시 성북구');
+      expect(repository.latestUpdateImageKey, isNull);
+    });
+
+    test('사진이 있는 장소의 이름·주소 수정은 기존 사진 유실을 막는다', () async {
+      final repository = _RecordingPlaceRepository(
+        imageUrl: 'https://example.com/place.png?signature=old',
+      );
+      final container = ProviderContainer(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(true),
+          placeRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final provider = placeFormControllerProvider('place-1');
+      final subscription = container.listen(provider, (previous, next) {});
+      addTearDown(subscription.close);
+      await container.read(remotePlaceFormEditInfoProvider('place-1').future);
+      await container.pump();
+      final controller = container.read(provider.notifier);
+
+      controller.updateName('루프탑');
+      expect(await controller.submit(), isNull);
+      controller.updateAddress('서울시 강남구');
+      expect(await controller.submit(), isNull);
+
+      expect(repository.updateCalls, 0);
+      final state = container.read(provider);
+      expect(state.submitErrorMessage, contains('기존 사진'));
+      expect(state.currentName, '루프탑');
+      expect(state.currentAddress, '서울시 강남구');
+      expect(state.isSubmitting, isFalse);
     });
   });
 }
 
 class _RecordingPlaceRepository extends Fake implements PlaceRepository {
+  _RecordingPlaceRepository({this.imageUrl});
+
+  final String? imageUrl;
   int createCalls = 0;
   int updateCalls = 0;
   String? latestUpdateCode;
@@ -185,10 +220,16 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
   String? latestCreateAddress;
   String? latestUpdateName;
   String? latestUpdateAddress;
+  String? latestUpdateImageKey;
 
   @override
   Future<PlaceSummary> fetchPlace(String code) async {
-    return PlaceSummary(id: code, name: '거실', address: '서울시 성북구');
+    return PlaceSummary(
+      id: code,
+      name: '거실',
+      address: '서울시 성북구',
+      imageUrl: imageUrl,
+    );
   }
 
   @override
@@ -214,6 +255,7 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
     latestUpdateCode = code;
     latestUpdateName = name;
     latestUpdateAddress = address;
+    latestUpdateImageKey = imageKey;
 
     return PlaceSummary(id: code, name: name, address: address);
   }

@@ -9,6 +9,9 @@ import 'package:commonplant_frontend/features/plant/presentation/providers/plant
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+const String plantFormImagePreservationMessage =
+    '기존 사진 정보를 확인할 수 없어 수정하지 못했어요. 다시 불러와 주세요.';
+
 final plantFormControllerProvider = NotifierProvider.autoDispose
     .family<PlantFormController, PlantFormState, PlantFormArgs>(
       PlantFormController.new,
@@ -65,6 +68,8 @@ class PlantFormController extends Notifier<PlantFormState> {
                 plantId: plantId,
                 placeId: args.placeId,
                 name: info.name.trim(),
+                imageKey: info.imageKey,
+                imageUrl: info.imageUrl,
                 lastWateredDate: _normalizedLastWateredDate(
                   info.lastWateredDate,
                 ),
@@ -149,6 +154,17 @@ class PlantFormController extends Notifier<PlantFormState> {
       return null;
     }
 
+    if (state.isEdit &&
+        ref.read(useRemoteApiProvider) &&
+        state.hasUnresolvedImage) {
+      state = state.copyWith(
+        submitState: const FormSubmitState.failure(
+          plantFormImagePreservationMessage,
+        ),
+      );
+      return null;
+    }
+
     final isEdit = state.isEdit;
     state = state.copyWith(submitState: const FormSubmitState.submitting());
 
@@ -205,6 +221,7 @@ class PlantFormController extends Notifier<PlantFormState> {
           .updatePlant(
             plantId: plantId,
             placeCode: placeId,
+            imageKey: state.initialImageKey,
             nickname: plantName,
             lastWateredDate: state.currentLastWateredDate,
           );

@@ -4,6 +4,24 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PlaceFormState', () {
+    test('이름·주소·제출 상태가 바뀌어도 기존 이미지 여부를 보존한다', () {
+      const state = PlaceFormState.edit(
+        placeId: 'place-1',
+        name: '거실',
+        address: '서울시',
+        imageUrl: 'https://example.com/place.png',
+      );
+      final changed = state.copyWith(
+        currentName: '루프탑',
+        currentAddress: '경기도',
+        submitState: const FormSubmitState.failure('요청 실패'),
+      );
+
+      expect(changed.initialImageUrl, state.initialImageUrl);
+      expect(changed.hasExistingImage, isTrue);
+      expect(const PlaceFormState.create().hasExistingImage, isFalse);
+    });
+
     test('생성 상태는 이름이 입력되면 제출할 수 있다', () {
       const state = PlaceFormState.create();
 

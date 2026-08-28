@@ -9,6 +9,8 @@ import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 const String placeFormAddressRequiredMessage = '장소 주소를 입력해 주세요.';
+const String placeFormImagePreservationMessage =
+    '기존 사진을 유지할 수 없어 지금은 장소를 수정할 수 없어요.';
 
 final placeFormControllerProvider = NotifierProvider.autoDispose
     .family<PlaceFormController, PlaceFormState, String?>(
@@ -55,6 +57,7 @@ class PlaceFormController extends Notifier<PlaceFormState> {
               placeId: placeId,
               name: info.name,
               address: info.address,
+              imageUrl: info.imageUrl,
             );
           },
           error: (error, stackTrace) =>
@@ -157,6 +160,13 @@ class PlaceFormController extends Notifier<PlaceFormState> {
     var resultPlaceCode = placeId;
 
     if (ref.read(useRemoteApiProvider)) {
+      // Place 조회는 URL만 제공하므로 유지에 필요한 key를 추측하지 않는다.
+      if (state.hasExistingImage) {
+        throw const _PlaceFormValidationException(
+          placeFormImagePreservationMessage,
+        );
+      }
+
       final requiredAddress = _requiredAddress(address);
 
       final updatedPlace = await ref

@@ -58,7 +58,7 @@
 | [ ] | API-MULTIPART | Place multipart JSON part 정책 | MULTIPART-01 | Auth/User/Plant의 `application/json` encoding은 확인됐고 Place encoding은 백엔드 확인이 필요하다. | Open |
 | [ ] | API-PLACE | Place response와 식별자 정책 | PLACE-01, PLACE-02, PLACE-03, PLACE-04 | #239·#243 목록/상세/생성/수정, #245 멤버 조회 연결 완료; 멤버 변경은 보류 | Partial |
 | [ ] | API-FRIEND | Friend 요청 목록과 액션 정책 | FRIEND-01, FRIEND-02, FRIEND-03, FRIEND-04 | #241 수신 처리와 #243 발신 연결 완료, 이름 오매칭은 수용 위험으로 추적 | Partial |
-| [ ] | API-IMAGE | Image upload/download/update/delete 정책 | IMAGE-01, IMAGE-02, IMAGE-03, IMAGE-04 | Place/Plant 수정 시 기존 key 유지·생략 시 삭제 계약은 확인했고 #248에서 반영한다. 독립 Image 응답·Place key 조회는 미확정이다. | Partial |
+| [ ] | API-IMAGE | Image upload/download/update/delete 정책 | IMAGE-01, IMAGE-02, IMAGE-03, IMAGE-04 | #248에서 Plant key 보존·Place 사진 수정 차단을 구현했다. 독립 Image 응답·Place key 조회·동시 수정 보호 계약은 미확정이다. | Partial |
 | [ ] | API-ERROR | 공통/도메인 에러 response 정책 | ERROR-01, ERROR-02 | 사용자 메시지와 field error 매핑 | Open |
 | [ ] | API-TOKEN | refresh token과 로그아웃 정책 | TOKEN-01, TOKEN-02 | 인증 만료 복구와 세션 종료 처리 | Open |
 | [ ] | API-SEARCH | 주소/식물/사용자 검색 정책 | SEARCH-01, SEARCH-02, SEARCH-03 | 주소 검색, 식물 검색, 친구 추가 검색 UX | Open |

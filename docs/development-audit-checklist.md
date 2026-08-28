@@ -2,7 +2,7 @@
 
 2026-08-28 사용자 결정과 `develop`의 PR #246 병합 커밋 `2a01babb185ef5056b361c477717759194c53ec1`을 기준으로 합니다. 문서 정리는 [#247](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/247), 상위 개발 범위는 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)입니다.
 
-문서 PR: [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257), `develop` 대상. #247과 PR은 Project 10의 `In Review`이며 사용자 병합을 기다립니다. 기본 CI 결과는 PR checks에서 확인합니다.
+문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)은 이미지 key 보존과 안전 차단 구현·로컬 검증을 완료했으며 [작업 이력](work-history/form-image-preservation-248.md)에서 범위와 제한을 확인합니다.
 
 ## 결정과 작업 경계
 
@@ -25,11 +25,11 @@
 
 ## 실행 순서
 
-표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. 현재 #248~#256은 모두 `Backlog`이며 아직 코드 변경이 없습니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
+표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248은 구현·검증 후 병합 전 상태이고 #249~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
 
 | 체크 | 순서 | 이슈 | 우선도 | 문제·완료 기준 요약 |
 | --- | --- | --- | --- | --- |
-| [ ] | AUDIT-01 | [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248) | P1 | 장소·식물의 텍스트 수정이 기존 이미지를 삭제하지 않도록 key와 사용자 의도를 보존 |
+| [ ] | AUDIT-01 | [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248) | P1 | 구현·검증 완료, 병합 전: Plant key 보존·미확인 key 차단, 사진이 있는 Place 수정은 임시 제한 |
 | [ ] | AUDIT-02 | [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249) | P1 | 로그아웃·계정 전환 후 이전 사용자 캐시와 진행 중 요청의 영향 차단 |
 | [ ] | AUDIT-03 | [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250) | P1 | 요청 중 입력 변경으로 submit 잠금이 풀리지 않도록 수정 |
 | [ ] | AUDIT-04 | [#251](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/251) | P1 | API 모드 식물 등록의 loading/error/empty에서 샘플 장소 사용 금지 |
@@ -46,10 +46,10 @@
 ### AUDIT-01 — 기존 이미지 보존
 
 - 위치: [Plant Form Controller](../lib/features/plant/presentation/providers/plant_form_controller.dart), [Place Form Controller](../lib/features/place/presentation/providers/place_form_controller.dart).
-- 재현: 기존 이미지가 있는 식물의 이름만 바꾸면 update 요청에서 `imageKey`가 누락됩니다. Place도 현재 Form에서 key를 보내지 않습니다.
+- 감사 당시 재현: 기존 이미지가 있는 식물의 이름만 바꾸면 update 요청에서 `imageKey`가 누락됐습니다. Place Form도 key를 보내지 않았습니다.
 - 계약: 새 파일이 없을 때 기존 key를 보내면 유지하고, key가 없거나 null이면 삭제합니다. [Swagger 참고](api-swagger-reference.md)의 Place/Plant 수정 계약과 backend `7d572cb`에서 확인했습니다. 원격 이미지 삭제를 실행해서 검증한 것은 아닙니다.
-- 완료: 이미지 유지·명시적 삭제·교체를 구분하고 텍스트 수정 회귀 테스트를 추가합니다.
-- 선행 확인: Plant edit 응답은 key를 제공하지만 Place 상세 응답은 URL만 제공합니다. Place key 확보가 불가능하면 데이터 유실을 막는 처리를 먼저 하고 계약 공백을 기록합니다. URL에서 key를 추측하지 않습니다. 새 파일 선택기 전체 구현과는 분리합니다.
+- #248 구현: Plant Form 초기 key·URL을 보존하고 이름·날짜 수정과 재시도에서 key를 전달합니다. URL은 있으나 key가 없는 Plant와 사진이 있는 Place는 수정 API를 호출하지 않고 안내합니다. 회귀 테스트 14개를 추가했고 전체 376개 통과·기존 skip 1개입니다.
+- 남은 확인: Place 상세 응답은 URL만 제공하므로 사진이 있는 장소 수정은 key 조회 계약 확보 후 별도 해제합니다. 새 파일 선택·삭제 UI와 동시 수정의 서버 측 보호는 별도이며, [제한·위험 기록](work-history/form-image-preservation-248.md#남은-제한과-위험)을 따릅니다.
 
 ### AUDIT-02 — 계정별 캐시 격리
 
@@ -105,6 +105,6 @@
 | --- | --- | --- |
 | `155b093` | 현행 가이드·인덱스·과거 기록 분리와 개선 체크리스트 | `git diff --check`, Markdown 37개·로컬 링크 126개·미연결 문서 0개 |
 | `6f368a8` | 화면·API 상태, 이미지 유지·삭제 계약, PR #246 병합 현황 정정 | `git diff --check`, 로컬 링크 138개·anchor 3개, 변경 파일 19개 모두 Markdown |
-| 이 문서의 최종 커밋 | PR #257·Project In Review 연결과 커밋별 이력 기록 | `git diff --check`, 이슈 #247~#256의 Type·담당자·milestone·parent·Project 필드 확인 |
+| `8066edb` | PR #257·Project In Review 연결과 커밋별 이력 기록(당시 상태) | `git diff --check`, 이슈 #247~#256의 Type·담당자·milestone·parent·Project 필드 확인 |
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있습니다.

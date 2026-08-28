@@ -5,12 +5,38 @@ import 'package:commonplant_frontend/features/place/domain/entities/place_summar
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_form_page.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_form_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
+  testWidgets('사진이 있는 장소 수정은 안내를 표시하고 화면과 입력을 유지한다', (tester) async {
+    final repository = _EditablePlaceRepository(
+      const PlaceSummary(
+        id: 'place-1',
+        name: '루프탑',
+        address: '서울시 성북구',
+        imageUrl: 'https://example.com/place.png',
+      ),
+    );
+    await tester.pumpWidget(_remotePlaceEditApp(repository));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '루프탑 정원');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, '완료'));
+    await tester.pumpAndSettle();
+
+    expect(repository.updateCalls, 0);
+    expect(find.text(placeFormImagePreservationMessage), findsOneWidget);
+    expect(find.text('루프탑 정원'), findsOneWidget);
+    expect(find.text('홈'), findsNothing);
+    expect(find.byType(PlaceFormPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('장소 수정 화면은 기존 장소 정보와 비활성 완료 버튼을 표시한다', (
     WidgetTester tester,
   ) async {
@@ -113,6 +139,7 @@ Widget _remotePlaceEditApp(PlaceRepository repository) {
       ),
     ],
   );
+  addTearDown(router.dispose);
 
   return ProviderScope(
     overrides: [
