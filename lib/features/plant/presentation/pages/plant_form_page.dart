@@ -61,6 +61,13 @@ class PlantFormPage extends ConsumerWidget {
         statusTitle: '식물 수정 정보를 찾을 수 없어요',
         message: '다시 식물 상세에서 수정해 주세요',
       ),
+      PlantFormLoadStatus.missingPlace => PlantStateScaffold(
+        title: '식물 수정',
+        statusTitle: '장소 정보를 확인할 수 없어요',
+        message: '장소에서 식물을 선택한 뒤 다시 수정해 주세요',
+        actionLabel: '홈으로',
+        onAction: () => context.go(AppRoutePaths.home),
+      ),
       PlantFormLoadStatus.ready => _buildForm(context, ref, formState),
     };
   }

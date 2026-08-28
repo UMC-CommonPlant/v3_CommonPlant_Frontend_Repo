@@ -22,6 +22,7 @@
 | PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | API 경계는 `code`, 기존 route 모델명은 `id` 유지 | Answered |
 | PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #245 친구 관리 조회 연결, 멤버 변경은 별도 계약 필요 | Answered |
 | PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 API mode에서 member 나가기 action 숨김 | Blocked |
+| PLANT-01 | Plant | 식물에서 소속 장소 code를 조회할 수 있는 계약을 제공하는가? | #252 code 누락 수정 차단, Home 식물 목록에서 바로 수정하려면 조회 계약 필요 | Open |
 | FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | #241 요청 목록·Home 배지 연결 | Answered |
 | FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | #241 수락·거절·갱신, #243 전송 연결 | Answered |
 | FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | #243에서 위험 수용 후 연결, 고유 ID 전환 필요 | Answered |
@@ -126,6 +127,17 @@
 - 프론트 반영: #239 API 모드는 owner에게만 전체 삭제 action과 경고를 표시하고 구성원 나가기는 숨긴다.
 - 답변: 현재 제공 endpoint 없음.
 - 상태: Blocked
+
+## Plant
+
+### PLANT-01. 식물에서 소속 장소 code 조회
+
+- 현재 근거: 2026-08-29 [live OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)의 `PUT /plants/{plantId}`는 query `placeCode`를 필수로 요구하지만 `PlantSummary`, `DetailResponse`, `EditInfoResponse`에는 code가 없다. 상세에는 장소 이름만 있다.
+- 프론트 영향: Home 식물 목록→상세 진입은 code가 없고, 장소 상세를 경유한 진입만 기존 route query로 실제 code를 전달한다. 장소명 매칭·첫 장소 선택은 올바른 식별자를 보장하지 않는다.
+- 확인 질문: 식물 목록·상세·수정 조회 중 소속 `placeCode`를 제공할 응답 또는 별도 조회 계약이 있는가? 장소 문맥 없는 식물 수정의 지원 방식도 확인이 필요하다.
+- 프론트 반영: #252는 code가 없으면 제출을 차단하고 홈→장소→식물 재진입을 안내한다. code가 있으면 기존 PUT query를 유지하며 목록·상세·편집 정보를 갱신한다. 거짓 성공 버그는 이 차단으로 수정하며 조회 계약 답변을 기다리지 않는다.
+- 답변: 미확인. 서버 필드나 필수 query 정책을 임의로 추가·변경하지 않는다.
+- 상태: Open
 
 ## Friend
 

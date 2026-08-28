@@ -2,7 +2,7 @@
 
 이 문서는 화면 퍼블리싱 이후 남아 있는 mock 흐름을 실제 상태와 API 계층으로 전환하는 순서와 완료 기준을 관리합니다. 배포 자동화와 원격 E2E 준비는 필요한 외부 조건이 충족될 때까지 유지하되, 현재 MVP 최우선 작업은 사용자 동선별 수직 슬라이스 완성입니다.
 
-2026-08-28 감사 후 문서 정리 #247 / PR #257부터 입력 변경 중 제출 잠금 #250 / PR #260까지 병합됐습니다. #251 원격 식물 등록의 샘플 장소 차단은 구현·로컬 검증 완료, 사용자 병합 전입니다. [개발 감사·개선 체크리스트](development-audit-checklist.md)의 다음 수정은 #252 장소 code 없는 식물 수정의 거짓 성공입니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
+2026-08-29 기준 문서 정리 #247 / PR #257부터 원격 식물 등록의 샘플 장소 차단 #251 / PR #261까지 병합됐습니다. #252 장소 code 없는 수정 차단과 성공 후 갱신은 구현·로컬 검증 완료, 사용자 병합 전입니다. 병합 후 [개발 감사·개선 체크리스트](development-audit-checklist.md)의 #253 주소 결과 전달을 진행합니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
 
 ## 목표
 
@@ -58,8 +58,8 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Place | 친구 관리 | 실제 멤버·이미지 조회, 닉네임 필터, loading/empty/error/retry 연결 | 멤버 추가·삭제·권한 변경 | `GET /place/{code}/members` 연결, 고유 member id와 변경 endpoint 없음 | #245 조회 전용 연결 |
 | Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
 | Plant | 식물 등록 검색 | fixture 검색 | 실제 검색 모델과 상태 | 식물 종 검색 endpoint 필요 | 보류 |
-| Plant | 식물 등록 | 장소·애칭·날짜와 create submit 연결, #250 잠금 병합, #251 실제 장소·loading/error/empty·재시도·제출 보호 구현 | #251 사용자 병합, 학명/이미지·장소 사진 | `GET /place/user`, `POST /plants`; 실제 목록 code만 사용 | 원격 장소 회귀 검증 완료, 인증 E2E 별도 |
-| Plant | 식물 수정 | #248 이미지 key 보존·불완전 정보 차단, #250 제출 잠금 병합 | code 검증 #252, 이미지 선택·삭제 UI | `GET /plants/{id}/edit`, `PUT /plants/{id}` | 이미지 보존·제출 잠금 PR 병합, code 없는 거짓 성공은 후속 수정 |
+| Plant | 식물 등록 | 장소·애칭·날짜와 create submit 연결, #250 잠금·#251 실제 장소·loading/error/empty·재시도·제출 보호 병합 | 학명/이미지·장소 사진 | `GET /place/user`, `POST /plants`; 실제 목록 code만 사용 | #251 / PR #261 병합, 인증 E2E 별도 |
+| Plant | 식물 수정 | #248 이미지 key 보존·#250 제출 잠금 병합, #252 code 누락 안내·차단과 성공 후 관련 캐시 갱신 구현 | #252 사용자 병합, Home 식물 목록의 code 확보(PLANT-01), 이미지 선택·삭제 UI | `GET /plants/{id}/edit`, `PUT /plants/{id}?placeCode=...`; 현재는 장소 경유 code 필요 | code 누락 시 재진입 안내, 거짓 성공 회귀 검증 완료 |
 | Plant | 식물 상세 | detail/delete, 등록일 계산과 실제 값 연결, remote fixture 제거 | Memo CRUD·물주기 액션 | `GET/DELETE /plants/{id}` 연결; Memo·물주기 API 없음 | #231 연결 완료 |
 | Memo | 메모 작성 | 로컬 Provider 저장 | DTO, repository, submit, 실제 image file | Memo 생성 endpoint 필요 | Blocked |
 | Memo | 메모 목록·수정·삭제 | 로컬 fixture·상태 | 목록, pagination, 수정·삭제, 상세 갱신 | Memo CRUD endpoint 필요 | Blocked |
@@ -108,7 +108,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 프로필·Place·Plant 폼, 친구 선택·처리 상태, 알림 설정과 로컬 추가 데이터도 API 모드에서 초기화합니다. 늦은 변경 응답은 현재 세션을 확인한 뒤에만 상태·캐시·이동 결과를 반영하며, 탈퇴 응답으로 새 계정을 로그아웃시키지 않습니다. API 비사용 fixture는 유지합니다.
 
-검증은 fake repository·token store·Dio adapter와 widget test로 수행했습니다. 서버에 이미 전달된 변경의 취소·롤백, OS 저장소 장애, 실제 인증 E2E는 [작업 이력의 제한](work-history/session-cache-isolation-249.md#남은-제한과-위험)과 구분합니다. 중복 제출은 [#250 별도 이력](work-history/form-submit-lock-250.md), 원격 식물 등록의 fixture 혼입은 [#251 이력](work-history/remote-plant-places-251.md)에서 보완하며 code 없는 수정 등 #252~#256은 남아 있습니다.
+검증은 fake repository·token store·Dio adapter와 widget test로 수행했습니다. 서버에 이미 전달된 변경의 취소·롤백, OS 저장소 장애, 실제 인증 E2E는 [작업 이력의 제한](work-history/session-cache-isolation-249.md#남은-제한과-위험)과 구분합니다. 중복 제출은 [#250 별도 이력](work-history/form-submit-lock-250.md), 원격 식물 등록의 fixture 혼입은 [#251 이력](work-history/remote-plant-places-251.md), code 없는 수정의 거짓 성공은 [#252 이력](work-history/plant-edit-place-code-252.md)에서 보완합니다. #253~#256은 남아 있습니다.
 
 ## User 프로필 수직 슬라이스
 
@@ -228,5 +228,6 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #249 | `59c7d7d`, `a3e9711` | PR #258 병합 확인(`a630c66`), 인증·토큰 저장과 사용자별 캐시·늦은 후처리 격리 | [계정 격리 이력](work-history/session-cache-isolation-249.md), 전체 410개 통과·기존 skip 1개 |
 | #250 | `2103498`, `8ff9cf5` | PR #259 병합 확인(`b15cdd7`), Place·Plant·User·가입 프로필 입력 중 제출 잠금과 회귀 테스트 | [제출 잠금 이력](work-history/form-submit-lock-250.md), 전체 436개 통과·기존 skip 1개 |
 | #251 | `8e08457`, `d0ce294` | PR #260 병합 확인(`bc6e68d`), 원격 식물 등록의 실제 장소·비동기 상태·재시도·제출 보호 | [원격 장소 이력](work-history/remote-plant-places-251.md), 전체 457개 통과·기존 skip 1개 |
+| #252 | `464b9b3`, `4dcb910` | PR #261 병합 확인(`ebf6dc4`), 식물 수정 code 누락 차단·성공 후 관련 캐시 갱신과 route 회귀 | [수정 장소 코드 이력](work-history/plant-edit-place-code-252.md), 전체 476개 통과·기존 skip 1개 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.

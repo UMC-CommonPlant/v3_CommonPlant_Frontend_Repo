@@ -108,6 +108,8 @@ CommonTextField(
 
 식물 등록처럼 필수 선택지를 원격에서 가져오는 폼은 목록의 loading/error/empty에서도 제출할 수 없습니다. #251은 `canSubmit`을 버튼에 연결하고, 선택·제출 직전에 최신 장소 상태를 재확인합니다. 조회 재시도와 홈 안내는 기존 상태 화면을 사용하며, API 비사용 fixture만 유지합니다([상태 기준](state-management-guide.md#폼에-필요한-원격-목록)).
 
+원격 수정에 필요한 식별자도 입력 검증과 별도로 확인합니다. #252 Plant 수정은 장소 code가 null·빈 값·공백이면 `missingPlace` 상태에서 제출을 막고 장소 화면을 통한 재진입을 안내합니다. 필수 문맥이 없어 API를 생략한 경우를 성공으로 반환하거나 로컬 목록을 변경하지 않습니다. API 실패는 초안을 보존하며 사용자용 오류와 재시도를 제공합니다([검증·제한](work-history/plant-edit-place-code-252.md)).
+
 disabled 입력의 clear 동작은 [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255)로 별도 추적합니다.
 
 여러 폼에서 제출 상태가 반복되면 `shared/forms/form_submit_state.dart`의

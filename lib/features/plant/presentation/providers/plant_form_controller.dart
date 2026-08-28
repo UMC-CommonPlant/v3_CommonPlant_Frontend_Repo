@@ -1,9 +1,11 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/place/place_feature_provider.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_registration_place.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_edit_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_state.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
@@ -59,6 +61,11 @@ class PlantFormController extends Notifier<PlantFormState> {
     final plantId = args.plantId;
 
     if (plantId != null) {
+      final placeId = args.placeId?.trim();
+      if (useRemoteApi && (placeId == null || placeId.isEmpty)) {
+        return PlantFormState.missingPlace(plantId: plantId);
+      }
+
       return ref
           .watch(plantFormEditInfoProvider(plantId))
           .when(
@@ -66,13 +73,13 @@ class PlantFormController extends Notifier<PlantFormState> {
               if (info == null) {
                 return PlantFormState.notFound(
                   plantId: plantId,
-                  placeId: args.placeId,
+                  placeId: placeId,
                 );
               }
 
               return PlantFormState.edit(
                 plantId: plantId,
-                placeId: args.placeId,
+                placeId: placeId,
                 name: info.name.trim(),
                 imageKey: info.imageKey,
                 imageUrl: info.imageUrl,
@@ -83,13 +90,11 @@ class PlantFormController extends Notifier<PlantFormState> {
             },
             error: (error, stackTrace) => PlantFormState.failure(
               plantId: plantId,
-              placeId: args.placeId,
+              placeId: placeId,
               message: '식물 수정 정보를 불러오지 못했어요',
             ),
-            loading: () => PlantFormState.loadingEdit(
-              plantId: plantId,
-              placeId: args.placeId,
-            ),
+            loading: () =>
+                PlantFormState.loadingEdit(plantId: plantId, placeId: placeId),
           );
     }
 
@@ -150,6 +155,7 @@ class PlantFormController extends Notifier<PlantFormState> {
   }
 
   void retryLoad() {
+    if (state.loadStatus == PlantFormLoadStatus.missingPlace) return;
     final plantId = args.plantId;
 
     if (plantId == null) {
@@ -192,6 +198,14 @@ class PlantFormController extends Notifier<PlantFormState> {
         return null;
       }
       state = state.copyWith(submitState: const FormSubmitState.idle());
+
+      if (isEdit && ref.read(useRemoteApiProvider)) {
+        // 폼이 구독하는 수정 정보는 성공 결과를 확정한 뒤 갱신한다.
+        ref.invalidate(remotePlantListProvider);
+        ref.invalidate(remotePlantDetailProvider(result.plantId!));
+        ref.invalidate(placeDetailProvider(result.placeId!));
+        ref.invalidate(remotePlantEditInfoProvider(result.plantId!));
+      }
 
       return result;
     } catch (_) {
@@ -252,7 +266,11 @@ class PlantFormController extends Notifier<PlantFormState> {
     final plantName = state.currentName.trim();
     final placeId = state.placeId;
 
-    if (ref.read(useRemoteApiProvider) && placeId != null) {
+    if (ref.read(useRemoteApiProvider)) {
+      if (placeId == null || placeId.isEmpty) {
+        state = PlantFormState.missingPlace(plantId: plantId);
+        return null;
+      }
       await ref
           .read(plantRepositoryProvider)
           .updatePlant(
@@ -263,7 +281,6 @@ class PlantFormController extends Notifier<PlantFormState> {
             lastWateredDate: state.currentLastWateredDate,
           );
       if (!isCurrentUserDataSession(requestRef, session)) return null;
-      ref.invalidate(remotePlantListProvider);
     }
 
     ref

@@ -364,7 +364,9 @@ void main() {
             _PendingEditInfoPlantRepository(),
           ),
         ],
-        child: const MaterialApp(home: PlantFormPage(plantId: 'plant-remote')),
+        child: const MaterialApp(
+          home: PlantFormPage(plantId: 'plant-remote', placeId: 'place-1'),
+        ),
       ),
     );
     await tester.pump();
@@ -383,7 +385,9 @@ void main() {
             _StaticEditInfoPlantRepository(const PlantEditInfo(name: '')),
           ),
         ],
-        child: const MaterialApp(home: PlantFormPage(plantId: 'plant-empty')),
+        child: const MaterialApp(
+          home: PlantFormPage(plantId: 'plant-empty', placeId: 'place-1'),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -403,7 +407,9 @@ void main() {
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
         ],
-        child: const MaterialApp(home: PlantFormPage(plantId: 'plant-retry')),
+        child: const MaterialApp(
+          home: PlantFormPage(plantId: 'plant-retry', placeId: 'place-1'),
+        ),
       ),
     );
     await tester.pump();

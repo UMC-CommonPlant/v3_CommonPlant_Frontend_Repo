@@ -13,6 +13,7 @@
 - Swagger config: https://commonplant-dev.okbear.dev/api/v1/api-docs/json/swagger-config
 - 확인일: 2026-08-25
 - OpenAPI·Place 멤버·Place/Plant 이미지 수정 계약 재확인: 2026-08-28 (19 paths·27 operations, backend main 동일)
+- Plant 수정의 필수 query·조회 schema 재확인: 2026-08-29, live OpenAPI JSON HTTP 200. 이 재확인은 Plant 범위이며 backend main 재검증이나 실제 인증 쓰기 검증을 뜻하지 않는다.
 - 접속 결과: Swagger UI, OpenAPI JSON, Swagger config HTTP 200
 - 개발 서버 루트: HTTP 404. 루트 route가 없다는 의미이며 Swagger/API endpoint 상태와 분리한다.
 - 인증 endpoint 확인: token 없이 `GET /api/v1/users` 요청 시 HTTP 401, code `A009`로 인증 요구 응답
@@ -45,6 +46,12 @@
 - Place와 Friend는 백엔드 source의 `JsonResponse.result` 반환 타입을 추가 근거로 사용한다. machine-readable Swagger가 아니라는 점과 실제 인증 응답 smoke가 남았다는 점은 구분한다.
 
 ## Swagger 변경 요약
+
+### 2026-08-29 식물 수정 장소 code 경계
+
+- `PUT /plants/{plantId}`의 query `placeCode`는 required이다. `PlantSummary`, `DetailResponse`, `EditInfoResponse`에는 장소 code가 없으며 상세의 `placeName`으로 code를 추정할 수 없다.
+- #252는 기존 장소 상세→식물 상세→수정 route의 `placeId`에 담긴 실제 code를 보존·정규화해 전송한다. null·빈 값·공백이면 원격 수정 없이 성공 처리하지 않고 기존 홈에서 장소를 통해 재진입하도록 안내한다.
+- Home 식물 목록에서 바로 수정할 수 있는 code 조회 계약은 [PLANT-01](backend-api-open-questions.md#plant-01-식물에서-소속-장소-code-조회)로 남긴다. endpoint·DTO 변경 없이 성공 후 관련 목록·상세·편집 정보 갱신을 검증했다([작업 이력](work-history/plant-edit-place-code-252.md)).
 
 ### 2026-08-28 감사 — 이미지 수정 계약과 프론트 누락
 
@@ -481,7 +488,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - Path parameter:
   - `plantId`: 식물 ID
 - Query parameter:
-  - `placeCode`: 식물이 속한 장소 코드
+  - `placeCode`: 식물이 속한 장소 코드, required
 - Form parts:
   - `plant`: `UpdateRequest`
   - `image`: binary, optional
@@ -588,10 +595,10 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | 장소 상세 | `/places/:placeId` | `GET /place/{code}` | #239에서 장소·owner·멤버·식물 실데이터 연결 |
 | 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members` | #245 실제 멤버·이미지 조회와 필터·상태 UI 연결, 변경 endpoint는 없음 |
 | 장소 수정 | `/places/:placeId/edit` | `PUT /place/update/{code}` | #243에서 수정 result를 typed 장소 요약으로 연결, image key 조회는 별도 확인 필요 |
-| 식물 등록 정보 입력 | `/plants/new/details` | `POST /plants` | `placeCode` 기준으로 현재 코드 DTO 수정 필요 |
-| 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}` | query parameter 제거 필요 |
-| 식물 수정 | `/plants/:plantId/edit` | `GET /plants/{plantId}/edit` | query parameter 제거 필요 |
-| 식물 수정 | `/plants/:plantId/edit` | `PUT /plants/{plantId}?placeCode=...` | `placeCode` 기준으로 현재 코드 수정 필요 |
+| 식물 등록 정보 입력 | `/plants/new/details` | `POST /plants` | #229 submit 연결, #251 실제 장소 code·상태·선택·제출 보호 병합 |
+| 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}` | #231 화면 연결, GET 요청은 장소 query 없이 조회 |
+| 식물 수정 | `/plants/:plantId/edit` | `GET /plants/{plantId}/edit` | #229 화면 연결, GET 요청은 장소 query 불필요. 응답에 장소 code는 없음 |
+| 식물 수정 | `/plants/:plantId/edit` | `PUT /plants/{plantId}?placeCode=...` | #252 필수 code 검증·누락 안내와 성공 후 관련 캐시 갱신 구현 |
 
 아직 Swagger에 없는 화면 API:
 
