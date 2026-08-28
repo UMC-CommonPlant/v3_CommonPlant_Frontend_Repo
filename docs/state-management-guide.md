@@ -143,6 +143,14 @@ Controller 책임:
 
 `submit()`은 요청 중 재호출을 먼저 차단하고 첫 `await` 전에 사용할 입력을 확정합니다. 실패는 최신 초안을 남겨 재시도할 수 있게 하며, 성공은 최초 제출 호출에만 결과를 반환합니다. 이 규칙은 같은 Controller의 동시 요청 보호이며, 서로 다른 화면·기기나 서버 재처리의 멱등성을 보장하지 않습니다. 자세한 동작·검증은 [폼 가이드](form-validation-error-guide.md#제출-버튼-상태)와 [#250 이력](work-history/form-submit-lock-250.md)을 따릅니다.
 
+### 폼에 필요한 원격 목록
+
+식물 등록은 `userPlaceSummariesProvider` → `plantRegistrationPlaceProvider` → `PlantFormController`로 장소 목록을 전달합니다. API 모드의 loading/error/empty를 fixture 목록으로 대체하지 않으며, 현재 목록의 실제 선택값이 있을 때만 제출합니다. 선택·제출 직전에도 Provider를 읽어 재빌드 전 콜백의 오래된 상태 사용을 막습니다.
+
+재조회 중에는 이전 장소와 선택값을 비우되 이름·날짜 초안과 진행 중 제출 상태를 유지합니다. 새 목록이 오면 유효한 선택값 또는 첫 실제 장소를 사용합니다. 계정 전환은 기존 데이터 세션 의존성에 따라 폼을 초기화합니다.
+
+오류 재시도는 캐시된 실패를 다시 읽는 파생 Provider만 무효화하지 않고 실제 fetch를 소유한 `userPlaceSummariesProvider`를 갱신합니다. 등록 장소 Provider도 자동 재시도를 끄고 사용자 액션으로 복구합니다. [#251 검증·제한](work-history/remote-plant-places-251.md)을 참고합니다.
+
 ## 인증 상태 기준
 
 인증 기능은 `authSessionControllerProvider`와 보안 토큰 저장소를 분리합니다.

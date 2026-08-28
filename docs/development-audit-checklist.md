@@ -2,7 +2,7 @@
 
 2026-08-28 사용자 결정과 `develop`의 PR #246 병합 커밋 `2a01babb185ef5056b361c477717759194c53ec1`을 기준으로 합니다. 문서 정리는 [#247](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/247), 상위 개발 범위는 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)입니다.
 
-문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249 / [PR #259](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259) 계정별 캐시·요청 격리도 병합됐습니다(`b15cdd7`, [이력](work-history/session-cache-isolation-249.md)). #250의 입력 변경 중 제출 잠금은 구현·로컬 검증 완료, 사용자 병합 전이며 [작업 이력](work-history/form-submit-lock-250.md)에 범위를 기록합니다.
+문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249 / [PR #259](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259) 계정별 캐시·요청 격리(`b15cdd7`, [이력](work-history/session-cache-isolation-249.md))와 #250 / [PR #260](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/260) 입력 변경 중 제출 잠금도 병합됐습니다(`bc6e68d`, [이력](work-history/form-submit-lock-250.md)). #251 원격 식물 등록 장소 상태는 구현·로컬 검증 완료, 사용자 병합 전입니다([이력](work-history/remote-plant-places-251.md)).
 
 ## 결정과 작업 경계
 
@@ -25,14 +25,14 @@
 
 ## 실행 순서
 
-표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248·#249는 병합 완료, #250은 구현·검증 완료 후 병합 전, #251~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
+표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248~#250은 병합 완료, #251은 구현·검증 완료 후 병합 전, #252~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
 
 | 체크 | 순서 | 이슈 | 우선도 | 문제·완료 기준 요약 |
 | --- | --- | --- | --- | --- |
 | [x] | AUDIT-01 | [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248) | P1 | PR #258 병합: Plant key 보존·미확인 key 차단, 사진이 있는 Place 수정은 임시 제한 |
 | [x] | AUDIT-02 | [#249](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/249) | P1 | PR #259 병합: 계정별 조회·초안·후처리 격리와 늦은 토큰 저장 방지 |
-| [ ] | AUDIT-03 | [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250) | P1 | PR #260 구현·검증 완료, 병합 전: 입력 변경 중 제출 잠금·제출값 고정·실패 후 수정값 재시도 |
-| [ ] | AUDIT-04 | [#251](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/251) | P1 | API 모드 식물 등록의 loading/error/empty에서 샘플 장소 사용 금지 |
+| [x] | AUDIT-03 | [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250) | P1 | PR #260 병합: 입력 변경 중 제출 잠금·제출값 고정·실패 후 수정값 재시도 |
+| [ ] | AUDIT-04 | [#251](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/251) | P1 | 구현·검증 완료, 병합 전: 실제 장소만 선택·등록, loading/error/empty 차단과 조회 재시도 |
 | [ ] | AUDIT-05 | [#252](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/252) | P1 | 장소 코드가 없어 API를 생략한 식물 수정의 거짓 성공 방지 |
 | [ ] | AUDIT-06 | [#253](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/253) | P2 | 주소 선택·취소 결과를 장소 폼 상태와 검증에 연결 |
 | [ ] | AUDIT-07 | [#254](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/254) | P2 | 잘못된 목록 항목을 빈 목록 성공으로 숨기지 않고 오류 처리 |
@@ -69,9 +69,11 @@
 
 ### AUDIT-04 — 원격 식물 등록의 fixture 혼입
 
-- 위치: [Plant Form Controller](../lib/features/plant/presentation/providers/plant_form_controller.dart)의 `_effectivePlaces`와 장소 목록 구독.
-- 재현: API의 장소 목록이 비어도 샘플 4개가 표시되며 `place-1`로 생성 요청이 가능합니다. loading/error도 빈 배열로 축약됩니다.
-- 완료: API 모드의 loading/error/empty/success를 보존하고 실제 장소가 없으면 제출하지 않습니다. API 비사용 모드의 fixture와 smoke 동선은 유지합니다.
+- 위치: [Plant Form Controller](../lib/features/plant/presentation/providers/plant_form_controller.dart)의 장소 목록 구독·선택·제출 경계.
+- 감사 당시 재현: `_effectivePlaces`가 API loading/error/empty를 샘플 4개로 바꿔 `place-1`로 생성 요청을 허용했습니다. #251 수정 전 새 Controller 회귀 11개 중 8개가 실패했습니다.
+- #251 구현: 원격 loading/error/empty/success를 보존하고 실제 목록에 있는 장소만 선택·제출합니다. 재조회 중에는 이전 장소를 숨기며, 화면 재빌드 전 콜백도 최신 상태를 확인합니다. 실패 재시도는 실제 장소 조회 source를 갱신하고 빈 목록은 기존 홈으로 안내합니다.
+- 검증: Controller 11개·화면 10개를 추가했고 4개 viewport를 포함한 전체 457개 통과·기존 skip 1개입니다. API 비사용 fixture, #249 세션 격리와 #250 제출 잠금도 유지합니다. [작업 이력](work-history/remote-plant-places-251.md)을 참고합니다.
+- 경계: 장소 사진은 기존 placeholder이며, 조회 이후 서버에서 삭제·권한 변경된 장소의 최종 유효성은 서버 응답에 따릅니다. 실제 인증 E2E·주소 검색·학명/이미지 연결과 #252~#256은 별도입니다.
 
 ### AUDIT-05 — 장소 코드 없는 수정의 거짓 성공
 

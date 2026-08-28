@@ -213,7 +213,7 @@ fvm flutter run --dart-define-from-file=env/local.api.json
 
 Swagger에 성공 response body schema가 없는 API는 mapper에서 확인 가능한 필드만 사용하고, 필수 필드가 없으면 공통 API 오류로 처리합니다. 응답 구조가 확정되기 전까지 화면에서 임의 필드를 직접 읽지 않습니다.
 
-감사에서 확인한 이미지 key 누락은 #248에서 Plant key 보존과 Place 사진 수정의 안전 차단으로, 계정별 캐시는 #249에서 세션 격리로 보완했습니다. #250은 입력 변경 중 제출 잠금 유지와 실패 후 재시도를 보완합니다. 원격 목록의 fixture 혼입, 장소 code 누락, 주소 결과 전달과 응답 파서 문제 등은 [개발 감사 체크리스트](development-audit-checklist.md)에서 계속 추적합니다. 위 기준을 이미 모든 경로가 충족한 것으로 해석하지 않습니다.
+감사에서 확인한 이미지 key 누락은 #248에서 Plant key 보존과 Place 사진 수정의 안전 차단으로, 계정별 캐시는 #249에서 세션 격리로 보완했습니다. #250은 입력 변경 중 제출 잠금을, #251은 원격 식물 등록 장소의 상태·선택·제출과 실제 조회 재시도를 보완합니다. API 비사용 fixture를 원격 조회의 loading/error/empty 대체값으로 사용하지 않습니다. 장소 code 없는 수정, 주소 결과 전달과 응답 파서 문제 등은 [개발 감사 체크리스트](development-audit-checklist.md)에서 계속 추적합니다. 위 기준을 이미 모든 경로가 충족한 것으로 해석하지 않습니다.
 
 ## 작업 순서
 
