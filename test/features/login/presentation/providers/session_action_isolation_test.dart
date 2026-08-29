@@ -9,6 +9,7 @@ import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/address_search_result.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_exit_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_controller.dart';
@@ -90,6 +91,34 @@ void main() {
       expect(state.actionErrorMessage, isNull);
     });
   }
+
+  test('A의 주소 선택 결과는 인증 전환 후 B의 폼에 반영하지 않는다', () async {
+    final repository = _PendingRepositories();
+    final container = await _container(repository);
+    final provider = placeFormControllerProvider(null);
+    container.listen(provider, (_, _) {});
+    final selection = Completer<AddressSearchResult?>();
+    final pending = container
+        .read(provider.notifier)
+        .applyAddressSelection(selection.future);
+
+    await _switchToB(container, repository);
+    container.read(provider.notifier).updateName('B 장소');
+    container.read(provider.notifier).updateAddress('B 주소');
+    selection.complete(
+      const AddressSearchResult(
+        titlePrefix: 'A',
+        titleSuffix: '장소',
+        address: 'A 주소',
+        source: AddressSearchResultSource.searchService,
+      ),
+    );
+    await pending;
+
+    expect(container.read(provider).currentAddress, 'B 주소');
+    expect(container.read(provider).currentName, 'B 장소');
+    expect(container.read(provider).submitErrorMessage, isNull);
+  });
 
   test('A의 장소 생성 완료는 B의 입력·캐시를 변경하거나 이동 결과를 반환하지 않는다', () async {
     final repository = _PendingRepositories();

@@ -151,6 +151,12 @@ Controller 책임:
 
 오류 재시도는 캐시된 실패를 다시 읽는 파생 Provider만 무효화하지 않고 실제 fetch를 소유한 `userPlaceSummariesProvider`를 갱신합니다. 등록 장소 Provider도 자동 재시도를 끄고 사용자 액션으로 복구합니다. [#251 검증·제한](work-history/remote-plant-places-251.md)을 참고합니다.
 
+### 주소 선택처럼 비동기로 돌아오는 UI 결과
+
+Place Form의 `applyAddressSelection`은 화면이 제공한 `Future<AddressSearchResult?>`를 기다리기 전에 Ref·세션을 캡처합니다. 취소·빈 주소·API 모드 fixture와 오래된 Ref·세션의 결과는 상태를 바꾸지 않습니다. 유효한 선택은 기존 `updateAddress`를 사용해 오류를 초기화하되 진행 중 제출 잠금은 유지합니다.
+
+화면은 route 열기와 `context.mounted` 검사만 담당하고, Controller에는 `BuildContext`나 Widget을 전달하지 않습니다. Provider가 다른 구독자 때문에 살아 있어도 호출 화면이 폐기되면 화면에서 결과를 `null`로 바꿉니다. 실제 검색 adapter·네트워크 상태 모델은 서비스 결정 이후 별도이며 현재 API 검색은 unavailable입니다([#253 이력](work-history/place-address-result-253.md)).
+
 ### 수정 성공 후 관련 조회 갱신
 
 Plant 원격 수정은 API 성공과 요청 시작 시점의 세션·Ref 유효성을 확인한 뒤 식물 목록, 해당 식물 상세, 해당 장소 상세와 편집 정보의 원본 Provider를 무효화합니다. 다른 식물·장소 상세는 유지하고 실패나 이전 계정의 늦은 완료는 갱신·이동 결과에 반영하지 않습니다.

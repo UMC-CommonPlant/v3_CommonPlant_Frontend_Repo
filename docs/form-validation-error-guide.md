@@ -110,6 +110,8 @@ CommonTextField(
 
 원격 수정에 필요한 식별자도 입력 검증과 별도로 확인합니다. #252 Plant 수정은 장소 code가 null·빈 값·공백이면 `missingPlace` 상태에서 제출을 막고 장소 화면을 통한 재진입을 안내합니다. 필수 문맥이 없어 API를 생략한 경우를 성공으로 반환하거나 로컬 목록을 변경하지 않습니다. API 실패는 초안을 보존하며 사용자용 오류와 재시도를 제공합니다([검증·제한](work-history/plant-edit-place-code-252.md)).
 
+#253 주소 선택 결과는 생성·수정 폼의 기존 주소 입력과 API 필수 검증에 연결합니다. 선택한 주소의 앞뒤 공백은 제거하며 취소·빈 결과는 기존 입력을 지우지 않습니다. API 모드에서 실제 검색이 미연결이면 샘플로 필수 검증을 통과시키지 않습니다. 기존 서버 주소는 보존하고, 주소를 직접 지운 뒤 제출하면 기존 필수 안내가 나옵니다. API 비사용 모드의 주소 선택·선택 사항 정책은 유지합니다([검증·제한](work-history/place-address-result-253.md)).
+
 disabled 입력의 clear 동작은 [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255)로 별도 추적합니다.
 
 여러 폼에서 제출 상태가 반복되면 `shared/forms/form_submit_state.dart`의

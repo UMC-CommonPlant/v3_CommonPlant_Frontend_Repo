@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
+import 'package:commonplant_frontend/features/place/presentation/fixtures/address_search_fixture.dart';
+import 'package:commonplant_frontend/features/place/presentation/models/address_search_result.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_edit_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_state.dart';
@@ -52,12 +54,16 @@ void main() {
               () => controller.updateName('다음 제출'),
               () => controller.updateAddress('서울시 강남구'),
               controller.clearAddress,
-              () => controller.updateAddress('서울시 종로구'),
             ]) {
               edit();
               pendingStates.add(container.read(provider));
               duplicates.add(controller.submit());
             }
+            await controller.applyAddressSelection(
+              Future.value(_serviceAddress),
+            );
+            pendingStates.add(container.read(provider));
+            duplicates.add(controller.submit());
             if (fails) {
               barrier.completeError(StateError('첫 요청 실패'));
             } else {
@@ -115,6 +121,76 @@ void main() {
         );
       }
     }
+
+    for (final isRemote in [false, true]) {
+      test('샘플 주소는 ${isRemote ? 'API 폼에 반영하지 않는다' : '로컬 폼에 반영한다'}', () async {
+        final container = ProviderContainer(
+          overrides: [
+            authenticatedUserDataSession,
+            useRemoteApiProvider.overrideWithValue(isRemote),
+          ],
+        );
+        addTearDown(container.dispose);
+        final provider = placeFormControllerProvider(null);
+        container.listen(provider, (_, _) {});
+        final controller = container.read(provider.notifier);
+        controller.updateAddress('기존 주소');
+
+        await controller.applyAddressSelection(
+          Future.value(addressSearchFixture.first),
+        );
+
+        expect(
+          container.read(provider).currentAddress,
+          isRemote ? '기존 주소' : addressSearchFixture.first.address,
+        );
+      });
+    }
+
+    for (final result in <AddressSearchResult?>[
+      null,
+      const AddressSearchResult(
+        titlePrefix: '',
+        titleSuffix: '',
+        address: '   ',
+        source: AddressSearchResultSource.searchService,
+      ),
+    ]) {
+      test('${result == null ? '취소' : '빈 주소'}는 폼 상태를 그대로 유지한다', () async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+        final provider = placeFormControllerProvider(null);
+        container.listen(provider, (_, _) {});
+        final controller = container.read(provider.notifier);
+        controller.updateName('거실');
+        controller.updateAddress('기존 주소');
+        final before = container.read(provider);
+
+        await controller.applyAddressSelection(Future.value(result));
+
+        expect(container.read(provider), same(before));
+      });
+    }
+
+    test('폐기된 폼에서 기다리던 주소 결과는 새 폼에 반영하지 않는다', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final provider = placeFormControllerProvider(null);
+      final subscription = container.listen(provider, (_, _) {});
+      final selection = Completer<AddressSearchResult?>();
+      final pending = container
+          .read(provider.notifier)
+          .applyAddressSelection(selection.future);
+      subscription.close();
+      await container.pump();
+      container.listen(provider, (_, _) {});
+      container.read(provider.notifier).updateAddress('새 폼 주소');
+
+      selection.complete(_serviceAddress);
+      await pending;
+
+      expect(container.read(provider).currentAddress, '새 폼 주소');
+    });
 
     test('local 장소 생성은 draft를 목록에 추가하고 친구 추가 결과를 반환한다', () async {
       final container = ProviderContainer();
@@ -305,14 +381,14 @@ void main() {
 
       controller.updateName('루프탑');
       expect(await controller.submit(), isNull);
-      controller.updateAddress('서울시 강남구');
+      await controller.applyAddressSelection(Future.value(_serviceAddress));
       expect(await controller.submit(), isNull);
 
       expect(repository.updateCalls, 0);
       final state = container.read(provider);
       expect(state.submitErrorMessage, contains('기존 사진'));
       expect(state.currentName, '루프탑');
-      expect(state.currentAddress, '서울시 강남구');
+      expect(state.currentAddress, _serviceAddress.address);
       expect(state.isSubmitting, isFalse);
     });
   });
@@ -374,3 +450,11 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
     return PlaceSummary(id: code, name: name, address: address);
   }
 }
+
+// 외부 검색 연동 없이 반환 계약만 검증하는 테스트 전용 결과.
+const _serviceAddress = AddressSearchResult(
+  titlePrefix: '테스트',
+  titleSuffix: '주소',
+  address: '서울시 종로구',
+  source: AddressSearchResultSource.searchService,
+);

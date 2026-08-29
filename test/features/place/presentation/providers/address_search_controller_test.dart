@@ -1,8 +1,28 @@
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/address_search_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('API 검색 미연결은 초기화와 검색어 변경에서 fixture를 반환하지 않는다', () {
+    final container = ProviderContainer(
+      overrides: [useRemoteApiProvider.overrideWithValue(true)],
+    );
+    addTearDown(container.dispose);
+    container.listen(addressSearchControllerProvider, (_, _) {});
+
+    expect(
+      container.read(addressSearchControllerProvider).isAvailable,
+      isFalse,
+    );
+    expect(container.read(addressSearchControllerProvider).results, isEmpty);
+    container
+        .read(addressSearchControllerProvider.notifier)
+        .updateQuery('신도림역');
+    expect(container.read(addressSearchControllerProvider).results, isEmpty);
+    expect(container.read(addressSearchControllerProvider).query, isEmpty);
+  });
+
   test('주소 검색은 초기 검색어와 결과를 제공한다', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
