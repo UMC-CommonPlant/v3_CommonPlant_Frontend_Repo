@@ -124,6 +124,10 @@ API 모드의 사용자별 조회·변경은 활성 `userDataSessionProvider`가
 
 UI가 없어도 검증 가능한 로직은 widget test로 우회하지 않습니다.
 
+### API 목록 항목 검증
+
+공용 응답 파서나 목록 mapper를 변경할 때는 정상 목록·빈 목록·확인된 wrapper와 함께 전체 비정상 목록 및 일부만 비정상인 목록을 검사합니다. 비-Map 항목을 제외해 정상 빈 목록이나 부분 성공으로 바꾸지 않으며, 오류에는 원인을 찾을 수 있는 항목 위치를 포함합니다. 공용 파서 테스트와 영향을 받는 도메인 mapper 또는 repository 테스트를 함께 실행하되, fake 응답 검증을 실제 서버 응답이나 인증 E2E 검증으로 기록하지 않습니다.
+
 ## SVG asset 회귀 테스트
 
 `test/core/assets/svg_assets_test.dart`는 `assets/icons`, `assets/images`의 모든 SVG를 현재 lockfile의 `flutter_svg` parser로 읽고 picture rasterize까지 실행합니다. 신규 또는 변경 SVG는 아래 검사를 통과해야 합니다.
