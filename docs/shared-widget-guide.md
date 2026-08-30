@@ -83,10 +83,10 @@ CommonButton(
 일반 텍스트 입력 필드입니다.
 
 - 텍스트: 18/500
-- clear 버튼: 포커스 중이고 입력값이 있을 때 표시
+- clear 버튼: 입력 가능한 상태에서 포커스 중이고 입력값이 있을 때 표시. `enabled: false` 또는 `CommonTextFieldState.disabled`이면 표시하거나 실행하지 않음
 - counter: 현재 글자수만 Bold
 - helper text: 상태에 따라 색상 변경
-- `forceFocusedDecoration`: 키보드 포커스를 강제로 주지 않고 활성 line, clear 버튼, counter 스타일만 유지할 때 사용
+- `forceFocusedDecoration`: 키보드 포커스를 강제로 주지 않고 활성 line, clear 버튼, counter 스타일만 유지할 때 사용. disabled 입력을 활성화하거나 clear를 노출하지 않음
 
 외부 검증 조건이 필요한 경우 `validator`를 사용합니다.
 
@@ -305,7 +305,7 @@ const CommonSvgIcon(
 | 공용 display 후보 | `CommonPlaceCard`, `CommonPlantCard`, `CommonPlacePlantCard`, `CommonMemoCard`, `CommonWateringButton` | Home, Place, Plant, Memo 사이에서 같은 카드 표현을 공유할 가능성이 있어 당장은 유지합니다. API 상태, route 이동, 권한 정책이 들어가기 시작하면 feature 내부 widget으로 내리거나 domain-agnostic display model을 주입하는 방식으로 정리합니다. |
 | 미사용 상태로 보존 | `CommonAddTile`, `CommonPlaceGuideBanner`, `CommonPlusIconButton`, `CommonSectionHeader` | 사용자 결정으로 유지합니다. 사용처가 생기면 도메인 전용인지 공용인지 재검토하며, 이번 정리에서는 삭제·이동하지 않습니다. |
 
-공용 위젯 보존과 동작 오류 수정은 별개입니다. 비활성 `CommonTextField`의 삭제 버튼 문제는 [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255)에서 수정하고, 기존 버튼 variant 등 public API를 단순 미사용이라는 이유로 축소하지 않습니다. 실행 순서는 [개발 감사 체크리스트](development-audit-checklist.md)를 따릅니다.
+공용 위젯 보존과 동작 오류 수정은 별개입니다. 비활성 `CommonTextField`의 삭제 버튼 문제는 [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255)에서 수정·검증했으며, 기존 trailing·counter·활성 clear와 버튼 variant 등 public API는 유지합니다. 실행 순서는 [개발 감사 체크리스트](development-audit-checklist.md)를 따릅니다.
 
 ### Phase 0 구조 정리 결과
 

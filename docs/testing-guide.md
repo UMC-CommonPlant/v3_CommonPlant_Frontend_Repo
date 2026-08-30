@@ -128,6 +128,10 @@ UI가 없어도 검증 가능한 로직은 widget test로 우회하지 않습니
 
 공용 응답 파서나 목록 mapper를 변경할 때는 정상 목록·빈 목록·확인된 wrapper와 함께 전체 비정상 목록 및 일부만 비정상인 목록을 검사합니다. 비-Map 항목을 제외해 정상 빈 목록이나 부분 성공으로 바꾸지 않으며, 오류에는 원인을 찾을 수 있는 항목 위치를 포함합니다. 공용 파서 테스트와 영향을 받는 도메인 mapper 또는 repository 테스트를 함께 실행하되, fake 응답 검증을 실제 서버 응답이나 인증 E2E 검증으로 기록하지 않습니다.
 
+### 비활성 공용 입력 검증
+
+공용 입력 위젯의 enabled·disabled 동작을 변경할 때는 키보드 입력 가능 여부뿐 아니라 clear 같은 별도 액션도 같은 상태를 따르는지 widget test로 확인합니다. 강제 focus 장식처럼 실제 포커스와 시각 상태가 다른 조합을 포함하고, 비활성 값·콜백이 바뀌지 않는지와 활성 상태의 기존 액션이 유지되는지를 함께 검증합니다. 장식 상태를 입력 권한으로 해석하지 않습니다.
+
 ## SVG asset 회귀 테스트
 
 `test/core/assets/svg_assets_test.dart`는 `assets/icons`, `assets/images`의 모든 SVG를 현재 lockfile의 `flutter_svg` parser로 읽고 picture rasterize까지 실행합니다. 신규 또는 변경 SVG는 아래 검사를 통과해야 합니다.
