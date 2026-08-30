@@ -164,7 +164,6 @@ class PlantFormController extends Notifier<PlantFormState> {
     }
 
     ref.invalidate(remotePlantEditInfoProvider(plantId));
-    ref.invalidate(remotePlantFormEditInfoProvider(plantId));
   }
 
   Future<PlantFormSubmitResult?> submit() async {

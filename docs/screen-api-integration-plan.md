@@ -2,7 +2,7 @@
 
 이 문서는 화면 퍼블리싱 이후 남아 있는 mock 흐름을 실제 상태와 API 계층으로 전환하는 순서와 완료 기준을 관리합니다. 배포 자동화와 원격 E2E 준비는 필요한 외부 조건이 충족될 때까지 유지하되, 현재 MVP 최우선 작업은 사용자 동선별 수직 슬라이스 완성입니다.
 
-2026-08-30 기준 문서 정리 #247 / PR #257부터 목록 항목 타입 검증 #254 / PR #264까지 병합됐습니다(`f723825`). 실제 주소 검색 서비스는 미연결이며 API 모드의 샘플 사용은 차단합니다. [개발 감사·개선 체크리스트](development-audit-checklist.md)의 #255 비활성 공용 입력 clear 차단은 구현·로컬 검증 후 사용자 병합을 기다립니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
+2026-08-30 기준 문서 정리 #247 / PR #257부터 비활성 공용 입력 clear 차단 #255 / PR #265까지 병합됐습니다(`894dd5f`). 실제 주소 검색 서비스는 미연결이며 API 모드의 샘플 사용은 차단합니다. [개발 감사·개선 체크리스트](development-audit-checklist.md)의 #256 수정 정보 Provider 전달 단순화는 구현·로컬 검증 후 사용자 병합을 기다립니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
 
 ## 목표
 
@@ -108,7 +108,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 프로필·Place·Plant 폼, 친구 선택·처리 상태, 알림 설정과 로컬 추가 데이터도 API 모드에서 초기화합니다. 늦은 변경 응답은 현재 세션을 확인한 뒤에만 상태·캐시·이동 결과를 반영하며, 탈퇴 응답으로 새 계정을 로그아웃시키지 않습니다. API 비사용 fixture는 유지합니다.
 
-검증은 fake repository·token store·Dio adapter와 widget test로 수행했습니다. 서버에 이미 전달된 변경의 취소·롤백, OS 저장소 장애, 실제 인증 E2E는 [작업 이력의 제한](work-history/session-cache-isolation-249.md#남은-제한과-위험)과 구분합니다. 중복 제출은 [#250 별도 이력](work-history/form-submit-lock-250.md), 원격 식물 등록의 fixture 혼입은 [#251 이력](work-history/remote-plant-places-251.md), code 없는 수정의 거짓 성공은 [#252 이력](work-history/plant-edit-place-code-252.md)에서 보완합니다. #253 주소 선택 결과에도 같은 세션·폼 수명 검증을 적용했고 #254 목록 항목 검증은 병합됐습니다. #255 비활성 입력 clear 차단은 구현·로컬 검증을 마쳤으며 #256은 남아 있습니다.
+검증은 fake repository·token store·Dio adapter와 widget test로 수행했습니다. 서버에 이미 전달된 변경의 취소·롤백, OS 저장소 장애, 실제 인증 E2E는 [작업 이력의 제한](work-history/session-cache-isolation-249.md#남은-제한과-위험)과 구분합니다. 중복 제출은 [#250 별도 이력](work-history/form-submit-lock-250.md), 원격 식물 등록의 fixture 혼입은 [#251 이력](work-history/remote-plant-places-251.md), code 없는 수정의 거짓 성공은 [#252 이력](work-history/plant-edit-place-code-252.md)에서 보완합니다. #253 주소 선택 결과에도 같은 세션·폼 수명 검증을 적용했고 #254 목록 항목 검증과 #255 비활성 입력 clear 차단은 병합됐습니다. #256은 이 세션 경계를 유지하면서 수정 정보의 중간 원격 Provider를 제거했습니다.
 
 ## 목록 응답 검증 #254
 
@@ -121,6 +121,12 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 `CommonTextField`의 clear는 validation을 반영한 실제 enabled 상태를 따릅니다. `forceFocusedDecoration`은 line·counter 같은 장식만 유지하며 `enabled: false` 또는 disabled state를 입력 가능 상태로 바꾸지 않습니다. 비활성 필드는 clear를 표시하거나 실행하지 않아 값과 `onChanged`를 보존하고, 활성 clear·trailing·counter public API는 유지합니다.
 
 검증은 공용 위젯에서 활성 clear와 두 비활성 경계를 직접 탭·상태로 확인했습니다. `CommonSearchTextField`와 `CommonAddressOrPlaceField`의 별도 삭제 정책, 화면 Controller, API payload는 변경하지 않았으며 실제 Android/iOS 입력·접근성 smoke는 [#255 작업 이력](work-history/disabled-text-field-clear-255.md)의 남은 범위로 구분합니다.
+
+## 수정 정보 Provider 경계 #256
+
+Plant·Place 수정 폼은 API 비사용 fixture 분기와 공개 폼 진입 Provider를 유지합니다. API 모드에서는 Plant의 `remotePlantEditInfoProvider`, Place의 `placeSummaryProvider`가 실제 fetch·오류·재시도를 소유하고, 폼 진입 Provider가 원본 `AsyncValue`를 nullable 수정 정보로 순수 변환합니다. 같은 상태를 `.future`로 다시 포장하던 중간 원격 Provider 두 개는 제거했습니다.
+
+Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Provider override, repository 위임, 빈 정보·오류 복구와 기존 loading/error/notFound, 계정 전환·제출 잠금 회귀를 함께 확인했습니다. API endpoint·요청 횟수·DTO·repository·화면은 변경하지 않았으며 실제 인증 API와 플랫폼 수동 smoke는 [#256 작업 이력](work-history/form-edit-provider-flow-256.md)의 남은 범위로 구분합니다.
 
 ## User 프로필 수직 슬라이스
 
@@ -243,6 +249,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | #252 | `464b9b3`, `4dcb910` | PR #261 병합 확인(`ebf6dc4`), 식물 수정 code 누락 차단·성공 후 관련 캐시 갱신과 route 회귀 | [수정 장소 코드 이력](work-history/plant-edit-place-code-252.md), 전체 476개 통과·기존 skip 1개 |
 | #253 | `d54d3e4`, `e3a5797` | 주소 결과·출처·폼 연결과 세션·화면 수명 보호, API fixture 차단, PR #263 병합 완료(`ded4fe2`) | [주소 연결 이력](work-history/place-address-result-253.md), 전체 502개 통과·기존 skip 1개, PR #263 CI 503개 통과 |
 | #254 | `6cae790`, `74a1426` | 공용 목록의 비-Map 항목을 위치가 드러나는 오류로 처리하고 빈 목록·부분 성공 은폐 차단, PR #264 병합 완료(`f723825`) | [목록 검증 이력](work-history/api-list-item-validation-254.md), 대상 39개·전체 508개 통과·기존 skip 1개, PR #264 CI 509개 통과 |
-| #255 | `008bbc6` | PR #264 병합 확인(`f723825`), 비활성 `CommonTextField` clear 미노출·실행 차단과 활성 clear 보존 | [비활성 입력 이력](work-history/disabled-text-field-clear-255.md), 대상 5개·전체 511개 통과, 기존 skip 1개 |
+| #255 | `008bbc6`, `20e2acc` | PR #264 병합 확인(`f723825`), 비활성 `CommonTextField` clear 미노출·실행 차단과 활성 clear 보존, PR #265 병합 완료(`894dd5f`) | [비활성 입력 이력](work-history/disabled-text-field-clear-255.md), 전체 511개·기존 skip 1개, PR #265 CI 512개 통과 |
+| #256 | `63b96b2` | PR #265 병합 확인(`894dd5f`), Plant·Place 중간 원격 수정 정보 Provider 제거와 원본 조회·재시도·override 경계 유지 | [Provider 단순화 이력](work-history/form-edit-provider-flow-256.md), 전체 513개 통과·기존 skip 1개 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.

@@ -130,8 +130,8 @@ void main() {
       currentUserProvider,
       userSearchProvider('same-query'),
       remotePlaceInvitationsProvider,
-      remotePlaceFormEditInfoProvider('same-code'),
-      remotePlantFormEditInfoProvider('same-plant'),
+      placeFormEditInfoProvider('same-code'),
+      plantFormEditInfoProvider('same-plant'),
       plantRegistrationPlaceProvider,
     ];
     for (final provider in providers) {
@@ -160,12 +160,11 @@ void main() {
       (await container.read(
         remotePlaceInvitationsProvider.future,
       )).single.inviterName,
-      (await container.read(
-        remotePlaceFormEditInfoProvider('same-code').future,
-      ))!.name,
-      (await container.read(
-        remotePlantFormEditInfoProvider('same-plant').future,
-      ))!.name,
+      container.read(placeFormEditInfoProvider('same-code')).requireValue!.name,
+      container
+          .read(plantFormEditInfoProvider('same-plant'))
+          .requireValue!
+          .name,
       (await container.read(plantRegistrationPlaceProvider.future)).single.name,
     ];
 

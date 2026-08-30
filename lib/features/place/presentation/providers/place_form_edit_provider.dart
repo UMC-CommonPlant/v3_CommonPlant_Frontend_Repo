@@ -37,17 +37,11 @@ final placeFormEditInfoProvider =
       }
 
       return ref
-          .watch(remotePlaceFormEditInfoProvider(placeId))
+          .watch(placeSummaryProvider(placeId))
+          .whenData(
+            (summary) => summary.name.trim().isEmpty
+                ? null
+                : PlaceFormEditInfo.fromSummary(summary),
+          )
           .unwrapPrevious();
     });
-
-final remotePlaceFormEditInfoProvider =
-    FutureProvider.family<PlaceFormEditInfo?, String>((ref, placeId) async {
-      final summary = await ref.watch(placeSummaryProvider(placeId).future);
-
-      if (summary.name.trim().isEmpty) {
-        return null;
-      }
-
-      return PlaceFormEditInfo.fromSummary(summary);
-    }, retry: (retryCount, error) => null);

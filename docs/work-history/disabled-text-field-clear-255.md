@@ -3,14 +3,15 @@
 ## 작업 기준
 
 - 이슈: [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255), AUDIT-08
+- PR: [#265](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/265), `develop` 대상
 - 상위 이슈: [#226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)
 - 작업일: 2026-08-30
 - 기준 `develop`: `f723825da89cb7988fb49a02e745f229edd4c176` (사용자 PR #264 병합)
 - 브랜치: `fix/disabled-text-field-clear-255`
-- 상태: 구현·로컬 검증 완료, PR 생성 후 사용자 병합 대기. Project 10의 category `Story`, priority `medium`, Issue Type `Bug`, 담당자 `ywkim95`·`bbielo`, milestone `v1.0.0 - MVP (핵심 기능 개발)`을 유지합니다.
+- 상태: 2026-08-30 사용자 PR #265 병합 완료(`894dd5f7b0bfe7e1e3de0d295115480b1f2753cb`). 이슈는 Closed, 이슈·PR은 Project 10의 `Done`, category `Story`, priority `medium`입니다.
 - 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [화면·API 계획](../screen-api-integration-plan.md), [공용 위젯](../shared-widget-guide.md), [디자인 토큰](../design-token-rules.md), [테스트](../testing-guide.md), [Git](../git-workflow.md)
 
-clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #255를 재사용했습니다. 작업 시작 시 #254는 Closed이고 이슈·PR #264의 Project 상태는 Done, 상위 #226은 18/20 완료였습니다. 이번 문서 변경에서 #254의 병합 전 표기를 정정했습니다.
+clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #255를 재사용했습니다. 작업 시작 시 #254는 Closed이고 이슈·PR #264의 Project 상태는 Done, 상위 #226은 18/20 완료였습니다. #255 병합·종료 뒤 상위 #226은 19/20으로 갱신됐습니다. 이번 후속 문서 변경에서 #255의 병합 전 표기를 정정했습니다.
 
 ## 원인과 수정
 
@@ -43,20 +44,21 @@ clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #2
 - `fvm flutter test --reporter expanded`: 511개 통과, 기존 non-Linux golden skip 1개
 - `git diff --check`: 통과
 - README·AGENTS·docs의 Markdown 46개, 로컬 링크 316개·anchor 14개: 누락 링크·미연결 문서 0개
-- 최종 PR의 기본 Flutter CI 결과는 PR checks와 이슈 검증 코멘트에 기록합니다.
+- 최종 PR CI: [Flutter CI quality](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/actions/runs/33315400588/job/99267783092) 통과, 1분 54초. Ubuntu golden 포함 512개 통과입니다.
 
 ## 남은 제한과 위험
 
 - widget test는 Flutter의 enabled 상태와 clear 노출·값·콜백을 검증합니다. 실제 Android/iOS 키보드 입력, screen reader, switch control과 물리 기기 hit target을 수동 확인한 것은 아닙니다.
 - 활성 화면의 시각 배치나 아이콘 asset을 바꾸지 않았고 새 golden baseline을 추가하지 않았습니다. 기존 golden은 전체 검사에 포함되지만 로컬 macOS에서는 기존 정책대로 skip됩니다.
 - `CommonSearchTextField`와 `CommonAddressOrPlaceField`의 삭제 액션, feature Controller, 제출 잠금과 API payload는 이번 범위에서 변경하거나 검증 대상으로 확장하지 않았습니다.
-- #248~#254 보호와 미사용 공용 위젯 5개·public 버튼 variant를 유지합니다. 사용자 병합 후 최신 `develop`에서 #256을 진행합니다.
+- #248~#254 보호와 미사용 공용 위젯 5개·public 버튼 variant를 유지합니다. 후속 #256은 PR #265 병합 커밋에서 분기해 별도 작업합니다.
 
 ## 커밋별 작업 이력
 
 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- |
 | `008bbc6` | 실제 enabled 기반 clear 표시·실행 차단과 활성·비활성 회귀 테스트 3개 추가 | 대상 5개·전체 511개 통과, 기존 skip 1개, format·analyze·diff 검사 |
-| 이 문서의 최종 커밋 | #254 병합 상태 정정, #255 계약·검증·남은 제한과 현행 문서 갱신 | 로컬 Markdown 링크·문서 인덱스 확인, `git diff --check` |
+| `20e2acc` | #254 병합 상태 정정, #255 계약·검증·남은 제한과 현행 문서 갱신 | 로컬 Markdown 링크·문서 인덱스 확인, `git diff --check` |
+| 이 문서의 후속 커밋 | PR #265 병합·Done, 최종 CI 512개와 Epic 19/20 반영 | GitHub PR·이슈·Project·CI 확인, `git diff --check` |
 
 문서·PR 이력만 기록하는 마지막 커밋은 자기 자신의 해시를 생략할 수 있습니다.

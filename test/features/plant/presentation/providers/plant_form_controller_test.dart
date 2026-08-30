@@ -45,7 +45,7 @@ void main() {
             container.listen(provider, (_, _) {});
             if (isEdit) {
               await container.read(
-                remotePlantFormEditInfoProvider('plant-1').future,
+                remotePlantEditInfoProvider('plant-1').future,
               );
             } else {
               await container.read(plantRegistrationPlaceProvider.future);
@@ -252,7 +252,7 @@ void main() {
       addTearDown(subscription.close);
       addTearDown(container.dispose);
 
-      await container.read(remotePlantFormEditInfoProvider('plant-1').future);
+      await container.read(remotePlantEditInfoProvider('plant-1').future);
       await Future<void>.delayed(Duration.zero);
 
       final initialState = container.read(plantFormControllerProvider(args));
@@ -300,7 +300,7 @@ void main() {
           (previous, next) {},
         );
         addTearDown(subscription.close);
-        await container.read(remotePlantFormEditInfoProvider('plant-1').future);
+        await container.read(remotePlantEditInfoProvider('plant-1').future);
         await container.pump();
         final controller = container.read(
           plantFormControllerProvider(args).notifier,
@@ -341,7 +341,7 @@ void main() {
           (previous, next) {},
         );
         addTearDown(subscription.close);
-        await container.read(remotePlantFormEditInfoProvider('plant-1').future);
+        await container.read(remotePlantEditInfoProvider('plant-1').future);
         await container.pump();
         final controller = container.read(
           plantFormControllerProvider(args).notifier,
@@ -381,7 +381,7 @@ void main() {
         (previous, next) {},
       );
       addTearDown(subscription.close);
-      await container.read(remotePlantFormEditInfoProvider('plant-1').future);
+      await container.read(remotePlantEditInfoProvider('plant-1').future);
       await container.pump();
       final controller = container.read(
         plantFormControllerProvider(args).notifier,

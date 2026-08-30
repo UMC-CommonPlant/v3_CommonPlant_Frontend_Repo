@@ -1,7 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
-import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
-import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_edit_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,26 +23,23 @@ void main() {
     });
 
     test('remote mode는 장소 상세 summary를 수정 정보로 변환한다', () async {
-      final repository = _StaticPlaceRepository(
-        const PlaceSummary(
-          id: 'remote-place',
-          name: '루프탑',
-          address: '서울시 성북구',
-          imageUrl: 'https://example.com/place.png',
-        ),
-      );
       final container = ProviderContainer(
         overrides: [
           authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
-          placeRepositoryProvider.overrideWithValue(repository),
+          placeSummaryProvider('remote-place').overrideWith(
+            (ref) async => const PlaceSummary(
+              id: 'remote-place',
+              name: '루프탑',
+              address: '서울시 성북구',
+              imageUrl: 'https://example.com/place.png',
+            ),
+          ),
         ],
       );
       addTearDown(container.dispose);
 
-      await container.read(
-        remotePlaceFormEditInfoProvider('remote-place').future,
-      );
+      await container.read(placeSummaryProvider('remote-place').future);
 
       final info = container
           .read(placeFormEditInfoProvider('remote-place'))
@@ -53,25 +49,21 @@ void main() {
       expect(info?.name, '루프탑');
       expect(info?.address, '서울시 성북구');
       expect(info?.imageUrl, 'https://example.com/place.png');
-      expect(repository.fetchCalls, 1);
     });
 
     test('remote mode에서 빈 summary는 null data로 표시한다', () async {
-      final repository = _StaticPlaceRepository(
-        const PlaceSummary(id: 'empty-place', name: ''),
-      );
       final container = ProviderContainer(
         overrides: [
           authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
-          placeRepositoryProvider.overrideWithValue(repository),
+          placeSummaryProvider('empty-place').overrideWith(
+            (ref) async => const PlaceSummary(id: 'empty-place', name: ''),
+          ),
         ],
       );
       addTearDown(container.dispose);
 
-      await container.read(
-        remotePlaceFormEditInfoProvider('empty-place').future,
-      );
+      await container.read(placeSummaryProvider('empty-place').future);
 
       expect(
         container.read(placeFormEditInfoProvider('empty-place')).requireValue,
@@ -79,17 +71,4 @@ void main() {
       );
     });
   });
-}
-
-class _StaticPlaceRepository extends Fake implements PlaceRepository {
-  _StaticPlaceRepository(this.summary);
-
-  final PlaceSummary summary;
-  int fetchCalls = 0;
-
-  @override
-  Future<PlaceSummary> fetchPlace(String code) async {
-    fetchCalls++;
-    return summary;
-  }
 }
