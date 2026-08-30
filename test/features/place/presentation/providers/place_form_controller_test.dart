@@ -5,8 +5,8 @@ import 'package:commonplant_frontend/features/place/domain/repositories/place_re
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/address_search_fixture.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/address_search_result.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_controller.dart';
-import 'package:commonplant_frontend/features/place/presentation/providers/place_form_edit_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_state.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
@@ -38,9 +38,7 @@ void main() {
             );
             container.listen(provider, (_, _) {});
             if (isEdit) {
-              await container.read(
-                remotePlaceFormEditInfoProvider('place-1').future,
-              );
+              await container.read(placeSummaryProvider('place-1').future);
               await container.pump();
             }
             final controller = container.read(provider.notifier);
@@ -336,7 +334,7 @@ void main() {
       addTearDown(subscription.close);
       addTearDown(container.dispose);
 
-      await container.read(remotePlaceFormEditInfoProvider('place-1').future);
+      await container.read(placeSummaryProvider('place-1').future);
       await Future<void>.delayed(Duration.zero);
       final initialState = container.read(
         placeFormControllerProvider('place-1'),
@@ -360,6 +358,39 @@ void main() {
       expect(repository.latestUpdateImageKey, isNull);
     });
 
+    test('remote 장소 수정 정보 실패는 원본 summary를 다시 조회한다', () async {
+      final repository = _RetryPlaceRepository();
+      final container = ProviderContainer(
+        overrides: [
+          authenticatedUserDataSession,
+          useRemoteApiProvider.overrideWithValue(true),
+          placeRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final provider = placeFormControllerProvider('retry-place');
+      final subscription = container.listen(provider, (previous, next) {});
+      addTearDown(subscription.close);
+
+      await expectLater(
+        container.read(placeSummaryProvider('retry-place').future),
+        throwsStateError,
+      );
+      await container.pump();
+
+      expect(container.read(provider).loadStatus, PlaceFormLoadStatus.failure);
+
+      container.read(provider.notifier).retryLoad();
+      await container.read(placeSummaryProvider('retry-place').future);
+      await container.pump();
+
+      final state = container.read(provider);
+      expect(repository.fetchCalls, 2);
+      expect(state.loadStatus, PlaceFormLoadStatus.ready);
+      expect(state.currentName, '루프탑');
+      expect(state.currentAddress, '서울시 성북구');
+    });
+
     test('사진이 있는 장소의 이름·주소 수정은 기존 사진 유실을 막는다', () async {
       final repository = _RecordingPlaceRepository(
         imageUrl: 'https://example.com/place.png?signature=old',
@@ -375,7 +406,7 @@ void main() {
       final provider = placeFormControllerProvider('place-1');
       final subscription = container.listen(provider, (previous, next) {});
       addTearDown(subscription.close);
-      await container.read(remotePlaceFormEditInfoProvider('place-1').future);
+      await container.read(placeSummaryProvider('place-1').future);
       await container.pump();
       final controller = container.read(provider.notifier);
 
@@ -448,6 +479,20 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
     await writeBarrier?.future;
 
     return PlaceSummary(id: code, name: name, address: address);
+  }
+}
+
+class _RetryPlaceRepository extends Fake implements PlaceRepository {
+  int fetchCalls = 0;
+
+  @override
+  Future<PlaceSummary> fetchPlace(String code) async {
+    fetchCalls++;
+    if (fetchCalls == 1) {
+      throw StateError('첫 조회 실패');
+    }
+
+    return PlaceSummary(id: code, name: '루프탑', address: '서울시 성북구');
   }
 }
 

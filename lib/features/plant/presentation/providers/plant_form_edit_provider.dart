@@ -16,20 +16,10 @@ final plantFormEditInfoProvider =
       }
 
       return ref
-          .watch(remotePlantFormEditInfoProvider(plantId))
+          .watch(remotePlantEditInfoProvider(plantId))
+          .whenData((info) => info.name.trim().isEmpty ? null : info)
           .unwrapPrevious();
     });
-
-final remotePlantFormEditInfoProvider =
-    FutureProvider.family<PlantEditInfo?, String>((ref, plantId) async {
-      final info = await ref.watch(remotePlantEditInfoProvider(plantId).future);
-
-      if (info.name.trim().isEmpty) {
-        return null;
-      }
-
-      return info;
-    }, retry: (retryCount, error) => null);
 
 final remotePlantEditInfoProvider =
     FutureProvider.family<PlantEditInfo, String>((ref, plantId) {

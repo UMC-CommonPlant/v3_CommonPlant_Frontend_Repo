@@ -128,7 +128,6 @@ class PlaceFormController extends Notifier<PlaceFormState> {
     }
 
     ref.invalidate(placeSummaryProvider(placeId));
-    ref.invalidate(remotePlaceFormEditInfoProvider(placeId));
   }
 
   Future<PlaceFormSubmitResult?> submit() async {

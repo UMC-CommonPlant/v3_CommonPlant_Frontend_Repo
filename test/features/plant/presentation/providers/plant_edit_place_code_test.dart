@@ -56,7 +56,7 @@ void main() {
       const PlantFormArgs(plantId: 'plant-1', placeId: ' PLACE-A '),
     );
     container.listen(form, (_, _) {});
-    await container.read(remotePlantFormEditInfoProvider('plant-1').future);
+    await container.read(remotePlantEditInfoProvider('plant-1').future);
     await container.pump();
     final controller = container.read(form.notifier);
     controller.updateName('수정한 이름');
@@ -252,7 +252,7 @@ Future<void> _settleReads(ProviderContainer container) async {
     [
       container.read(remotePlantListProvider.future),
       container.read(remotePlantDetailProvider('plant-1').future),
-      container.read(remotePlantFormEditInfoProvider('plant-1').future),
+      container.read(remotePlantEditInfoProvider('plant-1').future),
       container.read(placeDetailProvider('PLACE-A').future),
     ].map(
       (future) => future.then<void>(
