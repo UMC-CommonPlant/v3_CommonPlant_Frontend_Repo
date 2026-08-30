@@ -2,7 +2,7 @@
 
 2026-08-28 사용자 결정과 `develop`의 PR #246 병합 커밋 `2a01babb185ef5056b361c477717759194c53ec1`을 기준으로 합니다. 문서 정리는 [#247](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/247), 상위 개발 범위는 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)입니다.
 
-문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249 / [PR #259](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259) 계정별 캐시·요청 격리(`b15cdd7`, [이력](work-history/session-cache-isolation-249.md))와 #250 / [PR #260](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/260) 입력 변경 중 제출 잠금도 병합됐습니다(`bc6e68d`, [이력](work-history/form-submit-lock-250.md)). 2026-08-30 기준 #251 / [PR #261](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/261) 원격 식물 등록 장소 상태(`ebf6dc4`, [이력](work-history/remote-plant-places-251.md)), #252 / [PR #262](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/262) 장소 code 없는 수정 차단(`5fc0140`, [이력](work-history/plant-edit-place-code-252.md)), #253 / [PR #263](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/263) 주소 결과 전달(`ded4fe2`, [이력](work-history/place-address-result-253.md)), #254 / [PR #264](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/264) 목록 항목 타입 검증(`f723825`, [이력](work-history/api-list-item-validation-254.md))까지 병합됐습니다. #255 비활성 입력 clear 차단은 구현·로컬 검증을 마치고 사용자 병합을 기다립니다([이력](work-history/disabled-text-field-clear-255.md)).
+문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249 / [PR #259](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259) 계정별 캐시·요청 격리(`b15cdd7`, [이력](work-history/session-cache-isolation-249.md))와 #250 / [PR #260](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/260) 입력 변경 중 제출 잠금도 병합됐습니다(`bc6e68d`, [이력](work-history/form-submit-lock-250.md)). 2026-08-30 기준 #251 / [PR #261](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/261) 원격 식물 등록 장소 상태(`ebf6dc4`, [이력](work-history/remote-plant-places-251.md)), #252 / [PR #262](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/262) 장소 code 없는 수정 차단(`5fc0140`, [이력](work-history/plant-edit-place-code-252.md)), #253 / [PR #263](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/263) 주소 결과 전달(`ded4fe2`, [이력](work-history/place-address-result-253.md)), #254 / [PR #264](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/264) 목록 항목 타입 검증(`f723825`, [이력](work-history/api-list-item-validation-254.md)), #255 / [PR #265](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/265) 비활성 입력 clear 차단(`894dd5f`, [이력](work-history/disabled-text-field-clear-255.md))까지 병합됐습니다. #256 수정 정보 Provider 전달 단순화는 구현·로컬 검증 후 사용자 병합을 기다립니다([이력](work-history/form-edit-provider-flow-256.md)).
 
 ## 결정과 작업 경계
 
@@ -25,7 +25,7 @@
 
 ## 실행 순서
 
-표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248~#254는 병합 완료, #255는 구현·검증 후 사용자 병합 대기, #256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
+표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248~#255는 병합 완료, #256은 구현·검증 후 사용자 병합 대기입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
 
 | 체크 | 순서 | 이슈 | 우선도 | 문제·완료 기준 요약 |
 | --- | --- | --- | --- | --- |
@@ -36,8 +36,8 @@
 | [x] | AUDIT-05 | [#252](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/252) | P1 | PR #262 병합: code 누락 안내·제출 차단, API 성공 후 관련 목록·상세·편집 정보 갱신 |
 | [x] | AUDIT-06 | [#253](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/253) | P2 | PR #263 병합: 주소 반환·폼 연결, API fixture 차단, 실제 검색 서비스 미연결 |
 | [x] | AUDIT-07 | [#254](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/254) | P2 | PR #264 병합: 비-Map 항목을 빈 목록·부분 성공으로 숨기지 않고 위치가 드러나는 오류 처리 |
-| [ ] | AUDIT-08 | [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255) | P2 | 구현·검증 완료, 병합 대기: 비활성 입력의 clear 미노출·값 보존, 활성 clear 유지 |
-| [ ] | AUDIT-09 | [#256](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/256) | P3 | 수정 정보 Provider의 전달 단계를 줄이되 비동기 상태·재시도·fixture 유지 |
+| [x] | AUDIT-08 | [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255) | P2 | PR #265 병합: 비활성 입력의 clear 미노출·값 보존, 활성 clear 유지 |
+| [ ] | AUDIT-09 | [#256](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/256) | P3 | 구현·검증 완료, 병합 대기: 중간 원격 Provider 제거, 비동기 상태·재시도·fixture·override 유지 |
 
 여러 항목이 같은 Form Controller를 수정하므로 이번에는 순차 진행합니다. 문서 PR과 각 수정 PR을 사용자가 병합한 뒤 최신 `develop`에서 다음 브랜치를 생성합니다. 기존 상태관리 구조를 보존하면서 필요한 상태·모델 변경과 회귀 테스트를 같은 작업에 포함합니다.
 
@@ -110,7 +110,13 @@
 - 검증: 활성 clear와 `onChanged('')` 보존 1개, `enabled: false`와 disabled state의 입력 비활성·clear 미노출·값·콜백 보존 2개를 추가했습니다. 공용 위젯 대상 5개와 전체 511개가 통과했고 기존 non-Linux golden 1개는 skip했습니다. format·analyze·diff 검사도 통과했습니다([작업 이력](work-history/disabled-text-field-clear-255.md)).
 - 경계: 장식 상태는 입력 권한을 바꾸지 않습니다. `CommonSearchTextField`와 `CommonAddressOrPlaceField`는 별도 구현이며 동작을 변경하지 않았습니다. 실제 Android/iOS 수동 입력·접근성 smoke와 새 시각 baseline은 실행하지 않았습니다.
 
-- **AUDIT-09:** [Plant 수정 정보 Provider](../lib/features/plant/presentation/providers/plant_form_edit_provider.dart)와 [Place 수정 정보 Provider](../lib/features/place/presentation/providers/place_form_edit_provider.dart)의 fetch·변환·mode 선택 단계를 점검합니다. 네트워크 호출이 세 번이라는 뜻은 아닙니다. 하나의 원격 비동기 상태와 순수 변환 경계를 유지하고 loading/error/notFound/retry 및 테스트 override를 보존합니다.
+### AUDIT-09 — 수정 정보 Provider 전달 단순화
+
+- 위치: [Plant 수정 정보 Provider](../lib/features/plant/presentation/providers/plant_form_edit_provider.dart), [Place 수정 정보 Provider](../lib/features/place/presentation/providers/place_form_edit_provider.dart)와 각 Form Controller.
+- 감사 당시 구조: Plant·Place 모두 실제 fetch 원본과 폼 진입점 사이에 원본 `.future`를 기다렸다가 nullable 수정 정보로 다시 포장하는 `FutureProvider`가 하나씩 있었습니다. 네트워크 호출이 여러 번 발생한 문제는 아니지만 loading/error/retry/override 경계가 두 단계로 갈렸습니다.
+- #256 구현: 중간 `remotePlantFormEditInfoProvider`와 `remotePlaceFormEditInfoProvider`를 제거했습니다. 폼 진입점은 API 비사용 fixture 분기를 유지하고, API 모드에서는 `remotePlantEditInfoProvider` 또는 `placeSummaryProvider`의 `AsyncValue`를 `whenData`로만 변환한 뒤 `unwrapPrevious()`를 적용합니다. Controller 재시도도 실제 fetch를 소유한 원본 하나만 무효화합니다.
+- 검증: 원본 Provider override를 통한 폼 변환·빈 정보 `null`, repository 위임, Place 실패 후 원본 재조회와 기존 Plant loading/error/notFound, 제출 잠금·이미지·장소 code·세션 격리 회귀를 확인했습니다([작업 이력](work-history/form-edit-provider-flow-256.md)).
+- 경계: 새 API·DTO·repository·화면·패키지는 추가하지 않았고 실제 요청 수를 줄이는 성능 작업으로 해석하지 않습니다. 실제 인증 API·Android/iOS 수동 smoke는 실행하지 않았습니다.
 
 ## 검증과 완료 처리
 

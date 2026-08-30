@@ -132,6 +132,12 @@ UI가 없어도 검증 가능한 로직은 widget test로 우회하지 않습니
 
 공용 입력 위젯의 enabled·disabled 동작을 변경할 때는 키보드 입력 가능 여부뿐 아니라 clear 같은 별도 액션도 같은 상태를 따르는지 widget test로 확인합니다. 강제 focus 장식처럼 실제 포커스와 시각 상태가 다른 조합을 포함하고, 비활성 값·콜백이 바뀌지 않는지와 활성 상태의 기존 액션이 유지되는지를 함께 검증합니다. 장식 상태를 입력 권한으로 해석하지 않습니다.
 
+### 파생 Provider 단순화 검증
+
+원격 조회를 폼이나 화면용 타입으로 변환하는 Provider를 단순화할 때는 실제 fetch를 소유한 원본 Provider와 순수 변환 진입점을 분리해 검증합니다. 변환 테스트는 원본 family instance를 override해 success·빈 정보·loading/error 전달을 확인하고, 원본 테스트는 repository 위임과 route 식별자 전달을 확인합니다. 재시도는 원본 조회 횟수가 한 번만 늘고 화면 상태가 failure에서 ready로 복구되는지 검사합니다.
+
+중간 Provider 이름을 테스트 편의를 위해 유지하지 않습니다. 공개 화면 진입점, 실제 fetch 원본, Controller 상태를 기준으로 테스트하고 API 비사용 fixture·계정 전환·제출 잠금 회귀도 함께 실행합니다([#256 이력](work-history/form-edit-provider-flow-256.md)).
+
 ## SVG asset 회귀 테스트
 
 `test/core/assets/svg_assets_test.dart`는 `assets/icons`, `assets/images`의 모든 SVG를 현재 lockfile의 `flutter_svg` parser로 읽고 picture rasterize까지 실행합니다. 신규 또는 변경 SVG는 아래 검사를 통과해야 합니다.

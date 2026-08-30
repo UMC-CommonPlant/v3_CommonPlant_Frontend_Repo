@@ -151,6 +151,12 @@ Controller 책임:
 
 오류 재시도는 캐시된 실패를 다시 읽는 파생 Provider만 무효화하지 않고 실제 fetch를 소유한 `userPlaceSummariesProvider`를 갱신합니다. 등록 장소 Provider도 자동 재시도를 끄고 사용자 액션으로 복구합니다. [#251 검증·제한](work-history/remote-plant-places-251.md)을 참고합니다.
 
+### 수정 폼의 원격 정보 경계
+
+수정 폼 진입 Provider는 API 비사용 fixture 선택과 원본 원격 `AsyncValue`의 순수 변환만 담당합니다. 원본 `.future`를 기다려 같은 loading/error를 다시 포장하는 중간 `FutureProvider`를 만들지 않습니다. Plant는 `remotePlantEditInfoProvider`, Place는 `placeSummaryProvider`가 실제 fetch·오류·재시도의 단일 원본이며, 폼 진입점은 `whenData`와 `unwrapPrevious()`로 nullable 정보와 계정 전환 표시 경계를 유지합니다.
+
+재시도는 실제 fetch를 소유한 원본 Provider만 무효화합니다. unit test도 폼 변환을 검증할 때는 해당 원본 family instance를 override하고, repository 위임은 원본 Provider 테스트에서 별도로 확인합니다. API 비사용 fixture, loading/error/notFound, 세션 격리와 제출 잠금은 이 단순화로 바꾸지 않습니다([#256 이력](work-history/form-edit-provider-flow-256.md)).
+
 ### 주소 선택처럼 비동기로 돌아오는 UI 결과
 
 Place Form의 `applyAddressSelection`은 화면이 제공한 `Future<AddressSearchResult?>`를 기다리기 전에 Ref·세션을 캡처합니다. 취소·빈 주소·API 모드 fixture와 오래된 Ref·세션의 결과는 상태를 바꾸지 않습니다. 유효한 선택은 기존 `updateAddress`를 사용해 오류를 초기화하되 진행 중 제출 잠금은 유지합니다.
