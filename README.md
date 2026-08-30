@@ -239,13 +239,17 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 
 ## 현재 진행 상태와 다음 작업
 
-2026-08-30 `develop`의 PR #265 병합 상태(`894dd5f`)와 후속 #256 구현을 기준으로 합니다. Epic #226에서 Auth, Home, Plant, User 프로필, Place 목록·상세·폼 결과, Friend 요청 및 멤버 조회의 API 연결 PR이 병합됐습니다. 이는 실제 인증 E2E나 모든 화면 동선의 완성을 뜻하지 않습니다. 소셜 SDK 자격 증명 획득, 이미지 선택, 실제 주소 검색과 아래 미완료 동선은 남아 있습니다.
+2026-08-30 `develop`의 PR #266 병합 상태(`011ef7d`)를 기준으로 합니다. Epic #226의 하위 이슈 20/20과 감사 #248~#256이 완료되어 Epic과 Project 상태를 `Done`으로 종료했습니다. 이는 실제 인증 E2E나 모든 화면 동선의 완성을 뜻하지 않으며, 후속 실행 범위는 [화면·모델·API 연결 계획](docs/screen-api-integration-plan.md#후속-개발-실행-순서-267)에서 관리합니다.
 
 현재 우선순위는 사용자 결정에 따라 다음과 같습니다.
 
-1. #247 / PR #257 문서 정리는 병합 완료했으며 [개발 감사·개선 체크리스트](docs/development-audit-checklist.md)를 실행 기준으로 사용합니다.
-2. #248 이미지 보존, #249 계정별 캐시·늦은 응답·토큰 저장 격리, #250 입력 변경 중 제출 잠금과 #251 / PR #261 원격 식물 등록의 샘플 장소 차단은 병합됐습니다. #252 / PR #262 장소 code 없는 수정 차단·성공 후 목록과 상세 갱신, #253 / PR #263 주소 선택·취소 결과의 생성·수정 폼 연결도 병합됐습니다([#252 이력](docs/work-history/plant-edit-place-code-252.md), [#253 이력](docs/work-history/place-address-result-253.md)). 실제 주소 검색 서비스는 아직 연결되지 않아 API 모드에서는 샘플을 선택할 수 없고 새 주소가 필요한 생성 동선은 남아 있습니다. 사진이 있는 장소의 수정 제한과 미사용 공용 위젯 5개는 유지합니다.
-3. #254 / PR #264 목록 항목 타입 검증과 #255 / PR #265 비활성 `CommonTextField` clear 차단은 병합됐습니다([#254 이력](docs/work-history/api-list-item-validation-254.md), [#255 이력](docs/work-history/disabled-text-field-clear-255.md)). #256은 Plant·Place 수정 폼의 중간 원격 전달 Provider를 제거하고 각 원본 조회를 단일 비동기·재시도·테스트 override 경계로 유지했습니다([작업 이력](docs/work-history/form-edit-provider-flow-256.md)). 병합 뒤 [화면·모델·API 연결 매트릭스](docs/screen-api-integration-plan.md)의 남은 동선을 이어갑니다.
-4. 외부 답변이 필요한 Image·Memo·검색·인증 정책은 [백엔드 질문](docs/backend-api-open-questions.md), 팀 결정은 [후속 결정 체크리스트](docs/follow-up-decision-checklist.md)로 분리합니다. 배포와 원격 E2E는 준비 조건 충족 전까지 보류합니다.
+1. #267에서 #256·Epic #226의 병합 완료 상태와 아래 실행·보류 범위를 문서에 동기화합니다.
+2. Home 친구 요청 배지 조회 실패 상태를 정상 0건과 구분합니다.
+3. `PLANT-01`·`SEARCH-02` 계약 확인 뒤 Plant 소속 장소 code와 식물 검색 잔여 동선을 연결합니다.
+4. `ERROR-01~02`·`TOKEN-01~02` 답변 뒤 공통 오류 메시지와 인증 만료·세션 종료 흐름을 연결합니다.
+5. Place 멤버 식별자·변경 endpoint와 Friend 고유 대상·부분 결과 계약 뒤 쓰기 동선을 연결합니다.
+6. `MEMO-01~03` 계약 뒤 Memo 생성·목록·수정·삭제를 화면 상태부터 API까지 연결합니다.
+
+로그인 SDK, 실제 주소 검색 서비스, 업로드 방식 변경이 필요한 이미지 흐름, 인증된 원격 E2E, 스토어·릴리즈 준비는 사용자가 다음 작업으로 보류했습니다. 기존 안전 차단과 질문·위험 기록은 유지하며 이 항목들이 위 실행 순서를 막는 전역 blocker가 되지 않게 분리합니다.
 
 완료된 초기 작업과 리팩토링 1~3차 계획은 [문서 인덱스](docs/README.md)의 과거 기록으로 보존하며 새 작업 큐로 재사용하지 않습니다. 새 작업도 `중복 확인·이슈 생성 -> Project 10 등록 -> develop 기반 브랜치 -> 검증·커밋·푸시 -> PR` 순서를 따르고, PR 병합은 사용자가 진행합니다.
