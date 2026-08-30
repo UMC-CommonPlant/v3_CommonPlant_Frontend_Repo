@@ -119,18 +119,25 @@ class _CommonTextFieldState extends State<CommonTextField> {
   }
 
   void _clearText() {
+    if (!widget.enabled || _validation.state == CommonTextFieldState.disabled) {
+      return;
+    }
+
     _controller.clear();
     widget.onChanged?.call('');
   }
 
-  Widget? _buildTrailing() {
+  Widget? _buildTrailing({required bool enabled}) {
     final children = <Widget>[];
 
     if (widget.trailing != null) {
       children.add(widget.trailing!);
     }
 
-    if (widget.showClearButton && _usesFocusedDecoration && _hasText) {
+    if (enabled &&
+        widget.showClearButton &&
+        _usesFocusedDecoration &&
+        _hasText) {
       children.add(_CommonTextFieldClearButton(onPressed: _clearText));
     }
 
@@ -167,7 +174,7 @@ class _CommonTextFieldState extends State<CommonTextField> {
       enabled: widget.enabled,
       usesFocusedDecoration: _usesFocusedDecoration,
     );
-    final trailing = _buildTrailing();
+    final trailing = _buildTrailing(enabled: fieldStyle.enabled);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
