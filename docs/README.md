@@ -1,13 +1,13 @@
 # 문서 인덱스
 
-문서 분류 기준일: 2026-08-30, `develop` PR #265 병합 및 #256 작업 반영.
+문서 분류 기준일: 2026-08-30, `develop` PR #266·Epic #226 완료 및 #267 후속 순서 반영.
 
 작업 전 저장소 [README](../README.md)와 [에이전트 지침](../AGENTS.md)을 먼저 확인합니다. 현재 코드를 기준으로 판단하며, 과거 계획의 파일 수·상태·명령은 현행 지침으로 해석하지 않습니다.
 
 ## 지금 볼 문서
 
-- 다음 수정 순서와 개별 이슈: [개발 감사·개선 체크리스트](development-audit-checklist.md)
-- 화면별 API 연결 상태와 남은 동선: [화면·모델·API 실연동 전환 계획](screen-api-integration-plan.md)
+- 완료된 감사 #248~#256: [개발 감사·개선 체크리스트](development-audit-checklist.md)
+- 다음 개발 순서와 화면별 API 상태: [화면·모델·API 실연동 전환 계획](screen-api-integration-plan.md#후속-개발-실행-순서-267)
 - 외부 답변이나 팀 결정이 필요한 항목: [후속 결정 체크리스트](follow-up-decision-checklist.md)
 
 ## 현행 작업 가이드
@@ -76,6 +76,7 @@
 | API 목록 항목 타입 검증 #254 | [API List Item Validation](work-history/api-list-item-validation-254.md) |
 | 비활성 공용 입력 clear 차단 #255 | [Disabled Text Field Clear](work-history/disabled-text-field-clear-255.md) |
 | 수정 정보 Provider 전달 단순화 #256 | [Form Edit Provider Flow](work-history/form-edit-provider-flow-256.md) |
+| 후속 개발 순서·보류 범위 #267 | [Follow-up Development Roadmap](work-history/follow-up-development-roadmap-267.md) |
 
 Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 작업 이력](screen-api-integration-plan.md#작업-이력), 문서 정리 #247은 [개발 감사 체크리스트](development-audit-checklist.md)에서 확인합니다.
 

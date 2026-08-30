@@ -2,7 +2,7 @@
 
 이 문서는 화면 퍼블리싱 이후 남아 있는 mock 흐름을 실제 상태와 API 계층으로 전환하는 순서와 완료 기준을 관리합니다. 배포 자동화와 원격 E2E 준비는 필요한 외부 조건이 충족될 때까지 유지하되, 현재 MVP 최우선 작업은 사용자 동선별 수직 슬라이스 완성입니다.
 
-2026-08-30 기준 문서 정리 #247 / PR #257부터 비활성 공용 입력 clear 차단 #255 / PR #265까지 병합됐습니다(`894dd5f`). 실제 주소 검색 서비스는 미연결이며 API 모드의 샘플 사용은 차단합니다. [개발 감사·개선 체크리스트](development-audit-checklist.md)의 #256 수정 정보 Provider 전달 단순화는 구현·로컬 검증 후 사용자 병합을 기다립니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다.
+2026-08-30 기준 문서 정리 #247 / PR #257부터 수정 정보 Provider 전달 단순화 #256 / PR #266까지 병합됐습니다(`011ef7d`). 상위 Epic #226은 하위 이슈 20/20 완료로 종료했습니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다. 후속 실행·보류 범위는 사용자 결정에 따라 #267에서 다시 고정합니다.
 
 ## 목표
 
@@ -23,9 +23,36 @@
 - Swagger에 response schema가 없는 기능은 화면 모델을 추측하지 않고, 배포 기준과 일치하는 백엔드 Controller·DTO·Service 근거까지 확인한 뒤 연결합니다.
 - loading, success, empty, error 상태를 해당 화면과 Controller 테스트에서 함께 검증합니다.
 
+## 후속 개발 실행 순서 #267
+
+아래 항목은 순서대로 별도 이슈·브랜치·PR에서 진행합니다. 확인되지 않은 endpoint·필드·식별자는 구현하지 않으며, 계약이 필요한 단계는 [백엔드 질문](backend-api-open-questions.md)의 해당 항목을 `Answered`로 갱신한 뒤 화면 → 상태·모델 → repository·API → 회귀 테스트 순서로 연결합니다.
+
+| 순서 | 작업 | 선행 조건 | 완료 결과 |
+| --- | --- | --- | --- |
+| 1 | #267 완료 상태·후속 범위 문서 동기화 | PR #266 병합·Epic #226 20/20 확인 | 현행 문서에서 완료된 감사와 새 실행 큐를 분리 |
+| 2 | Home 친구 요청 배지 조회 실패 상태 | 현재 `placeInvitationRequestCountProvider` 오류가 0건으로 보이는 동작 재현 | loading·정상 0건·오류·성공 수를 구분하고 Provider/widget 회귀 검증 |
+| 3 | Plant 소속 장소 code·식물 검색 잔여 동선 | `PLANT-01`, `SEARCH-02` 답변 | Home 진입 수정의 실제 code 확보와 식물 검색 loading/empty/error/success·선택 연결 |
+| 4 | 공통 API 오류 메시지·토큰 만료 처리 | `ERROR-01~02`, `TOKEN-01~02`, UX-01·STATE-01 결정 | 공통 code 매핑, field/화면 오류, 만료 복구 또는 종료 흐름과 세션 회귀 검증 |
+| 5 | Place 멤버·Friend 식별자 기반 쓰기 | `PLACE-05`, 멤버 고유 ID·변경 endpoint, Friend 고유 대상·부분 결과 계약 | 나가기·멤버 변경·친구 요청이 실제 식별자와 대상별 결과를 사용 |
+| 6 | Memo CRUD·목록 상태 API 연결 | `MEMO-01~03` 답변. 이번 순서에서는 이미지 첨부 제외 | 생성·목록·수정·삭제, pagination과 loading/empty/error/success를 수직 연결 |
+
+선행 계약이 없는 단계는 편의를 위해 fixture·첫 항목·표시 이름을 원격 값으로 사용하지 않습니다. 답변 대기 중인 사실을 기록하고 다음 단계의 계약 확인을 병행할 수는 있지만, 순서를 완료한 것으로 표시하지 않습니다.
+
+### 사용자 보류 범위
+
+다음 항목은 취소가 아니라 **이번 실행 큐에서 제외하고 다음 작업으로 보류**합니다.
+
+- Kakao·Google·Apple 로그인 SDK 구현과 credential·네이티브 설정
+- 실제 주소 검색 서비스 선정, API key·과금 정책과 adapter 연결
+- 업로드 방식 변경이 필요한 이미지 선택·업로드·교체·삭제. 새 방식이 확정될 때까지 #248의 기존 key 보존·미확인 key 차단과 사진이 있는 Place 수정 제한 유지
+- 인증된 원격 E2E, 테스트 인증·데이터 격리·cleanup과 GitHub Environment
+- 스토어 계정·signing·build number와 릴리즈 workflow. 기존 #215는 `Backlog` 유지
+
+보류 항목의 질문과 준비 계약은 삭제하지 않고 [후속 결정 체크리스트](follow-up-decision-checklist.md)에 유지합니다. 보류 해제는 사용자의 명시적 재개 결정과 필요한 외부 조건 확인 후 별도 이슈에서 진행합니다.
+
 ## 수직 슬라이스 구현 현황
 
-P0~P7은 기존 구현 순서를 보존한 표입니다. 다음 작업 순서는 개발 감사 체크리스트를 따릅니다.
+P0~P7은 기존 구현 순서를 보존한 표입니다. 다음 작업 순서는 위 #267 후속 실행 순서를 따릅니다.
 
 | 순서 | 수직 슬라이스 | 범위 | 상태 |
 | --- | --- | --- | --- |
@@ -37,7 +64,8 @@ P0~P7은 기존 구현 순서를 보존한 표입니다. 다음 작업 순서는
 | P5 | Friend 수신 요청 | 요청 목록, 수락, 거절 API와 화면 상태 연결 | #241 / PR #242 병합 완료 |
 | P6 | Place 생성·수정 후속 흐름 | 생성 code·수정 결과와 친구 요청 전송 연결 | #243 / PR #244 병합 완료 |
 | P7 | Place 친구 관리 조회 | 실제 멤버 목록·이미지·닉네임 필터와 상태 UI | #245 / PR #246 병합 완료 |
-| 보류 | Image, Memo | 성공 response 또는 endpoint가 불충분한 영역 | 백엔드 확인 필요 |
+| 후속 | Memo | 텍스트 CRUD·목록 상태를 화면부터 API까지 연결 | #267 순서 6, `MEMO-01~03` 답변 필요 |
+| 보류 | Image | 새 업로드 방식이 필요한 프로필·Place·Plant·Memo 이미지 흐름 | 사용자 재개 결정과 새 계약 필요 |
 
 P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기준으로 했습니다. #239는 live Swagger에 누락된 Place schema를 백엔드 main `7d572cb`의 Controller·DTO와 대조해 목록·상세 응답 계약을 연결했고, #241은 같은 source에서 확인한 Friend 수신 요청 계약을 화면까지 연결합니다.
 
@@ -250,6 +278,7 @@ Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Pr
 | #253 | `d54d3e4`, `e3a5797` | 주소 결과·출처·폼 연결과 세션·화면 수명 보호, API fixture 차단, PR #263 병합 완료(`ded4fe2`) | [주소 연결 이력](work-history/place-address-result-253.md), 전체 502개 통과·기존 skip 1개, PR #263 CI 503개 통과 |
 | #254 | `6cae790`, `74a1426` | 공용 목록의 비-Map 항목을 위치가 드러나는 오류로 처리하고 빈 목록·부분 성공 은폐 차단, PR #264 병합 완료(`f723825`) | [목록 검증 이력](work-history/api-list-item-validation-254.md), 대상 39개·전체 508개 통과·기존 skip 1개, PR #264 CI 509개 통과 |
 | #255 | `008bbc6`, `20e2acc` | PR #264 병합 확인(`f723825`), 비활성 `CommonTextField` clear 미노출·실행 차단과 활성 clear 보존, PR #265 병합 완료(`894dd5f`) | [비활성 입력 이력](work-history/disabled-text-field-clear-255.md), 전체 511개·기존 skip 1개, PR #265 CI 512개 통과 |
-| #256 | `63b96b2` | PR #265 병합 확인(`894dd5f`), Plant·Place 중간 원격 수정 정보 Provider 제거와 원본 조회·재시도·override 경계 유지 | [Provider 단순화 이력](work-history/form-edit-provider-flow-256.md), 전체 513개 통과·기존 skip 1개 |
+| #256 | `63b96b2`, `dd21e26` | PR #265 병합 확인(`894dd5f`), Plant·Place 중간 원격 수정 정보 Provider 제거와 원본 조회·재시도·override 경계 유지, PR #266 병합 완료(`011ef7d`) | [Provider 단순화 이력](work-history/form-edit-provider-flow-256.md), 전체 513개·기존 skip 1개, PR #266 CI 514개 통과 |
+| #267 | 이 문서의 최종 커밋 | Epic #226 완료 상태, 실행 6단계와 사용자 보류 5개 범위 정리 | [후속 로드맵 이력](work-history/follow-up-development-roadmap-267.md), 문서 링크·인덱스·diff 검사 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.

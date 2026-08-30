@@ -3,11 +3,12 @@
 ## 작업 기준
 
 - 이슈: [#256](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/256), AUDIT-09
+- PR: [#266](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/266), `develop` 대상
 - 상위 이슈: [#226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)
 - 작업일: 2026-08-30
 - 기준 `develop`: `894dd5f7b0bfe7e1e3de0d295115480b1f2753cb` (사용자 PR #265 병합)
 - 브랜치: `refactor/form-edit-provider-flow-256`
-- 상태: 구현·로컬 검증 완료, PR 생성 후 사용자 병합 대기. Project 10의 category `Plant`, priority `low`, Issue Type `Task`, 담당자 `ywkim95`·`bbielo`, milestone `v1.0.0 - MVP (핵심 기능 개발)`을 유지합니다.
+- 상태: 2026-08-30 사용자 PR #266 병합 완료(`011ef7db1affb9b50fc241222b5f9408bc5eb5f5`). 이슈·PR은 Project 10의 `Done`, category `Plant`, priority `low`이며 상위 Epic #226은 하위 이슈 20/20 완료로 종료됐습니다.
 - 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [화면·API 계획](../screen-api-integration-plan.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [테스트](../testing-guide.md), [Git](../git-workflow.md)
 
 clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #256을 재사용했습니다. 작업 시작 시 #255는 Closed이고 이슈·PR #265의 Project 상태는 Done, 상위 #226은 19/20 완료였습니다. 이번 문서 변경에서 #255의 병합 전 표기를 정정했습니다.
@@ -45,7 +46,7 @@ Place 원본 repository 위임과 실패 후 재조회 회귀 2개를 추가하�
 - `fvm flutter test --reporter expanded`: 513개 통과, 기존 non-Linux golden skip 1개
 - `git diff --check`: 통과
 - README·AGENTS·docs의 Markdown 47개, 로컬 링크 336개·anchor 15개: 누락 링크·미연결 문서 0개
-- 최종 PR의 기본 Flutter CI 결과는 PR checks와 이슈 검증 코멘트에 기록합니다.
+- 최종 PR CI: [Flutter CI quality](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/actions/runs/33316664772/job/99271258349) 통과, 1분 52초. Ubuntu golden 포함 514개 통과입니다.
 
 테스트는 fake repository와 Provider override를 사용했습니다. 실제 dev API 읽기·쓰기, 인증 E2E, Android/iOS 수동 smoke는 실행하지 않았습니다.
 
@@ -62,6 +63,7 @@ Place 원본 repository 위임과 실패 후 재조회 회귀 2개를 추가하�
 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- |
 | `63b96b2` | Plant·Place 중간 원격 수정 정보 Provider 제거, 원본 조회·재시도·override 회귀 정리 | 관련 대상 테스트, format·analyze·diff 검사 |
-| 이 문서의 최종 커밋 | #255 병합 상태 정정, #256 계약·검증·남은 제한과 현행 문서 갱신 | 전체 Flutter·Markdown 링크·인덱스·diff 검사 |
+| `dd21e26` | #255 병합 상태 정정, #256 계약·검증·남은 제한과 현행 문서 갱신 | 전체 Flutter·Markdown 링크·인덱스·diff 검사 |
+| 이 문서의 후속 커밋 | PR #266 병합·Done, 최종 CI 514개와 Epic #226 20/20 완료 반영 | GitHub PR·이슈·Project·CI 확인, `git diff --check` |
 
 문서·PR 이력만 기록하는 마지막 커밋은 자기 자신의 해시를 생략할 수 있습니다.
