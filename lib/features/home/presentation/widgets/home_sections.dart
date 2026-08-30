@@ -53,27 +53,56 @@ class HomePlaceRequestButton extends StatelessWidget {
     required this.count,
     required this.onPressed,
     super.key,
-  });
+  }) : _state = _HomePlaceRequestButtonState.count;
 
-  final int count;
-  final VoidCallback onPressed;
+  const HomePlaceRequestButton.loading({super.key})
+    : count = null,
+      onPressed = null,
+      _state = _HomePlaceRequestButtonState.loading;
+
+  const HomePlaceRequestButton.error({required VoidCallback onRetry, super.key})
+    : count = null,
+      onPressed = onRetry,
+      _state = _HomePlaceRequestButtonState.error;
+
+  final int? count;
+  final VoidCallback? onPressed;
+  final _HomePlaceRequestButtonState _state;
 
   @override
   Widget build(BuildContext context) {
+    final semanticsLabel = switch (_state) {
+      _HomePlaceRequestButtonState.count => '장소 요청 $count건',
+      _HomePlaceRequestButtonState.loading => '장소 요청 불러오는 중',
+      _HomePlaceRequestButtonState.error => '장소 요청 조회 실패, 다시 시도',
+    };
+    final label = switch (_state) {
+      _HomePlaceRequestButtonState.count => '요청 $count건',
+      _HomePlaceRequestButtonState.loading => '',
+      _HomePlaceRequestButtonState.error => '재시도',
+    };
+
     return Semantics(
-      label: '장소 요청 $count건',
+      label: semanticsLabel,
       button: true,
-      child: CommonButton(
-        label: '요청 $count건',
-        onPressed: onPressed,
-        size: CommonButtonSize.small,
-        width: AppSizes.smallButtonWidth,
-        backgroundColor: AppColors.brandAccent,
-        foregroundColor: AppColors.white,
+      child: ExcludeSemantics(
+        child: CommonButton(
+          label: label,
+          onPressed: onPressed,
+          size: CommonButtonSize.small,
+          width: AppSizes.smallButtonWidth,
+          backgroundColor: _state == _HomePlaceRequestButtonState.error
+              ? AppColors.danger
+              : AppColors.brandAccent,
+          foregroundColor: AppColors.white,
+          isLoading: _state == _HomePlaceRequestButtonState.loading,
+        ),
       ),
     );
   }
 }
+
+enum _HomePlaceRequestButtonState { count, loading, error }
 
 class HomeAddTile extends StatelessWidget {
   const HomeAddTile({
