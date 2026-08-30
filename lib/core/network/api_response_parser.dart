@@ -18,7 +18,7 @@ JsonMap jsonObjectFromResponse(Object? data, {required String context}) {
 
 List<JsonMap> jsonListFromResponse(Object? data, {required String context}) {
   final normalized = _normalizeResponseData(data);
-  final list = _findJsonList(_unwrapData(normalized));
+  final list = _findJsonList(_unwrapData(normalized), context: context);
 
   if (list != null) {
     return list;
@@ -133,11 +133,16 @@ Object? _unwrapData(Object? data) {
   return data;
 }
 
-List<JsonMap>? _findJsonList(Object? data) {
+List<JsonMap>? _findJsonList(Object? data, {required String context}) {
   if (data is List) {
     return [
-      for (final item in data)
-        if (item is JsonMap) item,
+      for (final (index, item) in data.indexed)
+        if (item is JsonMap)
+          item
+        else
+          throw ApiException(
+            message: '$context 응답 목록 ${index + 1}번째 항목이 JSON object 형식이 아닙니다.',
+          ),
     ];
   }
 
@@ -146,7 +151,7 @@ List<JsonMap>? _findJsonList(Object? data) {
   }
 
   for (final key in const ['items', 'content', 'list', 'places', 'plants']) {
-    final list = _findJsonList(data[key]);
+    final list = _findJsonList(data[key], context: context);
     if (list != null) {
       return list;
     }

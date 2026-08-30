@@ -1,8 +1,31 @@
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/features/plant/data/mappers/plant_mapper.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('plantSummariesFromResponse', () {
+    test('일부 식물 항목 타입이 잘못되면 빈 목록이나 부분 성공으로 숨기지 않는다', () {
+      expect(
+        () => plantSummariesFromResponse({
+          'result': {
+            'content': {
+              'items': [
+                {'plantId': 1, 'nickname': '몬스테라'},
+                'invalid',
+              ],
+            },
+          },
+        }),
+        throwsA(
+          isA<ApiException>().having(
+            (error) => error.message,
+            'message',
+            contains('식물 목록 조회 응답 목록 2번째 항목'),
+          ),
+        ),
+      );
+    });
+
     test('Swagger 식물 목록 wrapper에서 요약 모델 목록을 만든다', () {
       final summaries = plantSummariesFromResponse({
         'result': {

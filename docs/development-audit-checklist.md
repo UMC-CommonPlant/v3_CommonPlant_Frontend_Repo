@@ -2,7 +2,7 @@
 
 2026-08-28 사용자 결정과 `develop`의 PR #246 병합 커밋 `2a01babb185ef5056b361c477717759194c53ec1`을 기준으로 합니다. 문서 정리는 [#247](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/247), 상위 개발 범위는 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226)입니다.
 
-문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249 / [PR #259](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259) 계정별 캐시·요청 격리(`b15cdd7`, [이력](work-history/session-cache-isolation-249.md))와 #250 / [PR #260](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/260) 입력 변경 중 제출 잠금도 병합됐습니다(`bc6e68d`, [이력](work-history/form-submit-lock-250.md)). 2026-08-29 기준 #251 / [PR #261](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/261) 원격 식물 등록 장소 상태도 병합됐습니다(`ebf6dc4`, [이력](work-history/remote-plant-places-251.md)). #252 / [PR #262](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/262) 장소 code 없는 수정 차단도 병합됐습니다(`5fc0140`, [이력](work-history/plant-edit-place-code-252.md)). #253 주소 결과 전달은 구현·검증 후 사용자 병합을 기다립니다([이력](work-history/place-address-result-253.md)).
+문서 PR [#257](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/257)은 `develop`에 병합됐습니다(`f1331b2`). 후속 #248 / [PR #258](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/258)도 병합됐으며(`a630c66`) [이미지 보존 이력](work-history/form-image-preservation-248.md)에서 남은 제한을 확인합니다. #249 / [PR #259](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/259) 계정별 캐시·요청 격리(`b15cdd7`, [이력](work-history/session-cache-isolation-249.md))와 #250 / [PR #260](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/260) 입력 변경 중 제출 잠금도 병합됐습니다(`bc6e68d`, [이력](work-history/form-submit-lock-250.md)). 2026-08-29 기준 #251 / [PR #261](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/261) 원격 식물 등록 장소 상태(`ebf6dc4`, [이력](work-history/remote-plant-places-251.md)), #252 / [PR #262](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/262) 장소 code 없는 수정 차단(`5fc0140`, [이력](work-history/plant-edit-place-code-252.md)), #253 / [PR #263](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/263) 주소 결과 전달(`ded4fe2`, [이력](work-history/place-address-result-253.md))까지 병합됐습니다. #254 목록 항목 타입 검증은 구현·로컬 검증을 마치고 사용자 병합을 기다립니다([이력](work-history/api-list-item-validation-254.md)).
 
 ## 결정과 작업 경계
 
@@ -25,7 +25,7 @@
 
 ## 실행 순서
 
-표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248~#252는 병합 완료, #253은 구현·검증 후 사용자 병합 대기, #254~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
+표의 체크는 해당 수정 PR이 병합되고 회귀 검증이 끝났을 때만 완료합니다. #248~#253은 병합 완료, #254는 구현·검증 후 사용자 병합 대기, #255~#256은 `Backlog`입니다. Project의 priority는 아래 P1을 `high`, P2를 `medium`, P3를 `low`로 대응합니다.
 
 | 체크 | 순서 | 이슈 | 우선도 | 문제·완료 기준 요약 |
 | --- | --- | --- | --- | --- |
@@ -34,8 +34,8 @@
 | [x] | AUDIT-03 | [#250](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/250) | P1 | PR #260 병합: 입력 변경 중 제출 잠금·제출값 고정·실패 후 수정값 재시도 |
 | [x] | AUDIT-04 | [#251](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/251) | P1 | PR #261 병합: 실제 장소만 선택·등록, loading/error/empty 차단과 조회 재시도 |
 | [x] | AUDIT-05 | [#252](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/252) | P1 | PR #262 병합: code 누락 안내·제출 차단, API 성공 후 관련 목록·상세·편집 정보 갱신 |
-| [ ] | AUDIT-06 | [#253](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/253) | P2 | 구현·검증 완료, 병합 대기: 주소 반환·폼 연결, API fixture 차단, 실제 검색 서비스 미연결 |
-| [ ] | AUDIT-07 | [#254](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/254) | P2 | 잘못된 목록 항목을 빈 목록 성공으로 숨기지 않고 오류 처리 |
+| [x] | AUDIT-06 | [#253](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/253) | P2 | PR #263 병합: 주소 반환·폼 연결, API fixture 차단, 실제 검색 서비스 미연결 |
+| [ ] | AUDIT-07 | [#254](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/254) | P2 | 구현·검증 완료, 병합 대기: 비-Map 항목을 빈 목록·부분 성공으로 숨기지 않고 위치가 드러나는 오류 처리 |
 | [ ] | AUDIT-08 | [#255](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/255) | P2 | 비활성 입력창에서 clear 버튼으로 값이 바뀌지 않도록 차단 |
 | [ ] | AUDIT-09 | [#256](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/256) | P3 | 수정 정보 Provider의 전달 단계를 줄이되 비동기 상태·재시도·fixture 유지 |
 
@@ -94,7 +94,14 @@
 
 ## 추가 개선의 근거와 경계
 
-- **AUDIT-07:** [응답 파서](../lib/core/network/api_response_parser.dart)는 목록의 비-Map 항목을 조용히 제외합니다. `result: [1, "bad"]`가 정상 빈 목록으로 바뀌는 문제를 수정하되, 확인된 wrapper 호환성과 정상 빈 배열은 유지합니다. 범용 파서 프레임워크나 codegen 도입은 필요하지 않습니다.
+### AUDIT-07 — 목록 항목 타입 검증
+
+- 위치: [공용 응답 파서](../lib/core/network/api_response_parser.dart), Plant·Place·User 목록 mapper와 repository 경계.
+- 감사 당시 재현: 파서가 비-Map 항목을 조용히 제외해 `result: [1, "bad"]`를 정상 빈 목록으로, Map과 잘못된 값이 섞인 응답을 부분 성공으로 바꿨습니다.
+- #254 구현: 목록 wrapper를 찾은 뒤 모든 항목이 JSON object인지 검사합니다. 하나라도 다르면 context와 1부터 시작하는 항목 위치를 포함한 `ApiException`을 던지며, 확인된 direct·nested wrapper와 정상 빈 배열은 유지합니다.
+- 검증: 공용 파서 3개, Plant mapper 1개, Place repository 1개, User repository 1개의 회귀 사례를 추가했습니다. 관련 7개 파일의 대상 테스트 39개와 전체 508개가 통과했고 기존 non-Linux golden 1개는 skip했습니다. format·analyze·diff 검사도 통과했습니다([작업 이력](work-history/api-list-item-validation-254.md)).
+- 경계: fake 응답과 실제 mapper·repository를 사용한 검증이며 실제 인증 서버의 비정상 응답이나 원격 E2E를 실행한 것은 아닙니다. 항목 내부 필드 검증은 기존 도메인 mapper 책임으로 유지하며 범용 파서 프레임워크나 codegen을 도입하지 않았습니다.
+
 - **AUDIT-08:** [CommonTextField](../lib/shared/widgets/common_text_field.dart)는 `enabled: false`와 강제 focus 장식 조합에서 clear 버튼이 동작합니다. disabled 입력·삭제를 함께 차단하고 활성 상태의 clear 동작은 보존합니다.
 - **AUDIT-09:** [Plant 수정 정보 Provider](../lib/features/plant/presentation/providers/plant_form_edit_provider.dart)와 [Place 수정 정보 Provider](../lib/features/place/presentation/providers/place_form_edit_provider.dart)의 fetch·변환·mode 선택 단계를 점검합니다. 네트워크 호출이 세 번이라는 뜻은 아닙니다. 하나의 원격 비동기 상태와 순수 변환 경계를 유지하고 loading/error/notFound/retry 및 테스트 override를 보존합니다.
 

@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
 import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
 import 'package:commonplant_frontend/features/place/data/repositories/place_repository.dart';
@@ -6,6 +7,30 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PlaceRepository', () {
+    test('소속 장소 목록의 잘못된 항목을 부분 성공으로 반환하지 않는다', () async {
+      final repository = PlaceRepositoryImpl(
+        _ResponsePlaceRemoteDataSource(
+          userPlacesResponse: {
+            'result': [
+              {'code': 'place-1', 'name': '거실'},
+              2,
+            ],
+          },
+        ),
+      );
+
+      await expectLater(
+        repository.fetchUserPlaces(),
+        throwsA(
+          isA<ApiException>().having(
+            (error) => error.message,
+            'message',
+            contains('장소 목록 조회 응답 목록 2번째 항목'),
+          ),
+        ),
+      );
+    });
+
     test('장소 멤버 응답을 code별 typed 목록으로 반환한다', () async {
       final dataSource = _ResponsePlaceRemoteDataSource(
         membersResponse: {
@@ -127,15 +152,20 @@ class _ResponsePlaceRemoteDataSource extends Fake
     this.myGardenResponse,
     this.placeResponse,
     this.membersResponse,
+    this.userPlacesResponse,
   });
 
   final Object? myGardenResponse;
   final Object? placeResponse;
   final Object? membersResponse;
+  final Object? userPlacesResponse;
   String? requestedMembersCode;
 
   @override
   Future<Object?> getMyGarden() async => myGardenResponse;
+
+  @override
+  Future<Object?> getUserPlaces() async => userPlacesResponse;
 
   @override
   Future<Object?> getPlace(String code) async => placeResponse;

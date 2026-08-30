@@ -7,10 +7,10 @@
 - 작업일: 2026-08-29
 - 기준 `develop`: `5fc01405a91bc715a5a87ce8e40c2e8c58815714` (사용자 PR #262 병합)
 - 브랜치: `fix/place-address-result-253`
-- 상태: 구현·로컬 검증 완료, PR 생성 후 사용자 병합 대기. Project 10의 category `Place`, priority `medium`, Issue Type `Bug`, 담당자 `ywkim95`·`bbielo`, milestone `v1.0.0 - MVP (핵심 기능 개발)`을 유지합니다.
+- 상태: [PR #263](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/263) 사용자 병합 완료(`ded4fe2`). 이슈는 Closed, 이슈·PR의 Project 10 상태는 `Done`입니다. category `Place`, priority `medium`, Issue Type `Bug`, 담당자 `ywkim95`·`bbielo`, milestone `v1.0.0 - MVP (핵심 기능 개발)`을 유지했습니다.
 - 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [화면·API 계획](../screen-api-integration-plan.md), [Feature](../feature-development-guide.md), [라우팅](../routing-guide.md), [상태관리](../state-management-guide.md), [폼 검증](../form-validation-error-guide.md), [공용 위젯](../shared-widget-guide.md), [디자인 토큰](../design-token-rules.md), [퍼블리싱](../screen-publishing-rules.md), [Figma 매핑](../figma-frame-map.md), [테스트](../testing-guide.md), [Git](../git-workflow.md)
 
-clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #253을 재사용했습니다. #252는 Closed이고 이슈·PR #262의 Project 상태는 Done, 상위 #226은 16/20 완료입니다. 이번 문서 변경에서 #252의 병합 전 표기를 정정했습니다. 이 수치는 #253 병합·완료를 포함하지 않습니다.
+clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #253을 재사용했습니다. 작업 시작 당시 #252는 Closed이고 이슈·PR #262의 Project 상태는 Done, 상위 #226은 16/20 완료였습니다. #253 병합 후 이슈·PR #263은 Done이며 상위 #226은 17/20 완료입니다. 이 문서 변경에서 #252의 병합 전 표기를 정정했습니다.
 
 ## 원인과 수정
 
@@ -48,7 +48,7 @@ clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #2
 - `fvm flutter test --reporter expanded`: 502개 통과, 기존 non-Linux golden skip 1개
 - `git diff --check`: 통과
 - README·AGENTS·docs의 Markdown 44개, 로컬 링크 284개·anchor 14개: 누락 링크·미연결 문서 0개
-- 최종 PR의 기본 Flutter CI 결과는 PR checks와 이슈 검증 코멘트에 기록합니다.
+- 최종 PR의 기본 Flutter CI는 Ubuntu golden을 포함한 503개를 1분 54초에 통과했습니다.
 
 API payload 검증은 테스트 전용 검색 결과와 fake datasource를 사용하되, production route·Form Controller·PlaceRepositoryImpl·요청 DTO를 통과시킵니다. 실제 HTTP 전송·외부 주소 검색·인증 API 쓰기를 검증한 것은 아닙니다. 기존 datasource의 multipart 직렬화·API 경계 테스트는 전체 검사에 포함됩니다.
 
@@ -59,13 +59,13 @@ API payload 검증은 테스트 전용 검색 결과와 fake datasource를 사�
 - 외부 서비스 선택·키 발급·과금·플랫폼 권한·검색 API 응답 계약·실제 adapter는 이번 범위에서 결정하거나 추가하지 않았습니다. 주소를 지운 뒤의 복원 UI도 새로 만들지 않았습니다.
 - 늦은 결과 방어는 클라이언트의 폼·세션 수명에 대한 처리입니다. 서버에 도착한 쓰기 취소·롤백이나 다른 기기의 중복 요청은 보장하지 않습니다.
 - 실제 인증 API 쓰기·원격 E2E·Android/iOS 수동 smoke·새 Figma 시각 대조는 미실행입니다. 배포·스토어·Environment·branch protection·기본 CI 설정은 변경하지 않았습니다.
-- #248~#252 보호와 미사용 공용 위젯 5개·public 버튼 variant를 유지합니다. 사용자 병합 후 최신 `develop`에서 #254 → #255 → #256 순서로 진행합니다.
+- #248~#253 보호와 미사용 공용 위젯 5개·public 버튼 variant를 유지합니다. #253 병합 뒤 최신 `develop`에서 #254를 시작했으며 이후 #255 → #256 순서로 진행합니다.
 
 ## 커밋별 작업 이력
 
 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- |
 | `d54d3e4` | 주소 typed 결과·출처·폼 연결·API fixture 차단과 화면/폼/계정 수명 보호, 회귀 테스트 26개 추가 | 대상 57개·전체 502개 통과, 기존 skip 1개, format·analyze·diff 검사 |
-| 이 문서의 최종 커밋 | #252 병합 상태 정정, #253 계약·검증·남은 제한과 현행 문서 갱신 | 로컬 Markdown 링크·문서 인덱스 확인, `git diff --check` |
+| `e3a5797` | #252 병합 상태 정정, #253 계약·검증·남은 제한과 현행 문서 갱신 | 로컬 Markdown 링크·문서 인덱스 확인, `git diff --check` |
 
 문서·PR 이력만 기록하는 마지막 커밋은 자기 자신의 해시를 생략할 수 있습니다.

@@ -1,6 +1,6 @@
 # 문서 인덱스
 
-문서 분류 기준일: 2026-08-29, `develop` PR #262 병합 및 #253 작업 반영.
+문서 분류 기준일: 2026-08-29, `develop` PR #263 병합 및 #254 작업 반영.
 
 작업 전 저장소 [README](../README.md)와 [에이전트 지침](../AGENTS.md)을 먼저 확인합니다. 현재 코드를 기준으로 판단하며, 과거 계획의 파일 수·상태·명령은 현행 지침으로 해석하지 않습니다.
 
@@ -73,6 +73,7 @@
 | 원격 식물 등록 장소 상태 #251 | [Remote Plant Places](work-history/remote-plant-places-251.md) |
 | 식물 수정 장소 코드 검증 #252 | [Plant Edit Place Code](work-history/plant-edit-place-code-252.md) |
 | 장소 주소 선택 결과 연결 #253 | [Place Address Result](work-history/place-address-result-253.md) |
+| API 목록 항목 타입 검증 #254 | [API List Item Validation](work-history/api-list-item-validation-254.md) |
 
 Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 작업 이력](screen-api-integration-plan.md#작업-이력), 문서 정리 #247은 [개발 감사 체크리스트](development-audit-checklist.md)에서 확인합니다.
 
