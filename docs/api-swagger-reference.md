@@ -14,6 +14,7 @@
 - 확인일: 2026-08-25
 - OpenAPI·Place 멤버·Place/Plant 이미지 수정 계약 재확인: 2026-08-28 (19 paths·27 operations, backend main 동일)
 - Plant 수정의 필수 query·조회 schema 재확인: 2026-08-29, live OpenAPI JSON HTTP 200. 이 재확인은 Plant 범위이며 backend main 재검증이나 실제 인증 쓰기 검증을 뜻하지 않는다.
+- Plant 소속 장소 조회·식물 검색 계약 재확인: 2026-08-31 (live OpenAPI 19 paths, backend main `7d572cb` 동일). Plant direct code·검색 endpoint는 없고 기존 Place 목록·상세의 code와 `plantList[].plantId` 조합은 사용 가능하다.
 - 접속 결과: Swagger UI, OpenAPI JSON, Swagger config HTTP 200
 - 개발 서버 루트: HTTP 404. 루트 route가 없다는 의미이며 Swagger/API endpoint 상태와 분리한다.
 - 인증 endpoint 확인: token 없이 `GET /api/v1/users` 요청 시 HTTP 401, code `A009`로 인증 요구 응답
@@ -47,11 +48,17 @@
 
 ## Swagger 변경 요약
 
+### 2026-08-31 Plant 장소 code 조회와 검색 경계
+
+- Plant 목록·상세·수정 정보에는 여전히 소속 장소 code가 없다. `GET /place/user`의 실제 장소 code와 `GET /place/{code}`의 `plantList[].plantId`를 정확히 대조하면 별도 추정 없이 code를 확인할 수 있다.
+- #273은 route 또는 Plant 응답에 code가 없을 때만 이 읽기 전용 fallback을 사용한다. 이름·학명·첫 장소는 식별 근거로 사용하지 않으며, 오류는 상세 오류·재시도 상태로 전달한다.
+- 식물 검색 endpoint·catalog는 live OpenAPI와 backend main에 없다. 백엔드 [#92](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/92)에 필요한 검색 계약을 요청했고, 제공 전까지 API 모드는 fixture 결과와 선택을 차단한다.
+
 ### 2026-08-29 식물 수정 장소 code 경계
 
 - `PUT /plants/{plantId}`의 query `placeCode`는 required이다. `PlantSummary`, `DetailResponse`, `EditInfoResponse`에는 장소 code가 없으며 상세의 `placeName`으로 code를 추정할 수 없다.
 - #252는 기존 장소 상세→식물 상세→수정 route의 `placeId`에 담긴 실제 code를 보존·정규화해 전송한다. null·빈 값·공백이면 원격 수정 없이 성공 처리하지 않고 기존 홈에서 장소를 통해 재진입하도록 안내한다.
-- Home 식물 목록에서 바로 수정할 수 있는 code 조회 계약은 [PLANT-01](backend-api-open-questions.md#plant-01-식물에서-소속-장소-code-조회)로 남긴다. endpoint·DTO 변경 없이 성공 후 관련 목록·상세·편집 정보 갱신을 검증했다([작업 이력](work-history/plant-edit-place-code-252.md)).
+- #273에서 [PLANT-01](backend-api-open-questions.md#plant-01-식물에서-소속-장소-code-조회)을 기존 Place 조회 계약으로 해결했다. direct field가 추가되기 전까지 순차 장소 상세 조회 비용은 [위험 등록부](accepted-implementation-risks.md#plant-소속-장소-code-조회)에 기록한다. 수정 성공 후 관련 목록·상세·편집 정보 갱신은 #252에서 검증했다([작업 이력](work-history/plant-edit-place-code-252.md)).
 
 ### 2026-08-28 감사 — 이미지 수정 계약과 프론트 누락
 
@@ -596,9 +603,9 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members` | #245 실제 멤버·이미지 조회와 필터·상태 UI 연결, 변경 endpoint는 없음 |
 | 장소 수정 | `/places/:placeId/edit` | `PUT /place/update/{code}` | #243에서 수정 result를 typed 장소 요약으로 연결, image key 조회는 별도 확인 필요 |
 | 식물 등록 정보 입력 | `/plants/new/details` | `POST /plants` | #229 submit 연결, #251 실제 장소 code·상태·선택·제출 보호 병합 |
-| 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}` | #231 화면 연결, GET 요청은 장소 query 없이 조회 |
+| 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}`, `GET /place/user`, `GET /place/{code}` | #231 상세 연결, #273에서 route code가 없을 때 정확한 plant ID로 소속 code 복원 |
 | 식물 수정 | `/plants/:plantId/edit` | `GET /plants/{plantId}/edit` | #229 화면 연결, GET 요청은 장소 query 불필요. 응답에 장소 code는 없음 |
-| 식물 수정 | `/plants/:plantId/edit` | `PUT /plants/{plantId}?placeCode=...` | #252 필수 code 검증·누락 안내와 성공 후 관련 캐시 갱신 구현 |
+| 식물 수정 | `/plants/:plantId/edit` | `PUT /plants/{plantId}?placeCode=...` | #252 필수 code 검증·누락 안내, #273 Home 진입 code 복원과 관련 캐시 갱신 구현 |
 
 아직 Swagger에 없는 화면 API:
 
@@ -644,6 +651,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: `CreatePlantRequest.placeId`를 `placeCode` 문자열로 변경했다.
 - 반영: `GET /plants/{plantId}`와 `GET /plants/{plantId}/edit` 호출에서 `placeId` query parameter를 제거했다.
 - 반영: `PUT /plants/{plantId}`와 `DELETE /plants/{plantId}` 호출은 query key를 `placeCode`로 변경했다.
+- 반영: #273에서 route·Plant 응답에 code가 없으면 Place 목록·상세의 정확한 plant ID를 대조해 소속 code를 복원한다. direct code를 우선하고 이름·첫 장소는 추정값으로 쓰지 않는다.
 - 반영: Plant 상세 DTO는 `DetailResponse` 기준으로 `plantId`, `scientificNameKo`, `scientificNameEn`, `registeredAt`, `lastWateredDate`, `imageUrl`, `memo`, `placeName`, `plantInfo`를 매핑한다.
 - 반영: Plant 수정 정보 DTO는 `EditInfoResponse` 기준으로 `imageKey`, `imageUrl`, `nickname`, `lastWateredDate`를 매핑한다.
 - 반영: `createPlaceReq`는 `address`가 required이므로 장소 생성 요청 DTO와 API mode 제출 전 검증을 조정했다.
@@ -706,15 +714,15 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 | Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물/메모 이미지 key/url 매핑 보류 |
 | Error | 에러 body의 `code`, `message`, field error 구조 | 공통 사용자 메시지와 field error 매핑 보류 |
 | Token | refresh token 재발급, 로그아웃 API 제공 여부 | 인증 만료 복구와 세션 종료 정책 보류 |
-| 검색 | 주소 검색, 식물 검색 API 제공 여부와 사용자 검색 매칭 정책 | 주소/식물 검색 실데이터 연결 보류 |
+| 검색 | 주소 검색, 식물 검색 API 제공 여부와 사용자 검색 매칭 정책 | 주소 검색은 보류, 식물 검색은 백엔드 #92 대기 중이며 API mode fixture 차단 |
 | Memo | 메모 CRUD API, 이미지 첨부, 목록 response 구조 | 메모 화면 실데이터 연결 보류 |
 | 환경 | dev URL은 확인, staging/prod full base URL과 API versioning 정책은 미확정 | dev 로컬 실행 가능, release 검증 보류 |
 
 ## 현재 후속 작업 안내
 
-초기 Auth·Home·Plant·User·Place·Friend 연결 PR은 병합됐다. 현행 우선순위는 [개발 감사 체크리스트](development-audit-checklist.md)의 문서 정리와 회귀 수정이며, 화면별 연결 범위·미완료 동선은 [화면·API 매트릭스](screen-api-integration-plan.md)를 따른다.
+초기 Auth·Home·Plant·User·Place·Friend 연결과 감사 회귀 수정 PR은 병합됐다. 현행 우선순위와 미완료 동선은 [화면·API 매트릭스](screen-api-integration-plan.md)를 따른다.
 
-소셜 SDK credential 획득, 실제 주소·식물 검색, 이미지 파일 선택·key 조회, Memo CRUD와 멤버 변경은 여전히 별도 준비가 필요하다. 이미 수용한 Friend 이름 오매칭 위험은 위험 등록부로 추적하고, 이번에 발견한 이미지 유실 등 프론트 결함을 자동으로 수용한 것으로 해석하지 않는다.
+소셜 SDK credential 획득, 실제 주소 검색, 이미지 파일 선택·key 조회, Memo CRUD와 멤버 변경은 여전히 별도 준비가 필요하다. 식물 검색은 백엔드 #92의 계약·구현이 필요하며 그동안 API mode에서 비활성화한다. 이미 수용한 Friend 이름 오매칭과 Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 결함을 자동으로 수용한 것으로 해석하지 않는다.
 
 ## DEV API 문서화 작업 이력
 

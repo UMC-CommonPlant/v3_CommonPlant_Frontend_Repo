@@ -2,7 +2,7 @@
 
 이 문서는 화면 퍼블리싱 이후 남아 있는 mock 흐름을 실제 상태와 API 계층으로 전환하는 순서와 완료 기준을 관리합니다. 배포 자동화와 원격 E2E 준비는 필요한 외부 조건이 충족될 때까지 유지하되, 현재 MVP 최우선 작업은 사용자 동선별 수직 슬라이스 완성입니다.
 
-2026-08-31 기준 후속 범위 정리 #267 / PR #268과 대체된 과거 계획 제거 #269 / PR #270까지 병합됐습니다(`dac3001`). 상위 Epic #226은 하위 이슈 20/20 완료로 종료했습니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다. 후속 실행·보류 범위는 사용자 결정에 따라 #267에서 다시 고정합니다.
+2026-08-31 기준 후속 범위 정리 #267 / PR #268, 대체된 과거 계획 제거 #269 / PR #270, Home 배지 오류 구분 #271 / PR #272까지 병합됐습니다(`b2dc912`). 상위 Epic #226은 하위 이슈 20/20 완료로 종료했습니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다. 후속 실행·보류 범위는 사용자 결정에 따라 #267에서 다시 고정합니다.
 
 ## 목표
 
@@ -30,8 +30,8 @@
 | 순서 | 작업 | 선행 조건 | 완료 결과 |
 | --- | --- | --- | --- |
 | 1 | #267 완료 상태·후속 범위 문서 동기화 | PR #266 병합·Epic #226 20/20 확인 | #267 / PR #268에서 완료 |
-| 2 | #271 Home 친구 요청 배지 조회 실패 상태 | 현재 `placeInvitationRequestCountProvider` 오류가 0건으로 보이는 동작 재현 | loading·정상 0건·오류·성공 수와 재시도를 구분하고 Provider/widget 회귀 검증 |
-| 3 | Plant 소속 장소 code·식물 검색 잔여 동선 | `PLANT-01`, `SEARCH-02` 답변 | Home 진입 수정의 실제 code 확보와 식물 검색 loading/empty/error/success·선택 연결 |
+| 2 | #271 Home 친구 요청 배지 조회 실패 상태 | 현재 `placeInvitationRequestCountProvider` 오류가 0건으로 보이는 동작 재현 | #271 / PR #272에서 완료 |
+| 3 | #273 Plant 소속 장소 code·식물 검색 잔여 동선 | `PLANT-01`, `SEARCH-02` 확인 | Place API의 정확한 plant ID로 Home 진입 code 복원 완료. 검색은 backend #92까지 API mode 차단·미연결 안내 |
 | 4 | 공통 API 오류 메시지·토큰 만료 처리 | `ERROR-01~02`, `TOKEN-01~02`, UX-01·STATE-01 결정 | 공통 code 매핑, field/화면 오류, 만료 복구 또는 종료 흐름과 세션 회귀 검증 |
 | 5 | Place 멤버·Friend 식별자 기반 쓰기 | `PLACE-05`, 멤버 고유 ID·변경 endpoint, Friend 고유 대상·부분 결과 계약 | 나가기·멤버 변경·친구 요청이 실제 식별자와 대상별 결과를 사용 |
 | 6 | Memo CRUD·목록 상태 API 연결 | `MEMO-01~03` 답변. 이번 순서에서는 이미지 첨부 제외 | 생성·목록·수정·삭제, pagination과 loading/empty/error/success를 수직 연결 |
@@ -85,10 +85,10 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Place | 장소 상세 | API 장소·owner·멤버·식물 연결, fixture 병합 제거 | 서버 미제공 환경 수치와 물주기 액션 | `GET /place/{code}` source 계약 #239 반영 | #239 / PR #240 병합 완료 |
 | Place | 친구 관리 | 실제 멤버·이미지 조회, 닉네임 필터, loading/empty/error/retry 연결 | 멤버 추가·삭제·권한 변경 | `GET /place/{code}/members` 연결, 고유 member id와 변경 endpoint 없음 | #245 조회 전용 연결 |
 | Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
-| Plant | 식물 등록 검색 | fixture 검색 | 실제 검색 모델과 상태 | 식물 종 검색 endpoint 필요 | 보류 |
+| Plant | 식물 등록 검색 | #273에서 API mode fixture 차단·미연결 안내, API 비사용 검색·empty·선택 유지 | 실제 검색 모델과 loading/empty/error/success | 백엔드 #92의 식물 종 검색 endpoint·DTO 필요 | Blocked |
 | Plant | 식물 등록 | 장소·애칭·날짜와 create submit 연결, #250 잠금·#251 실제 장소·loading/error/empty·재시도·제출 보호 병합 | 학명/이미지·장소 사진 | `GET /place/user`, `POST /plants`; 실제 목록 code만 사용 | #251 / PR #261 병합, 인증 E2E 별도 |
-| Plant | 식물 수정 | #248 이미지 key 보존·#250 제출 잠금 병합, #252 / PR #262 code 누락 안내·차단과 성공 후 관련 캐시 갱신 병합 | Home 식물 목록의 code 확보(PLANT-01), 이미지 선택·삭제 UI | `GET /plants/{id}/edit`, `PUT /plants/{id}?placeCode=...`; 현재는 장소 경유 code 필요 | code 누락 시 재진입 안내, 거짓 성공 회귀 검증 완료 |
-| Plant | 식물 상세 | detail/delete, 등록일 계산과 실제 값 연결, remote fixture 제거 | Memo CRUD·물주기 액션 | `GET/DELETE /plants/{id}` 연결; Memo·물주기 API 없음 | #231 연결 완료 |
+| Plant | 식물 수정 | #248 이미지 key 보존·#250 제출 잠금, #252 code 누락 차단, #273 Home 진입 code 복원 | 이미지 선택·삭제 UI | `GET /plants/{id}/edit`, `PUT /plants/{id}?placeCode=...`; route·Plant code 우선, 없으면 Place 상세 plant ID 대조 | 실제 code 복원·미발견 차단 회귀 검증 완료 |
+| Plant | 식물 상세 | detail/delete, 등록일 계산·실제 값, #273 code resolver loading/error/missing/success·재시도 연결 | Memo CRUD·물주기 액션, resolver N+1 최적화 | `GET/DELETE /plants/{id}`, `GET /place/user`, `GET /place/{code}`; Memo·물주기 API 없음 | #231 상세 연결, #273 code 복원 |
 | Memo | 메모 작성 | 로컬 Provider 저장 | DTO, repository, submit, 실제 image file | Memo 생성 endpoint 필요 | Blocked |
 | Memo | 메모 목록·수정·삭제 | 로컬 fixture·상태 | 목록, pagination, 수정·삭제, 상세 갱신 | Memo CRUD endpoint 필요 | Blocked |
 | Onboarding | 온보딩 | 정적 화면 완료 | 필요 시 최초 실행 여부 로컬 저장 | 서버 API 불필요 | 연결 제외 |
@@ -238,6 +238,24 @@ loading은 진행 표시, 조회 오류는 정상 0건과 다른 재시도 버�
 - 멤버 고유 ID·변경 endpoint와 실제 인증 응답 검증의 한계는
   `docs/accepted-implementation-risks.md`에 기록합니다.
 
+## Plant 장소 code 조회와 검색 경계 #273
+
+#273은 Plant 응답에 없는 소속 장소 code를 기존 Place 계약으로 복원합니다.
+`GET /place/user`의 실제 code 목록을 읽고 각 `GET /place/{code}`의
+`plantList[].plantId`를 대상 식물 ID와 정확히 비교합니다. route 또는 향후 Plant
+응답의 code를 우선하며, 장소명·학명·첫 장소는 추정값으로 사용하지 않습니다.
+
+resolver는 식물 상세의 loading·오류·미발견·성공과 재시도에 합쳐집니다. 계정 전환
+뒤 늦은 이전 조회는 사용자 데이터 세션 경계에서 폐기합니다. direct code가 없는
+동안의 순차 장소 상세 조회 비용과 한 장소 조회 실패가 상세 오류가 되는 동작은
+[위험 등록부](accepted-implementation-risks.md#plant-소속-장소-code-조회)에서
+추적합니다.
+
+2026-08-31 live OpenAPI와 backend main `7d572cb`에는 식물 검색 endpoint가 없고
+백엔드 #92도 `Open / Backlog`입니다. API 모드는 fixture를 원격 결과로 사용하지
+않고 미연결 안내와 선택 차단을 표시합니다. API 비사용 모드의 로컬 검색·empty·선택
+동작은 유지하며 실제 검색 상태 연결은 백엔드 #92 완료 후 별도 이슈로 진행합니다.
+
 ## 완료 기준
 
 각 수직 슬라이스는 아래 항목을 모두 충족해야 완료로 판단합니다.
@@ -286,5 +304,6 @@ loading은 진행 표시, 조회 오류는 정상 0건과 다른 재시도 버�
 | #256 | `63b96b2`, `dd21e26` | PR #265 병합 확인(`894dd5f`), Plant·Place 중간 원격 수정 정보 Provider 제거와 원본 조회·재시도·override 경계 유지, PR #266 병합 완료(`011ef7d`) | [Provider 단순화 이력](work-history/form-edit-provider-flow-256.md), 전체 513개·기존 skip 1개, PR #266 CI 514개 통과 |
 | #267 | 이 문서의 최종 커밋 | Epic #226 완료 상태, 실행 6단계와 사용자 보류 5개 범위 정리 | [후속 로드맵 이력](work-history/follow-up-development-roadmap-267.md), 문서 링크·인덱스·diff 검사 |
 | #271 | `e15de3f` | Home 친구 요청 배지의 loading·오류·재시도·정상 count UI와 파생 Provider 상태 보존 | 대상 15개·전체 519개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
+| #273 | `8a51642`, `ec34ea8`, `dbff448` | 정확한 plant ID 기반 장소 code resolver·상세 상태와 API mode 식물 검색 fixture 차단 | 관련 40개·전체 531개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.
