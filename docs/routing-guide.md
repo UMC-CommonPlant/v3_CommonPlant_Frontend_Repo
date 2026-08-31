@@ -125,7 +125,7 @@ lib/app/router/
 1. 인증 상태 Provider를 `appRouterProvider`에서 listen하고 router refresh에 연결합니다.
 2. 로그인 전 접근 가능한 route, 회원가입 진행 route, 로그인 후 route를 route policy로 분리합니다.
 3. 인증 토큰은 `flutter_secure_storage` 기반 저장소를 통해 관리하되, 라우터는 token storage에 직접 접근하지 않고 인증 Provider의 상태만 봅니다.
-4. access token 만료, refresh 실패, 로그아웃은 인증 Provider 상태를 `unauthenticated`로 바꾸고, 라우터 redirect에서 `/login`으로 이동시킵니다.
+4. 확인된 access token 오류와 로그아웃은 인증 Provider 상태를 `unauthenticated`로 바꾸고, 라우터 redirect에서 `/login`으로 이동시킵니다.
 5. 로그인 성공 후에는 사용자가 원래 접근하려던 위치로 복귀할 수 있도록 redirect target을 보존합니다.
 
 인증 판단을 개별 화면의 `initState`나 `build`에서 처리하지 않습니다.
@@ -158,7 +158,9 @@ lib/app/router/
 | 회원가입 진행 route | `profileSetup`, `terms` |
 | 인증 필요 route | `home`, `placeInvitations`, `placeCreate`, `addressSearch`, `placeFriendAdd`, `placeEdit`, `placeDetail`, `friendManagement`, `plantSearch`, `plantCreateDetails`, `plantEdit`, `plantDetail`, `memoWrite`, `memoList`, `userProfile`, `userSettings`, `userProfileEdit` |
 
-`TOKEN-01`, `TOKEN-02`가 답변되기 전까지 refresh token 재발급과 서버 로그아웃 invalidation은 redirect 구현 범위에 넣지 않습니다. 토큰이 없거나 명시적으로 로그아웃·clear를 요청하면 `unauthenticated`로 전환합니다.
+active access-token 요청에서 확인된 `A003`, `A004`, `A009`가 오면 #275의 세션 Controller가 현재 사용자 데이터 세션을 먼저 닫고 `unauthenticated(expired)`로 전환합니다. 라우터는 기존 정책으로 `/login`에 이동하고 로그인 화면은 만료 이유를 안내합니다. 이전 계정의 늦은 오류는 현재 세션을 바꾸지 않습니다.
+
+`TOKEN-01`, `TOKEN-02`는 backend #149에서 답변 대기 중입니다. 그전까지 refresh token 재발급, 원요청 재시도와 서버 로그아웃 invalidation은 redirect 구현 범위에 넣지 않습니다. 토큰이 없거나 명시적으로 로그아웃·clear를 요청하면 이유 없는 `unauthenticated`로 전환합니다.
 
 #249부터 로그아웃·탈퇴 성공 시 저장소 삭제 완료를 기다리기 전에 인증 상태와 사용자 데이터 세션을 닫습니다. 기존 redirect 규칙은 그대로 사용하며, 느린 token 삭제 완료나 이전 계정의 요청 결과가 새 인증 상태를 변경하지 않도록 Controller에서 검사합니다. 데이터 수명은 [상태관리의 세션 격리 기준](state-management-guide.md#사용자-데이터-세션-격리)을 따릅니다.
 
