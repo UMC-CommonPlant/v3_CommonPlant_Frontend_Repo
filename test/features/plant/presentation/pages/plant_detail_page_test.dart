@@ -2,11 +2,16 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
+import 'package:commonplant_frontend/features/place/domain/entities/place_detail.dart';
+import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
+import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_detail_page.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_view_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_place_code_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -173,6 +178,43 @@ void main() {
     expect(find.text('식물 정보를 불러오지 못했어요'), findsNothing);
   });
 
+  testWidgets('소속 장소 조회 오류는 상세 오류로 표시하고 재시도 후 복구한다', (tester) async {
+    final placeRepository = _RetryPlaceResolverRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authenticatedUserDataSession,
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(
+            _StaticPlantRepository(
+              detail: const PlantDetail(
+                id: 'plant-place-retry',
+                name: '필로덴드론',
+                placeName: '거실 정원',
+              ),
+            ),
+          ),
+          placeRepositoryProvider.overrideWithValue(placeRepository),
+        ],
+        child: const MaterialApp(
+          home: PlantDetailPage(plantId: 'plant-place-retry'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('식물 정보를 불러오지 못했어요'), findsOneWidget);
+    expect(find.text('다시 시도'), findsOneWidget);
+
+    await tester.tap(find.text('다시 시도'));
+    await tester.pumpAndSettle();
+
+    expect(placeRepository.detailCalls, 2);
+    expect(find.text('필로덴드론'), findsOneWidget);
+    expect(find.text('식물 정보를 불러오지 못했어요'), findsNothing);
+  });
+
   testWidgets('remote 상세는 Swagger 값과 미제공 상태만 표시한다', (tester) async {
     final repository = _StaticPlantRepository(
       detail: const PlantDetail(
@@ -193,6 +235,9 @@ void main() {
           authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
           plantRepositoryProvider.overrideWithValue(repository),
+          remotePlantPlaceCodeProvider(
+            'plant-remote',
+          ).overrideWith((ref) async => 'resolved-place'),
           plantDetailNowProvider.overrideWithValue(() => DateTime(2026, 5, 25)),
         ],
         child: const MaterialApp(
@@ -305,9 +350,38 @@ class _RetryPlantRepository extends Fake implements PlantRepository {
     return const PlantDetail(
       id: 'plant-retry',
       name: '필로덴드론',
+      placeId: 'place-retry',
       placeName: '스윗홈_거실',
       species: 'Philodendron',
       lastWateredDate: '2026.05.25',
+    );
+  }
+}
+
+class _RetryPlaceResolverRepository extends Fake implements PlaceRepository {
+  int detailCalls = 0;
+
+  @override
+  Future<List<PlaceSummary>> fetchMyGardenPlaces() async {
+    return const [PlaceSummary(id: 'place-retry', name: '거실 정원')];
+  }
+
+  @override
+  Future<PlaceDetail> fetchPlaceDetail(String code) async {
+    detailCalls++;
+    if (detailCalls == 1) {
+      throw StateError('장소 상세 실패');
+    }
+
+    return PlaceDetail(
+      code: code,
+      name: '거실 정원',
+      address: '주소',
+      isOwner: true,
+      members: const [],
+      plants: const [
+        PlacePlant(id: 'plant-place-retry', scientificNameKo: '필로덴드론'),
+      ],
     );
   }
 }
