@@ -6,10 +6,12 @@ class PlantNameField extends StatefulWidget {
     super.key,
     required this.name,
     required this.onChanged,
+    this.serverErrorMessage,
   });
 
   final String name;
   final ValueChanged<String> onChanged;
+  final String? serverErrorMessage;
 
   @override
   State<PlantNameField> createState() => _PlantNameFieldState();
@@ -51,6 +53,10 @@ class _PlantNameFieldState extends State<PlantNameField> {
       maxLength: 10,
       forceFocusedDecoration: true,
       onChanged: widget.onChanged,
+      state: widget.serverErrorMessage == null
+          ? CommonTextFieldState.normal
+          : CommonTextFieldState.error,
+      helperText: widget.serverErrorMessage,
     );
   }
 }

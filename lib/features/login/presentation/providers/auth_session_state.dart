@@ -1,4 +1,8 @@
+import 'package:commonplant_frontend/core/network/api_exception.dart';
+
 enum AuthSessionStatus { unauthenticated, signupRequired, authenticated }
+
+enum AuthSessionEndReason { expired }
 
 class AuthSessionState {
   const AuthSessionState._({
@@ -6,10 +10,11 @@ class AuthSessionState {
     this.signupToken,
     this.suggestedName,
     this.suggestedImgUrl,
+    this.endReason,
   });
 
-  const AuthSessionState.unauthenticated()
-    : this._(status: AuthSessionStatus.unauthenticated);
+  const AuthSessionState.unauthenticated({AuthSessionEndReason? reason})
+    : this._(status: AuthSessionStatus.unauthenticated, endReason: reason);
 
   const AuthSessionState.signupRequired({
     required String signupToken,
@@ -29,10 +34,16 @@ class AuthSessionState {
   final String? signupToken;
   final String? suggestedName;
   final String? suggestedImgUrl;
+  final AuthSessionEndReason? endReason;
 
   bool get isUnauthenticated => status == AuthSessionStatus.unauthenticated;
 
   bool get isSignupRequired => status == AuthSessionStatus.signupRequired;
 
   bool get isAuthenticated => status == AuthSessionStatus.authenticated;
+
+  String? get noticeMessage => switch (endReason) {
+    AuthSessionEndReason.expired => sessionExpiredMessage,
+    null => null,
+  };
 }

@@ -65,12 +65,15 @@ class PlaceFriendRequestController extends Notifier<FormSubmitState> {
 
       state = const FormSubmitState.idle();
       return true;
-    } catch (_) {
+    } catch (error) {
       if (!isCurrentUserDataSession(requestRef, session)) {
         return false;
       }
 
-      state = const FormSubmitState.failure('친구 요청을 보내지 못했어요');
+      state = FormSubmitState.failureFrom(
+        error,
+        fallbackMessage: '친구 요청을 보내지 못했어요',
+      );
       return false;
     }
   }

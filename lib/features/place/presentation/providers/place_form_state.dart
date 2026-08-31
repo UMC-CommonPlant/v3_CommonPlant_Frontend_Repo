@@ -101,6 +101,10 @@ class PlaceFormState {
 
   String? get submitErrorMessage => submitState.errorMessage;
 
+  String? get nameErrorMessage => submitState.fieldError('name');
+
+  String? get addressErrorMessage => submitState.fieldError('address');
+
   bool get hasExistingImage => initialImageUrl?.trim().isNotEmpty ?? false;
 
   bool get hasChanges =>

@@ -57,9 +57,9 @@
 
 | 체크 | ID | 결정 항목 | 출처 | 다음 액션 | 상태 |
 | --- | --- | --- | --- | --- | --- |
-| [ ] | UX-01 | 백엔드 에러 코드와 앱 사용자 메시지 매핑표 | `docs/form-validation-error-guide.md`, `docs/state-management-guide.md` | 백엔드 에러 코드 표준 확인 후 공통 메시지 매핑표를 만든다. | Open |
+| [x] | UX-01 | 백엔드 에러 코드와 앱 사용자 메시지 매핑표 | `docs/form-validation-error-guide.md`, `docs/state-management-guide.md` | #275에서 HTTP·전송 범주와 확인된 field/auth code만 안전 메시지로 매핑했다. 새 code는 계약 확인 뒤 추가한다. | Decided |
 | [ ] | UX-02 | Toast, Snackbar, Dialog 피드백 사용 기준 | `docs/form-validation-error-guide.md` | 성공, 경고, 차단 오류, 복구 가능 오류별 UI 피드백 정책을 정한다. | Open |
-| [ ] | STATE-01 | API 공통 에러 타입과 사용자 메시지 매핑 기준 | `docs/state-management-guide.md` | `ApiException`은 구현돼 있다. 백엔드 에러 코드 표준과 화면 메시지 매핑 정책을 추가로 정한다. | Open |
+| [x] | STATE-01 | API 공통 에러 타입과 사용자 메시지 매핑 기준 | `docs/state-management-guide.md` | #275에서 표준 오류·field reason을 typed 상태로 분리하고 rejected value와 raw top-level message 노출을 차단했다. | Decided |
 | [ ] | ROUTING-01 | 하단 탭 도입 시 `ShellRoute`와 단순 탭 상태 중 선택 | `docs/routing-guide.md` | bottom navigation 화면 범위가 확정되면 라우팅 구조를 결정한다. | Open |
 | [ ] | GIT-01 | PR template 파일 추가 여부 | `docs/git-workflow.md` | 현재 PR 본문 기준을 `.github/pull_request_template.md`로 고정할지 결정한다. | Open |
 
@@ -74,8 +74,8 @@
 | [ ] | API-PLACE | Place response와 식별자 정책 | PLACE-01, PLACE-02, PLACE-03, PLACE-04 | #239·#243 목록/상세/생성/수정, #245 멤버 조회 연결 완료; 멤버 변경은 보류 | Partial |
 | [ ] | API-FRIEND | Friend 요청 목록과 액션 정책 | FRIEND-01, FRIEND-02, FRIEND-03, FRIEND-04 | #241 수신 처리와 #243 발신 연결 완료, 이름 오매칭은 수용 위험으로 추적 | Partial |
 | [ ] | API-IMAGE | Image upload/download/update/delete 정책 | IMAGE-01, IMAGE-02, IMAGE-03, IMAGE-04 | #248에서 Plant key 보존·Place 사진 수정 차단을 구현했다. 독립 Image 응답·Place key 조회·동시 수정 보호 계약은 미확정이다. | Partial |
-| [ ] | API-ERROR | 공통/도메인 에러 response 정책 | ERROR-01, ERROR-02 | 사용자 메시지와 field error 매핑 | Open |
-| [ ] | API-TOKEN | refresh token과 로그아웃 정책 | TOKEN-01, TOKEN-02 | 인증 만료 복구와 세션 종료 처리 | Open |
+| [x] | API-ERROR | 공통/도메인 에러 response 정책 | ERROR-01, ERROR-02 | #275 typed 오류·field error·안전 메시지 연결. 인증 쓰기 validation smoke는 원격 E2E 보류 범위 | Done |
+| [ ] | API-TOKEN | refresh token과 로그아웃 정책 | TOKEN-01, TOKEN-02 | #275 확인 code의 로컬 세션 종료 완료. refresh·server invalidation은 backend #149 대기 | Partial |
 | [ ] | API-SEARCH | 주소/식물/사용자 검색 정책 | SEARCH-01, SEARCH-02, SEARCH-03 | 주소 검색, 식물 검색, 친구 추가 검색 UX | Open |
 | [ ] | API-MEMO | Memo CRUD와 이미지 첨부 정책 | MEMO-01, MEMO-02, MEMO-03 | 메모 화면 실데이터 연결 | Open |
 | [x] | API-ENV-DEV | dev 서버 환경값과 Swagger | ENV-01-A | #213에서 dev origin, API base URL과 문서 endpoint를 확인했다. | Decided |

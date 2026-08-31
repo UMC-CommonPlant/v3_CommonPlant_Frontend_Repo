@@ -1,16 +1,22 @@
+import 'dart:async';
+
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:dio/dio.dart';
 
 class AuthInterceptor extends Interceptor {
-  const AuthInterceptor(
+  AuthInterceptor(
     this._tokenStore, {
     required this.isCurrentSession,
     required this.attachAccessToken,
+    this.onSessionExpired,
   });
 
   final AuthTokenStore _tokenStore;
   final bool Function() isCurrentSession;
   final bool attachAccessToken;
+  final Future<void> Function()? onSessionExpired;
+  bool _expirationNotified = false;
 
   @override
   void onRequest(
@@ -50,9 +56,21 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    handler.next(
-      isCurrentSession() ? err : _sessionChanged(err.requestOptions),
-    );
+    if (!isCurrentSession()) {
+      handler.next(_sessionChanged(err.requestOptions));
+      return;
+    }
+
+    final apiError = ApiException.fromDio(err);
+    if (attachAccessToken &&
+        !_expirationNotified &&
+        apiError.requiresReauthentication &&
+        onSessionExpired != null) {
+      _expirationNotified = true;
+      unawaited(onSessionExpired!().catchError((Object _, StackTrace _) {}));
+    }
+
+    handler.next(err);
   }
 }
 

@@ -31,10 +31,10 @@
 | IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | 프로필/장소/식물/메모 이미지 흐름 확정 불가 | Open |
 | IMAGE-03 | Image | presigned download URL 응답 필드와 wrapper 구조는 무엇인가? | 네트워크 이미지 fallback 정책 보류 | Open |
 | IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | #248 Plant key 보존·Place 사진 수정 차단 구현, Place key 조회·동시 수정 보호 계약 필요 | Partial |
-| ERROR-01 | Error | 에러 response body의 공통 `code`, `message` 필드명은 무엇인가? | 사용자 메시지 매핑 제한 | Open |
-| ERROR-02 | Error | 도메인별 에러 코드 표준과 의미는 무엇인가? | `ApiException` mapping table 보류 | Open |
-| TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | 인증 만료 복구 흐름 보류 | Open |
-| TOKEN-02 | Token | 로그아웃 API와 서버 token invalidation 정책이 있는가? | 로그아웃/세션 종료 구현 보류 | Open |
+| ERROR-01 | Error | 에러 response body의 공통 `code`, `message` 필드명은 무엇인가? | #275 표준 오류·field error 파싱 반영 | Answered |
+| ERROR-02 | Error | 도메인별 에러 코드 표준과 의미는 무엇인가? | #275 HTTP 범주·확인 코드 매핑, 미확인 코드는 안전 fallback | Answered |
+| TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | 백엔드 #149 전까지 자동 갱신 없이 인증 만료 시 로컬 세션 종료 | Blocked |
+| TOKEN-02 | Token | 로그아웃 API와 서버 token invalidation 정책이 있는가? | 백엔드 #149 전까지 로컬 token·세션만 제거 | Blocked |
 | SEARCH-01 | 검색 | 주소 검색 API를 백엔드가 제공하는가? | 장소 등록 주소 검색 실데이터 보류 | Open |
 | SEARCH-02 | 검색 | 식물 학명/추천 검색 API를 백엔드가 제공하는가? | 백엔드 #92 대기, #273에서 API mode fixture 차단 | Blocked |
 | SEARCH-03 | 검색 | `GET /users/{keyword}`는 부분 검색인가, exact 검색인가? | 친구 추가 검색 UX와 empty 정책 확인 필요 | Open |
@@ -224,41 +224,38 @@
 
 ### ERROR-01. 공통 에러 response body
 
-- 현재 근거: 성공 wrapper는 확인됐지만 에러 response body schema는 없다.
-- 프론트 영향: `ApiException`이 사용자 메시지와 field error를 안정적으로 분리할 수 없다.
-- 확인 질문: 에러 응답의 공통 필드는 `code`, `message`, `errors`, `fieldErrors` 중 무엇인가?
-- 프론트 반영: 답변 후 `api_exception.dart`와 form-level/field-level 메시지 매핑을 보강한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 2026-08-31 dev에서 token 없는 `GET /users`는 HTTP 401과 `status`, `code=A009`, `message`, `traceId`, `timestamp`를 반환했다. 잘못된 bearer token은 `A003`을 반환했다. backend main `7d572cb`의 `ErrorResponse`는 여기에 validation 전용 `errors[]`의 `field`, `value`, `reason`을 추가한다.
+- 답변: 공통 오류 필드는 `traceId`, `status`, `code`, `message`, `timestamp`, 선택적 `errors[]`이다. 이 구조는 live OpenAPI schema에는 노출되지 않아 dev 응답과 backend source를 함께 근거로 사용한다.
+- 프론트 반영: #275에서 `ApiException`이 공통 필드와 field error를 typed 값으로 파싱한다. `value`는 개인정보가 될 수 있어 읽거나 상태·로그에 보존하지 않는다. 화면은 서버의 top-level 상세 문구를 그대로 표시하지 않고 안전한 범주 메시지와 field `reason`만 사용한다.
+- 남은 검증: 실제 인증 쓰기 요청의 validation 응답과 배포 source 일치 여부는 원격 E2E 보류 범위다.
+- 상태: Answered
 
 ### ERROR-02. 도메인별 에러 코드 표준
 
-- 현재 근거: Auth/User 일부 코드만 Swagger에 보인다.
-- 프론트 영향: Place/Plant/Friend/Image 에러를 raw 문자열 없이 안내하기 어렵다.
-- 확인 질문: 도메인별 에러 코드와 사용자에게 보여줄 의미는 무엇인가?
-- 프론트 반영: 답변 후 공통 에러 매핑표와 테스트를 추가한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: backend main `7d572cb`의 `CommonErrorCode`, `AuthErrorCode`, `UserErrorCode`, `PlaceErrorCode`, `PlantErrorCode`, `FriendErrorCode`, `S3ErrorCode`에서 HTTP status·code·message를 확인했다. Auth의 `A006`은 signup token 오류와 사용자 미발견에 중복되어 code 단독 분기를 금지한다.
+- 답변: HTTP 400/401/403/404/409/429/5xx와 전송 오류를 공통 범주로 사용한다. 검증 응답의 `errors[]`를 우선하고, field 목록 없이 반환되는 확인된 Place `P107~P109`와 Plant `P004`만 필드 안내로 보완한다.
+- 프론트 반영: #275에서 미확인·중복 코드는 기능별 안전 fallback으로 처리하고 raw 서버 문구를 노출하지 않는다. 인증 세션 종료는 active access-token 요청의 `A003`, `A004`, `A009`에만 적용한다.
+- 상태: Answered
 
 ## Token
 
 ### TOKEN-01. Refresh token 재발급 API
 
-- 현재 근거: Swagger에 refresh token 재발급 API가 없다.
+- 현재 근거: 2026-08-31 live OpenAPI 19 paths와 backend main Controller에 refresh token 재발급 endpoint가 없다. backend 내부에는 refresh token 저장·발급 코드가 있으나 호출 계약은 제공되지 않는다.
 - 프론트 영향: access token 만료 시 자동 복구 흐름을 구현할 수 없다.
 - 확인 질문: refresh token으로 access token을 재발급하는 endpoint, request, response는 무엇인가?
-- 프론트 반영: 답변 후 auth interceptor와 token store 갱신 흐름을 추가한다.
-- 답변: 미확인
-- 상태: Open
+- 프론트 반영: #275는 `A003`, `A004`, `A009`를 받은 현재 access-token 세션을 한 번만 종료하고 로그인 화면에서 만료 이유를 안내한다. refresh 요청·원요청 재시도·동시 갱신은 구현하지 않는다.
+- 답변: backend [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)에 endpoint·rotation·오류 코드·single-flight 계약을 요청했다.
+- 상태: Blocked
 
 ### TOKEN-02. 로그아웃 API와 token invalidation
 
-- 현재 근거: Swagger에 로그아웃 API가 없다.
+- 현재 근거: 2026-08-31 live OpenAPI와 backend main Controller에 로그아웃 endpoint가 없다.
 - 프론트 영향: 로그아웃 시 로컬 토큰 삭제만 해야 하는지 서버 invalidate가 필요한지 불명확하다.
 - 확인 질문: 로그아웃 endpoint가 제공되는가? refresh token 폐기 정책은 무엇인가?
-- 프론트 반영: 답변 후 로그아웃 repository와 인증 상태 전환 정책을 확정한다.
-- 답변: 미확인
-- 상태: Open
+- 프론트 반영: 명시적 로그아웃과 #275 인증 만료는 사용자 데이터 세션과 인증 상태를 먼저 닫고 secure token을 로컬에서 삭제한다. 서버 폐기를 성공한 것처럼 표시하지 않는다.
+- 답변: backend [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)에 invalidation·다중 기기·TTL 정책을 함께 요청했다.
+- 상태: Blocked
 
 ## 검색
 

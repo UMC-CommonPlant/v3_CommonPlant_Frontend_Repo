@@ -207,11 +207,12 @@ class PlantFormController extends Notifier<PlantFormState> {
       }
 
       return result;
-    } catch (_) {
+    } catch (error) {
       if (!isCurrentUserDataSession(requestRef, session)) return null;
       state = state.copyWith(
-        submitState: FormSubmitState.failure(
-          isEdit ? '식물 수정에 실패했어요' : '식물 등록에 실패했어요',
+        submitState: FormSubmitState.failureFrom(
+          error,
+          fallbackMessage: isEdit ? '식물 수정에 실패했어요' : '식물 등록에 실패했어요',
         ),
       );
 

@@ -10,11 +10,13 @@ class ProfileNicknameField extends StatefulWidget {
   const ProfileNicknameField({
     required this.nickname,
     required this.onChanged,
+    this.serverErrorMessage,
     super.key,
   });
 
   final String nickname;
   final ValueChanged<String> onChanged;
+  final String? serverErrorMessage;
 
   @override
   State<ProfileNicknameField> createState() => _ProfileNicknameFieldState();
@@ -65,7 +67,11 @@ class _ProfileNicknameFieldState extends State<ProfileNicknameField> {
     final hasText = widget.nickname.isNotEmpty;
     final hasValidNickname = _hasValidNickname;
     final hasNicknameError = _hasNicknameError;
-    final lineColor = hasNicknameError
+    final errorMessage =
+        widget.serverErrorMessage ??
+        (hasNicknameError ? '2~10자의 닉네임으로 입력해 주세요' : null);
+    final hasError = errorMessage != null;
+    final lineColor = hasError
         ? AppColors.danger
         : hasValidNickname
         ? AppColors.brandStrong
@@ -73,7 +79,7 @@ class _ProfileNicknameFieldState extends State<ProfileNicknameField> {
 
     return SizedBox(
       key: const ValueKey('profileNicknameField'),
-      height: hasValidNickname || hasNicknameError
+      height: hasValidNickname || hasError
           ? _nicknameFieldHeightWithHelper
           : _nicknameFieldHeight,
       child: Stack(
@@ -131,7 +137,7 @@ class _ProfileNicknameFieldState extends State<ProfileNicknameField> {
               ),
             ),
           ),
-          if (hasValidNickname)
+          if (hasValidNickname && !hasError)
             Positioned(
               left: 0,
               top: 64,
@@ -142,12 +148,12 @@ class _ProfileNicknameFieldState extends State<ProfileNicknameField> {
                 ),
               ),
             ),
-          if (hasNicknameError)
+          if (hasError)
             Positioned(
               left: 0,
               top: 64,
               child: Text(
-                '2~10자의 닉네임으로 입력해 주세요',
+                errorMessage,
                 style: AppTextStyles.size12Medium.copyWith(
                   color: AppColors.danger,
                 ),

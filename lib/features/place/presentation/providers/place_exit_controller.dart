@@ -54,9 +54,12 @@ class PlaceExitController extends Notifier<FormSubmitState> {
       state = const FormSubmitState.idle();
 
       return const PlaceExitResult.home();
-    } catch (_) {
+    } catch (error) {
       if (!isCurrentUserDataSession(requestRef, session)) return null;
-      state = const FormSubmitState.failure('장소 삭제에 실패했어요');
+      state = FormSubmitState.failureFrom(
+        error,
+        fallbackMessage: '장소 삭제에 실패했어요',
+      );
 
       return null;
     }

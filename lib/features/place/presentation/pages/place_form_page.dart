@@ -49,6 +49,8 @@ class PlaceFormPage extends ConsumerWidget {
       return PlaceCreateScaffold(
         name: formState.currentName,
         address: formState.currentAddress,
+        nameErrorMessage: formState.nameErrorMessage,
+        addressErrorMessage: formState.addressErrorMessage,
         canSubmit: formState.canSubmit,
         isSubmitting: formState.isSubmitting,
         onNameChanged: controller.updateName,
@@ -63,6 +65,8 @@ class PlaceFormPage extends ConsumerWidget {
     return PlaceEditScaffold(
       name: formState.currentName,
       address: formState.currentAddress,
+      nameErrorMessage: formState.nameErrorMessage,
+      addressErrorMessage: formState.addressErrorMessage,
       canSubmit: formState.canSubmit,
       isSubmitting: formState.isSubmitting,
       onNameChanged: controller.updateName,

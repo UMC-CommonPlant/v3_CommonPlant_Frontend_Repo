@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/auth_interceptor.dart';
+import 'package:commonplant_frontend/core/network/auth_session_expiration.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:dio/dio.dart';
@@ -22,6 +23,12 @@ final dioProvider = Provider<Dio>((ref) {
       ref.watch(authTokenStoreProvider),
       isCurrentSession: () => isCurrentUserDataSession(ref, session),
       attachAccessToken: session.isActive,
+      onSessionExpired: session.isActive
+          ? () async {
+              final handler = ref.read(authSessionExpirationHandlerProvider);
+              if (handler != null) await handler(session);
+            }
+          : null,
     ),
   );
   ref.onDispose(() => dio.close(force: true));

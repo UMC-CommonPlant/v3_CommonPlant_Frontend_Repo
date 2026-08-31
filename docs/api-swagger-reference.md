@@ -15,6 +15,7 @@
 - OpenAPI·Place 멤버·Place/Plant 이미지 수정 계약 재확인: 2026-08-28 (19 paths·27 operations, backend main 동일)
 - Plant 수정의 필수 query·조회 schema 재확인: 2026-08-29, live OpenAPI JSON HTTP 200. 이 재확인은 Plant 범위이며 backend main 재검증이나 실제 인증 쓰기 검증을 뜻하지 않는다.
 - Plant 소속 장소 조회·식물 검색 계약 재확인: 2026-08-31 (live OpenAPI 19 paths, backend main `7d572cb` 동일). Plant direct code·검색 endpoint는 없고 기존 Place 목록·상세의 code와 `plantList[].plantId` 조합은 사용 가능하다.
+- 오류·token 계약 재확인: 2026-08-31. token 없는 사용자 조회는 HTTP 401 `A009`, 잘못된 bearer token은 `A003`을 반환했다. backend `ErrorResponse` 구조와 전체 error enum을 대조했으며 refresh·logout endpoint는 live OpenAPI와 Controller 모두에 없다.
 - 접속 결과: Swagger UI, OpenAPI JSON, Swagger config HTTP 200
 - 개발 서버 루트: HTTP 404. 루트 route가 없다는 의미이며 Swagger/API endpoint 상태와 분리한다.
 - 인증 endpoint 확인: token 없이 `GET /api/v1/users` 요청 시 HTTP 401, code `A009`로 인증 요구 응답
@@ -47,6 +48,13 @@
 - Place와 Friend는 백엔드 source의 `JsonResponse.result` 반환 타입을 추가 근거로 사용한다. machine-readable Swagger가 아니라는 점과 실제 인증 응답 smoke가 남았다는 점은 구분한다.
 
 ## Swagger 변경 요약
+
+### 2026-08-31 공통 오류와 인증 만료 경계
+
+- 표준 오류 응답은 `traceId`, `status`, `code`, `message`, `timestamp`, 선택적 `errors[]`를 사용한다. field 항목의 `value`는 사용자 입력 원문일 수 있으므로 프론트에서 읽거나 보존하지 않는다.
+- #275는 HTTP·전송 오류를 안전한 사용자 메시지 범주로 변환하고 validation `field`·`reason`을 Place·Plant·User·가입 프로필 폼에 연결한다. top-level 서버 상세 문구와 미확인 code는 화면에 그대로 노출하지 않는다.
+- 활성 access-token 요청의 확인된 `A003`, `A004`, `A009`만 현재 세션 만료로 처리한다. 한 세션에서 종료 요청은 한 번만 실행하며 계정 전환 뒤 도착한 이전 응답은 폐기한다.
+- refresh 재발급과 서버 로그아웃은 제공되지 않는다. backend [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)가 endpoint·rotation·invalidation 계약을 제공하기 전까지 refresh 요청이나 원요청 재시도를 만들지 않는다.
 
 ### 2026-08-31 Plant 장소 code 조회와 검색 경계
 
@@ -634,8 +642,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | 장소 멤버 목록 API | source에서 `{ name, image }[]` 확인 | 표시 계약 해소, 고유 id·변경 API 남음 |
 | Place create/update required와 validation | `name`, `address` required와 `name` maxLength 확인 | 일부 해소 |
 | Plant create/update validation과 nullable 정책 | 문자열 maxLength와 date format 확인 | 일부 해소 |
-| 에러 응답 body 구조와 code/message 필드명 | 성공 wrapper는 있으나 에러 body schema 없음 | 남음 |
-| 공통 에러 코드 체계 | Auth/User 일부 code, Plant/Place/Image 설명 보강 | 일부 해소 |
+| 에러 응답 body 구조와 code/message 필드명 | live 401 응답과 backend `ErrorResponse` source 대조 | #275 typed 파싱·field 오류·민감 value 폐기 반영, 인증 쓰기 smoke 남음 |
+| 공통 에러 코드 체계 | backend 도메인 error enum 대조, `A006` 중복 확인 | #275 HTTP 범주·확인 코드만 매핑, 미확인 code는 안전 fallback |
 | refresh token 재발급 API | 없음 | 남음 |
 | 로그아웃 API | 없음 | 남음 |
 | pagination 응답 구조와 total count | `PlantPageContent`에 `items`, `totalCount`, `page`, `size` 추가 | 해소 |
@@ -647,6 +655,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 현재 API 계층을 기준으로, 백엔드 추가 확인 없이도 Swagger와 맞춰 조정 가능한 항목이다.
 
 - 반영: `ApiResponseParser`가 공통 wrapper의 `result.content.items` 목록을 읽도록 보강했다.
+- 반영: #275에서 표준 오류의 status·code·traceId·field reason을 `ApiException`으로 파싱하고 rejected `value`를 폐기한다. 주요 폼과 변경 action은 안전한 범주 메시지를 사용한다.
+- 반영: active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·데이터 세션을 종료하고 로그인 만료 안내로 연결한다. refresh와 서버 로그아웃은 backend #149 전까지 미구현이다.
 - 반영: Plant 목록 mapper가 Swagger `PlantSummary`의 `plantId`, `nickname`, `representativeImageUrl`을 화면 모델로 매핑한다.
 - 반영: `CreatePlantRequest.placeId`를 `placeCode` 문자열로 변경했다.
 - 반영: `GET /plants/{plantId}`와 `GET /plants/{plantId}/edit` 호출에서 `placeId` query parameter를 제거했다.
@@ -712,8 +722,8 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 | Place | dev 배포가 backend source `7d572cb` 계약과 일치하는지 인증 smoke | #239 mapper의 실제 환경 검증 필요 |
 | Friend | 표시 이름 receiver의 중복 오매칭, 멤버 변경 endpoint 부재 | 신규 초대는 위험 수용 상태로 연결, 친구 관리 변경은 보류 |
 | Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물/메모 이미지 key/url 매핑 보류 |
-| Error | 에러 body의 `code`, `message`, field error 구조 | 공통 사용자 메시지와 field error 매핑 보류 |
-| Token | refresh token 재발급, 로그아웃 API 제공 여부 | 인증 만료 복구와 세션 종료 정책 보류 |
+| Error | live/backend source와 dev 배포의 실제 인증 쓰기 오류 일치 여부 | #275 공통 사용자 메시지와 field error 매핑 완료, 원격 validation smoke 보류 |
+| Token | refresh token 재발급, 로그아웃 API 제공 여부 | #275 로컬 세션 종료 적용, backend #149 전까지 자동 복구·서버 invalidation 차단 |
 | 검색 | 주소 검색, 식물 검색 API 제공 여부와 사용자 검색 매칭 정책 | 주소 검색은 보류, 식물 검색은 백엔드 #92 대기 중이며 API mode fixture 차단 |
 | Memo | 메모 CRUD API, 이미지 첨부, 목록 response 구조 | 메모 화면 실데이터 연결 보류 |
 | 환경 | dev URL은 확인, staging/prod full base URL과 API versioning 정책은 미확정 | dev 로컬 실행 가능, release 검증 보류 |

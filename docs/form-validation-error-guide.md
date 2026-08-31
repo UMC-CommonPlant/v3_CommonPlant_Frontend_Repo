@@ -131,6 +131,8 @@ API 연동이 들어오면 아래 순서로 처리합니다.
 3. form controller에서 field error와 form-level error를 분리합니다.
 4. 화면은 사용자용 메시지만 표시합니다.
 
+#275부터 `ApiException`은 표준 오류의 `status`, `code`, `traceId`와 validation `errors[].field/reason`을 분리합니다. `errors[].value`는 사용자 입력 원문일 수 있으므로 읽거나 상태·로그에 보존하지 않습니다. 화면에는 HTTP·전송 범주의 안전한 요약 메시지를 사용하고, field `reason`은 해당 입력 아래에 표시합니다. 입력을 바꾸면 이전 제출의 field error와 form-level error를 초기화하되 제출 중 잠금은 유지합니다.
+
 | 에러 위치 | 예시 |
 | --- | --- |
 | Field error | 닉네임 중복, 제목 글자 수 초과 |
@@ -149,5 +151,5 @@ API 연동이 들어오면 아래 순서로 처리합니다.
 
 ## 결정 필요
 
-- 백엔드 에러 코드와 앱 사용자 메시지 매핑표가 필요합니다.
-- Toast, Snackbar, Dialog 중 어떤 상황에 어떤 피드백을 사용할지 공통 UX 정책이 필요합니다.
+- HTTP·전송 범주, 확인된 field code와 인증 만료 code의 기본 매핑은 #275에서 확정했습니다. 새 code는 백엔드 계약을 확인한 뒤 추가하며 raw message를 임시 fallback으로 사용하지 않습니다.
+- Toast, Snackbar, Dialog 중 어떤 상황에 어떤 피드백을 사용할지 공통 UX 정책은 남아 있습니다.

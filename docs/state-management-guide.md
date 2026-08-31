@@ -209,16 +209,18 @@ Provider 책임은 아래처럼 나눕니다.
 | --- | --- |
 | `AuthTokenStore` | access token, refresh token의 저장/읽기/삭제만 담당합니다. UI나 라우터 상태를 알지 않습니다. |
 | `AuthTokenWriter` | 같은 ProviderScope의 인증 시도와 token 저장·삭제를 순서대로 처리합니다. 새 인증 시도·세션 전환 후 이전 저장을 차단합니다. |
-| `AuthInterceptor` | 활성 데이터 세션의 요청에만 token을 첨부합니다. token 읽기 전후와 응답 시 세션을 검사하며 redirect는 직접 수행하지 않습니다. |
+| `AuthInterceptor` | 활성 데이터 세션의 요청에만 token을 첨부합니다. token 읽기 전후와 응답 시 세션을 검사하고, 확인된 인증 만료를 composition root의 handler에 한 번 알립니다. redirect는 직접 수행하지 않습니다. |
 | `userDataSessionProvider` | token·개인정보 없이 데이터 수명의 세대와 활성 여부를 노출합니다. |
-| `authSessionControllerProvider` | token 복원·인증 결과·로그아웃으로 route 상태와 데이터 세션을 전환합니다. |
+| `authSessionControllerProvider` | token 복원·인증 결과·로그아웃·확인된 인증 만료로 route 상태와 데이터 세션을 전환합니다. 만료 상태는 로그인 안내 이유를 보존합니다. |
 | `SocialAuthCredentialGateway` | Kakao/Google/Apple SDK에서 받은 provider token을 로그인 Controller에 전달합니다. SDK 미설정 기본 구현은 설정 안내 오류를 반환합니다. |
 | 로그인/회원가입 Controller | repository 호출과 유효한 결과의 인증 전환을 담당합니다. 실제 token 저장은 repository가 `AuthTokenWriter`를 통해 수행합니다. |
-| 로그아웃 Controller | 즉시 `unauthenticated`로 전환하고 로컬 token clear를 기다립니다. 서버 로그아웃 API는 `TOKEN-02` 답변 후 추가합니다. |
+| 로그아웃 Controller | 즉시 `unauthenticated`로 전환하고 로컬 token clear를 기다립니다. 서버 로그아웃 API는 backend #149 계약 후 추가합니다. |
 
 `authSessionControllerProvider`와 `socialAuthCredentialGatewayProvider`는 테스트에서 override할 수 있으며, router test는 `unauthenticated`, `signupRequired`, `authenticated` 상태별 redirect를 직접 검증합니다.
 
-`TOKEN-01` refresh API가 확정되기 전까지 access token 만료 자동 복구는 구현하지 않습니다. 401 응답을 받은 뒤 token을 갱신하는 interceptor 재시도 정책은 백엔드 endpoint와 error code가 확정된 뒤 별도 이슈에서 다룹니다.
+2026-08-31 확인 기준으로 active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·사용자 데이터 세션을 즉시 닫고 secure token 삭제를 시작합니다. 한 interceptor 세션에서 종료 알림은 한 번만 보내며, 계정 전환 뒤 도착한 이전 세션 응답은 새 세션에 반영하지 않습니다. 로그인 화면은 `expired` 종료 이유를 사용자 안내로 표시합니다.
+
+`TOKEN-01` refresh API가 확정되기 전까지 access token 자동 갱신과 원요청 재시도는 구현하지 않습니다. refresh rotation·single-flight와 서버 logout invalidation은 backend #149 계약 이후 별도 이슈에서 다룹니다.
 
 ### 사용자 데이터 세션 격리
 

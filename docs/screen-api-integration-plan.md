@@ -2,7 +2,7 @@
 
 이 문서는 화면 퍼블리싱 이후 남아 있는 mock 흐름을 실제 상태와 API 계층으로 전환하는 순서와 완료 기준을 관리합니다. 배포 자동화와 원격 E2E 준비는 필요한 외부 조건이 충족될 때까지 유지하되, 현재 MVP 최우선 작업은 사용자 동선별 수직 슬라이스 완성입니다.
 
-2026-08-31 기준 후속 범위 정리 #267 / PR #268, 대체된 과거 계획 제거 #269 / PR #270, Home 배지 오류 구분 #271 / PR #272까지 병합됐습니다(`b2dc912`). 상위 Epic #226은 하위 이슈 20/20 완료로 종료했습니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다. 후속 실행·보류 범위는 사용자 결정에 따라 #267에서 다시 고정합니다.
+2026-08-31 기준 후속 범위 정리 #267 / PR #268, 대체된 과거 계획 제거 #269 / PR #270, Home 배지 오류 구분 #271 / PR #272, Plant 장소 code 복원 #273 / PR #274까지 병합됐습니다(`58a741b`). 상위 Epic #226은 하위 이슈 20/20 완료로 종료했습니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다. 후속 실행·보류 범위는 사용자 결정에 따라 #267에서 다시 고정합니다.
 
 ## 목표
 
@@ -32,7 +32,7 @@
 | 1 | #267 완료 상태·후속 범위 문서 동기화 | PR #266 병합·Epic #226 20/20 확인 | #267 / PR #268에서 완료 |
 | 2 | #271 Home 친구 요청 배지 조회 실패 상태 | 현재 `placeInvitationRequestCountProvider` 오류가 0건으로 보이는 동작 재현 | #271 / PR #272에서 완료 |
 | 3 | #273 Plant 소속 장소 code·식물 검색 잔여 동선 | `PLANT-01`, `SEARCH-02` 확인 | Place API의 정확한 plant ID로 Home 진입 code 복원 완료. 검색은 backend #92까지 API mode 차단·미연결 안내 |
-| 4 | 공통 API 오류 메시지·토큰 만료 처리 | `ERROR-01~02`, `TOKEN-01~02`, UX-01·STATE-01 결정 | 공통 code 매핑, field/화면 오류, 만료 복구 또는 종료 흐름과 세션 회귀 검증 |
+| 4 | #275 공통 API 오류 메시지·토큰 만료 처리 | `ERROR-01~02` 확인, `TOKEN-01~02` endpoint 부재 확인 | 표준 오류·field 메시지와 `A003/A004/A009` 로컬 세션 종료 완료. refresh·서버 logout은 backend #149 대기 |
 | 5 | Place 멤버·Friend 식별자 기반 쓰기 | `PLACE-05`, 멤버 고유 ID·변경 endpoint, Friend 고유 대상·부분 결과 계약 | 나가기·멤버 변경·친구 요청이 실제 식별자와 대상별 결과를 사용 |
 | 6 | Memo CRUD·목록 상태 API 연결 | `MEMO-01~03` 답변. 이번 순서에서는 이미지 첨부 제외 | 생성·목록·수정·삭제, pagination과 loading/empty/error/success를 수직 연결 |
 
@@ -126,6 +126,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 - 약관 동의 후 프로필 이름과 `signupToken`으로 `/auth/register`를 호출하고 인증 세션으로 전환합니다.
 - 프로필 샘플 이미지는 로컬 UI 상태이므로 서버 multipart 이미지로 임의 전송하지 않습니다. 실제 파일 선택 결과가 준비될 때 optional image 경계에 연결합니다.
 - API 모드는 secure storage의 access/refresh token 쌍으로 세션을 복원합니다. refresh와 서버 로그아웃은 endpoint 확정 전까지 추가하지 않습니다.
+- #275에서 active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·데이터 세션을 종료하고 로그인 만료 안내로 연결합니다. refresh endpoint가 없으므로 자동 갱신·원요청 재시도는 하지 않으며 backend #149에서 계약을 추적합니다.
 - #249에서 로그인·회원가입 결과마다 사용자 데이터 세션을 교체합니다. 늦은 SDK·API 결과는 이전 세션에 반영하지 않으며 token 저장·삭제는 같은 큐에서 순서대로 처리합니다.
 - #250에서 가입 프로필 입력 중에도 제출 잠금을 유지하고 세션 확인 전 닉네임을 캡처합니다. 실패 후 새 입력값으로 재시도하며, 인증·이미지 계약은 바꾸지 않습니다.
 - 라우터는 `unauthenticated`, `signupRequired`, `authenticated` 세션에 따라 접근을 제어하고 로그인 전 target을 보존합니다.
@@ -256,6 +257,12 @@ resolver는 식물 상세의 loading·오류·미발견·성공과 재시도에 
 않고 미연결 안내와 선택 차단을 표시합니다. API 비사용 모드의 로컬 검색·empty·선택
 동작은 유지하며 실제 검색 상태 연결은 백엔드 #92 완료 후 별도 이슈로 진행합니다.
 
+## 공통 API 오류와 인증 만료 #275
+
+dev 401 응답과 backend main의 `ErrorResponse`·도메인 error enum을 대조해 공통 오류 경계를 확정했습니다. `ApiException`은 status·code·traceId와 validation field reason을 분리하고 rejected value를 폐기합니다. 주요 생성·수정·삭제 Controller는 raw 서버 상세 대신 HTTP·전송 범주의 안전한 메시지를 사용하며 Place·Plant·User·가입 프로필 폼은 확인된 field error를 입력에 연결합니다.
+
+active access-token 요청의 `A003`, `A004`, `A009`는 한 세션에서 한 번만 만료를 알리고 현재 인증·데이터 세션과 로컬 token을 정리합니다. 라우터는 로그인으로 이동하고 만료 이유를 표시하며, 계정 전환 뒤 늦은 이전 응답은 새 세션을 종료하지 않습니다. live OpenAPI와 backend Controller에 refresh·logout endpoint가 없어 자동 갱신·원요청 재시도·서버 invalidation은 구현하지 않았고 backend #149로 분리했습니다.
+
 ## 완료 기준
 
 각 수직 슬라이스는 아래 항목을 모두 충족해야 완료로 판단합니다.
@@ -305,5 +312,6 @@ resolver는 식물 상세의 loading·오류·미발견·성공과 재시도에 
 | #267 | 이 문서의 최종 커밋 | Epic #226 완료 상태, 실행 6단계와 사용자 보류 5개 범위 정리 | [후속 로드맵 이력](work-history/follow-up-development-roadmap-267.md), 문서 링크·인덱스·diff 검사 |
 | #271 | `e15de3f` | Home 친구 요청 배지의 loading·오류·재시도·정상 count UI와 파생 Provider 상태 보존 | 대상 15개·전체 519개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
 | #273 | `8a51642`, `ec34ea8`, `dbff448` | 정확한 plant ID 기반 장소 code resolver·상세 상태와 API mode 식물 검색 fixture 차단 | 관련 40개·전체 531개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
+| #275 | `e507656` | 표준 API 오류·field 메시지와 확인된 인증 만료의 세션 종료·로그인 안내 연결 | 전체 547개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.

@@ -8,6 +8,7 @@ import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/login/domain/models/social_auth.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/login_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
@@ -53,6 +54,11 @@ class LoginPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loginState = ref.watch(loginControllerProvider);
+    final sessionNotice = ref
+        .watch(authSessionControllerProvider)
+        .value
+        ?.noticeMessage;
+    final errorMessage = loginState.errorMessage ?? sessionNotice;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceAlt,
@@ -160,11 +166,15 @@ class LoginPage extends ConsumerWidget {
                               SocialAuthProvider.apple,
                             ),
                     ),
-                    if (loginState.errorMessage != null) ...[
+                    if (errorMessage != null) ...[
                       const SizedBox(height: AppSpacing.x8),
                       Text(
-                        loginState.errorMessage!,
-                        key: const ValueKey('loginErrorMessage'),
+                        errorMessage,
+                        key: ValueKey(
+                          loginState.errorMessage == null
+                              ? 'loginSessionMessage'
+                              : 'loginErrorMessage',
+                        ),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.size12Medium.copyWith(
                           color: AppColors.danger,

@@ -91,6 +91,7 @@ class _UserProfileEditForm extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.x16),
                       UserProfileNameField(
                         name: formState.currentName,
+                        serverErrorMessage: formState.nameErrorMessage,
                         onChanged: controller.updateName,
                       ),
                     ],

@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
@@ -120,7 +121,7 @@ class LoginController extends Notifier<LoginState> {
         errorMessage: socialLoginNotConfiguredMessage,
         clearSubmittingProvider: true,
       );
-    } catch (_) {
+    } catch (error) {
       if (!requestRef.mounted ||
           (requestSession != null &&
               !isCurrentUserDataSession(requestRef, requestSession))) {
@@ -128,7 +129,10 @@ class LoginController extends Notifier<LoginState> {
       }
       state = state.copyWith(
         submitStatus: LoginSubmitStatus.failure,
-        errorMessage: socialLoginFailureMessage,
+        errorMessage: apiUserMessage(
+          error,
+          fallback: socialLoginFailureMessage,
+        ),
         clearSubmittingProvider: true,
       );
     }

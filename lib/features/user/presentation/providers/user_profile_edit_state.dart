@@ -46,6 +46,8 @@ class UserProfileEditState {
 
   String? get submitErrorMessage => submitState.errorMessage;
 
+  String? get nameErrorMessage => submitState.fieldError('name');
+
   bool get canSubmit => isNameValid && hasChanges && !isSubmitting;
 
   UserProfileEditState copyWith({

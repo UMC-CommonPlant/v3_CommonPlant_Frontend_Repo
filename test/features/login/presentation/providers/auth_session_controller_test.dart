@@ -197,6 +197,74 @@ void main() {
     );
     expect(store.accessToken, 'A');
   });
+
+  test('인증 만료는 즉시 세션을 닫고 재로그인 안내를 남긴다', () async {
+    final barrier = Completer<void>();
+    final store = _MemoryAuthTokenStore(
+      accessToken: 'A',
+      refreshToken: 'A',
+      clearBarrier: barrier,
+    );
+    final container = _remoteContainer(store);
+    addTearDown(container.dispose);
+    await container.read(authSessionControllerProvider.future);
+    final sessionA = container.read(userDataSessionProvider);
+
+    final expiring = container
+        .read(authSessionControllerProvider.notifier)
+        .expireSession(sessionA);
+
+    expect(container.read(userDataSessionProvider).isActive, isFalse);
+    final expiredState = container
+        .read(authSessionControllerProvider)
+        .requireValue;
+    expect(expiredState.isUnauthenticated, isTrue);
+    expect(expiredState.endReason, AuthSessionEndReason.expired);
+    expect(expiredState.noticeMessage, isNotNull);
+
+    container
+        .read(authSessionControllerProvider.notifier)
+        .applyAuthResult(
+          const AuthenticatedResult(accessToken: 'B', refreshToken: 'B'),
+        );
+    final sessionB = container.read(userDataSessionProvider);
+    barrier.complete();
+    await expiring;
+
+    expect(container.read(userDataSessionProvider), same(sessionB));
+    expect(
+      container
+          .read(authSessionControllerProvider)
+          .requireValue
+          .isAuthenticated,
+      isTrue,
+    );
+  });
+
+  test('이전 계정 세션의 만료 요청은 현재 계정과 저장 토큰을 건드리지 않는다', () async {
+    final store = _MemoryAuthTokenStore(accessToken: 'A', refreshToken: 'A');
+    final container = _remoteContainer(store);
+    addTearDown(container.dispose);
+    await container.read(authSessionControllerProvider.future);
+    final sessionA = container.read(userDataSessionProvider);
+    final controller = container.read(authSessionControllerProvider.notifier);
+
+    controller.applyAuthResult(
+      const AuthenticatedResult(accessToken: 'B', refreshToken: 'B'),
+    );
+    final sessionB = container.read(userDataSessionProvider);
+    await controller.expireSession(sessionA);
+
+    expect(container.read(userDataSessionProvider), same(sessionB));
+    expect(
+      container
+          .read(authSessionControllerProvider)
+          .requireValue
+          .isAuthenticated,
+      isTrue,
+    );
+    expect(store.clearCalls, 0);
+  });
 }
 
 ProviderContainer _remoteContainer(AuthTokenStore tokenStore) {

@@ -11,6 +11,7 @@ class ProfileSetupState {
     required this.isPrivacyTermsAccepted,
     required this.submitStatus,
     this.errorMessage,
+    this.nicknameErrorMessage,
   });
 
   const ProfileSetupState.initial({
@@ -30,6 +31,7 @@ class ProfileSetupState {
   final bool isPrivacyTermsAccepted;
   final ProfileSetupSubmitStatus submitStatus;
   final String? errorMessage;
+  final String? nicknameErrorMessage;
 
   bool get hasValidNickname {
     final nicknameLength = nickname.trim().length;
@@ -49,6 +51,8 @@ class ProfileSetupState {
     ProfileSetupSubmitStatus? submitStatus,
     String? errorMessage,
     bool clearErrorMessage = false,
+    String? nicknameErrorMessage,
+    bool clearNicknameErrorMessage = false,
     bool clearProfileImageUrl = false,
   }) {
     return ProfileSetupState(
@@ -63,6 +67,9 @@ class ProfileSetupState {
       errorMessage: clearErrorMessage
           ? null
           : errorMessage ?? this.errorMessage,
+      nicknameErrorMessage: clearNicknameErrorMessage
+          ? null
+          : nicknameErrorMessage ?? this.nicknameErrorMessage,
     );
   }
 }

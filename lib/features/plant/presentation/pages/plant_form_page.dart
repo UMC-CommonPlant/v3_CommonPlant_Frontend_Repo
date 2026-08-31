@@ -84,6 +84,7 @@ class PlantFormPage extends ConsumerWidget {
         places: formState.places,
         selectedPlaceId: formState.selectedPlaceId,
         lastWateredDate: formState.currentLastWateredDate,
+        lastWateredDateErrorMessage: formState.lastWateredDateErrorMessage,
         isSubmitting: formState.isSubmitting,
         onPlaceSelected: controller.selectPlace,
         onWateringDateTap: () => _selectLastWateredDate(
@@ -99,6 +100,8 @@ class PlantFormPage extends ConsumerWidget {
     return PlantEditScaffold(
       name: formState.currentName,
       lastWateredDate: formState.currentLastWateredDate,
+      nameErrorMessage: formState.nameErrorMessage,
+      lastWateredDateErrorMessage: formState.lastWateredDateErrorMessage,
       canSubmit: formState.canSubmit,
       isSubmitting: formState.isSubmitting,
       onChanged: controller.updateName,

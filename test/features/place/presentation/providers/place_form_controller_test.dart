@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/address_search_fixture.dart';
@@ -317,6 +318,46 @@ void main() {
       expect(repository.createCalls, 1);
     });
 
+    test('remote 검증 오류는 이름과 주소 필드에 연결하고 입력 시 초기화한다', () async {
+      final repository = _RecordingPlaceRepository()
+        ..writeError = const ApiException(
+          message: '요청 값이 유효하지 않습니다.',
+          statusCode: 400,
+          code: 'C001',
+          kind: ApiFailureKind.validation,
+          fieldErrors: [
+            ApiFieldError(field: 'request.name', reason: '이름 오류'),
+            ApiFieldError(field: 'address', reason: '주소 오류'),
+          ],
+        );
+      final container = ProviderContainer(
+        overrides: [
+          authenticatedUserDataSession,
+          useRemoteApiProvider.overrideWithValue(true),
+          placeRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final provider = placeFormControllerProvider(null);
+      container.listen(provider, (_, _) {});
+      final controller = container.read(provider.notifier);
+      controller.updateName('거실');
+      controller.updateAddress('서울시 성북구');
+
+      expect(await controller.submit(), isNull);
+
+      final failed = container.read(provider);
+      expect(failed.submitErrorMessage, '입력 내용을 확인해 주세요.');
+      expect(failed.nameErrorMessage, '이름 오류');
+      expect(failed.addressErrorMessage, '주소 오류');
+
+      controller.updateName('새 이름');
+      final edited = container.read(provider);
+      expect(edited.submitErrorMessage, isNull);
+      expect(edited.nameErrorMessage, isNull);
+      expect(edited.addressErrorMessage, isNull);
+    });
+
     test('remote 장소 수정은 조회값을 draft로 사용하고 repository를 호출한다', () async {
       final repository = _RecordingPlaceRepository();
       final container = ProviderContainer(
@@ -430,6 +471,7 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
 
   final String? imageUrl;
   Completer<void>? writeBarrier;
+  Object? writeError;
   int createCalls = 0;
   int updateCalls = 0;
   String? latestUpdateCode;
@@ -459,6 +501,7 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
     latestCreateAddress = address;
 
     await writeBarrier?.future;
+    if (writeError != null) throw writeError!;
 
     return 'created-place';
   }
@@ -477,6 +520,7 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
     latestUpdateImageKey = imageKey;
 
     await writeBarrier?.future;
+    if (writeError != null) throw writeError!;
 
     return PlaceSummary(id: code, name: name, address: address);
   }

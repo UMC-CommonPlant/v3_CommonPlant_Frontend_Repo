@@ -2,7 +2,10 @@ import 'package:commonplant_frontend/app/common_plant_app.dart';
 import 'package:commonplant_frontend/app/router/app_router.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -104,6 +107,41 @@ void main() {
 
     expect(find.text('카카오로 로그인'), findsOneWidget);
   });
+
+  testWidgets('활성 화면의 인증이 만료되면 로그인으로 이동하고 이유를 안내한다', (tester) async {
+    final container = ProviderContainer(
+      overrides: [
+        useRemoteApiProvider.overrideWithValue(true),
+        authTokenStoreProvider.overrideWithValue(
+          _MemoryAuthTokenStore(accessToken: 'access', refreshToken: 'refresh'),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(authSessionControllerProvider.future);
+    final activeSession = container.read(userDataSessionProvider);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const CommonPlantApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      container.read(appRouterProvider).routeInformationProvider.value.uri.path,
+      AppRoutePaths.home,
+    );
+    expect(find.text('카카오로 로그인'), findsNothing);
+
+    await container
+        .read(authSessionControllerProvider.notifier)
+        .expireSession(activeSession);
+    await tester.pumpAndSettle();
+
+    expect(find.text('카카오로 로그인'), findsOneWidget);
+    expect(find.text(sessionExpiredMessage), findsOneWidget);
+    expect(find.text('My place'), findsNothing);
+  });
 }
 
 GoRouter _routerWithAuth(
@@ -134,4 +172,32 @@ class _EmptyAuthTokenStore implements AuthTokenStore {
     required String accessToken,
     required String refreshToken,
   }) async {}
+}
+
+class _MemoryAuthTokenStore implements AuthTokenStore {
+  _MemoryAuthTokenStore({this.accessToken, this.refreshToken});
+
+  String? accessToken;
+  String? refreshToken;
+
+  @override
+  Future<void> clear() async {
+    accessToken = null;
+    refreshToken = null;
+  }
+
+  @override
+  Future<String?> readAccessToken() async => accessToken;
+
+  @override
+  Future<String?> readRefreshToken() async => refreshToken;
+
+  @override
+  Future<void> saveTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
+  }
 }
