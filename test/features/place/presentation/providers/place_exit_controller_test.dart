@@ -26,7 +26,7 @@ void main() {
           .read(placeExitControllerProvider.notifier)
           .exit('place-1');
 
-      expect(result?.destination, PlaceExitDestination.home);
+      expect(result, isTrue);
       expect(repository.deleteCalls, 1);
       expect(repository.latestDeleteCode, 'place-1');
       expect(
@@ -51,7 +51,7 @@ void main() {
           .read(placeExitControllerProvider.notifier)
           .exit('place-1');
 
-      expect(result, isNull);
+      expect(result, isFalse);
       expect(repository.deleteCalls, 1);
       expect(
         container.read(placeExitControllerProvider),
@@ -74,7 +74,7 @@ void main() {
           .read(placeExitControllerProvider.notifier)
           .exit('place-1');
 
-      expect(result, isNull);
+      expect(result, isFalse);
       expect(repository.deleteCalls, 0);
       expect(
         container.read(placeExitControllerProvider),

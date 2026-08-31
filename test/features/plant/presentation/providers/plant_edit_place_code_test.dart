@@ -145,7 +145,7 @@ void main() {
     expect(repository.reads, beforeReads);
     expect(container.read(plantListProvider).single.name, '기존 로컬');
     expect(container.read(_form).currentName, '다음 요청');
-    expect(container.read(_form).submitErrorMessage, '식물 수정에 실패했어요');
+    expect(container.read(_form).submitState.errorMessage, '식물 수정에 실패했어요');
     expect(container.read(_form).canSubmit, isTrue);
     repository.barrier = null;
     expect(await controller.submit(), isNotNull);
@@ -182,7 +182,7 @@ void main() {
       expect(repository.reads, beforeReads);
       expect(container.read(plantListProvider), isEmpty);
       expect(container.read(_form).currentName, '기존 애칭');
-      expect(container.read(_form).submitErrorMessage, isNull);
+      expect(container.read(_form).submitState.errorMessage, isNull);
       expect(container.read(_form).isSubmitting, isFalse);
     });
   }

@@ -26,7 +26,7 @@ void main() {
           .read(plantDeleteControllerProvider.notifier)
           .delete(plantId: 'plant-1', placeCode: 'place-1');
 
-      expect(result?.destination, PlantDeleteDestination.home);
+      expect(result, isTrue);
       expect(repository.deleteCalls, 1);
       expect(repository.latestDeletedPlantId, 'plant-1');
       expect(repository.latestDeletedPlaceCode, 'place-1');
@@ -52,7 +52,7 @@ void main() {
           .read(plantDeleteControllerProvider.notifier)
           .delete(plantId: 'plant-1', placeCode: 'place-1');
 
-      expect(result, isNull);
+      expect(result, isFalse);
       expect(repository.deleteCalls, 1);
       expect(
         container.read(plantDeleteControllerProvider),
@@ -76,7 +76,7 @@ void main() {
           .read(plantDeleteControllerProvider.notifier)
           .delete(plantId: 'plant-1', placeCode: ' ');
 
-      expect(result, isNull);
+      expect(result, isFalse);
       expect(repository.deleteCalls, 0);
       expect(
         container.read(plantDeleteControllerProvider),
@@ -100,7 +100,7 @@ void main() {
           .read(plantDeleteControllerProvider.notifier)
           .delete(plantId: 'plant-1', placeCode: 'place-1');
 
-      expect(result, isNull);
+      expect(result, isFalse);
       expect(repository.deleteCalls, 0);
       expect(
         container.read(plantDeleteControllerProvider),

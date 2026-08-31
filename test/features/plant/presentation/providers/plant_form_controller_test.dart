@@ -106,7 +106,10 @@ void main() {
             }
 
             expect(results.first, isNull);
-            expect(container.read(provider).submitErrorMessage, isNotNull);
+            expect(
+              container.read(provider).submitState.errorMessage,
+              isNotNull,
+            );
             expect(container.read(provider).canSubmit, isTrue);
             repository.writeBarrier = null;
             expect(await controller.submit(), isNotNull);
@@ -353,7 +356,7 @@ void main() {
         expect(result, isNull);
         expect(repository.updateCalls, 0);
         final state = container.read(plantFormControllerProvider(args));
-        expect(state.submitErrorMessage, contains('기존 사진'));
+        expect(state.submitState.errorMessage, contains('기존 사진'));
         expect(state.currentName, '몬테라');
         expect(state.isSubmitting, isFalse);
       });

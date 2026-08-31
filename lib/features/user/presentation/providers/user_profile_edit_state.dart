@@ -44,8 +44,6 @@ class UserProfileEditState {
 
   bool get isSubmitting => submitState.isSubmitting;
 
-  String? get submitErrorMessage => submitState.errorMessage;
-
   String? get nameErrorMessage => submitState.fieldError('name');
 
   bool get canSubmit => isNameValid && hasChanges && !isSubmitting;

@@ -6,6 +6,7 @@ import 'package:commonplant_frontend/features/user/presentation/providers/user_a
 import 'package:commonplant_frontend/features/user/presentation/providers/user_settings_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -139,9 +140,7 @@ class UserSettingsPage extends ConsumerWidget {
 
     final message = ref.read(userAccountControllerProvider).errorMessage;
     if (message != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      showCommonSnackBar(context, message);
     }
   }
 }

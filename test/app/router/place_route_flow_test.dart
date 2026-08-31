@@ -105,7 +105,7 @@ void main() {
             container.read(form).currentAddress,
             _serviceAddress.address.trim(),
           );
-          expect(container.read(form).submitErrorMessage, isNull);
+          expect(container.read(form).submitState.errorMessage, isNull);
           expect(container.read(form).canSubmit, isTrue);
           expect(find.text(_serviceAddress.address.trim()), findsOneWidget);
 

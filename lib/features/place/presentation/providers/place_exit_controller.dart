@@ -12,16 +12,6 @@ final placeExitControllerProvider =
       PlaceExitController.new,
     );
 
-enum PlaceExitDestination { home }
-
-class PlaceExitResult {
-  const PlaceExitResult._(this.destination);
-
-  const PlaceExitResult.home() : this._(PlaceExitDestination.home);
-
-  final PlaceExitDestination destination;
-}
-
 class PlaceExitController extends Notifier<FormSubmitState> {
   @override
   FormSubmitState build() {
@@ -29,39 +19,39 @@ class PlaceExitController extends Notifier<FormSubmitState> {
     return const FormSubmitState.idle();
   }
 
-  Future<PlaceExitResult?> exit(String placeId) async {
+  Future<bool> exit(String placeId) async {
     if (state.isSubmitting) {
-      return null;
+      return false;
     }
 
     if (!ref.read(useRemoteApiProvider)) {
       state = const FormSubmitState.idle();
-      return null;
+      return false;
     }
 
     final requestRef = ref;
     final session = ref.read(userDataSessionProvider);
-    if (!session.isActive) return null;
+    if (!session.isActive) return false;
     state = const FormSubmitState.submitting();
 
     try {
       await ref.read(placeRepositoryProvider).deletePlace(placeId);
-      if (!isCurrentUserDataSession(requestRef, session)) return null;
+      if (!isCurrentUserDataSession(requestRef, session)) return false;
       ref.invalidate(placeDetailProvider(placeId));
       ref.invalidate(placeSummaryProvider(placeId));
       ref.invalidate(remotePlaceListProvider);
       ref.invalidate(userPlaceSummariesProvider);
       state = const FormSubmitState.idle();
 
-      return const PlaceExitResult.home();
+      return true;
     } catch (error) {
-      if (!isCurrentUserDataSession(requestRef, session)) return null;
+      if (!isCurrentUserDataSession(requestRef, session)) return false;
       state = FormSubmitState.failureFrom(
         error,
         fallbackMessage: '장소 삭제에 실패했어요',
       );
 
-      return null;
+      return false;
     }
   }
 }

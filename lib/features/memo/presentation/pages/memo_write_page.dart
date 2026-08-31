@@ -11,6 +11,7 @@ import 'package:commonplant_frontend/features/memo/presentation/widgets/memo_con
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_photo_add_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,9 +32,7 @@ class MemoWritePage extends ConsumerWidget {
 
     final errorMessage = ref.read(provider).errorMessage;
     if (errorMessage != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      showCommonSnackBar(context, errorMessage);
     }
   }
 

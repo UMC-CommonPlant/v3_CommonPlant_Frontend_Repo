@@ -15,6 +15,7 @@ import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_i
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_memo_preview_section.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,7 +89,7 @@ class PlantDetailPage extends ConsumerWidget {
     WidgetRef ref,
     String? placeCode,
   ) async {
-    final result = await ref
+    final didDelete = await ref
         .read(plantDeleteControllerProvider.notifier)
         .delete(plantId: plantId, placeCode: placeCode);
 
@@ -96,7 +97,7 @@ class PlantDetailPage extends ConsumerWidget {
       return;
     }
 
-    if (result?.destination == PlantDeleteDestination.home) {
+    if (didDelete) {
       context.go(AppRoutePaths.home);
       return;
     }
@@ -107,9 +108,7 @@ class PlantDetailPage extends ConsumerWidget {
       return;
     }
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    showCommonSnackBar(context, errorMessage);
   }
 
   Widget _buildScaffold(
