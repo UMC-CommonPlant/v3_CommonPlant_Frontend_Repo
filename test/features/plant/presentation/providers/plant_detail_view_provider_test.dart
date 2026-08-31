@@ -3,6 +3,7 @@ import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail
 import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_view_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_place_code_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -85,6 +86,83 @@ void main() {
         container.read(plantDetailViewProvider(request)).requireValue,
         isNull,
       );
+    });
+
+    test('route 장소 code가 있으면 정규화하고 resolver를 호출하지 않는다', () async {
+      var resolverCalls = 0;
+      final repository = _StaticPlantRepository(
+        const PlantDetail(id: 'remote-plant', name: '필로덴드론'),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          authenticatedUserDataSession,
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+          remotePlantPlaceCodeProvider('remote-plant').overrideWith((
+            ref,
+          ) async {
+            resolverCalls++;
+            return 'resolved-place';
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const request = (plantId: 'remote-plant', placeCode: ' ROUTE-PLACE ');
+      final detail = await container.read(
+        plantRemoteDetailViewProvider(request).future,
+      );
+
+      expect(detail?.placeCode, 'ROUTE-PLACE');
+      expect(resolverCalls, 0);
+    });
+
+    test('route와 Plant 응답에 code가 없으면 resolver 결과를 사용한다', () async {
+      final repository = _StaticPlantRepository(
+        const PlantDetail(id: 'remote-plant', name: '필로덴드론'),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          authenticatedUserDataSession,
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+          remotePlantPlaceCodeProvider(
+            'remote-plant',
+          ).overrideWith((ref) async => 'resolved-place'),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const request = (plantId: 'remote-plant', placeCode: null);
+      final detail = await container.read(
+        plantRemoteDetailViewProvider(request).future,
+      );
+
+      expect(detail?.placeCode, 'resolved-place');
+    });
+
+    test('resolver가 찾지 못한 code를 첫 장소로 대체하지 않는다', () async {
+      final repository = _StaticPlantRepository(
+        const PlantDetail(id: 'remote-plant', name: '필로덴드론'),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          authenticatedUserDataSession,
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+          remotePlantPlaceCodeProvider(
+            'remote-plant',
+          ).overrideWith((ref) async => null),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      const request = (plantId: 'remote-plant', placeCode: null);
+      final detail = await container.read(
+        plantRemoteDetailViewProvider(request).future,
+      );
+
+      expect(detail?.placeCode, isNull);
     });
   });
 }

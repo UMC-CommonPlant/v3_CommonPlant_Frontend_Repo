@@ -1,8 +1,24 @@
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_search_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('API 모드에서는 fixture 검색을 사용할 수 없다', () {
+    final container = ProviderContainer(
+      overrides: [useRemoteApiProvider.overrideWithValue(true)],
+    );
+    addTearDown(container.dispose);
+    final controller = container.read(plantSearchControllerProvider.notifier);
+
+    controller.updateQuery('몬스테라');
+
+    final state = container.read(plantSearchControllerProvider);
+    expect(state.isAvailable, isFalse);
+    expect(state.hasQuery, isFalse);
+    expect(state.results, isEmpty);
+  });
+
   test('식물 검색 초기 상태는 결과를 보여주지 않는다', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

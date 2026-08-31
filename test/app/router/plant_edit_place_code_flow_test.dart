@@ -3,10 +3,16 @@ import 'dart:async';
 import 'package:commonplant_frontend/app/router/app_routes.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/place/domain/entities/place_detail.dart';
+import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
+import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
+import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_view_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_place_code_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +22,43 @@ import '../../helpers/test_viewport.dart';
 import '../../helpers/user_data_session.dart';
 
 void main() {
+  testWidgets('Home처럼 장소 code 없이 상세 진입하면 plant ID로 상세 code를 복원한다', (
+    tester,
+  ) async {
+    configureTestViewport(tester, TestViewports.reference);
+    final repository = _EditRepository();
+    final placeRepository = _ResolverPlaceRepository();
+    late ProviderContainer container;
+    final router = await _pumpRoutes(
+      tester,
+      repository,
+      AppRoutePaths.plantDetailLocation('1'),
+      placeRepository: placeRepository,
+      onContainer: (value) => container = value,
+    );
+    await tester.pumpAndSettle();
+
+    expect(placeRepository.detailCodes, ['PLACE-A', 'PLACE-B']);
+    expect(
+      container.read(remotePlantPlaceCodeProvider('1')).requireValue,
+      'PLACE-B',
+    );
+    expect(
+      container
+          .read(plantDetailViewProvider((plantId: '1', placeCode: null)))
+          .requireValue
+          ?.placeCode,
+      'PLACE-B',
+    );
+    expect(router.routeInformationProvider.value.uri.path, '/plants/1');
+    expect(
+      router.routeInformationProvider.value.uri.queryParameters['placeId'],
+      isNull,
+    );
+    expect(find.byTooltip('식물 상세 메뉴'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final scenario in [
     (viewport: TestViewports.reference, code: null),
     (viewport: TestViewports.compactWidth, code: null),
@@ -172,15 +215,20 @@ void main() {
 Future<GoRouter> _pumpRoutes(
   WidgetTester tester,
   _EditRepository repository,
-  String location,
-) async {
+  String location, {
+  PlaceRepository? placeRepository,
+  void Function(ProviderContainer)? onContainer,
+}) async {
   final container = ProviderContainer(
     overrides: [
       authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       plantRepositoryProvider.overrideWithValue(repository),
+      if (placeRepository != null)
+        placeRepositoryProvider.overrideWithValue(placeRepository),
     ],
   );
+  onContainer?.call(container);
   addTearDown(container.dispose);
   final router = GoRouter(
     initialLocation: location,
@@ -205,6 +253,36 @@ Future<GoRouter> _pumpRoutes(
     ),
   );
   return router;
+}
+
+class _ResolverPlaceRepository extends Fake implements PlaceRepository {
+  final List<String> detailCodes = [];
+
+  @override
+  Future<List<PlaceSummary>> fetchMyGardenPlaces() async {
+    return const [
+      PlaceSummary(id: 'PLACE-A', name: '같은 장소명'),
+      PlaceSummary(id: 'PLACE-B', name: '같은 장소명'),
+    ];
+  }
+
+  @override
+  Future<PlaceDetail> fetchPlaceDetail(String code) async {
+    detailCodes.add(code);
+    return PlaceDetail(
+      code: code,
+      name: '같은 장소명',
+      address: '주소',
+      isOwner: true,
+      members: const [],
+      plants: [
+        PlacePlant(
+          id: code == 'PLACE-B' ? '1' : 'other-plant',
+          scientificNameKo: '몬스테라',
+        ),
+      ],
+    );
+  }
 }
 
 class _EditRepository extends Fake implements PlantRepository {

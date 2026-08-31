@@ -3,6 +3,7 @@ import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_
 import 'package:commonplant_frontend/features/plant/presentation/mappers/plant_detail_view_mapper.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_detail_view_data.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_remote_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_place_code_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 typedef PlantDetailViewRequest = ({String plantId, String? placeCode});
@@ -40,15 +41,30 @@ final plantRemoteDetailViewProvider =
       final detail = await ref.watch(
         remotePlantDetailProvider(request.plantId).future,
       );
+      var placeCode = _nonBlank(request.placeCode) ?? _nonBlank(detail.placeId);
+
+      if (placeCode == null && detail.name.trim().isNotEmpty) {
+        placeCode = await ref.watch(
+          remotePlantPlaceCodeProvider(request.plantId).future,
+        );
+      }
 
       return mapPlantDetailToViewData(
         detail: detail,
-        placeCode: request.placeCode,
+        placeCode: placeCode,
         now: now(),
       );
     }, retry: (retryCount, error) => null);
 
 void invalidatePlantDetailView(WidgetRef ref, PlantDetailViewRequest request) {
   ref.invalidate(remotePlantDetailProvider(request.plantId));
+  if (_nonBlank(request.placeCode) == null) {
+    invalidateRemotePlantPlaceCode(ref, request.plantId);
+  }
   ref.invalidate(plantRemoteDetailViewProvider(request));
+}
+
+String? _nonBlank(String? value) {
+  final normalized = value?.trim();
+  return normalized == null || normalized.isEmpty ? null : normalized;
 }

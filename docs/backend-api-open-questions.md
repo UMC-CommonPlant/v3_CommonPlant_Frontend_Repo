@@ -22,7 +22,7 @@
 | PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | API 경계는 `code`, 기존 route 모델명은 `id` 유지 | Answered |
 | PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #245 친구 관리 조회 연결, 멤버 변경은 별도 계약 필요 | Answered |
 | PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 API mode에서 member 나가기 action 숨김 | Blocked |
-| PLANT-01 | Plant | 식물에서 소속 장소 code를 조회할 수 있는 계약을 제공하는가? | #252 code 누락 수정 차단, Home 식물 목록에서 바로 수정하려면 조회 계약 필요 | Open |
+| PLANT-01 | Plant | 식물에서 소속 장소 code를 조회할 수 있는 계약을 제공하는가? | #273에서 기존 Place 목록·상세의 정확한 plant ID 대조로 code 복원 | Answered |
 | FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | #241 요청 목록·Home 배지 연결 | Answered |
 | FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | #241 수락·거절·갱신, #243 전송 연결 | Answered |
 | FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | #243에서 위험 수용 후 연결, 고유 ID 전환 필요 | Answered |
@@ -36,7 +36,7 @@
 | TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | 인증 만료 복구 흐름 보류 | Open |
 | TOKEN-02 | Token | 로그아웃 API와 서버 token invalidation 정책이 있는가? | 로그아웃/세션 종료 구현 보류 | Open |
 | SEARCH-01 | 검색 | 주소 검색 API를 백엔드가 제공하는가? | 장소 등록 주소 검색 실데이터 보류 | Open |
-| SEARCH-02 | 검색 | 식물 학명/추천 검색 API를 백엔드가 제공하는가? | 식물 등록 검색 실데이터 보류 | Open |
+| SEARCH-02 | 검색 | 식물 학명/추천 검색 API를 백엔드가 제공하는가? | 백엔드 #92 대기, #273에서 API mode fixture 차단 | Blocked |
 | SEARCH-03 | 검색 | `GET /users/{keyword}`는 부분 검색인가, exact 검색인가? | 친구 추가 검색 UX와 empty 정책 확인 필요 | Open |
 | MEMO-01 | Memo | 메모 생성, 목록, 수정, 삭제 API 제공 계획은 무엇인가? | 메모 화면 실데이터 연결 보류 | Open |
 | MEMO-02 | Memo | 메모 이미지 첨부는 어떤 API와 필드로 연결하는가? | 메모 사진 업로드 흐름 보류 | Open |
@@ -132,12 +132,12 @@
 
 ### PLANT-01. 식물에서 소속 장소 code 조회
 
-- 현재 근거: 2026-08-29 [live OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)의 `PUT /plants/{plantId}`는 query `placeCode`를 필수로 요구하지만 `PlantSummary`, `DetailResponse`, `EditInfoResponse`에는 code가 없다. 상세에는 장소 이름만 있다.
-- 프론트 영향: Home 식물 목록→상세 진입은 code가 없고, 장소 상세를 경유한 진입만 기존 route query로 실제 code를 전달한다. 장소명 매칭·첫 장소 선택은 올바른 식별자를 보장하지 않는다.
-- 확인 질문: 식물 목록·상세·수정 조회 중 소속 `placeCode`를 제공할 응답 또는 별도 조회 계약이 있는가? 장소 문맥 없는 식물 수정의 지원 방식도 확인이 필요하다.
-- 프론트 반영: #252는 code가 없으면 제출을 차단하고 홈→장소→식물 재진입을 안내한다. code가 있으면 기존 PUT query를 유지하며 목록·상세·편집 정보를 갱신한다. 거짓 성공 버그는 이 차단으로 수정하며 조회 계약 답변을 기다리지 않는다.
-- 답변: 미확인. 서버 필드나 필수 query 정책을 임의로 추가·변경하지 않는다.
-- 상태: Open
+- 현재 근거: 2026-08-31 [live OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)의 `PUT /plants/{plantId}`는 query `placeCode`를 필수로 요구하지만 `PlantSummary`, `DetailResponse`, `EditInfoResponse`에는 code가 없다. 같은 명세의 `GET /place/user`는 실제 장소 code 목록을, `GET /place/{code}`는 `plantList[].plantId`를 제공한다. 백엔드 main `7d572cb`에도 Plant 응답의 direct code나 별도 조회 endpoint는 없다.
+- 프론트 영향: direct field 없이도 사용자의 장소 상세를 순회하며 정확한 plant ID를 비교하면 Home 식물의 소속 code를 확인할 수 있다. 장소명 매칭·첫 장소 선택은 사용하지 않는다.
+- 확인 질문: 현재 명세 안에서 지원 가능한 방법을 확인했다. Plant 응답의 direct `placeCode`는 향후 요청 수를 줄이는 최적화 계약으로 남는다.
+- 프론트 반영: #273은 route code와 Plant 응답 code를 우선하고, 둘 다 없을 때만 Place 목록·상세로 code를 복원한다. resolver의 loading·오류·미발견·성공·재시도와 계정 전환을 상세 상태에서 검증했다. code를 끝내 찾지 못하면 #252의 수정·삭제 차단을 유지한다.
+- 답변: 기존 Place API 조합으로 조회 가능하다. `GET /place/user`의 각 code에 대해 `GET /place/{code}`를 조회하고 `plantList[].plantId`를 정확히 대조한다.
+- 상태: Answered
 
 ## Friend
 
@@ -273,12 +273,12 @@
 
 ### SEARCH-02. 식물 학명/추천 검색 API 제공 여부
 
-- 현재 근거: 식물 등록 검색 화면은 존재하지만 Swagger에 식물 검색 API가 없다.
-- 프론트 영향: 식물 검색은 로컬 후보 UI에 머문다.
-- 확인 질문: 식물 이름, 국문 학명, 영문 학명 검색 endpoint와 response fields는 무엇인가?
-- 프론트 반영: 답변 후 plant search provider와 empty/error/loading UI를 API mode로 연결한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 2026-08-31 live OpenAPI의 19개 path와 백엔드 main `7d572cb`에 식물 검색 endpoint·catalog가 없다. 백엔드 [#92](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/92)는 `Open / Backlog`이고 구현 PR이 없다.
+- 프론트 영향: API 모드에서 로컬 fixture를 실제 검색 결과로 사용하면 존재하지 않는 식물을 등록할 수 있다.
+- 확인 질문: 백엔드 #92에 endpoint/query, 안정 식별자, 표시 이름·국문/영문 학명, 매칭·정렬·pagination, empty/error schema를 요청했다.
+- 프론트 반영: #273은 API 모드 검색·선택을 차단하고 미연결 안내를 표시한다. API 비사용 모드의 fixture 검색·empty·선택 흐름은 유지한다. 백엔드 #92가 완료되면 별도 이슈에서 datasource·repository와 loading/empty/error/success를 연결한다.
+- 답변: 현재 제공되지 않는다.
+- 상태: Blocked
 
 ### SEARCH-03. 사용자 검색 매칭 정책
 

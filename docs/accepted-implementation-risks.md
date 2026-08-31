@@ -53,3 +53,16 @@
 - 관련 PR: [#246](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/246)
 - 구현 커밋: `b090581`, `8e46fd8`
 - 관련 확인 항목: `PLACE-04`, `TESTENV-01`~`05`
+
+## Plant 소속 장소 code 조회
+
+2026-08-31 #273은 Plant 응답에 direct `placeCode`가 없는 현재 계약에서 Home 식물의
+수정·삭제 code를 확보하기 위해 기존 Place 조회 API를 조합했습니다.
+
+| ID | 상태 | 위험과 영향 | 현재 구현·완화 | 해소 또는 중단 조건 |
+| --- | --- | --- | --- | --- |
+| PLANT-RISK-01 | `Accepted` | route와 Plant 응답에 code가 없으면 장소 목록 뒤 각 장소 상세를 순차 조회하므로 장소 수에 따라 지연·요청 수가 늘어납니다. 중간 상세 하나가 실패해도 code를 확정할 수 없어 식물 상세가 오류 상태가 됩니다. | 실제 사용자 장소 code만 조회하고 `plantList[].plantId`를 정확히 비교합니다. 이름·학명·첫 장소를 추정하지 않으며 오류 재시도를 제공합니다. route·Plant code가 있으면 fallback을 실행하지 않습니다. | Plant 목록·상세가 direct `placeCode`를 제공하거나 전용 조회 endpoint가 생기면 fallback을 제거합니다. 실제 지연·rate limit·상세 가용성 저하가 확인되면 code 없는 수정·삭제 경계를 유지한 채 조회 방식을 재설계합니다. |
+
+- 관련 이슈: #273 `[Feature] Plant 장소 코드 조회와 검색 계약 경계`
+- 구현 커밋: `8a51642`
+- 관련 확인 항목: `PLANT-01`, `TESTENV-01`~`05`
