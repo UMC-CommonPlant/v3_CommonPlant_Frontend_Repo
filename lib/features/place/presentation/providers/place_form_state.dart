@@ -99,8 +99,6 @@ class PlaceFormState {
 
   bool get isSubmitting => submitState.isSubmitting;
 
-  String? get submitErrorMessage => submitState.errorMessage;
-
   String? get nameErrorMessage => submitState.fieldError('name');
 
   String? get addressErrorMessage => submitState.fieldError('address');

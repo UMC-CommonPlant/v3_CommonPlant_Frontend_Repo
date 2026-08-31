@@ -180,8 +180,6 @@ class PlantFormState {
 
   bool get isSubmitting => submitState.isSubmitting;
 
-  String? get submitErrorMessage => submitState.errorMessage;
-
   String? get nameErrorMessage => submitState.fieldError('nickname');
 
   String? get lastWateredDateErrorMessage =>

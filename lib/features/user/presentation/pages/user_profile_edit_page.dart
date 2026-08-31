@@ -11,6 +11,7 @@ import 'package:commonplant_frontend/features/user/presentation/widgets/user_pro
 import 'package:commonplant_frontend/features/user/presentation/widgets/user_profile_name_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -122,9 +123,7 @@ class _UserProfileEditForm extends ConsumerWidget {
   }
 
   void _showImagePickerNotice(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('프로필 사진 변경은 이미지 선택 정책 확정 후 연결됩니다')),
-    );
+    showCommonSnackBar(context, '프로필 사진 변경은 이미지 선택 정책 확정 후 연결됩니다');
   }
 
   Future<void> _submit(BuildContext context, WidgetRef ref) async {
@@ -144,11 +143,9 @@ class _UserProfileEditForm extends ConsumerWidget {
       return;
     }
 
-    final message = ref.read(provider).submitErrorMessage;
+    final message = ref.read(provider).submitState.errorMessage;
     if (message != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      showCommonSnackBar(context, message);
     }
   }
 }

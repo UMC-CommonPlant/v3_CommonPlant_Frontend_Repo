@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/features/place/presentation/providers/place
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_state.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_form_scaffold.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_form_status_scaffold.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -99,12 +100,10 @@ class PlaceFormPage extends ConsumerWidget {
       case PlaceFormSubmitDestination.friendAdd:
         context.push(AppRoutePaths.placeFriendAddLocation(result!.placeCode));
       case null:
-        final errorMessage = ref.read(provider).submitErrorMessage;
+        final errorMessage = ref.read(provider).submitState.errorMessage;
 
         if (errorMessage != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(errorMessage)));
+          showCommonSnackBar(context, errorMessage);
         }
     }
   }

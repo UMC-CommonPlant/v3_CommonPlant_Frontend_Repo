@@ -17,6 +17,7 @@ import 'package:commonplant_frontend/features/place/presentation/widgets/place_e
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_plant_list.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -98,7 +99,7 @@ class PlaceDetailPage extends ConsumerWidget {
   }
 
   Future<void> _handleExitResult(BuildContext context, WidgetRef ref) async {
-    final result = await ref
+    final didExit = await ref
         .read(placeExitControllerProvider.notifier)
         .exit(placeId);
 
@@ -106,7 +107,7 @@ class PlaceDetailPage extends ConsumerWidget {
       return;
     }
 
-    if (result?.destination == PlaceExitDestination.home) {
+    if (didExit) {
       context.go(AppRoutePaths.home);
       return;
     }
@@ -117,9 +118,7 @@ class PlaceDetailPage extends ConsumerWidget {
       return;
     }
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    showCommonSnackBar(context, errorMessage);
   }
 
   Widget _buildScaffold(

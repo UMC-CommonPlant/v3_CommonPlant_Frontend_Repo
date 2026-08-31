@@ -12,16 +12,6 @@ final plantDeleteControllerProvider =
       PlantDeleteController.new,
     );
 
-enum PlantDeleteDestination { home }
-
-class PlantDeleteResult {
-  const PlantDeleteResult._(this.destination);
-
-  const PlantDeleteResult.home() : this._(PlantDeleteDestination.home);
-
-  final PlantDeleteDestination destination;
-}
-
 class PlantDeleteController extends Notifier<FormSubmitState> {
   @override
   FormSubmitState build() {
@@ -29,27 +19,27 @@ class PlantDeleteController extends Notifier<FormSubmitState> {
     return const FormSubmitState.idle();
   }
 
-  Future<PlantDeleteResult?> delete({
+  Future<bool> delete({
     required String plantId,
     required String? placeCode,
   }) async {
     if (state.isSubmitting) {
-      return null;
+      return false;
     }
 
     if (!ref.read(useRemoteApiProvider)) {
       state = const FormSubmitState.idle();
-      return null;
+      return false;
     }
 
     final requestRef = ref;
     final session = ref.read(userDataSessionProvider);
-    if (!session.isActive) return null;
+    if (!session.isActive) return false;
     final effectivePlaceCode = placeCode?.trim();
 
     if (effectivePlaceCode == null || effectivePlaceCode.isEmpty) {
       state = const FormSubmitState.failure('장소 정보를 확인할 수 없어요.');
-      return null;
+      return false;
     }
 
     state = const FormSubmitState.submitting();
@@ -58,21 +48,21 @@ class PlantDeleteController extends Notifier<FormSubmitState> {
       await ref
           .read(plantRepositoryProvider)
           .deletePlant(plantId: plantId, placeCode: effectivePlaceCode);
-      if (!isCurrentUserDataSession(requestRef, session)) return null;
+      if (!isCurrentUserDataSession(requestRef, session)) return false;
       ref.invalidate(remotePlantListProvider);
       ref.invalidate(remotePlantDetailProvider(plantId));
       ref.invalidate(remotePlantEditInfoProvider(plantId));
       state = const FormSubmitState.idle();
 
-      return const PlantDeleteResult.home();
+      return true;
     } catch (error) {
-      if (!isCurrentUserDataSession(requestRef, session)) return null;
+      if (!isCurrentUserDataSession(requestRef, session)) return false;
       state = FormSubmitState.failureFrom(
         error,
         fallbackMessage: '식물 삭제에 실패했어요',
       );
 
-      return null;
+      return false;
     }
   }
 }

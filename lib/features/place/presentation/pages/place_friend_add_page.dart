@@ -12,6 +12,7 @@ import 'package:commonplant_frontend/features/place/presentation/widgets/place_f
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_selected_strip.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_search_text_field.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -60,9 +61,7 @@ class PlaceFriendAddPage extends ConsumerWidget {
         .read(placeFriendRequestControllerProvider)
         .errorMessage;
     if (errorMessage != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      showCommonSnackBar(context, errorMessage);
     }
   }
 

@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/features/login/presentation/providers/profi
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_image_action_sheet.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_photo_permission_dialog.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_setup_layout.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -115,9 +116,7 @@ class ProfileSetupPage extends ConsumerWidget {
       return;
     }
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    showCommonSnackBar(context, message);
   }
 
   @override

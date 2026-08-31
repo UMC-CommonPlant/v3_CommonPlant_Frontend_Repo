@@ -3,6 +3,7 @@ import 'package:commonplant_frontend/features/plant/presentation/providers/plant
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_state.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_form_scaffold.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -173,12 +174,10 @@ class PlantFormPage extends ConsumerWidget {
           );
         }
       case null:
-        final errorMessage = ref.read(provider).submitErrorMessage;
+        final errorMessage = ref.read(provider).submitState.errorMessage;
 
         if (errorMessage != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(errorMessage)));
+          showCommonSnackBar(context, errorMessage);
         }
     }
   }

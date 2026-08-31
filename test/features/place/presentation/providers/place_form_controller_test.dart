@@ -99,7 +99,10 @@ void main() {
             }
 
             expect(results.first, isNull);
-            expect(container.read(provider).submitErrorMessage, isNotNull);
+            expect(
+              container.read(provider).submitState.errorMessage,
+              isNotNull,
+            );
             expect(container.read(provider).canSubmit, isTrue);
             repository.writeBarrier = null;
             expect(await controller.submit(), isNotNull);
@@ -347,13 +350,13 @@ void main() {
       expect(await controller.submit(), isNull);
 
       final failed = container.read(provider);
-      expect(failed.submitErrorMessage, '입력 내용을 확인해 주세요.');
+      expect(failed.submitState.errorMessage, '입력 내용을 확인해 주세요.');
       expect(failed.nameErrorMessage, '이름 오류');
       expect(failed.addressErrorMessage, '주소 오류');
 
       controller.updateName('새 이름');
       final edited = container.read(provider);
-      expect(edited.submitErrorMessage, isNull);
+      expect(edited.submitState.errorMessage, isNull);
       expect(edited.nameErrorMessage, isNull);
       expect(edited.addressErrorMessage, isNull);
     });
@@ -458,7 +461,7 @@ void main() {
 
       expect(repository.updateCalls, 0);
       final state = container.read(provider);
-      expect(state.submitErrorMessage, contains('기존 사진'));
+      expect(state.submitState.errorMessage, contains('기존 사진'));
       expect(state.currentName, '루프탑');
       expect(state.currentAddress, _serviceAddress.address);
       expect(state.isSubmitting, isFalse);

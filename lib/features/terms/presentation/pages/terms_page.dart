@@ -7,6 +7,7 @@ import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -76,9 +77,7 @@ class TermsPage extends ConsumerWidget {
         if (!didSubmit) {
           final message = ref.read(profileSetupControllerProvider).errorMessage;
           if (message != null) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(message)));
+            showCommonSnackBar(context, message);
           }
           return;
         }

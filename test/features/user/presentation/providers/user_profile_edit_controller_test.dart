@@ -64,7 +64,7 @@ void main() {
           return;
         }
 
-        expect(container.read(provider).submitErrorMessage, isNotNull);
+        expect(container.read(provider).submitState.errorMessage, isNotNull);
         expect(container.read(provider).canSubmit, isTrue);
         repository.writeBarrier = null;
         expect(await controller.submit(), isTrue);
@@ -207,7 +207,8 @@ void main() {
     expect(
       container
           .read(userProfileEditControllerProvider(args))
-          .submitErrorMessage,
+          .submitState
+          .errorMessage,
       '회원 정보를 수정하지 못했어요',
     );
   });

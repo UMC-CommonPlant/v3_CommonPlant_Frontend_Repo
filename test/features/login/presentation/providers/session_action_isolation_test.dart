@@ -63,7 +63,7 @@ void main() {
       expect(await pending, isFalse);
       expect(container.read(currentUserProvider).requireValue.id, 'B');
       expect(container.read(form).currentName, isEmpty);
-      expect(container.read(form).submitErrorMessage, isNull);
+      expect(container.read(form).submitState.errorMessage, isNull);
       controller.updateName('과거 폼');
       expect(await controller.submit(), isFalse);
       expect(repository.updateMeCalls, 1);
@@ -117,7 +117,7 @@ void main() {
 
     expect(container.read(provider).currentAddress, 'B 주소');
     expect(container.read(provider).currentName, 'B 장소');
-    expect(container.read(provider).submitErrorMessage, isNull);
+    expect(container.read(provider).submitState.errorMessage, isNull);
   });
 
   test('A의 장소 생성 완료는 B의 입력·캐시를 변경하거나 이동 결과를 반환하지 않는다', () async {
@@ -184,7 +184,7 @@ void main() {
     final callsBefore = repository.placeListCalls;
     repository.deletePlaceResult.complete();
 
-    expect(await pending, isNull);
+    expect(await pending, isFalse);
     await container.read(remotePlaceListProvider.future);
     expect(repository.placeListCalls, callsBefore);
     expect(container.read(placeExitControllerProvider).errorMessage, isNull);
@@ -201,7 +201,7 @@ void main() {
     await _switchToB(container, repository);
     repository.deletePlantResult.complete();
 
-    expect(await pending, isNull);
+    expect(await pending, isFalse);
     expect(container.read(plantDeleteControllerProvider).isSubmitting, isFalse);
     expect(container.read(plantDeleteControllerProvider).errorMessage, isNull);
   });

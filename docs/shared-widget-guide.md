@@ -258,6 +258,19 @@ CommonAddressOrPlaceField(
 - action 영역 높이: 44
 - 우측 확인 버튼은 `CommonDialogActionButton.confirm` 사용
 
+### showCommonSnackBar
+
+현재 화면을 유지하면서 짧게 알릴 복구 가능한 작업 실패나 비차단 안내에 사용합니다.
+
+```dart
+showCommonSnackBar(context, '장소 삭제에 실패했어요');
+```
+
+- 새 안내를 표시하기 전에 현재 Snackbar를 닫아 메시지가 쌓이지 않게 합니다.
+- 메시지 외의 style, duration, action 옵션은 공통 API로 미리 만들지 않습니다.
+- 피드백 서비스, Provider, event, severity enum을 두지 않고 화면에서 직접 호출합니다.
+- 여러 화면에서 같은 추가 동작이 실제로 반복될 때만 함수 인자나 별도 위젯 확장을 검토합니다.
+
 ### CommonEditDeletePopup
 
 수정/삭제 액션 팝업입니다.
@@ -300,6 +313,7 @@ const CommonSvgIcon(
 | 분류 | 대상 | 판단 |
 | --- | --- | --- |
 | 공용 control로 유지 | `CommonButton`, `CommonScaffold`, `CommonNavigationBar`, `CommonSvgIcon`, `CommonTextField`, `CommonSearchTextField`, `CommonAddressOrPlaceField`, `CommonDialogCard`, `CommonDialogActionButton`, `CommonEditDeletePopup`, `CommonFab`, `CommonFabDial` | 여러 feature에서 같은 의미와 상호작용으로 쓰이고 도메인 정책을 알지 않으므로 `shared/widgets`에 둡니다. |
+| 공용 표시 helper로 유지 | `showCommonSnackBar` | 여러 feature의 동일한 교체 표시 동작만 공유합니다. 메시지 종류나 상태 계층은 소유하지 않습니다. |
 | 공용 primitive로 유지 | `CommonPlusMark` | `CommonPlusIconButton` 내부 primitive로만 사용합니다. 화면별 조합 로직은 넣지 않습니다. |
 | 공용 image input 후보 | `CommonCircleImageBox`, `CommonPhotoAddButton`, `CommonPlaceImageAddButton` | 이미지 선택 UI라는 공통성이 있습니다. 다만 `CommonPlaceImageAddButton`처럼 특정 도메인 이름이 들어간 위젯은 다른 feature로 확장하기 전에 generic variant 추가 또는 feature 내부 이동을 먼저 검토합니다. |
 | 공용 display 후보 | `CommonPlaceCard`, `CommonPlantCard`, `CommonPlacePlantCard`, `CommonMemoCard`, `CommonWateringButton` | Home, Place, Plant, Memo 사이에서 같은 카드 표현을 공유할 가능성이 있어 당장은 유지합니다. API 상태, route 이동, 권한 정책이 들어가기 시작하면 feature 내부 widget으로 내리거나 domain-agnostic display model을 주입하는 방식으로 정리합니다. |
