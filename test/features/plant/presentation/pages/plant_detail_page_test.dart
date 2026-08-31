@@ -263,14 +263,9 @@ void main() {
     expect(find.bySemanticsLabel('메모 전체보기'), findsNothing);
   });
 
-  testWidgets('remote 식물 삭제 확인은 삭제 API를 호출하고 홈으로 이동한다', (tester) async {
+  testWidgets('resolver로 복원한 code로 식물을 삭제하고 홈으로 이동한다', (tester) async {
     final repository = _DeletablePlantRepository(
-      const PlantDetail(
-        id: 'plant-remote',
-        name: '필로덴드론',
-        placeId: 'place-1',
-        placeName: '거실 정원',
-      ),
+      const PlantDetail(id: 'plant-remote', name: '필로덴드론', placeName: '거실 정원'),
     );
 
     await tester.pumpWidget(_remotePlantDetailApp(repository));
@@ -285,7 +280,7 @@ void main() {
 
     expect(repository.deleteCalls, 1);
     expect(repository.latestDeletedPlantId, 'plant-remote');
-    expect(repository.latestDeletedPlaceCode, 'place-1');
+    expect(repository.latestDeletedPlaceCode, 'resolved-place');
     expect(find.text('홈'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -293,7 +288,7 @@ void main() {
 
 Widget _remotePlantDetailApp(PlantRepository repository) {
   final router = GoRouter(
-    initialLocation: '/plants/plant-remote?placeId=place-1',
+    initialLocation: '/plants/plant-remote',
     routes: [
       GoRoute(path: '/', builder: (context, state) => const Text('홈')),
       GoRoute(
@@ -311,6 +306,9 @@ Widget _remotePlantDetailApp(PlantRepository repository) {
       authenticatedUserDataSession,
       useRemoteApiProvider.overrideWithValue(true),
       plantRepositoryProvider.overrideWithValue(repository),
+      remotePlantPlaceCodeProvider(
+        'plant-remote',
+      ).overrideWith((ref) async => 'resolved-place'),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
