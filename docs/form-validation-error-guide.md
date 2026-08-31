@@ -122,6 +122,23 @@ disabled 입력의 clear 동작은 [#255](https://github.com/UMC-CommonPlant/v3_
 - 실패 후에는 `state.errorMessage`를 Snackbar, Dialog 등 화면 정책에 맞게 사용자 메시지로 표시합니다.
 - repository 호출과 Provider invalidate는 Controller가 담당하고, route 이동은 화면에 유지합니다.
 
+## 화면 피드백 기준
+
+UX-02는 [#279](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/279)에서 아래처럼 결정했습니다.
+
+| 상황 | 표시 방식 |
+| --- | --- |
+| 입력값을 사용자가 바로 수정할 수 있음 | 해당 field 아래 helper/error message |
+| 조회 실패처럼 화면 진행을 막지만 재시도할 수 있음 | 화면 안의 error 상태와 재시도 action |
+| 현재 화면을 유지하는 작업 실패 또는 비차단 안내 | `showCommonSnackBar(context, message)` |
+| 삭제, 탈퇴처럼 실행 전 명시적 확인이 필요함 | `showCommonDialog`와 `CommonDialogCard` |
+| 성공 뒤 route 이동이나 목록 변경이 보임 | 바뀐 화면 상태 자체로 알리고 중복 Snackbar를 생략 |
+| 성공했지만 화면에서 결과를 확인하기 어려움 | 필요한 경우에만 Snackbar |
+
+Toast 외부 의존성은 추가하지 않습니다. Snackbar는 화면을 가리는 영속 오류 저장소가 아니므로 Controller가 사용자용 메시지를 상태로 관리하고 화면이 한 번 표시합니다. 새 메시지는 기존 Snackbar를 교체합니다.
+
+피드백을 공통 서비스, Provider, event queue, success/warning/error enum으로 감싸지 않습니다. 공통 함수는 현재 반복되는 `message` 표시와 교체 동작만 담당합니다. action, duration, style 같은 요구가 여러 feature에서 실제로 반복되기 전에는 API를 확장하지 않습니다.
+
 ## 서버 에러 처리
 
 API 연동이 들어오면 아래 순서로 처리합니다.
@@ -152,4 +169,4 @@ API 연동이 들어오면 아래 순서로 처리합니다.
 ## 결정 필요
 
 - HTTP·전송 범주, 확인된 field code와 인증 만료 code의 기본 매핑은 #275에서 확정했습니다. 새 code는 백엔드 계약을 확인한 뒤 추가하며 raw message를 임시 fallback으로 사용하지 않습니다.
-- Toast, Snackbar, Dialog 중 어떤 상황에 어떤 피드백을 사용할지 공통 UX 정책은 남아 있습니다.
+- Toast, Snackbar, Dialog 사용 기준은 #279에서 결정했습니다. 새 피드백 형태가 필요하면 실제 반복 사용처와 사용자 행동 차이를 먼저 확인합니다.
