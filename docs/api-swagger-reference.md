@@ -16,6 +16,7 @@
 - Plant 수정의 필수 query·조회 schema 재확인: 2026-08-29, live OpenAPI JSON HTTP 200. 이 재확인은 Plant 범위이며 backend main 재검증이나 실제 인증 쓰기 검증을 뜻하지 않는다.
 - Plant 소속 장소 조회·식물 검색 계약 재확인: 2026-08-31 (live OpenAPI 19 paths, backend main `7d572cb` 동일). Plant direct code·검색 endpoint는 없고 기존 Place 목록·상세의 code와 `plantList[].plantId` 조합은 사용 가능하다.
 - 오류·token 계약 재확인: 2026-08-31. token 없는 사용자 조회는 HTTP 401 `A009`, 잘못된 bearer token은 `A003`을 반환했다. backend `ErrorResponse` 구조와 전체 error enum을 대조했으며 refresh·logout endpoint는 live OpenAPI와 Controller 모두에 없다.
+- Place 멤버·Friend 쓰기 계약 재확인: 2026-08-31 (live OpenAPI, backend main `7d572cb` 동일). 멤버 ID·역할·변경 endpoint와 Friend 고유 대상·부분 결과 계약은 없으며 backend #150에 요청했다.
 - 접속 결과: Swagger UI, OpenAPI JSON, Swagger config HTTP 200
 - 개발 서버 루트: HTTP 404. 루트 route가 없다는 의미이며 Swagger/API endpoint 상태와 분리한다.
 - 인증 endpoint 확인: token 없이 `GET /api/v1/users` 요청 시 HTTP 401, code `A009`로 인증 요구 응답
@@ -24,7 +25,7 @@
 - 서버 base path: `/api/v1`
 - endpoint inventory: 19 paths, 27 operations
 - 기존 문서 비교 기준: `docs/api-swagger-summary-43` 브랜치의 `docs/api-swagger-reference.md` 확인일 2026-05-20
-- 최초 코드 비교 기준: `feature/api-integration-45` 브랜치의 API 계층. 현재 화면·계층 대조 기준은 PR #246 병합 커밋 `2a01bab`이다.
+- 최초 코드 비교 기준: `feature/api-integration-45` 브랜치의 API 계층. 현재 화면·계층 대조 기준은 PR #276 병합 커밋 `5426768`이다.
 - 백엔드 소스 비교 기준: `UMC-CommonPlant/v3_CommonPlant_Backend_Repo` main `7d572cbcabc81a65926738b2a09e8479d0bd0c79`
 - 참고: 2026-05-25의 상세 schema 비교 기록을 보존하고, 2026-08-25에는 live OpenAPI와 백엔드 Controller·DTO·Service를 함께 재검증했다.
 
@@ -55,6 +56,12 @@
 - #275는 HTTP·전송 오류를 안전한 사용자 메시지 범주로 변환하고 validation `field`·`reason`을 Place·Plant·User·가입 프로필 폼에 연결한다. top-level 서버 상세 문구와 미확인 code는 화면에 그대로 노출하지 않는다.
 - 활성 access-token 요청의 확인된 `A003`, `A004`, `A009`만 현재 세션 만료로 처리한다. 한 세션에서 종료 요청은 한 번만 실행하며 계정 전환 뒤 도착한 이전 응답은 폐기한다.
 - refresh 재발급과 서버 로그아웃은 제공되지 않는다. backend [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)가 endpoint·rotation·invalidation 계약을 제공하기 전까지 refresh 요청이나 원요청 재시도를 만들지 않는다.
+
+### 2026-08-31 Place 멤버·Friend 식별자 쓰기 경계
+
+- `GET /place/{code}/members`는 성공 schema 없이 `{ name, image }[]`만 반환하고 멤버 ID·역할, self leave, owner의 멤버 제거·권한 변경 endpoint가 없다.
+- `POST /friends/request`는 `receiverName[]`을 받아 부분 이름 검색 첫 결과를 사용하고, 응답 `receiverList`는 대상별 결과나 전체 원자성을 나타내지 않는다.
+- #277은 [backend #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150) 답변 전 #245의 조회 전용 UI, #239의 구성원 나가기 숨김, 임시 화면 key 비전송을 유지한다. 표시 이름 기반 요청은 #243에서 수용한 위험으로만 유지하고 새 고유 ID·부분 성공 계약을 추정하지 않는다.
 
 ### 2026-08-31 Plant 장소 code 조회와 검색 경계
 
@@ -639,7 +646,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | Image 업로드/조회/수정/삭제 성공 응답 body 구조 | 여전히 schema 없음 | 남음 |
 | `PUT /place/update/{code}` multipart 여부 | `multipart/form-data`로 변경 | 해소 |
 | multipart 요청 JSON part content type | Auth/User/Plant는 `application/json` 명시, Place create/update는 encoding 미표기 | 일부 남음 |
-| 장소 멤버 목록 API | source에서 `{ name, image }[]` 확인 | 표시 계약 해소, 고유 id·변경 API 남음 |
+| 장소 멤버 목록 API | source에서 `{ name, image }[]` 확인, 쓰기 endpoint 없음 | 표시 계약 해소, #277은 backend #150 전까지 고유 id·역할·변경 API Blocked |
 | Place create/update required와 validation | `name`, `address` required와 `name` maxLength 확인 | 일부 해소 |
 | Plant create/update validation과 nullable 정책 | 문자열 maxLength와 date format 확인 | 일부 해소 |
 | 에러 응답 body 구조와 code/message 필드명 | live 401 응답과 backend `ErrorResponse` source 대조 | #275 typed 파싱·field 오류·민감 value 폐기 반영, 인증 쓰기 smoke 남음 |
@@ -678,6 +685,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: #243에서 `POST /place/create`의 result 문자열을 place code로 파싱하고 친구 추가 route에 전달한다.
 - 반영: #243에서 `PUT /place/update/{code}`의 result를 typed `PlaceSummary`로 파싱한다.
 - 반영: #245에서 `GET /place/{code}/members`의 result 배열을 `PlaceMember`로 파싱하고 친구 관리 조회·검색에 연결했다. API 모드는 임시 렌더링 키를 사용자 ID로 사용하지 않고 멤버 변경을 제공하지 않는다.
+- 유지: #277에서 live OpenAPI와 backend main을 다시 확인했으나 멤버·Friend 쓰기 계약은 추가되지 않았다. backend #150 전까지 `receiverId` 같은 필드, 임시 멤버 key, 표시 이름 검색 첫 항목을 새 원격 쓰기 계약으로 사용하지 않는다.
 - 반영: #241에서 `GET /friends/requests`를 typed `FriendInvitation` 목록으로 파싱하고 Home 요청 수와 장소 친구 요청 화면에 연결했다.
 - 반영: #241에서 `POST /friends/accept`, `POST /friends/decline`을 항목별 submit 상태와 목록 invalidate 정책에 연결했다.
 - 반영: `POST /plants`와 `PUT /plants/{plantId}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
@@ -719,8 +727,8 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 | --- | --- | --- |
 | Auth | `POST /auth/register` response example의 `isNewUser`와 schema `newUser` 불일치 | 회원가입 응답 DTO의 실제 필드 확인 필요 |
 | 공통 Multipart | JSON part의 `Content-Type: application/json` 필요 여부 | Auth/Place/Plant/User multipart 전송 정책 정합성 |
-| Place | dev 배포가 backend source `7d572cb` 계약과 일치하는지 인증 smoke | #239 mapper의 실제 환경 검증 필요 |
-| Friend | 표시 이름 receiver의 중복 오매칭, 멤버 변경 endpoint 부재 | 신규 초대는 위험 수용 상태로 연결, 친구 관리 변경은 보류 |
+| Place | 멤버 ID·역할, self leave, owner 멤버 관리 endpoint와 권한·오류 | #277은 backend #150 전까지 조회 전용·member 나가기 숨김 유지 |
+| Friend | 고유 대상 request, 사용자 검색 정책, 다중 대상 원자성·부분 결과·멱등 | #277은 backend #150 전까지 이름 기반 위험 수용 경계를 확장하지 않음 |
 | Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물/메모 이미지 key/url 매핑 보류 |
 | Error | live/backend source와 dev 배포의 실제 인증 쓰기 오류 일치 여부 | #275 공통 사용자 메시지와 field error 매핑 완료, 원격 validation smoke 보류 |
 | Token | refresh token 재발급, 로그아웃 API 제공 여부 | #275 로컬 세션 종료 적용, backend #149 전까지 자동 복구·서버 invalidation 차단 |
@@ -732,7 +740,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 
 초기 Auth·Home·Plant·User·Place·Friend 연결과 감사 회귀 수정 PR은 병합됐다. 현행 우선순위와 미완료 동선은 [화면·API 매트릭스](screen-api-integration-plan.md)를 따른다.
 
-소셜 SDK credential 획득, 실제 주소 검색, 이미지 파일 선택·key 조회, Memo CRUD와 멤버 변경은 여전히 별도 준비가 필요하다. 식물 검색은 백엔드 #92의 계약·구현이 필요하며 그동안 API mode에서 비활성화한다. 이미 수용한 Friend 이름 오매칭과 Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 결함을 자동으로 수용한 것으로 해석하지 않는다.
+소셜 SDK credential 획득, 실제 주소 검색, 이미지 파일 선택·key 조회와 Memo CRUD는 여전히 별도 준비가 필요하다. Place 멤버 변경·나가기와 Friend 고유 대상·부분 결과는 backend #150을 선행 조건으로 두며, 식물 검색은 백엔드 #92 전까지 API mode에서 비활성화한다. 이미 수용한 Friend 이름 오매칭과 Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 결함을 자동으로 수용한 것으로 해석하지 않는다.
 
 ## DEV API 문서화 작업 이력
 
@@ -744,5 +752,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 | #241 | `24079a6`, `a1761a8`, `0141f74` | Friend 수신 요청 typed mapper, 수락·거절 상태, Home 요청 수와 화면 상태 연결 | format 289개 파일, analyze, 전체 test 332개 통과·기존 skip 1개 |
 | #243 | `c5fbca2`, `d38e031`, `3b2198c` | Place 생성 code·수정 요약, 친구 추가 route와 이름 기반 요청 submit 연결 | format 291개, analyze, 전체 test 344개 통과·기존 skip 1개 |
 | #245 | `b090581`, `8e46fd8` | 장소 멤버 typed 조회와 친구 관리 read-only·filter·상태 UI 연결 | format 294개, analyze, 전체 test 362개 통과·기존 skip 1개 |
+| #275 | `e507656`, `022e8ba` | 표준 API 오류·field 메시지와 확인된 인증 만료의 로컬 세션 종료, refresh·logout 차단 경계 | format·analyze·diff 검사, 전체 547개 통과·기존 skip 1개 |
+| #277 | 이 문서의 최종 커밋 | Place 멤버·Friend 쓰기 계약 재검증, backend #150 질문과 안전 차단 유지 | live OpenAPI·backend main·중복 이슈 확인, `git diff --check` |
 
 작업 이력만 갱신하는 후속 문서 커밋은 자기 자신의 해시를 생략할 수 있다.

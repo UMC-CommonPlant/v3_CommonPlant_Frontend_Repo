@@ -26,6 +26,11 @@
 2026-08-26 사용자 결정에 따라 #243 / PR #244에서 신규 친구 요청 전송을 우선
 연결하고 아래 위험을 수용했습니다.
 
+2026-08-31 #277에서 live OpenAPI와 backend main `7d572cb`를 재확인했으며 위험은
+여전히 유효합니다. 고유 대상·부분 결과·멱등 계약은
+[backend #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)에서
+추적하고, 답변 전 현재 payload를 새 고유 ID 계약으로 해석하지 않습니다.
+
 | ID | 상태 | 위험과 영향 | 현재 구현·완화 | 해소 또는 중단 조건 |
 | --- | --- | --- | --- | --- |
 | FRIEND-RISK-01 | `Accepted` | `receiverName`은 고유 ID가 아니며 백엔드는 표시 이름 부분 검색의 첫 결과를 사용합니다. 동명이인·유사 이름이 있으면 화면에서 선택한 사용자와 다른 사용자에게 요청이 갈 수 있습니다. | 화면에서 직접 선택한 프로필의 이름만 전송하고 중복 submit을 막습니다. 이는 오초대 가능성을 제거하지 않습니다. | 요청 payload를 고유 user ID로 변경하거나 exact unique name을 서버가 보장합니다. 실제 오초대가 확인되면 전송 연결을 비활성화합니다. |
@@ -37,12 +42,17 @@
 - 이슈: #243 `[Feature] 장소 생성·수정 응답과 후속 흐름 연결`
 - PR: #244 `[Feature] 장소 생성·수정 응답과 후속 흐름 연결`
 - 구현 커밋: `3b2198c`
-- 관련 확인 항목: `FRIEND-02`, `FRIEND-03`, `SEARCH-03`, `TESTENV-01`~`05`
+- 후속 이슈: #277, backend #150
+- 관련 확인 항목: `FRIEND-02`, `FRIEND-03`, `FRIEND-05`, `SEARCH-03`, `TESTENV-01`~`05`
 
 ## Place 멤버 조회
 
 2026-08-28 #245는 미확정 항목을 별도로 기록하면서 조회 가능한 화면부터 연결하는
 기준으로 진행했습니다. 쓰기 동작을 추정하지 않고 실제 조회 결과만 사용합니다.
+
+2026-08-31 #277 재검증에서도 멤버 ID·역할과 변경 endpoint는 제공되지 않았습니다.
+[backend #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)이
+live 계약을 제공할 때까지 조회 전용과 구성원 나가기 숨김을 유지합니다.
 
 | ID | 상태 | 위험과 영향 | 현재 구현·완화 | 해소 조건 |
 | --- | --- | --- | --- | --- |
@@ -52,7 +62,8 @@
 - 관련 이슈: #245 `[Feature] 친구 관리 멤버 목록 API 연결`
 - 관련 PR: [#246](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/246)
 - 구현 커밋: `b090581`, `8e46fd8`
-- 관련 확인 항목: `PLACE-04`, `TESTENV-01`~`05`
+- 후속 이슈: #277, backend #150
+- 관련 확인 항목: `PLACE-04`~`06`, `TESTENV-01`~`05`
 
 ## Plant 소속 장소 code 조회
 

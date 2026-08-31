@@ -21,12 +21,14 @@
 | PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | #239 목록·상세 mapper와 화면 반영 | Done |
 | PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | API 경계는 `code`, 기존 route 모델명은 `id` 유지 | Answered |
 | PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #245 친구 관리 조회 연결, 멤버 변경은 별도 계약 필요 | Answered |
-| PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 API mode에서 member 나가기 action 숨김 | Blocked |
+| PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 숨김 유지, #277은 backend #150 답변 대기 | Blocked |
+| PLACE-06 | Place | 멤버 고유 ID·역할과 owner의 제거·권한 변경 endpoint는 무엇인가? | #245 조회 전용 유지, #277 쓰기 연결 보류 | Blocked |
 | PLANT-01 | Plant | 식물에서 소속 장소 code를 조회할 수 있는 계약을 제공하는가? | #273에서 기존 Place 목록·상세의 정확한 plant ID 대조로 code 복원 | Answered |
 | FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | #241 요청 목록·Home 배지 연결 | Answered |
 | FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | #241 수락·거절·갱신, #243 전송 연결 | Answered |
 | FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | #243에서 위험 수용 후 연결, 고유 ID 전환 필요 | Answered |
 | FRIEND-04 | Friend | `friendDecisionReq.friendId`는 요청 id인가, 사용자 id인가? | 요청 PK 사용 확인, 수락·거절 연결 가능 | Answered |
+| FRIEND-05 | Friend | 고유 대상 요청과 다중 대상 원자성·부분 결과 계약은 무엇인가? | #277 고유 ID payload·대상별 상태 연결 보류 | Blocked |
 | IMAGE-01 | Image | `/s3/images` upload/download/update/delete 성공 response schema는 무엇인가? | image key/url mapper 보류 | Open |
 | IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | 프로필/장소/식물/메모 이미지 흐름 확정 불가 | Open |
 | IMAGE-03 | Image | presigned download URL 응답 필드와 wrapper 구조는 무엇인가? | 네트워크 이미지 fallback 정책 보류 | Open |
@@ -37,7 +39,7 @@
 | TOKEN-02 | Token | 로그아웃 API와 서버 token invalidation 정책이 있는가? | 백엔드 #149 전까지 로컬 token·세션만 제거 | Blocked |
 | SEARCH-01 | 검색 | 주소 검색 API를 백엔드가 제공하는가? | 장소 등록 주소 검색 실데이터 보류 | Open |
 | SEARCH-02 | 검색 | 식물 학명/추천 검색 API를 백엔드가 제공하는가? | 백엔드 #92 대기, #273에서 API mode fixture 차단 | Blocked |
-| SEARCH-03 | 검색 | `GET /users/{keyword}`는 부분 검색인가, exact 검색인가? | 친구 추가 검색 UX와 empty 정책 확인 필요 | Open |
+| SEARCH-03 | 검색 | `GET /users/{keyword}`는 부분 검색인가, exact 검색인가? | #277 친구 선택·중복 이름 UX, backend #150 답변 필요 | Open |
 | MEMO-01 | Memo | 메모 생성, 목록, 수정, 삭제 API 제공 계획은 무엇인가? | 메모 화면 실데이터 연결 보류 | Open |
 | MEMO-02 | Memo | 메모 이미지 첨부는 어떤 API와 필드로 연결하는가? | 메모 사진 업로드 흐름 보류 | Open |
 | MEMO-03 | Memo | 메모 목록 response의 작성자, 이미지, 작성일, pagination 구조는 무엇인가? | 메모 목록 mapper와 카드 상태 보류 | Open |
@@ -125,7 +127,16 @@
 - 프론트 영향: owner 전체 삭제와 구성원 나가기를 같은 action으로 호출하면 구성원은 403이 발생하고 owner는 파괴 범위를 오해할 수 있다.
 - 확인 질문: owner가 아닌 구성원이 Belong만 제거하고 장소에서 나가는 endpoint가 제공되는가?
 - 프론트 반영: #239 API 모드는 owner에게만 전체 삭제 action과 경고를 표시하고 구성원 나가기는 숨긴다.
-- 답변: 현재 제공 endpoint 없음.
+- 답변: 현재 제공 endpoint 없음. 2026-08-31 backend [#150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)에 self leave 계약을 요청했다.
+- 상태: Blocked
+
+### PLACE-06. 멤버 고유 식별자·역할과 owner 관리 endpoint
+
+- 현재 근거: live OpenAPI의 `GET /place/{code}/members`에는 성공 schema가 없고 backend main `7d572cb`의 `getPlaceResUser`는 `name`, `image`만 제공한다. 멤버 제거·역할 변경 Controller도 없다.
+- 프론트 영향: 가입 순서 기반 임시 화면 key는 렌더링에만 쓸 수 있고 특정 멤버의 삭제·권한 변경 payload에는 사용할 수 없다.
+- 확인 질문: 멤버의 안정적인 user ID와 역할은 어떤 필드로 제공하는가? owner가 멤버를 제거하거나 역할을 위임·변경하는 endpoint, 권한·owner 보호·최소 인원·멱등 규칙은 무엇인가?
+- 프론트 반영: #277은 [backend #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150) 답변과 live OpenAPI schema 전까지 #245의 조회 전용 UI와 임시 key 비전송 경계를 유지한다.
+- 답변: 미확인
 - 상태: Blocked
 
 ## Plant
@@ -180,6 +191,15 @@
   `FriendDecisionRequest.friendId`에 반영했다.
 - 답변: `friendId`는 친구 요청 테이블의 `friendIdx`, 즉 요청 PK이다.
 - 상태: Answered
+
+### FRIEND-05. 고유 대상 요청과 다중 대상 결과
+
+- 현재 근거: live OpenAPI와 backend main `7d572cb`의 `sendFriendReq`는 `receiverName[]`을 받는다. 서비스는 각 이름의 부분 검색 첫 결과를 검사한 뒤 별도 loop에서 요청을 저장하고, 응답은 입력 이름을 담은 `receiverList`뿐이다.
+- 프론트 영향: 검색 결과의 고유 `UserResponse.id`를 선택 상태에 보존해도 요청 payload로 전달할 수 없다. 서버의 transaction 원자성·대상별 결과가 명세되지 않아 전체 성공·실패·부분 성공 UI를 결정할 수 없다.
+- 확인 질문: 대상 payload를 고유 user ID로 바꾸는가? 여러 대상은 전체 원자성인가, 부분 성공인가? 부분 성공이면 ID별 성공·실패와 안전한 오류 code, 중복·재시도 멱등 규칙은 무엇인가?
+- 프론트 반영: #277은 [backend #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150) 답변 전 `receiverId` 같은 미확인 필드를 만들거나 `receiverList`를 대상별 성공으로 해석하지 않는다. #243의 사용자 승인 아래 수용한 현재 경계는 위험 등록부에서 계속 추적한다.
+- 답변: 미확인
+- 상태: Blocked
 
 ## Image
 
@@ -279,10 +299,10 @@
 
 ### SEARCH-03. 사용자 검색 매칭 정책
 
-- 현재 근거: `GET /users/{keyword}`는 schema가 있지만 검색 매칭 방식은 명시되지 않았다.
+- 현재 근거: `GET /users/{keyword}`는 schema가 있지만 검색 매칭 방식은 명시되지 않았다. backend main `7d572cb`는 `findByNameContainingAndStatus`로 부분 검색하나 정렬·exact 우선·중복 이름 정책은 없다.
 - 프론트 영향: 친구 추가 화면의 debounce, empty text, 중복 이름 처리 정책이 모호하다.
 - 확인 질문: keyword는 부분 검색인가, exact 검색인가? 자기 자신과 이미 초대된 사용자는 포함되는가?
-- 프론트 반영: 답변 후 친구 추가 UX와 필터링 정책을 조정한다.
+- 프론트 반영: #277에서 backend #150 답변 후 친구 추가 UX와 고유 ID 요청 경계를 함께 조정한다.
 - 답변: 미확인
 - 상태: Open
 
