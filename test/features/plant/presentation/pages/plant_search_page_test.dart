@@ -1,12 +1,35 @@
 import 'package:commonplant_frontend/app/common_plant_app.dart';
 import 'package:commonplant_frontend/app/router/app_router.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_search_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/test_viewport.dart';
+
 void main() {
+  for (final viewport in [
+    TestViewports.reference,
+    TestViewports.compactWidth,
+  ]) {
+    testWidgets('API 모드에서는 검색 미연결 안내만 표시한다 ($viewport)', (tester) async {
+      configureTestViewport(tester, viewport);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [useRemoteApiProvider.overrideWithValue(true)],
+          child: const MaterialApp(home: PlantSearchPage()),
+        ),
+      );
+
+      expect(find.textContaining('식물 검색 서비스가 아직 연결되지 않았어요'), findsOneWidget);
+      expect(find.byType(TextField), findsNothing);
+      expect(find.text('몬스테라 델리오사'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('식물 등록 검색 전에는 결과를 표시하지 않는다', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: PlantSearchPage())),

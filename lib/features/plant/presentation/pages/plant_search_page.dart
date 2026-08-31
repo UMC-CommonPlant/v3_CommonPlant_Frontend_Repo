@@ -18,6 +18,16 @@ class PlantSearchPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final searchState = ref.watch(plantSearchControllerProvider);
 
+    if (!searchState.isAvailable) {
+      return CommonScaffold(
+        title: '식물 등록  (1/2)',
+        child: Text(
+          '식물 검색 서비스가 아직 연결되지 않았어요.\n연결 전에는 새 식물을 선택할 수 없어요.',
+          style: AppTextStyles.size16Medium.copyWith(color: AppColors.textBody),
+        ),
+      );
+    }
+
     return CommonScaffold(
       title: '식물 등록  (1/2)',
       navigationTitleStyle: AppTextStyles.size18Medium.copyWith(
