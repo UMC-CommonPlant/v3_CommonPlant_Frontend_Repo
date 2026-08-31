@@ -211,6 +211,13 @@ PR에는 아래 항목을 포함합니다.
 - 문서 반영 여부
 - Breaking change 여부
 
+일반 PR은 `.github/pull_request_template.md`를 기본 본문으로 사용합니다. 템플릿은 위 항목의 누락을 줄이는 최소 골격이며 PR 유형별로 나누지 않습니다.
+
+- HTML comment는 작성 안내용이므로 제출된 PR 본문에는 표시되지 않습니다.
+- 해당 없는 항목은 빈 채로 두지 않고 `해당 없음` 또는 `없음`과 이유를 적습니다.
+- 테스트 체크박스는 실제로 실행한 항목만 선택하고, 문서 전용 변경처럼 미실행한 명령은 이유를 남깁니다.
+- 템플릿은 assignees, milestone, Project category/status 같은 GitHub metadata를 자동 설정하지 않습니다. 기존 Project 정리 절차는 별도로 수행합니다.
+
 PR 제목 예시:
 
 ```text
@@ -293,6 +300,6 @@ CLI 권한이 부족하면 GitHub UI의 PR 우측 `Projects` 영역에서 위 Pr
 - [ ] 관련 문서를 갱신했는가?
 - [ ] 리뷰어가 집중해서 볼 부분을 PR 본문에 적었는가?
 
-## 결정 필요
+## 결정 기록
 
-- PR template 파일을 추가할지 결정해야 합니다.
+- GIT-01은 [#281](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/281)에서 단일 기본 PR template을 추가하는 것으로 결정했습니다. 실제 반복 요구가 생기기 전에는 유형별 템플릿이나 자동 입력 계층을 추가하지 않습니다.
