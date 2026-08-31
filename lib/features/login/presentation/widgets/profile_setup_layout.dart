@@ -21,6 +21,7 @@ const double _bottomActionsTop = 626;
 class ProfileSetupLayout extends StatelessWidget {
   const ProfileSetupLayout({
     required this.nickname,
+    this.nicknameErrorMessage,
     required this.hasImage,
     this.profileImageUrl,
     required this.isTermsAccepted,
@@ -36,6 +37,7 @@ class ProfileSetupLayout extends StatelessWidget {
   });
 
   final String nickname;
+  final String? nicknameErrorMessage;
   final bool hasImage;
   final String? profileImageUrl;
   final bool isTermsAccepted;
@@ -128,6 +130,7 @@ class ProfileSetupLayout extends StatelessWidget {
                     const SizedBox(height: AppSpacing.x16),
                     ProfileNicknameField(
                       nickname: nickname,
+                      serverErrorMessage: nicknameErrorMessage,
                       onChanged: onNicknameChanged,
                     ),
                   ],

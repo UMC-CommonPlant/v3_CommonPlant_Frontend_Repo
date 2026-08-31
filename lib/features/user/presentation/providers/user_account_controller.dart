@@ -54,9 +54,12 @@ class UserAccountController extends Notifier<FormSubmitState> {
       await ref.read(authSessionControllerProvider.notifier).clearSession();
 
       return true;
-    } catch (_) {
+    } catch (error) {
       if (!isCurrentUserDataSession(requestRef, session)) return false;
-      state = FormSubmitState.failure(failureMessage);
+      state = FormSubmitState.failureFrom(
+        error,
+        fallbackMessage: failureMessage,
+      );
 
       return false;
     }

@@ -70,10 +70,13 @@ class UserProfileEditController extends Notifier<UserProfileEditState> {
       ref.read(currentUserProvider.notifier).replace(updatedUser);
 
       return true;
-    } catch (_) {
+    } catch (error) {
       if (!isCurrentUserDataSession(requestRef, session)) return false;
       state = state.copyWith(
-        submitState: const FormSubmitState.failure('회원 정보를 수정하지 못했어요'),
+        submitState: FormSubmitState.failureFrom(
+          error,
+          fallbackMessage: '회원 정보를 수정하지 못했어요',
+        ),
       );
 
       return false;

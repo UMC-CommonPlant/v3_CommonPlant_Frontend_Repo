@@ -182,6 +182,11 @@ class PlantFormState {
 
   String? get submitErrorMessage => submitState.errorMessage;
 
+  String? get nameErrorMessage => submitState.fieldError('nickname');
+
+  String? get lastWateredDateErrorMessage =>
+      submitState.fieldError('lastWateredDate');
+
   bool get hasUnresolvedImage =>
       (initialImageUrl?.trim().isNotEmpty ?? false) &&
       (initialImageKey?.trim().isEmpty ?? true);

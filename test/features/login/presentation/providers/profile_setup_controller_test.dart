@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
 import 'package:commonplant_frontend/features/login/data/repositories/auth_repository.dart';
@@ -201,6 +202,41 @@ void main() {
       profileSetupSubmitFailureMessage,
     );
     expect(container.read(profileSetupControllerProvider).canSubmit, isTrue);
+  });
+
+  test('회원가입 필드 오류는 닉네임에 표시하고 입력 변경 시 지운다', () async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(profileSetupControllerProvider.notifier);
+    controller.updateNickname('커먼');
+
+    final didSubmit = await controller.submit(
+      action: () async => throw const ApiException(
+        message: '요청 값이 유효하지 않습니다.',
+        statusCode: 400,
+        code: 'C001',
+        kind: ApiFailureKind.validation,
+        fieldErrors: [
+          ApiFieldError(field: 'request.name', reason: '이미 사용 중인 이름이에요.'),
+        ],
+      ),
+    );
+
+    expect(didSubmit, isFalse);
+    expect(
+      container.read(profileSetupControllerProvider).errorMessage,
+      '입력 내용을 확인해 주세요.',
+    );
+    expect(
+      container.read(profileSetupControllerProvider).nicknameErrorMessage,
+      '이미 사용 중인 이름이에요.',
+    );
+
+    controller.updateNickname('새이름');
+    expect(
+      container.read(profileSetupControllerProvider).nicknameErrorMessage,
+      isNull,
+    );
   });
 
   test('신규 로그인 추천 프로필로 초기 상태를 구성한다', () async {

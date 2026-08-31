@@ -6,10 +6,12 @@ class UserProfileNameField extends StatefulWidget {
     super.key,
     required this.name,
     required this.onChanged,
+    this.serverErrorMessage,
   });
 
   final String name;
   final ValueChanged<String> onChanged;
+  final String? serverErrorMessage;
 
   @override
   State<UserProfileNameField> createState() => _UserProfileNameFieldState();
@@ -49,7 +51,16 @@ class _UserProfileNameFieldState extends State<UserProfileNameField> {
       hintText: '이름을 입력해 주세요',
       maxLength: 10,
       onChanged: widget.onChanged,
-      validator: _validateName,
+      validator: (value, isFocused) {
+        final serverErrorMessage = widget.serverErrorMessage;
+        if (serverErrorMessage != null) {
+          return CommonTextFieldValidation(
+            state: CommonTextFieldState.error,
+            helperText: serverErrorMessage,
+          );
+        }
+        return _validateName(value, isFocused);
+      },
     );
   }
 }

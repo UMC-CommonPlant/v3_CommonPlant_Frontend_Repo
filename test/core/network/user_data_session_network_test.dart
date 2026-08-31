@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:commonplant_frontend/core/network/api_client.dart';
+import 'package:commonplant_frontend/core/network/auth_session_expiration.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:dio/dio.dart';
@@ -89,6 +91,77 @@ void main() {
     await expectLater(dio.get<Object?>('/users'), throwsA(isA<DioException>()));
     expect(adapter.requests, isEmpty);
   });
+
+  test('활성 세션의 확인된 인증 만료 응답은 세션 종료를 한 번만 요청한다', () async {
+    final expiredSessions = <UserDataSession>[];
+    final container = _container(
+      _TokenStore(),
+      onSessionExpired: (session) async => expiredSessions.add(session),
+    );
+    container.read(userDataSessionProvider.notifier).start();
+    final activeSession = container.read(userDataSessionProvider);
+    final adapter = _RecordingAdapter(
+      responseFactory: () => _errorResponse(statusCode: 401, code: 'A004'),
+    );
+    final dio = container.read(dioProvider)..httpClientAdapter = adapter;
+
+    await expectLater(dio.get<Object?>('/users'), throwsA(isA<DioException>()));
+    await expectLater(
+      dio.get<Object?>('/places'),
+      throwsA(isA<DioException>()),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(expiredSessions, [same(activeSession)]);
+  });
+
+  test('확인되지 않은 인증 코드와 상태는 세션을 종료하지 않는다', () async {
+    for (final response in <ResponseBody Function()>[
+      () => _errorResponse(statusCode: 401, code: 'A001'),
+      () => _errorResponse(statusCode: 401),
+      () => _errorResponse(statusCode: 403, code: 'A004'),
+    ]) {
+      final expiredSessions = <UserDataSession>[];
+      final container = _container(
+        _TokenStore(),
+        onSessionExpired: (session) async => expiredSessions.add(session),
+      );
+      container.read(userDataSessionProvider.notifier).start();
+      final dio = container.read(dioProvider)
+        ..httpClientAdapter = _RecordingAdapter(responseFactory: response);
+
+      await expectLater(
+        dio.get<Object?>('/users'),
+        throwsA(isA<DioException>()),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(expiredSessions, isEmpty);
+    }
+  });
+
+  test('계정 전환 뒤 도착한 이전 세션의 인증 만료 응답은 새 세션을 종료하지 않는다', () async {
+    final expiredSessions = <UserDataSession>[];
+    final container = _container(
+      _TokenStore(),
+      onSessionExpired: (session) async => expiredSessions.add(session),
+    );
+    container.read(userDataSessionProvider.notifier).start();
+    final response = Completer<ResponseBody>();
+    final oldDio = container.read(dioProvider)
+      ..httpClientAdapter = _RecordingAdapter(response: response);
+    final pending = oldDio.get<Object?>('/users');
+    final cancelled = expectLater(pending, throwsA(_cancelled));
+    await Future<void>.delayed(Duration.zero);
+
+    container.read(userDataSessionProvider.notifier).start();
+    response.complete(_errorResponse(statusCode: 401, code: 'A004'));
+    await cancelled;
+    await Future<void>.delayed(Duration.zero);
+
+    expect(expiredSessions, isEmpty);
+    expect(container.read(userDataSessionProvider).isActive, isTrue);
+  });
 }
 
 final _cancelled = isA<DioException>().having(
@@ -97,9 +170,18 @@ final _cancelled = isA<DioException>().having(
   DioExceptionType.cancel,
 );
 
-ProviderContainer _container(AuthTokenStore store) {
+ProviderContainer _container(
+  AuthTokenStore store, {
+  AuthSessionExpirationHandler? onSessionExpired,
+}) {
   final container = ProviderContainer(
-    overrides: [authTokenStoreProvider.overrideWithValue(store)],
+    overrides: [
+      authTokenStoreProvider.overrideWithValue(store),
+      if (onSessionExpired != null)
+        authSessionExpirationHandlerProvider.overrideWithValue(
+          onSessionExpired,
+        ),
+    ],
   );
   addTearDown(container.dispose);
   return container;
@@ -113,10 +195,26 @@ ResponseBody _response() => ResponseBody.fromString(
   },
 );
 
+ResponseBody _errorResponse({required int statusCode, String? code}) {
+  return ResponseBody.fromString(
+    jsonEncode(<String, Object?>{
+      'status': statusCode,
+      if (code != null) 'code': code,
+      'message': '인증 오류',
+      'traceId': 'trace-auth',
+    }),
+    statusCode,
+    headers: {
+      Headers.contentTypeHeader: [Headers.jsonContentType],
+    },
+  );
+}
+
 class _RecordingAdapter implements HttpClientAdapter {
-  _RecordingAdapter({this.response});
+  _RecordingAdapter({this.response, this.responseFactory});
 
   final Completer<ResponseBody>? response;
+  final ResponseBody Function()? responseFactory;
   final started = Completer<void>();
   final requests = <RequestOptions>[];
   bool closed = false;
@@ -129,7 +227,7 @@ class _RecordingAdapter implements HttpClientAdapter {
   ) async {
     requests.add(options);
     if (!started.isCompleted) started.complete();
-    return response?.future ?? _response();
+    return response?.future ?? responseFactory?.call() ?? _response();
   }
 
   @override

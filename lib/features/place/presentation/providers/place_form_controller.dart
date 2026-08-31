@@ -163,11 +163,12 @@ class PlaceFormController extends Notifier<PlaceFormState> {
       );
 
       return null;
-    } catch (_) {
+    } catch (error) {
       if (!isCurrentUserDataSession(requestRef, session)) return null;
       state = state.copyWith(
-        submitState: FormSubmitState.failure(
-          isEdit ? '장소 수정에 실패했어요' : '장소 생성에 실패했어요',
+        submitState: FormSubmitState.failureFrom(
+          error,
+          fallbackMessage: isEdit ? '장소 수정에 실패했어요' : '장소 생성에 실패했어요',
         ),
       );
 

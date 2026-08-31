@@ -74,4 +74,18 @@ class AuthSessionController extends AsyncNotifier<AuthSessionState> {
     state = const AsyncData(AuthSessionState.unauthenticated());
     await ref.read(authTokenWriterProvider).clear();
   }
+
+  Future<void> expireSession(UserDataSession expectedSession) async {
+    if (!expectedSession.isActive ||
+        !isCurrentUserDataSession(ref, expectedSession)) {
+      return;
+    }
+
+    // refresh 계약이 없으므로 현재 세션을 즉시 닫고 재로그인을 안내한다.
+    ref.read(userDataSessionProvider.notifier).end();
+    state = const AsyncData(
+      AuthSessionState.unauthenticated(reason: AuthSessionEndReason.expired),
+    );
+    await ref.read(authTokenWriterProvider).clear();
+  }
 }

@@ -7,12 +7,14 @@ class PlaceNameField extends StatefulWidget {
     required this.name,
     required this.hintText,
     required this.onChanged,
+    this.serverErrorMessage,
     this.forceFocusedDecoration = false,
   });
 
   final String name;
   final String hintText;
   final ValueChanged<String> onChanged;
+  final String? serverErrorMessage;
   final bool forceFocusedDecoration;
 
   @override
@@ -56,6 +58,10 @@ class _PlaceNameFieldState extends State<PlaceNameField> {
       maxLength: 10,
       forceFocusedDecoration: widget.forceFocusedDecoration,
       onChanged: widget.onChanged,
+      state: widget.serverErrorMessage == null
+          ? CommonTextFieldState.normal
+          : CommonTextFieldState.error,
+      helperText: widget.serverErrorMessage,
     );
   }
 }

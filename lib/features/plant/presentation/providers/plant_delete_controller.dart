@@ -65,9 +65,12 @@ class PlantDeleteController extends Notifier<FormSubmitState> {
       state = const FormSubmitState.idle();
 
       return const PlantDeleteResult.home();
-    } catch (_) {
+    } catch (error) {
       if (!isCurrentUserDataSession(requestRef, session)) return null;
-      state = const FormSubmitState.failure('식물 삭제에 실패했어요');
+      state = FormSubmitState.failureFrom(
+        error,
+        fallbackMessage: '식물 삭제에 실패했어요',
+      );
 
       return null;
     }

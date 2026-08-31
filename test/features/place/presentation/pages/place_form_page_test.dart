@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
@@ -174,6 +175,41 @@ void main() {
     expect(find.text('홈'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('remote 장소 검증 오류를 폼 필드에 표시하고 원격 상세 메시지는 숨긴다', (tester) async {
+    final repository =
+        _EditablePlaceRepository(
+            const PlaceSummary(id: 'place-1', name: '루프탑', address: '서울시 성북구'),
+          )
+          ..updateError = const ApiException(
+            message: 'raw backend validation detail',
+            statusCode: 400,
+            code: 'C001',
+            kind: ApiFailureKind.validation,
+            fieldErrors: [
+              ApiFieldError(field: 'request.name', reason: '이름 필드 오류'),
+              ApiFieldError(field: 'address', reason: '주소 필드 오류'),
+            ],
+          );
+    await tester.pumpWidget(_remotePlaceEditApp(repository));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '루프탑 정원');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, '완료'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('입력 내용을 확인해 주세요.'), findsOneWidget);
+    expect(find.text('이름 필드 오류'), findsOneWidget);
+    expect(find.text('주소 필드 오류'), findsOneWidget);
+    expect(find.textContaining('raw backend'), findsNothing);
+
+    await tester.enterText(find.byType(TextField), '새 이름');
+    await tester.pump();
+    expect(find.text('이름 필드 오류'), findsNothing);
+    expect(find.text('주소 필드 오류'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Widget _remotePlaceEditApp(PlaceRepository repository) {
@@ -216,6 +252,7 @@ class _EditablePlaceRepository extends Fake implements PlaceRepository {
 
   final PlaceSummary summary;
   Completer<PlaceSummary>? updateResponse;
+  Object? updateError;
   int updateCalls = 0;
   String? latestUpdateCode;
   String? latestUpdateName;
@@ -237,6 +274,8 @@ class _EditablePlaceRepository extends Fake implements PlaceRepository {
     latestUpdateCode = code;
     latestUpdateName = name;
     latestUpdateAddress = address;
+
+    if (updateError != null) throw updateError!;
 
     return updateResponse?.future ??
         PlaceSummary(id: code, name: name, address: address);

@@ -15,6 +15,8 @@ class PlaceCreateScaffold extends StatelessWidget {
     super.key,
     required this.name,
     required this.address,
+    this.nameErrorMessage,
+    this.addressErrorMessage,
     required this.canSubmit,
     required this.isSubmitting,
     required this.onNameChanged,
@@ -26,6 +28,8 @@ class PlaceCreateScaffold extends StatelessWidget {
 
   final String name;
   final String? address;
+  final String? nameErrorMessage;
+  final String? addressErrorMessage;
   final bool canSubmit;
   final bool isSubmitting;
   final ValueChanged<String> onNameChanged;
@@ -71,12 +75,14 @@ class PlaceCreateScaffold extends StatelessWidget {
                           PlaceNameField(
                             name: name,
                             hintText: '장소의 이름을 입력해 주세요',
+                            serverErrorMessage: nameErrorMessage,
                             onChanged: onNameChanged,
                           ),
                           const SizedBox(height: AppSpacing.x32),
                           CommonAddressOrPlaceField(
                             label: '주소',
                             value: address,
+                            errorText: addressErrorMessage,
                             onTap: onAddressTap,
                             onClear: onAddressClear,
                           ),
@@ -109,6 +115,8 @@ class PlaceEditScaffold extends StatelessWidget {
     super.key,
     required this.name,
     required this.address,
+    this.nameErrorMessage,
+    this.addressErrorMessage,
     required this.canSubmit,
     required this.isSubmitting,
     required this.onNameChanged,
@@ -120,6 +128,8 @@ class PlaceEditScaffold extends StatelessWidget {
 
   final String name;
   final String? address;
+  final String? nameErrorMessage;
+  final String? addressErrorMessage;
   final bool canSubmit;
   final bool isSubmitting;
   final ValueChanged<String> onNameChanged;
@@ -169,6 +179,7 @@ class PlaceEditScaffold extends StatelessWidget {
                           PlaceNameField(
                             name: name,
                             hintText: '장소 이름을 입력해 주세요',
+                            serverErrorMessage: nameErrorMessage,
                             forceFocusedDecoration: true,
                             onChanged: onNameChanged,
                           ),
@@ -176,6 +187,7 @@ class PlaceEditScaffold extends StatelessWidget {
                           CommonAddressOrPlaceField(
                             label: '주소',
                             value: address,
+                            errorText: addressErrorMessage,
                             onTap: onAddressTap,
                             onClear: onAddressClear,
                           ),

@@ -1,7 +1,10 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:commonplant_frontend/features/login/data/gateways/social_auth_credential_gateway.dart';
 import 'package:commonplant_frontend/features/login/presentation/pages/login_page.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
+import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_state.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/login_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,6 +93,23 @@ void main() {
     expect(find.byKey(const ValueKey('loginErrorMessage')), findsOneWidget);
     expect(find.text(socialLoginNotConfiguredMessage), findsOneWidget);
   });
+
+  testWidgets('인증 만료 뒤 로그인 화면에 재로그인 안내를 표시한다', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authSessionControllerProvider.overrideWith(
+            _ExpiredAuthSessionController.new,
+          ),
+        ],
+        child: const MaterialApp(home: LoginPage()),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('loginSessionMessage')), findsOneWidget);
+    expect(find.text(sessionExpiredMessage), findsOneWidget);
+  });
 }
 
 Widget _loginPageApp() {
@@ -111,6 +131,15 @@ class _EmptyAuthTokenStore implements AuthTokenStore {
     required String accessToken,
     required String refreshToken,
   }) async {}
+}
+
+class _ExpiredAuthSessionController extends AuthSessionController {
+  @override
+  Future<AuthSessionState> build() async {
+    return const AuthSessionState.unauthenticated(
+      reason: AuthSessionEndReason.expired,
+    );
+  }
 }
 
 Matcher closeToSize(Size expected, double delta) {

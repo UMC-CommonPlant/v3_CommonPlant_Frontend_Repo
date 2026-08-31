@@ -127,6 +127,7 @@ class ProfileSetupPage extends ConsumerWidget {
 
     return ProfileSetupLayout(
       nickname: state.nickname,
+      nicknameErrorMessage: state.nicknameErrorMessage,
       hasImage: state.hasImage,
       profileImageUrl: state.profileImageUrl,
       isTermsAccepted: state.isPrivacyTermsAccepted,

@@ -8,11 +8,13 @@ class PlantWateringDateField extends StatelessWidget {
   const PlantWateringDateField({
     required this.lastWateredDate,
     required this.onTap,
+    this.errorText,
     super.key,
   });
 
   final String? lastWateredDate;
   final VoidCallback onTap;
+  final String? errorText;
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +27,13 @@ class PlantWateringDateField extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             child: DecoratedBox(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: AppColorPrimitives.grayGray2),
+                  bottom: BorderSide(
+                    color: errorText == null
+                        ? AppColorPrimitives.grayGray2
+                        : AppColors.danger,
+                  ),
                 ),
               ),
               child: SizedBox(
@@ -76,11 +82,11 @@ class PlantWateringDateField extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.x4),
         Text(
-          '선택하지 않을 시, 등록일을 기준으로 설정합니다',
+          errorText ?? '선택하지 않을 시, 등록일을 기준으로 설정합니다',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTextStyles.size12Medium.copyWith(
-            color: AppColors.brandStrong,
+            color: errorText == null ? AppColors.brandStrong : AppColors.danger,
           ),
         ),
       ],

@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
@@ -43,6 +44,7 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
           ? state.submitStatus
           : ProfileSetupSubmitStatus.idle,
       clearErrorMessage: true,
+      clearNicknameErrorMessage: true,
     );
   }
 
@@ -84,11 +86,16 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
       if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
       state = state.copyWith(submitStatus: ProfileSetupSubmitStatus.success);
       return true;
-    } catch (_) {
+    } catch (error) {
       if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
+      final apiError = error is ApiException ? error : null;
       state = state.copyWith(
         submitStatus: ProfileSetupSubmitStatus.failure,
-        errorMessage: profileSetupSubmitFailureMessage,
+        errorMessage: apiUserMessage(
+          error,
+          fallback: profileSetupSubmitFailureMessage,
+        ),
+        nicknameErrorMessage: apiError?.fieldErrorMessages['name'],
       );
       return false;
     }

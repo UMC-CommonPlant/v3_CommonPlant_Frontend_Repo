@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/friend/data/dtos/friend_requests.dart';
 import 'package:commonplant_frontend/features/friend/data/repositories/friend_repository.dart';
@@ -128,9 +129,12 @@ class PlaceInvitationController extends Notifier<PlaceInvitationState> {
       if (!isCurrentUserDataSession(requestRef, session)) return;
       _setResult(invitationId, result);
       ref.invalidate(remotePlaceInvitationsProvider);
-    } catch (_) {
+    } catch (error) {
       if (!isCurrentUserDataSession(requestRef, session)) return;
-      _setActionFailure('친구 요청을 처리하지 못했어요', invitationId);
+      _setActionFailure(
+        apiUserMessage(error, fallback: '친구 요청을 처리하지 못했어요'),
+        invitationId,
+      );
     }
   }
 
