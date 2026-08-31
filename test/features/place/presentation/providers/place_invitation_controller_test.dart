@@ -11,6 +11,40 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../../helpers/user_data_session.dart';
 
 void main() {
+  test('요청 수는 요청 목록의 loading 상태를 보존한다', () {
+    final container = ProviderContainer(
+      overrides: [
+        placeInvitationsProvider.overrideWithValue(
+          const AsyncLoading<List<PlaceInvitation>>(),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final count = container.read(placeInvitationRequestCountProvider);
+
+    expect(count.isLoading, isTrue);
+    expect(count.value, isNull);
+  });
+
+  test('요청 수는 요청 목록의 error 상태를 정상 0건으로 바꾸지 않는다', () {
+    final error = StateError('요청 조회 실패');
+    final container = ProviderContainer(
+      overrides: [
+        placeInvitationsProvider.overrideWithValue(
+          AsyncError<List<PlaceInvitation>>(error, StackTrace.empty),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final count = container.read(placeInvitationRequestCountProvider);
+
+    expect(count.hasError, isTrue);
+    expect(count.error, same(error));
+    expect(count.value, isNull);
+  });
+
   test('fixture 초대를 수락하면 결과와 미처리 요청 수를 갱신한다', () async {
     final container = ProviderContainer();
     addTearDown(container.dispose);

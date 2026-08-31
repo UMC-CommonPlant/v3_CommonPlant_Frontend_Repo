@@ -54,9 +54,16 @@ class HomeBody extends ConsumerWidget {
             HomeSectionHeader(
               title: 'My place',
               addSemanticsLabel: '장소 추가',
-              action: HomePlaceRequestButton(
-                count: invitationCountAsync.value ?? 0,
-                onPressed: () => context.push(AppRoutePaths.placeInvitations),
+              action: invitationCountAsync.when(
+                skipLoadingOnRefresh: false,
+                data: (count) => HomePlaceRequestButton(
+                  count: count,
+                  onPressed: () => context.push(AppRoutePaths.placeInvitations),
+                ),
+                loading: HomePlaceRequestButton.loading,
+                error: (_, _) => HomePlaceRequestButton.error(
+                  onRetry: () => ref.invalidate(remotePlaceInvitationsProvider),
+                ),
               ),
               onAddPressed: hasPlaces
                   ? () => context.push(AppRoutePaths.placeCreate)

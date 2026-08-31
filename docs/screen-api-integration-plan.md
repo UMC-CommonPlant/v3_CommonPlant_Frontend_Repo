@@ -2,7 +2,7 @@
 
 이 문서는 화면 퍼블리싱 이후 남아 있는 mock 흐름을 실제 상태와 API 계층으로 전환하는 순서와 완료 기준을 관리합니다. 배포 자동화와 원격 E2E 준비는 필요한 외부 조건이 충족될 때까지 유지하되, 현재 MVP 최우선 작업은 사용자 동선별 수직 슬라이스 완성입니다.
 
-2026-08-30 기준 문서 정리 #247 / PR #257부터 수정 정보 Provider 전달 단순화 #256 / PR #266까지 병합됐습니다(`011ef7d`). 상위 Epic #226은 하위 이슈 20/20 완료로 종료했습니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다. 후속 실행·보류 범위는 사용자 결정에 따라 #267에서 다시 고정합니다.
+2026-08-31 기준 후속 범위 정리 #267 / PR #268과 대체된 과거 계획 제거 #269 / PR #270까지 병합됐습니다(`dac3001`). 상위 Epic #226은 하위 이슈 20/20 완료로 종료했습니다. 아래의 병합 상태는 연결 PR의 이력이며, 실제 인증 E2E나 모든 입력·오류 경로가 완료됐다는 의미는 아닙니다. 후속 실행·보류 범위는 사용자 결정에 따라 #267에서 다시 고정합니다.
 
 ## 목표
 
@@ -29,8 +29,8 @@
 
 | 순서 | 작업 | 선행 조건 | 완료 결과 |
 | --- | --- | --- | --- |
-| 1 | #267 완료 상태·후속 범위 문서 동기화 | PR #266 병합·Epic #226 20/20 확인 | 현행 문서에서 완료된 감사와 새 실행 큐를 분리 |
-| 2 | Home 친구 요청 배지 조회 실패 상태 | 현재 `placeInvitationRequestCountProvider` 오류가 0건으로 보이는 동작 재현 | loading·정상 0건·오류·성공 수를 구분하고 Provider/widget 회귀 검증 |
+| 1 | #267 완료 상태·후속 범위 문서 동기화 | PR #266 병합·Epic #226 20/20 확인 | #267 / PR #268에서 완료 |
+| 2 | #271 Home 친구 요청 배지 조회 실패 상태 | 현재 `placeInvitationRequestCountProvider` 오류가 0건으로 보이는 동작 재현 | loading·정상 0건·오류·성공 수와 재시도를 구분하고 Provider/widget 회귀 검증 |
 | 3 | Plant 소속 장소 code·식물 검색 잔여 동선 | `PLANT-01`, `SEARCH-02` 답변 | Home 진입 수정의 실제 code 확보와 식물 검색 loading/empty/error/success·선택 연결 |
 | 4 | 공통 API 오류 메시지·토큰 만료 처리 | `ERROR-01~02`, `TOKEN-01~02`, UX-01·STATE-01 결정 | 공통 code 매핑, field/화면 오류, 만료 복구 또는 종료 흐름과 세션 회귀 검증 |
 | 5 | Place 멤버·Friend 식별자 기반 쓰기 | `PLACE-05`, 멤버 고유 ID·변경 endpoint, Friend 고유 대상·부분 결과 계약 | 나가기·멤버 변경·친구 요청이 실제 식별자와 대상별 결과를 사용 |
@@ -75,7 +75,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 | 도메인 | 화면·route | 현재 상태 | 남은 연결 | API·선행 조건 | 판정 |
 | --- | --- | --- | --- | --- | --- |
-| Home | Home `/` | User·Place·Plant 목록·Friend 요청 수 연결, #249 계정별 캐시 격리 병합 | 배지 조회 실패 표현 | Friend 요청 목록 source 계약 #241 반영 | 연결·세션 격리 PR 병합 |
+| Home | Home `/` | User·Place·Plant 목록·Friend 요청 수 연결, #249 계정별 캐시 격리, #271 배지 loading·오류·0건·성공 수와 재시도 구분 | 인증된 원격 smoke | Friend 요청 목록 source 계약 #241 반영 | #271 Provider·widget 회귀 검증 완료 |
 | User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴와 세 화면 연결, #249 세션 격리·#250 제출 잠금 병합 | 이미지 파일 선택·알림 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | 연결·세션 격리·제출 잠금 PR 병합 |
 | Place | 장소 친구 요청 | API 목록·프로필·loading/empty/error와 수락·거절 연결, fixture 모드 유지 | 원격 인증 smoke | `GET /friends/requests`, `POST /friends/accept`, `POST /friends/decline` #241 반영 | #241 연결 |
 | Place | 장소 등록 | create API·생성 code·친구 추가 route 연결, #250 잠금 병합, #253 / PR #263 주소 결과·검증·요청 연결 | 실제 주소 검색·이미지 | 결과 계약은 테스트로 검증, API 모드 fixture 주소 차단 | 실제 검색 미연결로 새 주소가 필요한 생성 동선 미완료 |
@@ -218,6 +218,11 @@ Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Pr
   사용하는 서버 정책으로 인한 오초대 위험은 해결되지 않았으며 별도 위험 등록부의
   `FRIEND-RISK-01`로 추적합니다.
 
+#271은 Home의 파생 요청 수가 가진 `AsyncValue` 상태를 그대로 렌더링합니다. 최초
+loading은 진행 표시, 조회 오류는 정상 0건과 다른 재시도 버튼, 정상 응답은 0건과
+양수 count로 구분합니다. 재시도는 요청 목록 화면과 같은 원격 Provider를
+무효화하며 API 비사용 fixture와 수락·거절 뒤 count 갱신은 유지합니다.
+
 ## Place 친구 관리 조회 수직 슬라이스
 
 #245는 `GET /place/{code}/members`의 가입 순서 멤버 목록을 친구 관리 화면에
@@ -280,5 +285,6 @@ Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Pr
 | #255 | `008bbc6`, `20e2acc` | PR #264 병합 확인(`f723825`), 비활성 `CommonTextField` clear 미노출·실행 차단과 활성 clear 보존, PR #265 병합 완료(`894dd5f`) | [비활성 입력 이력](work-history/disabled-text-field-clear-255.md), 전체 511개·기존 skip 1개, PR #265 CI 512개 통과 |
 | #256 | `63b96b2`, `dd21e26` | PR #265 병합 확인(`894dd5f`), Plant·Place 중간 원격 수정 정보 Provider 제거와 원본 조회·재시도·override 경계 유지, PR #266 병합 완료(`011ef7d`) | [Provider 단순화 이력](work-history/form-edit-provider-flow-256.md), 전체 513개·기존 skip 1개, PR #266 CI 514개 통과 |
 | #267 | 이 문서의 최종 커밋 | Epic #226 완료 상태, 실행 6단계와 사용자 보류 5개 범위 정리 | [후속 로드맵 이력](work-history/follow-up-development-roadmap-267.md), 문서 링크·인덱스·diff 검사 |
+| #271 | `e15de3f` | Home 친구 요청 배지의 loading·오류·재시도·정상 count UI와 파생 Provider 상태 보존 | 대상 15개·전체 519개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.
