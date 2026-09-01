@@ -61,7 +61,7 @@
 | [x] | UX-02 | Toast, Snackbar, Dialog 피드백 사용 기준 | `docs/form-validation-error-guide.md`, `docs/shared-widget-guide.md` | #279에서 inline 상태, Snackbar, Dialog의 역할을 정하고 최소 Snackbar helper만 공유했다. | Decided |
 | [x] | STATE-01 | API 공통 에러 타입과 사용자 메시지 매핑 기준 | `docs/state-management-guide.md` | #275에서 표준 오류·field reason을 typed 상태로 분리하고 rejected value와 raw top-level message 노출을 차단했다. | Decided |
 | [ ] | ROUTING-01 | 하단 탭 도입 시 `ShellRoute`와 단순 탭 상태 중 선택 | `docs/routing-guide.md` | bottom navigation 화면 범위가 확정되면 라우팅 구조를 결정한다. | Open |
-| [ ] | GIT-01 | PR template 파일 추가 여부 | `docs/git-workflow.md` | 현재 PR 본문 기준을 `.github/pull_request_template.md`로 고정할지 결정한다. | Open |
+| [x] | GIT-01 | PR template 파일 추가 여부 | `docs/git-workflow.md`, `.github/pull_request_template.md` | #281에서 현재 PR 본문 기준을 단일 기본 template으로 고정했다. | Decided |
 
 ## 백엔드 확인 질문
 
