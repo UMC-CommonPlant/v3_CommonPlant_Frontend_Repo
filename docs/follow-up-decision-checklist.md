@@ -77,7 +77,7 @@
 | [x] | API-ERROR | 공통/도메인 에러 response 정책 | ERROR-01, ERROR-02 | #275 typed 오류·field error·안전 메시지 연결. 인증 쓰기 validation smoke는 원격 E2E 보류 범위 | Done |
 | [ ] | API-TOKEN | refresh token과 로그아웃 정책 | TOKEN-01, TOKEN-02 | #275 확인 code의 로컬 세션 종료 완료. refresh·server invalidation은 backend #149 대기 | Partial |
 | [ ] | API-SEARCH | 주소/식물/사용자 검색 정책 | SEARCH-01, SEARCH-02, SEARCH-03 | 주소 검색, 식물 검색, 친구 추가 검색 UX | Open |
-| [ ] | API-MEMO | Memo CRUD와 이미지 첨부 정책 | MEMO-01, MEMO-02, MEMO-03 | 메모 화면 실데이터 연결 | Open |
+| [ ] | API-MEMO | Memo CRUD와 이미지 첨부 정책 | MEMO-01, MEMO-02, MEMO-03 | #283에서 backend #50에 텍스트 CRUD 계약을 요청했다. 구현·OpenAPI 전까지 원격 연결 금지, 이미지는 사용자 보류 | Blocked |
 | [x] | API-ENV-DEV | dev 서버 환경값과 Swagger | ENV-01-A | #213에서 dev origin, API base URL과 문서 endpoint를 확인했다. | Decided |
 | [ ] | API-TESTENV | remote integration 테스트 환경 | TESTENV-01~05 | #220에서 최소 준비 계약을 정리했다. 백엔드 인증·fixture·cleanup 답변과 저장소 설정 승인 전까지 TEST-02-B를 보류한다. | Blocked |
 | [ ] | API-ENV-RELEASE | staging/prod 환경값과 versioning | ENV-01-B | staging/prod release 검증은 백엔드 답변 전까지 미확정이다. | Open |
