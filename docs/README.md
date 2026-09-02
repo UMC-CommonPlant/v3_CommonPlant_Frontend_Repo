@@ -17,6 +17,7 @@
 | Feature 구조·DTO·repository | [Feature 작업 가이드](feature-development-guide.md) |
 | Provider·Controller·비동기 상태 | [상태관리 기준](state-management-guide.md) |
 | route·인증 redirect | [라우팅 가이드](routing-guide.md) |
+| 소셜 로그인·신규 사용자 분기·SDK 설정 | [소셜 로그인 연동 가이드](social-login-integration-guide.md) |
 | Figma 화면 구현·반응형 | [퍼블리싱 규칙](screen-publishing-rules.md), [Figma 프레임 매핑](figma-frame-map.md) |
 | 색·폰트·spacing·radius | [디자인 토큰 규칙](design-token-rules.md) |
 | 공용 UI·소유권·미사용 위젯 보존 | [공용 위젯 가이드](shared-widget-guide.md) |
@@ -38,6 +39,7 @@
 | [후속 결정 체크리스트](follow-up-decision-checklist.md) | 팀 결정·외부 승인·백엔드 준비가 필요한 항목 |
 | [품질·테스트 후속 계획](quality-testing-follow-up-plan.md) | QA·golden·smoke 결정 이력과 남은 품질 항목 |
 | [원격 integration 준비 계약](remote-integration-test-readiness.md) | 인증·데이터 격리·cleanup·Environment 승인 gate |
+| [소셜 로그인 연동 가이드](social-login-integration-guide.md) | `isNewUser` 가입 분기, provider token, iOS 전용 Apple 노출과 SDK 설정 |
 
 ## 기능별 작업 이력
 

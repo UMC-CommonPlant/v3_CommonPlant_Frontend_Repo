@@ -134,7 +134,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 | Domain | API | 변경 내용 | 프론트 영향 |
 | --- | --- | --- | --- |
-| Auth | `POST /auth/login` | 성공 response가 `LoginSuccessJsonResponse` 또는 `LoginNewUserJsonResponse` `oneOf`로 보강됨 | wrapper의 `result`와 `newUser` 기준으로 DTO를 정리할 수 있음 |
+| Auth | `POST /auth/login` | 성공 response가 `LoginSuccessJsonResponse` 또는 `LoginNewUserJsonResponse` `oneOf`로 보강됨 | wrapper의 `result`와 실제 응답 `isNewUser` 기준으로 DTO를 분기함 |
 | Auth | `POST /auth/register` | request content type이 `multipart/form-data`로 변경되고 `RegisterMultipartRequest`가 연결됨 | 현재 코드의 JSON body 전송과 충돌. 단, 연결된 `Register` schema가 응답 필드처럼 보여 백엔드 확인 필요 |
 | User | `GET /users` | `UserJsonResponse`와 `UserResponse` schema 추가 | 내 정보 DTO 작성 가능 |
 | User | `PUT /users` | 식물 `UpdateRequest` 오연결이 해소되고 `UserUpdateMultipartRequest`로 변경됨 | 프로필 이미지 포함 수정 API 설계 가능 |
@@ -210,8 +210,13 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 현재 코드 영향:
 
 - #45의 `authResultFromJson`은 wrapper `result`를 unwrap할 수 있다.
-- 신규 여부 판단 키는 현재 코드의 `isNewUser`가 아니라 Swagger의 `newUser`가 기준이다.
-- 현재 구현은 `signupToken` 존재 여부로도 신규 유저를 판단하므로 동작 가능성이 있지만, DTO 필드명은 `newUser`로 정리하는 편이 안전하다.
+- 2026-09-02 확인한 실제 로그인 응답의 신규 여부 키는 `isNewUser`다. OpenAPI schema의
+  `newUser`는 배포 혼재 기간의 호환 입력으로만 허용한다.
+- `signupToken` 존재 여부로 신규 여부를 추론하지 않는다. `isNewUser: true`이면
+  `signupToken`, `false`이면 `accessToken`과 `refreshToken`을 각각 필수로 검증한다.
+- provider token은 Kakao access token, Google ID token, Apple identity token이다. 단,
+  backend `main`은 Apple verifier가 없어 backend #152 배포 전 실제 Apple 로그인은
+  Blocked다.
 
 #### POST `/auth/register`
 
@@ -239,7 +244,11 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 - 기존의 request/response `Register` schema 충돌은 해소됐다.
 - 프로필 이미지는 `RegisterMultipartRequest.image` optional part이며 request JSON에는 `imgUrl`이 없다.
-- 성공 example의 `isNewUser`와 schema의 `newUser` 명칭은 여전히 일치하지 않으므로 response DTO는 schema와 실제 응답을 함께 확인한다.
+- 가입 완료 endpoint는 access/refresh token 존재를 인증 성공 조건으로 사용한다. 로그인용
+  신규 여부 분기를 재사용하지 않으므로 응답에 `isNewUser: true`가 포함되어도 다시
+  프로필 설정으로 돌아가지 않는다.
+- 성공 example의 `isNewUser`와 schema의 `newUser` 명칭 불일치는 남아 있으나 회원가입
+  완료 결과에는 동일 의미의 boolean을 내부 상태로 보존하지 않는다.
 - #216에서 `AuthRemoteDataSource.register`를 `register` JSON part와 optional `image` part를 보내는 multipart 요청으로 전환했다.
 - `RegisterRequest`에서는 명세에 없는 `imgUrl`을 제거했다.
 - repository까지 optional `MultipartFile` 전달 경계를 열었으며 실제 profile image 파일 생성과 화면 연결은 별도 UI 작업으로 진행한다.
@@ -691,7 +700,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: #241에서 `GET /friends/requests`를 typed `FriendInvitation` 목록으로 파싱하고 Home 요청 수와 장소 친구 요청 화면에 연결했다.
 - 반영: #241에서 `POST /friends/accept`, `POST /friends/decline`을 항목별 submit 상태와 목록 invalidate 정책에 연결했다.
 - 반영: `POST /plants`와 `PUT /plants/{plantId}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
-- 반영: Auth login DTO는 Swagger의 `newUser` 필드명을 명시적으로 보존한다.
+- 반영: #285에서 Auth login DTO는 실제 응답 `isNewUser`로 분기하고 `newUser`는 배포
+  호환 입력으로만 허용한다. 결과 타입과 중복되는 boolean은 보존하지 않는다.
 - 반영: #243에서 Friend 신규 요청을 화면 submit까지 연결했다. 표시 이름 중복 오매칭과 대상별 결과 미검증 위험은 `docs/accepted-implementation-risks.md`에서 수용 상태로 추적한다.
 - 반영: Image 업로드/조회/수정/삭제 endpoint는 response schema가 없으므로 raw 또는 void 경계로 datasource/repository만 추가했다.
 
@@ -727,7 +737,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 
 | 영역 | 대표 확인 항목 | 프론트 영향 |
 | --- | --- | --- |
-| Auth | `POST /auth/register` response example의 `isNewUser`와 schema `newUser` 불일치 | 회원가입 응답 DTO의 실제 필드 확인 필요 |
+| Auth | 로그인 실제 응답 `isNewUser`와 OpenAPI schema `newUser` 불일치, Apple verifier 누락 | #285 호환 파싱 적용, backend #152 배포 전 Apple 실제 로그인 Blocked |
 | 공통 Multipart | JSON part의 `Content-Type: application/json` 필요 여부 | Auth/Place/Plant/User multipart 전송 정책 정합성 |
 | Place | 멤버 ID·역할, self leave, owner 멤버 관리 endpoint와 권한·오류 | #277은 backend #150 전까지 조회 전용·member 나가기 숨김 유지 |
 | Friend | 고유 대상 request, 사용자 검색 정책, 다중 대상 원자성·부분 결과·멱등 | #277은 backend #150 전까지 이름 기반 위험 수용 경계를 확장하지 않음 |
@@ -742,7 +752,13 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 
 초기 Auth·Home·Plant·User·Place·Friend 연결과 감사 회귀 수정 PR은 병합됐다. 현행 우선순위와 미완료 동선은 [화면·API 매트릭스](screen-api-integration-plan.md)를 따른다.
 
-소셜 SDK credential 획득, 실제 주소 검색과 이미지 파일 선택·key 조회는 여전히 별도 준비가 필요하다. Memo 텍스트 CRUD는 backend #50 계약 답변·구현·live OpenAPI 동기화를, Place 멤버 변경·나가기와 Friend 고유 대상·부분 결과는 backend #150을 선행 조건으로 둔다. 식물 검색은 백엔드 #92 전까지 API mode에서 비활성화한다. 이미 수용한 Friend 이름 오매칭과 Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 결함을 자동으로 수용한 것으로 해석하지 않는다.
+소셜 SDK 연결은 #285에서 진행하며 실제 provider credential·네이티브 설정과 Apple backend
+#152는 외부 준비 항목으로 분리한다. 실제 주소 검색과 이미지 파일 선택·key 조회는 여전히
+별도 준비가 필요하다. Memo 텍스트 CRUD는 backend #50 계약 답변·구현·live OpenAPI 동기화를,
+Place 멤버 변경·나가기와 Friend 고유 대상·부분 결과는 backend #150을 선행 조건으로 둔다.
+식물 검색은 백엔드 #92 전까지 API mode에서 비활성화한다. 이미 수용한 Friend 이름 오매칭과
+Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 결함을 자동으로 수용한 것으로
+해석하지 않는다.
 
 ## DEV API 문서화 작업 이력
 

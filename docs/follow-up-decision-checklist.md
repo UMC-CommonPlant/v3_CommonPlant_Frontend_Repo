@@ -9,6 +9,14 @@
 - 결론이 나면 이 문서와 원본 문서를 함께 갱신한다.
 - 구현 작업이 필요한 결론은 별도 GitHub 이슈로 분리한다.
 
+## 2026-09-02 소셜 로그인 SDK 재개
+
+- 사용자가 #285에서 Kakao·Google·Apple SDK 연결을 재개했다.
+- 별도 회원가입 진입은 만들지 않고 `/auth/login`의 실제 `isNewUser` 값으로 가입 완료 흐름을 분기한다.
+- Apple 버튼과 SDK 호출은 iOS에서만 노출하며 Android용 Apple 웹 로그인은 추가하지 않는다.
+- backend `main`은 Apple verifier가 없어 실제 Apple 로그인은 backend #152 dev 배포 전까지 Blocked다.
+- 실제 provider credential과 개인 계정 원격 E2E는 저장소에 임의로 추가하지 않는다.
+
 ## 2026-08-30 사용자 실행·보류 결정
 
 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226) 하위 이슈 20/20 완료 뒤 #267에서 후속 범위를 다시 정했습니다. 즉시 실행 순서는 [화면·API 계획](screen-api-integration-plan.md#후속-개발-실행-순서-267)을 단일 원본으로 사용합니다.
@@ -16,7 +24,7 @@
 | 구분 | 항목 | 처리 |
 | --- | --- | --- |
 | 실행 | 완료 상태 문서, Home 배지 오류, Plant 잔여 동선, 공통 오류·토큰, Place·Friend 쓰기, Memo API | 표의 순서대로 계약 확인과 별도 구현 이슈 진행 |
-| 보류 | 로그인 SDK | credential·네이티브 설정을 포함해 다음 작업으로 이동 |
+| 실행 재개 | 로그인 SDK | #285에서 credential 주입 경계와 Kakao·Google·iOS Apple SDK를 연결. Apple 서버 검증은 backend #152 대기 |
 | 보류 | 실제 주소 검색 서비스 | 서비스·키·과금·adapter 결정을 다음 작업으로 이동 |
 | 보류 | 이미지 흐름 | 업로드 방식 변경 확정 전 구현하지 않고 #248 안전 경계 유지 |
 | 보류 | 인증된 원격 E2E | TEST-02-B 준비 계약과 Environment를 유지하되 이번 실행 큐에서 제외 |
@@ -69,7 +77,7 @@
 
 | 체크 | ID | 범위 | 관련 질문 ID | 현재 막힌 작업 | 상태 |
 | --- | --- | --- | --- | --- | --- |
-| [x] | API-AUTH | Auth 회원가입 전송 정책 | AUTH-01, AUTH-02 | #216의 multipart 경계를 #227에서 화면 submit·세션·redirect에 연결했다. 실제 소셜 SDK credential 획득과 이미지 파일 선택은 남아 있다. | Done |
+| [ ] | API-AUTH | Auth 로그인·회원가입과 provider 검증 정책 | AUTH-01, AUTH-02, AUTH-03 | #216·#227의 화면/API 연결 뒤 #285에서 SDK를 연결한다. Apple 실제 로그인은 backend #152 대기 | Partial |
 | [ ] | API-MULTIPART | Place multipart JSON part 정책 | MULTIPART-01 | Auth/User/Plant의 `application/json` encoding은 확인됐고 Place encoding은 백엔드 확인이 필요하다. | Open |
 | [ ] | API-PLACE | Place response와 식별자 정책 | PLACE-01, PLACE-02, PLACE-03, PLACE-04 | #239·#243 목록/상세/생성/수정, #245 멤버 조회 연결 완료; 멤버 변경은 보류 | Partial |
 | [ ] | API-FRIEND | Friend 요청 목록과 액션 정책 | FRIEND-01, FRIEND-02, FRIEND-03, FRIEND-04 | #241 수신 처리와 #243 발신 연결 완료, 이름 오매칭은 수용 위험으로 추적 | Partial |
