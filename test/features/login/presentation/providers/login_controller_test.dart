@@ -10,6 +10,7 @@ import 'package:commonplant_frontend/features/login/domain/models/social_auth.da
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_state.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/login_controller.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -99,18 +100,45 @@ void main() {
           refreshToken: 'refresh-token',
         ),
       ),
-      gateway: const UnconfiguredSocialAuthCredentialGateway(),
+      gateway: SdkSocialAuthCredentialGateway(
+        kakaoNativeAppKey: '',
+        googleServerClientId: '',
+        googleIosClientId: '',
+        targetPlatform: TargetPlatform.iOS,
+      ),
     );
     addTearDown(container.dispose);
 
     final outcome = await container
         .read(loginControllerProvider.notifier)
-        .login(SocialAuthProvider.apple);
+        .login(SocialAuthProvider.kakao);
 
     expect(outcome, isNull);
     final state = container.read(loginControllerProvider);
     expect(state.submitStatus, LoginSubmitStatus.failure);
     expect(state.errorMessage, socialLoginNotConfiguredMessage);
+  });
+
+  test('사용자가 SDK 인증을 취소하면 오류 없이 idle 상태로 돌아간다', () async {
+    final container = _remoteContainer(
+      repository: _FakeAuthRepository(
+        const AuthenticatedResult(
+          accessToken: 'access-token',
+          refreshToken: 'refresh-token',
+        ),
+      ),
+      gateway: const _CanceledSocialAuthCredentialGateway(),
+    );
+    addTearDown(container.dispose);
+
+    final outcome = await container
+        .read(loginControllerProvider.notifier)
+        .login(SocialAuthProvider.google);
+
+    expect(outcome, isNull);
+    final state = container.read(loginControllerProvider);
+    expect(state.submitStatus, LoginSubmitStatus.idle);
+    expect(state.errorMessage, isNull);
   });
 
   test('이전 세션의 늦은 SDK 결과로 로그인 요청을 시작하지 않는다', () async {
@@ -236,6 +264,16 @@ class _DelayedSocialAuthCredentialGateway
   Future<SocialAuthCredential> authorize(SocialAuthProvider provider) {
     started.complete();
     return credential.future;
+  }
+}
+
+class _CanceledSocialAuthCredentialGateway
+    implements SocialAuthCredentialGateway {
+  const _CanceledSocialAuthCredentialGateway();
+
+  @override
+  Future<SocialAuthCredential> authorize(SocialAuthProvider provider) {
+    throw const SocialAuthCanceledException();
   }
 }
 

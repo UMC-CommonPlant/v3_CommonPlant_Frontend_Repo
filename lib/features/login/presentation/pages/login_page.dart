@@ -11,6 +11,7 @@ import 'package:commonplant_frontend/features/login/domain/models/social_auth.da
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/login_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -59,6 +60,7 @@ class LoginPage extends ConsumerWidget {
         .value
         ?.noticeMessage;
     final errorMessage = loginState.errorMessage ?? sessionNotice;
+    final showsAppleLogin = defaultTargetPlatform == TargetPlatform.iOS;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceAlt,
@@ -145,27 +147,29 @@ class LoginPage extends ConsumerWidget {
                               SocialAuthProvider.google,
                             ),
                     ),
-                    const SizedBox(height: AppSpacing.x12),
-                    _LoginSocialButton(
-                      key: const ValueKey('loginAppleButton'),
-                      label: 'Apple로 로그인',
-                      backgroundColor: AppColors.textHeadline,
-                      foregroundColor: AppColors.white,
-                      logoAssetPath: AppImageAssets.loginAppleLogo,
-                      logoWidth: 16.26,
-                      logoHeight: 20,
-                      logoTop: 12,
-                      isLoading:
-                          loginState.submittingProvider ==
-                          SocialAuthProvider.apple,
-                      onPressed: loginState.isSubmitting
-                          ? null
-                          : () => _handleLogin(
-                              context,
-                              ref,
-                              SocialAuthProvider.apple,
-                            ),
-                    ),
+                    if (showsAppleLogin) ...[
+                      const SizedBox(height: AppSpacing.x12),
+                      _LoginSocialButton(
+                        key: const ValueKey('loginAppleButton'),
+                        label: 'Apple로 로그인',
+                        backgroundColor: AppColors.textHeadline,
+                        foregroundColor: AppColors.white,
+                        logoAssetPath: AppImageAssets.loginAppleLogo,
+                        logoWidth: 16.26,
+                        logoHeight: 20,
+                        logoTop: 12,
+                        isLoading:
+                            loginState.submittingProvider ==
+                            SocialAuthProvider.apple,
+                        onPressed: loginState.isSubmitting
+                            ? null
+                            : () => _handleLogin(
+                                context,
+                                ref,
+                                SocialAuthProvider.apple,
+                              ),
+                      ),
+                    ],
                     if (errorMessage != null) ...[
                       const SizedBox(height: AppSpacing.x8),
                       Text(

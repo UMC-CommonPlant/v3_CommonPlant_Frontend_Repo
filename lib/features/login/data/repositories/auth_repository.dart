@@ -27,7 +27,7 @@ class AuthRepository {
   Future<AuthResult> login(LoginRequest request) async {
     final attempt = _tokenWriter.beginAttempt();
     final data = await _remoteDataSource.login(request);
-    final result = authResultFromJson(
+    final result = loginAuthResultFromJson(
       jsonObjectFromResponse(data, context: '로그인'),
     );
 
@@ -43,7 +43,7 @@ class AuthRepository {
   }) async {
     final attempt = _tokenWriter.beginAttempt();
     final data = await _remoteDataSource.register(request, image: image);
-    final result = authResultFromJson(
+    final result = registerAuthResultFromJson(
       jsonObjectFromResponse(data, context: '회원가입'),
     );
 

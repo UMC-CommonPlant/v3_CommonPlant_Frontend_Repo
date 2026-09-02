@@ -209,7 +209,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 현재 코드 영향:
 
-- #45의 `authResultFromJson`은 wrapper `result`를 unwrap할 수 있다.
+- #285의 `loginAuthResultFromJson`은 wrapper `result`를 unwrap할 수 있다.
 - 2026-09-02 확인한 실제 로그인 응답의 신규 여부 키는 `isNewUser`다. OpenAPI schema의
   `newUser`는 배포 혼재 기간의 호환 입력으로만 허용한다.
 - `signupToken` 존재 여부로 신규 여부를 추론하지 않는다. `isNewUser: true`이면
