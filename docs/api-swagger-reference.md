@@ -630,6 +630,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 로그아웃 API
 - refresh token 재발급 API
 
+2026-09-01 live OpenAPI는 여전히 19개 path이며 Memo path/schema는 0개다. backend #50~#55에는 `/plants/{plantUuid}/memos` 생성·조회·수정·삭제 계획이 있지만 구현과 OpenAPI가 아니며 content 200/500자, image 생략 시 유지/삭제, 작성자·권한, pagination, 성공 wrapper가 확정되지 않았다. #283은 [backend #50 계약 확인](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50#issuecomment-5488630254) 답변 전까지 이를 프론트 DTO 근거로 사용하지 않는다.
+
 ## 기존 확인 필요 항목 처리 현황
 
 | 기존 확인 필요 항목 | 최신 Swagger 상태 | 판단 |
@@ -733,14 +735,14 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 | Error | live/backend source와 dev 배포의 실제 인증 쓰기 오류 일치 여부 | #275 공통 사용자 메시지와 field error 매핑 완료, 원격 validation smoke 보류 |
 | Token | refresh token 재발급, 로그아웃 API 제공 여부 | #275 로컬 세션 종료 적용, backend #149 전까지 자동 복구·서버 invalidation 차단 |
 | 검색 | 주소 검색, 식물 검색 API 제공 여부와 사용자 검색 매칭 정책 | 주소 검색은 보류, 식물 검색은 백엔드 #92 대기 중이며 API mode fixture 차단 |
-| Memo | 메모 CRUD API, 이미지 첨부, 목록 response 구조 | 메모 화면 실데이터 연결 보류 |
+| Memo | backend #50~#55의 메모 CRUD, 작성자·권한·pagination·오류와 이미지 생략 정책 | #283 계약 확인과 live OpenAPI 동기화 전 텍스트 CRUD 연결 Blocked, 이미지 별도 보류 |
 | 환경 | dev URL은 확인, staging/prod full base URL과 API versioning 정책은 미확정 | dev 로컬 실행 가능, release 검증 보류 |
 
 ## 현재 후속 작업 안내
 
 초기 Auth·Home·Plant·User·Place·Friend 연결과 감사 회귀 수정 PR은 병합됐다. 현행 우선순위와 미완료 동선은 [화면·API 매트릭스](screen-api-integration-plan.md)를 따른다.
 
-소셜 SDK credential 획득, 실제 주소 검색, 이미지 파일 선택·key 조회와 Memo CRUD는 여전히 별도 준비가 필요하다. Place 멤버 변경·나가기와 Friend 고유 대상·부분 결과는 backend #150을 선행 조건으로 두며, 식물 검색은 백엔드 #92 전까지 API mode에서 비활성화한다. 이미 수용한 Friend 이름 오매칭과 Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 결함을 자동으로 수용한 것으로 해석하지 않는다.
+소셜 SDK credential 획득, 실제 주소 검색과 이미지 파일 선택·key 조회는 여전히 별도 준비가 필요하다. Memo 텍스트 CRUD는 backend #50 계약 답변·구현·live OpenAPI 동기화를, Place 멤버 변경·나가기와 Friend 고유 대상·부분 결과는 backend #150을 선행 조건으로 둔다. 식물 검색은 백엔드 #92 전까지 API mode에서 비활성화한다. 이미 수용한 Friend 이름 오매칭과 Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 결함을 자동으로 수용한 것으로 해석하지 않는다.
 
 ## DEV API 문서화 작업 이력
 

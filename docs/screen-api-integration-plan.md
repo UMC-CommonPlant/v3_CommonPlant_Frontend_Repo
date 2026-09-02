@@ -34,9 +34,11 @@
 | 3 | #273 Plant 소속 장소 code·식물 검색 잔여 동선 | `PLANT-01`, `SEARCH-02` 확인 | Place API의 정확한 plant ID로 Home 진입 code 복원 완료. 검색은 backend #92까지 API mode 차단·미연결 안내 |
 | 4 | #275 공통 API 오류 메시지·토큰 만료 처리 | `ERROR-01~02` 확인, `TOKEN-01~02` endpoint 부재 확인 | 표준 오류·field 메시지와 `A003/A004/A009` 로컬 세션 종료 완료. refresh·서버 logout은 backend #149 대기 |
 | 5 | #277 Place 멤버·Friend 식별자 기반 쓰기 | `PLACE-05~06`, `FRIEND-05`, 멤버 고유 ID·변경 endpoint, Friend 고유 대상·부분 결과 계약 | backend #150 답변 전 Blocked. 조회 전용·member 나가기 숨김·이름 기반 위험 수용 경계 유지 |
-| 6 | Memo CRUD·목록 상태 API 연결 | `MEMO-01~03` 답변. 이번 순서에서는 이미지 첨부 제외 | 생성·목록·수정·삭제, pagination과 loading/empty/error/success를 수직 연결 |
+| 6 | #283 Memo 텍스트 CRUD·목록 상태 API 연결 | backend #50~#55 구현·OpenAPI 동기화와 `MEMO-01`, `MEMO-03` 답변. 이미지 첨부 제외 | backend #50 계약 확인 답변 전 Blocked. 로컬 화면 유지, 추정 DTO·pagination·권한 모델 추가 금지 |
 
 선행 계약이 없는 단계는 편의를 위해 fixture·첫 항목·표시 이름을 원격 값으로 사용하지 않습니다. 답변 대기 중인 사실을 기록하고 다음 단계의 계약 확인을 병행할 수는 있지만, 순서를 완료한 것으로 표시하지 않습니다.
+
+2026-09-01 #283에서 live OpenAPI 19개 path와 backend main `7d572cb`를 다시 확인했으며 Memo path/schema와 구현 파일은 없었습니다. backend #50~#55는 endpoint 초안이지만 본문 최대 200/500자, 이미지 생략 시 유지/삭제, 작성자·권한, pagination, 성공 wrapper가 확정되지 않았습니다. [backend #50 계약 확인 코멘트](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50#issuecomment-5488630254)의 텍스트 CRUD 조건과 live OpenAPI가 일치한 뒤 별도 Feature 이슈를 생성합니다.
 
 ### 사용자 보류 범위
 
@@ -64,7 +66,7 @@ P0~P7은 기존 구현 순서를 보존한 표입니다. 다음 작업 순서는
 | P5 | Friend 수신 요청 | 요청 목록, 수락, 거절 API와 화면 상태 연결 | #241 / PR #242 병합 완료 |
 | P6 | Place 생성·수정 후속 흐름 | 생성 code·수정 결과와 친구 요청 전송 연결 | #243 / PR #244 병합 완료 |
 | P7 | Place 친구 관리 조회 | 실제 멤버 목록·이미지·닉네임 필터와 상태 UI | #245 / PR #246 병합 완료 |
-| 후속 | Memo | 텍스트 CRUD·목록 상태를 화면부터 API까지 연결 | #267 순서 6, `MEMO-01~03` 답변 필요 |
+| 후속 | Memo | 텍스트 CRUD·목록 상태를 화면부터 API까지 연결 | #283 계약 경계 정리, backend #50 답변·구현 전 Blocked |
 | 보류 | Image | 새 업로드 방식이 필요한 프로필·Place·Plant·Memo 이미지 흐름 | 사용자 재개 결정과 새 계약 필요 |
 
 P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기준으로 했습니다. #239는 live Swagger에 누락된 Place schema를 백엔드 main `7d572cb`의 Controller·DTO와 대조해 목록·상세 응답 계약을 연결했고, #241은 같은 source에서 확인한 Friend 수신 요청 계약을 화면까지 연결합니다.
@@ -89,8 +91,8 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Plant | 식물 등록 | 장소·애칭·날짜와 create submit 연결, #250 잠금·#251 실제 장소·loading/error/empty·재시도·제출 보호 병합 | 학명/이미지·장소 사진 | `GET /place/user`, `POST /plants`; 실제 목록 code만 사용 | #251 / PR #261 병합, 인증 E2E 별도 |
 | Plant | 식물 수정 | #248 이미지 key 보존·#250 제출 잠금, #252 code 누락 차단, #273 Home 진입 code 복원 | 이미지 선택·삭제 UI | `GET /plants/{id}/edit`, `PUT /plants/{id}?placeCode=...`; route·Plant code 우선, 없으면 Place 상세 plant ID 대조 | 실제 code 복원·미발견 차단 회귀 검증 완료 |
 | Plant | 식물 상세 | detail/delete, 등록일 계산·실제 값, #273 code resolver loading/error/missing/success·재시도 연결 | Memo CRUD·물주기 액션, resolver N+1 최적화 | `GET/DELETE /plants/{id}`, `GET /place/user`, `GET /place/{code}`; Memo·물주기 API 없음 | #231 상세 연결, #273 code 복원 |
-| Memo | 메모 작성 | 로컬 Provider 저장 | DTO, repository, submit, 실제 image file | Memo 생성 endpoint 필요 | Blocked |
-| Memo | 메모 목록·수정·삭제 | 로컬 fixture·상태 | 목록, pagination, 수정·삭제, 상세 갱신 | Memo CRUD endpoint 필요 | Blocked |
+| Memo | 메모 작성 | 로컬 Provider 저장 | 텍스트 DTO, repository, async submit. 이미지는 별도 보류 | backend #50·#51 구현과 OpenAPI request/response·200자 validation 계약 필요 | #283 Blocked |
+| Memo | 메모 목록·수정·삭제 | 로컬 fixture·상태 | 작성자·권한·pagination, 수정·삭제, 상세 갱신 | backend #50·#52~#55 구현과 OpenAPI schema·오류 계약 필요 | #283 Blocked |
 | Onboarding | 온보딩 | 정적 화면 완료 | 필요 시 최초 실행 여부 로컬 저장 | 서버 API 불필요 | 연결 제외 |
 
 ## 병렬 작업 설계
@@ -256,6 +258,26 @@ resolver는 식물 상세의 loading·오류·미발견·성공과 재시도에 
 백엔드 #92도 `Open / Backlog`입니다. API 모드는 fixture를 원격 결과로 사용하지
 않고 미연결 안내와 선택 차단을 표시합니다. API 비사용 모드의 로컬 검색·empty·선택
 동작은 유지하며 실제 검색 상태 연결은 백엔드 #92 완료 후 별도 이슈로 진행합니다.
+
+## Memo API 계약 경계 #283
+
+2026-09-01 live OpenAPI에는 Memo path와 schema가 없고 backend main `7d572cb`에도
+Memo 구현 파일이 없습니다. backend #50~#55는 생성·조회·수정·삭제·validation의
+계획 이슈이며 배포 계약으로 사용하지 않습니다.
+
+- 생성 #51의 content 최대 200자와 validation #55의 최대 500자가 충돌합니다.
+- 수정 #53은 이미지 생략 시 삭제와 null이 아닌 필드만 갱신한다는 문구가 충돌합니다.
+- 조회 #52의 draft response에는 목록 화면에 필요한 작성자 식별자·이름·프로필,
+  수정·삭제 권한과 pagination이 없습니다.
+- 삭제 #54의 `204 No Content`가 현재 공통 `JsonResponse` 방식과 같은지 미확정입니다.
+- 이미지 흐름은 사용자 보류 범위이므로 텍스트 CRUD 선행 조건과 분리합니다.
+
+[backend #50](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50#issuecomment-5488630254)에
+식별자·권한, 이미지 없는 multipart 요청, response wrapper, pagination·날짜,
+텍스트 수정 시 기존 이미지 유지, validation·오류 code를 요청했습니다. 답변과 구현이
+live OpenAPI에 반영되기 전에는 Memo DTO, repository, 원격 Provider와 임의
+pagination/result wrapper를 추가하지 않습니다. 현재 API 비사용 로컬 화면과 사진
+상태만 유지합니다.
 
 ## 공통 API 오류와 인증 만료 #275
 

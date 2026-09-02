@@ -40,9 +40,9 @@
 | SEARCH-01 | 검색 | 주소 검색 API를 백엔드가 제공하는가? | 장소 등록 주소 검색 실데이터 보류 | Open |
 | SEARCH-02 | 검색 | 식물 학명/추천 검색 API를 백엔드가 제공하는가? | 백엔드 #92 대기, #273에서 API mode fixture 차단 | Blocked |
 | SEARCH-03 | 검색 | `GET /users/{keyword}`는 부분 검색인가, exact 검색인가? | #277 친구 선택·중복 이름 UX, backend #150 답변 필요 | Open |
-| MEMO-01 | Memo | 메모 생성, 목록, 수정, 삭제 API 제공 계획은 무엇인가? | 메모 화면 실데이터 연결 보류 | Open |
-| MEMO-02 | Memo | 메모 이미지 첨부는 어떤 API와 필드로 연결하는가? | 메모 사진 업로드 흐름 보류 | Open |
-| MEMO-03 | Memo | 메모 목록 response의 작성자, 이미지, 작성일, pagination 구조는 무엇인가? | 메모 목록 mapper와 카드 상태 보류 | Open |
+| MEMO-01 | Memo | 메모 생성, 목록, 수정, 삭제 API 제공 계획은 무엇인가? | backend #50 계약 답변·구현·OpenAPI 전 텍스트 CRUD 연결 보류 | Blocked |
+| MEMO-02 | Memo | 메모 이미지 첨부는 어떤 API와 필드로 연결하는가? | 사용자 보류 범위, 텍스트 CRUD와 분리 | Blocked |
+| MEMO-03 | Memo | 메모 목록 response의 작성자, 이미지, 작성일, pagination 구조는 무엇인가? | backend #50 계약 답변·OpenAPI schema 전 mapper 보류 | Blocked |
 | TESTENV-01 | 테스트 환경 | CI가 개인 소셜 계정 없이 매 run 인증을 발급받는 방법은 무엇인가? | authenticated probe와 UI E2E 보류 | Open |
 | TESTENV-02 | 테스트 환경 | 테스트 token의 TTL, 갱신·재발급·폐기 정책은 무엇인가? | 장시간 run과 만료 복구 보류 | Open |
 | TESTENV-03 | 테스트 환경 | backend 소유 fixture 사용자와 run별 데이터 격리 기준은 무엇인가? | 병렬 실행과 CRUD E2E 보류 | Open |
@@ -310,30 +310,30 @@
 
 ### MEMO-01. Memo API 제공 계획
 
-- 현재 근거: Swagger에 메모 생성, 목록, 수정, 삭제 API가 없다.
-- 프론트 영향: 메모 화면은 로컬 상태만 사용할 수 있다.
-- 확인 질문: 메모 CRUD endpoint, request, response, 권한 정책은 어떻게 제공되는가?
-- 프론트 반영: 답변 후 memo data/repository/provider 계층을 추가한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 2026-09-01 live OpenAPI 19개 path에 Memo path/schema가 없고 backend main `7d572cb`에도 Memo 구현 파일이 없다. backend [#50](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50)~#55는 모두 Open인 구현 계획이다.
+- 프론트 영향: 계획의 `/plants/{plantUuid}/memos`를 배포 endpoint로 간주할 수 없다. 생성 #51과 validation #55의 content 최대 길이는 200/500자로 충돌하고 성공 wrapper·멱등·오류 계약도 없다.
+- 확인 질문: plant 식별자, 장소 구성원/작성자 권한, 이미지 없는 생성 request part, 생성·수정 result, 삭제 status, validation·오류 code는 무엇인가?
+- 프론트 반영: #283은 [backend #50 계약 확인](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50#issuecomment-5488630254) 답변과 live OpenAPI 동기화 전까지 로컬 Memo 화면을 유지하고 data/repository/provider 계층을 추가하지 않는다.
+- 답변: backend #50 답변 대기
+- 상태: Blocked
 
 ### MEMO-02. 메모 이미지 첨부 정책
 
-- 현재 근거: 메모 작성 화면에는 사진 UI가 있으나 Memo API와 Image API 연결 방식이 없다.
-- 프론트 영향: 메모 사진 업로드와 목록 표시를 확정할 수 없다.
-- 확인 질문: 메모 이미지는 `/s3/images` key를 참조하는가, Memo API multipart part로 직접 받는가?
-- 프론트 반영: 답변 후 메모 작성 Controller와 이미지 업로드 순서를 확정한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: 메모 작성 화면에는 사진 UI가 있고 backend #51·#53 계획은 Memo multipart의 direct image part를 제안하지만 구현과 OpenAPI가 없다. #53은 image 생략 시 기존 이미지 삭제와 null field 미갱신을 함께 적어 동작이 충돌한다.
+- 프론트 영향: 텍스트만 수정해도 기존 이미지를 잃을 수 있으므로 image 없는 update 정책 없이는 요청을 만들 수 없다.
+- 확인 질문: image 생략은 유지인지 삭제인지, 교체·명시적 삭제 part와 실패 시 정리 책임은 무엇인가?
+- 프론트 반영: 이미지 첨부는 사용자 보류 범위로 유지한다. 텍스트 CRUD는 image를 보내지 않아도 생성 가능하고 수정 시 기존 이미지를 보존한다는 계약만 선행 확인한다.
+- 답변: backend #50 답변 대기, 이미지 UI 연결은 사용자 재개 결정 필요
+- 상태: Blocked
 
 ### MEMO-03. 메모 목록 response 구조
 
-- 현재 근거: 메모 목록 화면은 작성자, 본문, 이미지, 삭제 액션을 표시한다.
-- 프론트 영향: 메모 카드 mapper와 pagination 정책을 정할 수 없다.
-- 확인 질문: 메모 id, 작성자, 작성일, 이미지 url/key, 권한, pagination 필드는 무엇인가?
-- 프론트 반영: 답변 후 memo list provider와 삭제/수정 액션을 API mode로 연결한다.
-- 답변: 미확인
-- 상태: Open
+- 현재 근거: backend #52 계획은 `memoIdx`, `content`, `imgUrl`, `createdAt`, `updatedAt`만 제안하고 pagination은 명시하지 않는다. 현재 화면은 작성자 이름·프로필과 수정·삭제 메뉴를 표시한다.
+- 프론트 영향: 작성자 식별자·표시값·권한·목록 page 계약 없이 첫 항목, 표시 이름이나 임의 page wrapper로 mapper를 만들 수 없다.
+- 확인 질문: 안정적인 memo/author ID, 작성자 이름·프로필, `canEdit`/`canDelete` 또는 권한 판단 기준, 날짜 timezone, 정렬, empty, page/cursor 구조는 무엇인가?
+- 프론트 반영: backend #50 답변과 OpenAPI schema 뒤 memo list 상태와 mapper를 추가한다. 부분 항목을 버리거나 로컬 fixture와 병합하지 않는다.
+- 답변: backend #50 답변 대기
+- 상태: Blocked
 
 ## 테스트 환경
 
