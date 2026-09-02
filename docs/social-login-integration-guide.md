@@ -129,6 +129,21 @@ provider console과 네이티브 프로젝트에는 별도로 아래 설정이 �
   profile
 - Apple backend: identity token의 서명·issuer·audience·만료·nonce 검증과 최초 email 보존
 
+Kakao Android 실행은 Dart 초기화 값과 redirect scheme이 같아야 하므로 네이티브 Gradle
+property도 함께 전달한다.
+
+```bash
+fvm flutter run \
+  --dart-define=COMMONPLANT_USE_API=true \
+  --dart-define=COMMONPLANT_KAKAO_NATIVE_APP_KEY=<native-app-key> \
+  --android-project-arg=COMMONPLANT_KAKAO_NATIVE_APP_KEY=<native-app-key>
+```
+
+저장소는 Android `AuthCodeCustomTabsActivity`와 iOS Kakao 앱 조회 allowlist, Apple Sign in
+capability/entitlement까지만 포함한다. 값이 있어야 확정되는 Kakao·Google iOS URL scheme은
+승인된 client 설정을 받은 뒤 Xcode URL Types에 추가한다. Google client ID를 Dart에서
+전달하더라도 reversed client ID URL scheme은 생략할 수 없다.
+
 Kakao 네이티브 앱 키와 OAuth client ID는 앱 식별 설정값이지만 실제 값은 승인된 환경에서
 주입한다. client secret, Apple private key, 개인 계정 token은 앱이나 저장소에 넣지 않는다.
 

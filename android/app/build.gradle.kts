@@ -5,6 +5,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val commonPlantKakaoNativeAppKey =
+    providers.gradleProperty("COMMONPLANT_KAKAO_NATIVE_APP_KEY")
+        .getOrElse("not-configured")
+
 android {
     namespace = "com.plant.common"
     compileSdk = flutter.compileSdkVersion
@@ -27,6 +31,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["commonPlantKakaoNativeAppKey"] =
+            commonPlantKakaoNativeAppKey
     }
 
     buildTypes {
