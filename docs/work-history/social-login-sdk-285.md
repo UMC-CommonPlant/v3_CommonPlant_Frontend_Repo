@@ -3,10 +3,14 @@
 ## 작업 기준
 
 - 이슈: [#285](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/285)
+- PR: [#286](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/286), 사용자 병합 대기
 - 백엔드 blocker: [#152](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/152)
 - 작업일: 2026-09-02
 - 기준 `develop`: `1847007` (PR #284 병합)
 - 브랜치: `feature/social-login-sdk-285`
+- 상태: 로컬 구현·검증 완료. 이슈와 PR은 Project 10의 category `User`, priority `high`,
+  status `In Review`, 담당자 `ywkim95`·`bbielo`, milestone
+  `v1.0.0 - MVP (핵심 기능 개발)`을 사용합니다.
 - 참고: [소셜 로그인](../social-login-integration-guide.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [라우팅](../routing-guide.md), [퍼블리싱](../screen-publishing-rules.md), [테스트](../testing-guide.md), [Swagger](../api-swagger-reference.md), [백엔드 질문](../backend-api-open-questions.md), [Git](../git-workflow.md) 가이드
 
 ## 확인한 계약

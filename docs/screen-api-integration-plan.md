@@ -66,7 +66,7 @@ P0~P7은 기존 구현 순서를 보존한 표입니다. 다음 작업 순서는
 
 | 순서 | 수직 슬라이스 | 범위 | 상태 |
 | --- | --- | --- | --- |
-| P0 | Auth 로그인·회원가입 | 로그인 화면, 인증 세션, 프로필 등록, route redirect, `/auth/login`, `/auth/register` | #227 / PR #228 병합, 실제 SDK·`isNewUser` 계약은 #285 진행 |
+| P0 | Auth 로그인·회원가입 | 로그인 화면, 인증 세션, 프로필 등록, route redirect, `/auth/login`, `/auth/register` | #227 / PR #228 병합, 실제 SDK·`isNewUser` 계약은 #285 / PR #286 리뷰 중 |
 | P1 | Home 초기 데이터 | 인증 사용자 정보와 장소·식물 요약을 화면 상태로 연결 | #232 / PR #233 병합 완료 |
 | P2 | Plant 핵심 동선 | 목록, 상세, 생성, 수정 API와 각 화면 상태 연결 | #229, #231 병합 완료 |
 | P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | #237 / PR #238 병합 완료, 이미지 파일 선택 정책과 분리 |
@@ -130,7 +130,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 #227은 기존 #216의 Auth datasource/repository를 실제 화면과 앱 세션에 연결했습니다.
 
-- 소셜 로그인 버튼은 `LoginController`를 통해 provider credential과 `/auth/login`을 연결합니다. #285는 Kakao access token, Google ID token과 iOS Apple identity token을 기존 gateway에 공급합니다.
+- 소셜 로그인 버튼은 `LoginController`를 통해 provider credential과 `/auth/login`을 연결합니다. #285 / PR #286은 Kakao access token, Google ID token과 iOS Apple identity token을 기존 gateway에 공급합니다.
 - `/auth/login`의 실제 `isNewUser`가 `true`면 `signupToken`을 보존하고 프로필 설정으로, `false`면 access/refresh token을 저장하고 Home으로 이동합니다. 별도 회원가입 시작 route는 만들지 않습니다.
 - Apple 버튼과 SDK 호출은 iOS에서만 제공합니다. Android에서는 버튼·간격·Semantics를 렌더링하지 않으며 backend #152 배포 전까지 실제 Apple 인증은 Blocked입니다.
 - 신규 사용자는 `signupToken`, 추천 이름, 추천 이미지 URL을 세션에 보존하고 프로필·약관 화면으로 이동합니다.

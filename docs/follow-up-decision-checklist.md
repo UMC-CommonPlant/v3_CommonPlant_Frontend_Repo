@@ -77,7 +77,7 @@
 
 | 체크 | ID | 범위 | 관련 질문 ID | 현재 막힌 작업 | 상태 |
 | --- | --- | --- | --- | --- | --- |
-| [ ] | API-AUTH | Auth 로그인·회원가입과 provider 검증 정책 | AUTH-01, AUTH-02, AUTH-03 | #216·#227의 화면/API 연결 뒤 #285에서 SDK를 연결한다. Apple 실제 로그인은 backend #152 대기 | Partial |
+| [ ] | API-AUTH | Auth 로그인·회원가입과 provider 검증 정책 | AUTH-01, AUTH-02, AUTH-03 | #216·#227 화면/API와 #285 / PR #286 SDK 연결 완료. Apple 실제 로그인은 backend #152 대기 | Partial |
 | [ ] | API-MULTIPART | Place multipart JSON part 정책 | MULTIPART-01 | Auth/User/Plant의 `application/json` encoding은 확인됐고 Place encoding은 백엔드 확인이 필요하다. | Open |
 | [ ] | API-PLACE | Place response와 식별자 정책 | PLACE-01, PLACE-02, PLACE-03, PLACE-04 | #239·#243 목록/상세/생성/수정, #245 멤버 조회 연결 완료; 멤버 변경은 보류 | Partial |
 | [ ] | API-FRIEND | Friend 요청 목록과 액션 정책 | FRIEND-01, FRIEND-02, FRIEND-03, FRIEND-04 | #241 수신 처리와 #243 발신 연결 완료, 이름 오매칭은 수용 위험으로 추적 | Partial |
