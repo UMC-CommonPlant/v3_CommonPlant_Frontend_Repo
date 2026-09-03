@@ -1,6 +1,6 @@
 # 문서 인덱스
 
-문서 분류 기준일: 2026-08-31, `develop` PR #268 및 #267 후속 순서 반영.
+문서 분류 기준일: 2026-09-03, `develop` PR #290 및 #291 메인 탭 작업 반영.
 
 작업 전 저장소 [README](../README.md)와 [에이전트 지침](../AGENTS.md)을 먼저 확인합니다. 현재 코드를 기준으로 판단하며, 완료되어 대체된 계획은 Git 이력과 기존 이슈·PR에서 확인합니다.
 
@@ -68,6 +68,7 @@
 | 소셜 로그인 SDK·가입 분기 #285 | [Social Login SDK](work-history/social-login-sdk-285.md) |
 | 온보딩·토큰 갱신 정책 #287 | [Onboarding·Refresh Policy](work-history/onboarding-refresh-policy-287.md) |
 | 온보딩 로컬 완료 상태 #289 | [Onboarding Local State](work-history/onboarding-local-state-289.md) |
+| 메인 탭 라우팅·모션 #291 | [Main Tab Routing·Motion](work-history/main-tab-routing-motion-291.md) |
 
 Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 작업 이력](screen-api-integration-plan.md#작업-이력), 문서 정리 #247은 [개발 감사 체크리스트](development-audit-checklist.md)에서 확인합니다.
 

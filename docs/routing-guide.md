@@ -9,12 +9,13 @@
 | `lib/app/common_plant_app.dart` | `MaterialApp.router` 구성 |
 | `lib/app/router/app_router.dart` | 앱 전역 `GoRouter` Provider 정의 |
 | `lib/app/router/app_routes.dart` | Figma 기준 route tree와 route metadata 정의 |
+| `lib/app/router/main_tab_shell.dart` | 정원·마이 공통 하단 탭과 탭 선택 동작 |
 | `lib/app/router/route_paths.dart` | route name, path, location helper 상수 |
 | `lib/app/router/route_placeholder_page.dart` | 새 route 추가 시 임시 진입 화면으로 사용할 fallback |
 | `lib/features/home/presentation/home_screen.dart` | 인증 후 홈 화면 |
 | `lib/features/*/presentation/pages` | Onboarding, Login, Terms, Place, Plant, Memo, User route 화면 |
 
-현재 등록된 라우트는 Figma `phase 0`과 User 후속 화면을 기준으로 route-level screen 21개입니다.
+현재 등록된 라우트는 Figma `phase 0`과 User 후속 화면을 기준으로 route-level screen 21개입니다. 정원 `/`과 마이 `/me`만 단순 `ShellRoute` 아래에 두고, 나머지 상세 화면은 기존 root route로 유지합니다.
 
 ```dart
 final appRouterProvider = Provider<GoRouter>(
@@ -30,7 +31,7 @@ final appRouterProvider = Provider<GoRouter>(
 - 화면 파일은 라우팅 정책을 직접 알지 않도록 합니다.
 - 화면 이동은 임시 문자열보다 route name 또는 route path 상수를 우선 사용합니다.
 - 인증 전/후 라우팅은 라우터 계층에서 분기하고, 각 화면에서 직접 인증 여부를 판단하지 않습니다.
-- MVP 단계에서는 복잡한 nested route보다 읽기 쉬운 단일 route tree를 우선합니다.
+- MVP 단계에서는 복잡한 nested route보다 읽기 쉬운 단일 route tree를 우선하고, 하단 탭을 공유하는 두 route에만 단순 `ShellRoute`를 사용합니다.
 - Place, Plant, Memo 상세 플로우는 URL path에 도메인 관계가 드러나도록 설계합니다.
 
 ## Figma 기준 라우트 설계
@@ -112,6 +113,7 @@ lib/app/router/
 | `app_route_spec.dart` | route metadata 모델 |
 | `app_router.dart` | `GoRouter` 생성과 route tree 조립 |
 | `app_routes.dart` | route name, route builder, shell route 정의 |
+| `main_tab_shell.dart` | 메인 하단 탭 배치와 route별 선택 상태·동작 |
 | `route_paths.dart` | path 문자열 상수 |
 | `route_placeholder_page.dart` | 미구현 route의 임시 화면 |
 | `redirect_notifier.dart` | 인증 상태 변경 시 router refresh 연결 |
@@ -201,6 +203,35 @@ refresh token만 남은 초기 상태에서 곧바로 로그인으로 보내지 
 
 #249부터 로그아웃·탈퇴 성공 시 저장소 삭제 완료를 기다리기 전에 인증 상태와 사용자 데이터 세션을 닫습니다. 기존 redirect 규칙은 그대로 사용하며, 느린 token 삭제 완료나 이전 계정의 요청 결과가 새 인증 상태를 변경하지 않도록 Controller에서 검사합니다. 데이터 수명은 [상태관리의 세션 격리 기준](state-management-guide.md#사용자-데이터-세션-격리)을 따릅니다.
 
+## 메인 하단 탭 기준
+
+하단 네비게이션은 정보, 이야기, 정원, 캘린더, 마이 순서로 표시합니다. 현재 화면과 route가 있는 정원과 마이만 `ShellRoute`의 자식이며, 두 화면 사이의 탭 전환에는 페이지 전환 애니메이션을 사용하지 않습니다.
+
+```mermaid
+flowchart LR
+  Info[정보<br/>준비 중 안내]
+  Story[이야기<br/>준비 중 안내]
+  Garden[정원<br/>/]
+  Calendar[캘린더<br/>준비 중 안내]
+  My[마이<br/>/me]
+
+  Garden <-->|하단 탭| My
+```
+
+| 탭 | 현재 처리 | Route |
+| --- | --- | --- |
+| 정보 | 현재 화면을 유지하고 `준비 중인 기능입니다` Snackbar 표시 | 없음 |
+| 이야기 | 현재 화면을 유지하고 `준비 중인 기능입니다` Snackbar 표시 | 없음 |
+| 정원 | `context.go(...)`로 홈 이동 | `/` |
+| 캘린더 | 현재 화면을 유지하고 `준비 중인 기능입니다` Snackbar 표시 | 없음 |
+| 마이 | `context.go(...)`로 마이페이지 이동 | `/me` |
+
+- 각 page가 하단 바를 직접 조립하지 않고 `MainTabShell`이 한 번만 소유합니다.
+- 선택 상태는 별도 Provider나 로컬 index가 아니라 현재 route에서 계산합니다.
+- 정보·이야기·캘린더는 비활성 control이나 placeholder route로 만들지 않습니다. 화면 계약이 확정되기 전까지 탭 선택 피드백만 제공합니다.
+- 설정, 프로필 수정, Place, Plant, Memo 상세 화면은 Shell 밖에 두어 하단 바를 표시하지 않습니다.
+- 탭별 독립 탐색 기록이 필요한 요구가 생기기 전에는 `StatefulShellRoute`와 별도 Navigator를 도입하지 않습니다.
+
 ## 화면 이동 기준
 
 | 상황 | 권장 방식 |
@@ -228,5 +259,4 @@ refresh token만 남은 초기 상태에서 곧바로 로그인으로 보내지 
 
 ## 결정 필요
 
-- 하단 탭이 들어갈 경우 `ShellRoute` 또는 단순 탭 상태 중 어떤 구조를 사용할지 화면 범위 확정 후 결정해야 합니다.
 - 외부 딥링크 scheme, universal link 도메인, 공유 링크 정책은 아직 확정되지 않았습니다.

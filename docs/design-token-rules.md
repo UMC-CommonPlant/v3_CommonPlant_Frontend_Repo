@@ -7,6 +7,7 @@
 | 파일 | 역할 |
 | --- | --- |
 | `app_colors.dart` | Figma 색상 원본값, 의미 기반 색상, 그라디언트 정의 |
+| `app_motion.dart` | 반복되는 짧은 모션 시간·curve와 애니메이션 축소 처리 |
 | `app_text_styles.dart` | Pretendard 기반 텍스트 스타일 정의 |
 | `app_spacing.dart` | 공통 여백 단위 정의 |
 | `app_radius.dart` | 공통 border radius 정의 |
@@ -144,6 +145,16 @@ final responsiveWidth = availableWidth
 - 중간 viewport의 정확한 픽셀값은 디자인 계약이 아닐 수 있으므로, 구현식과 테스트를 불필요하게 결합하지 않습니다.
 - 화면 전체 폭의 고정 비율만 사용하면 내부 콘텐츠의 최소 폭을 보장하기 어려우므로, component constraint를 근거로 계산합니다.
 
+## Motion 규칙
+
+탭 선택 표시, 작은 popup, FAB 확장 메뉴처럼 짧은 상태 전환에는 `AppMotion.fast`의 180ms와 `AppMotion.standardCurve`를 사용합니다. 시스템에서 애니메이션 축소를 요청하면 `AppMotion.durationOf(context, ...)`가 `Duration.zero`를 반환합니다.
+
+- 하단 탭의 화면 교체는 route slide가 아닌 즉시 전환으로 처리하고 선택 indicator만 짧게 움직입니다.
+- popup과 FAB 확장 메뉴는 표시 위치를 기준으로 작은 fade/scale을 적용합니다.
+- 일반 page push/pop, dialog, bottom sheet는 별도 디자인 요구가 없으면 플랫폼 기본 전환을 유지합니다.
+- animation service, Provider, transition wrapper는 만들지 않습니다. 반복되는 값과 축소 설정 판정만 `AppMotion`이 소유합니다.
+- 새로운 duration은 실제로 다른 속도의 구분이 반복될 때만 추가합니다.
+
 ## 그라디언트 규칙
 
 그라디언트는 `AppGradients`에 정의합니다.
@@ -162,8 +173,9 @@ final responsiveWidth = availableWidth
 3. 화면 의미가 명확한 색상은 `AppColors`와 `AppThemeTokens`에 연결합니다.
 4. 텍스트는 `AppTextStyles`에 size/weight/line-height 기준으로 추가합니다.
 5. 여백, radius, 고정 크기는 각각 `AppSpacing`, `AppRadius`, `AppSizes`에 추가합니다.
-6. 새 토큰을 사용하는 공용 위젯 또는 샘플 화면을 함께 갱신합니다.
-7. `fvm flutter analyze`와 `fvm flutter test --concurrency=1 --dds-port=0`를 실행합니다.
+6. motion은 기존 `AppMotion` 속도로 표현할 수 있는지 확인하고, 시스템 애니메이션 축소 설정을 함께 처리합니다.
+7. 새 토큰을 사용하는 공용 위젯 또는 샘플 화면을 함께 갱신합니다.
+8. `fvm flutter analyze`와 `fvm flutter test --concurrency=1 --dds-port=0`를 실행합니다.
 
 ## 사용 예시
 

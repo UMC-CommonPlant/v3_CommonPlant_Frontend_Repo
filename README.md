@@ -241,7 +241,7 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 
 ## 현재 진행 상태와 다음 작업
 
-2026-09-01 `develop`의 PR #282 병합 상태(`3824187`)를 기준으로 합니다. Epic #226의 하위 이슈 20/20과 감사 #248~#256이 완료되어 Epic과 Project 상태를 `Done`으로 종료했습니다. 이는 실제 인증 E2E나 모든 화면 동선의 완성을 뜻하지 않으며, 후속 실행 범위는 [화면·모델·API 연결 계획](docs/screen-api-integration-plan.md#후속-개발-실행-순서-267)에서 관리합니다.
+2026-09-03 `develop`의 PR #290 병합 상태(`8092783`)를 기준으로 합니다. Epic #226의 하위 이슈 20/20과 감사 #248~#256이 완료되어 Epic과 Project 상태를 `Done`으로 종료했습니다. 이는 실제 인증 E2E나 모든 화면 동선의 완성을 뜻하지 않으며, 후속 실행 범위는 [화면·모델·API 연결 계획](docs/screen-api-integration-plan.md#후속-개발-실행-순서-267)에서 관리합니다.
 
 현재 우선순위는 사용자 결정에 따라 다음과 같습니다.
 
@@ -253,7 +253,10 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 6. #279 / PR #280에서 UX-02의 inline 상태·Snackbar·Dialog 기준을 확정하고, 반복 Snackbar만 최소 helper로 통일했습니다. 단일 목적지 삭제 결과와 전달용 getter는 제거하고 실제 분기·재사용이 있는 상태와 result는 유지했습니다.
 7. #281 / PR #282에서 현재 PR 본문 기준을 단일 기본 template으로 고정했습니다. 유형별 template과 metadata 자동화는 실제 반복 요구가 생기기 전까지 추가하지 않습니다.
 8. #283에서 Memo 텍스트 CRUD 계약을 재확인했습니다. live OpenAPI에는 Memo path/schema가 없고 backend #50~#55의 초안도 본문 길이·이미지 유지·작성자·pagination 계약이 충돌하거나 빠져 있어 [백엔드 #50 계약 확인](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50#issuecomment-5488630254) 답변 전까지 로컬 화면을 유지합니다.
-9. #285에서 보류했던 소셜 SDK 연결을 재개했습니다. Kakao access token, Google ID token, iOS 전용 Apple identity token을 `/auth/login`에 전달하고 실제 `isNewUser` 값으로 가입 완료 흐름을 분기합니다. Apple 서버 검증은 [백엔드 #152](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/152) 배포 전까지 완료로 표시하지 않습니다.
+9. #285 / PR #286에서 Kakao access token, Google ID token, iOS 전용 Apple identity token을 `/auth/login`에 전달하고 실제 `isNewUser` 값으로 가입 완료 흐름을 분기했습니다. Apple 서버 검증은 [백엔드 #152](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/152) 배포 전까지 완료로 표시하지 않습니다.
+10. #287 / PR #288에서 온보딩 최초 노출과 refresh token만 남은 초기 세션 정책을 정리했습니다. refresh API가 없어 자동 갱신 구현은 계속 대기합니다.
+11. #289 / PR #290에서 온보딩 완료 여부를 로컬에 저장하고 앱 시작 redirect에 연결했습니다.
+12. #291에서 정원·마이 하단 탭을 단순 Shell로 통합하고, 정보·이야기·캘린더에는 구현 예정 안내를 연결하며 짧은 popup·FAB motion을 통일합니다.
 
 실제 주소 검색 서비스, 업로드 방식 변경이 필요한 이미지 흐름, 인증된 원격 E2E, 스토어·릴리즈 준비는 사용자가 다음 작업으로 보류했습니다. 기존 안전 차단과 질문·위험 기록은 유지하며 이 항목들이 위 실행 순서를 막는 전역 blocker가 되지 않게 분리합니다.
 
