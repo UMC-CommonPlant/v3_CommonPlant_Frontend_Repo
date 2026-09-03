@@ -3,10 +3,13 @@
 ## 작업 기준
 
 - 이슈: [#287](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/287)
+- PR: [#288](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/288), 사용자 병합 대기
 - 백엔드 의존성: [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)
 - 작업일: 2026-09-03
 - 기준 `develop`: `9259213` (PR #286 병합)
 - 브랜치: `docs/onboarding-refresh-policy-287`
+- 상태: 문서화 완료. 이슈와 PR은 Project 10의 category `User`, priority `high`,
+  status `In Review`를 사용합니다.
 
 ## 확정한 정책
 
