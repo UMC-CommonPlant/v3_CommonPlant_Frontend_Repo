@@ -1,7 +1,9 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/onboarding/data/onboarding_local_store.dart';
 import 'package:commonplant_frontend/main.dart' as app;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +15,15 @@ void main() {
       reason: 'TEST-02-A smoke는 remote API를 사용하지 않아야 합니다.',
     );
 
+    final preferences = SharedPreferencesAsync();
+    await preferences.remove(onboardingCompletedKey);
+    addTearDown(() => preferences.remove(onboardingCompletedKey));
+
     app.main();
+    await tester.pumpAndSettle();
+
+    expect(find.text('식물을 내 공간으로,\n공간은 내 폰으로'), findsOneWidget);
+    await tester.tap(find.text('시작하기'));
     await tester.pumpAndSettle();
 
     expect(find.text('My place'), findsOneWidget);

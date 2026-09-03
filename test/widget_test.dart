@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/app/common_plant_app.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/features/home/presentation/home_screen.dart';
+import 'package:commonplant_frontend/features/onboarding/presentation/providers/onboarding_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_invitation_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
@@ -12,9 +13,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'helpers/test_app.dart';
+
 void main() {
   testWidgets('앱이 초기 홈 화면을 표시한다', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: CommonPlantApp()));
+    await tester.pumpWidget(_buildCompletedOnboardingApp());
     await tester.pumpAndSettle();
 
     expect(find.text('커먼플랜트'), findsOneWidget);
@@ -53,7 +56,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(const ProviderScope(child: CommonPlantApp()));
+    await tester.pumpWidget(_buildCompletedOnboardingApp());
     await tester.pumpAndSettle();
 
     final heroBackgroundRect = tester.getRect(find.bySemanticsLabel('메인 배경'));
@@ -107,7 +110,7 @@ void main() {
   });
 
   testWidgets('요청 버튼은 장소 친구 요청 화면으로 이동한다', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: CommonPlantApp()));
+    await tester.pumpWidget(_buildCompletedOnboardingApp());
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('요청 3건'));
@@ -124,6 +127,17 @@ void main() {
     expect(svg, contains('fill="#00C596"'));
     expect(svg, contains('stroke="white"'));
   });
+}
+
+Widget _buildCompletedOnboardingApp() {
+  return ProviderScope(
+    overrides: [
+      onboardingLocalStoreProvider.overrideWithValue(
+        TestOnboardingLocalStore(completed: true),
+      ),
+    ],
+    child: const CommonPlantApp(),
+  );
 }
 
 class _SeededPlaceListNotifier extends PlaceListNotifier {
