@@ -17,6 +17,12 @@
 - backend `main`은 Apple verifier가 없어 실제 Apple 로그인은 backend #152 dev 배포 전까지 Blocked다.
 - 실제 provider credential과 개인 계정 원격 E2E는 저장소에 임의로 추가하지 않는다.
 
+## 2026-09-03 온보딩 로컬 상태
+
+- #287에서 결정한 비보안 로컬 완료 값을 #289에서 `SharedPreferencesAsync`로 연결했습니다.
+- 완료 값이 없으면 온보딩을 표시하고 `시작하기` 저장 성공 후에만 인증 흐름으로 이동합니다.
+- 앱 삭제·재설치 중 OS 백업으로 값이 복원되는 경우의 재노출 여부는 계속 열린 결정입니다.
+
 ## 2026-08-30 사용자 실행·보류 결정
 
 [Epic #226](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/226) 하위 이슈 20/20 완료 뒤 #267에서 후속 범위를 다시 정했습니다. 즉시 실행 순서는 [화면·API 계획](screen-api-integration-plan.md#후속-개발-실행-순서-267)을 단일 원본으로 사용합니다.

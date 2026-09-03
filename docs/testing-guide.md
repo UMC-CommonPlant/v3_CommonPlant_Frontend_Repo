@@ -339,5 +339,5 @@ GitHub Actions의 기본 CI는 `develop` 대상 PR과 `develop` push에서 `flut
 ## 후속 결정 필요
 
 - TEST-01 pilot은 #199에서 `OnboardingPage`, `375×812`, DPR 1, Ubuntu canonical, exact comparator로 확정했습니다. 추가 화면과 viewport baseline은 회귀 위험과 유지 비용을 확인해 별도 이슈로 확장합니다.
-- TEST-02-A는 #203에서 API 비사용 Home → 장소 친구 요청 Android smoke와 수동 workflow로 도입했고, #218에서 `develop` run 3회의 연속 성공과 로그 구분을 확인했습니다. #224에서 기본 `Flutter CI / quality`만 required check로 설정하고 Android smoke는 수동으로 유지하기로 결정했습니다.
+- TEST-02-A는 #203에서 API 비사용 Home → 장소 친구 요청 Android smoke와 수동 workflow로 도입했고, #289에서 로컬 완료 값을 초기화한 뒤 온보딩 → Home 구간을 앞에 추가했습니다. #218에서 `develop` run 3회의 연속 성공과 로그 구분을 확인했고, #224 결정에 따라 Android smoke는 수동으로 유지합니다.
 - TEST-02-B의 dev API URL은 #213에서 확인했고 #220에서 인증, token lifecycle, 데이터 격리·cleanup, secret 승인 gate를 구체화했습니다. 첫 단계는 authenticated read-only probe이며, 외부 조건이 준비되기 전 상태는 `Blocked`입니다.
