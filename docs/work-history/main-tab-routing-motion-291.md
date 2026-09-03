@@ -32,6 +32,19 @@
 - 식물 상세 popup과 기존 삭제 dialog 회귀
 - 전체 format, analyze, widget/unit test, diff 검사
 
+## 커밋과 검증 결과
+
+| 커밋 | 변경 범위 |
+| --- | --- |
+| `8256d16` | 메인 Shell, 준비 중 탭 피드백, motion 적용과 회귀 테스트 |
+| `05eef53` | 라우팅·Figma·디자인 토큰·공용 위젯 문서 갱신 |
+| `399a769` | 포맷 품질 게이트 반영 |
+
+- `fvm dart format --output=none --set-exit-if-changed .`: 통과
+- `fvm flutter analyze`: 통과
+- `fvm flutter test`: 570개 통과, 기존 Linux 전용 golden 1개 skip
+- `git diff --check`: 통과
+
 ## 남은 범위
 
 - 정보, 이야기, 캘린더 실제 화면·route·API
