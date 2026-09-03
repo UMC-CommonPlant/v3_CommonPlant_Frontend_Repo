@@ -256,7 +256,7 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 9. #285 / PR #286에서 Kakao access token, Google ID token, iOS 전용 Apple identity token을 `/auth/login`에 전달하고 실제 `isNewUser` 값으로 가입 완료 흐름을 분기했습니다. Apple 서버 검증은 [백엔드 #152](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/152) 배포 전까지 완료로 표시하지 않습니다.
 10. #287 / PR #288에서 온보딩 최초 노출과 refresh token만 남은 초기 세션 정책을 정리했습니다. refresh API가 없어 자동 갱신 구현은 계속 대기합니다.
 11. #289 / PR #290에서 온보딩 완료 여부를 로컬에 저장하고 앱 시작 redirect에 연결했습니다.
-12. #291에서 정원·마이 하단 탭을 단순 Shell로 통합하고, 정보·이야기·캘린더에는 구현 예정 안내를 연결하며 짧은 popup·FAB motion을 통일합니다.
+12. #291 / PR #292에서 정원·마이 하단 탭을 단순 Shell로 통합하고, 정보·이야기·캘린더에는 구현 예정 안내를 연결하며 짧은 popup·FAB motion을 통일했습니다.
 
 실제 주소 검색 서비스, 업로드 방식 변경이 필요한 이미지 흐름, 인증된 원격 E2E, 스토어·릴리즈 준비는 사용자가 다음 작업으로 보류했습니다. 기존 안전 차단과 질문·위험 기록은 유지하며 이 항목들이 위 실행 순서를 막는 전역 blocker가 되지 않게 분리합니다.
 

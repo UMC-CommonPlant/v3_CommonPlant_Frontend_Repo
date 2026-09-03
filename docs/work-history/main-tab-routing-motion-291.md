@@ -3,6 +3,7 @@
 ## 작업 기준
 
 - 이슈: [#291](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/291)
+- PR: [#292](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/292) (`In Review`)
 - 작업일: 2026-09-03
 - 기준 `develop`: `8092783` (PR #290 병합)
 - 브랜치: `feature/main-tab-routing-motion-291`
