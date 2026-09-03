@@ -5,9 +5,12 @@ import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/onboarding/presentation/providers/onboarding_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 const double _figmaFrameWidth = 375;
@@ -19,11 +22,30 @@ const double _heroHeight = 253.251;
 const double _titleTop = 463.3;
 const double _buttonBottom = 42;
 
-class OnboardingPage extends StatelessWidget {
-  const OnboardingPage({super.key});
+class OnboardingPage extends ConsumerWidget {
+  const OnboardingPage({super.key, this.redirect});
+
+  final String? redirect;
+
+  Future<void> _handleStart(BuildContext context, WidgetRef ref) async {
+    final didComplete = await ref
+        .read(onboardingControllerProvider.notifier)
+        .complete();
+    if (!context.mounted) {
+      return;
+    }
+    if (!didComplete) {
+      showCommonSnackBar(context, onboardingSaveFailureMessage);
+      return;
+    }
+
+    context.go(AppRoutePaths.loginLocation(redirect: redirect));
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final completionState = ref.watch(onboardingControllerProvider);
+
     return Scaffold(
       backgroundColor: AppColors.white,
       body: LayoutBuilder(
@@ -85,8 +107,10 @@ class OnboardingPage extends StatelessWidget {
                 right: horizontalInset,
                 bottom: buttonBottom,
                 child: CommonButton(
+                  key: const ValueKey('onboardingStartButton'),
                   label: '시작하기',
-                  onPressed: () => context.go(AppRoutePaths.login),
+                  isLoading: completionState.isLoading,
+                  onPressed: () => _handleStart(context, ref),
                 ),
               ),
             ],

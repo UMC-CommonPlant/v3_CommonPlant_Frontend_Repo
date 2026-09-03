@@ -4,16 +4,31 @@ import 'package:commonplant_frontend/features/login/presentation/providers/auth_
 String? authRedirectLocation({
   required AuthSessionState? session,
   required bool isChecking,
+  bool hasCompletedOnboarding = true,
+  bool isCheckingOnboarding = false,
   required Uri currentUri,
 }) {
-  if (isChecking) {
+  if (isCheckingOnboarding) {
     return null;
   }
 
   final currentPath = currentUri.path;
-  final isPublicRoute =
-      currentPath == AppRoutePaths.onboarding ||
-      currentPath == AppRoutePaths.login;
+  if (!hasCompletedOnboarding) {
+    if (currentPath == AppRoutePaths.onboarding) {
+      return null;
+    }
+
+    return AppRoutePaths.onboardingLocation(
+      redirect: _preservedRedirect(currentUri),
+    );
+  }
+
+  if (isChecking) {
+    return null;
+  }
+
+  final isPublicRoute = currentPath == AppRoutePaths.login;
+  final isEntryRoute = isPublicRoute || currentPath == AppRoutePaths.onboarding;
   final isSignupRoute =
       currentPath == AppRoutePaths.profileSetup ||
       currentPath == AppRoutePaths.terms;
@@ -23,21 +38,34 @@ String? authRedirectLocation({
     AuthSessionStatus.unauthenticated =>
       isPublicRoute
           ? null
-          : AppRoutePaths.loginLocation(redirect: currentUri.toString()),
+          : AppRoutePaths.loginLocation(
+              redirect: _preservedRedirect(currentUri),
+            ),
     AuthSessionStatus.signupRequired =>
       isSignupRoute ? null : AppRoutePaths.profileSetup,
     AuthSessionStatus.authenticated =>
-      isPublicRoute || isSignupRoute ? _authenticatedTarget(currentUri) : null,
+      isEntryRoute || isSignupRoute ? _authenticatedTarget(currentUri) : null,
   };
 }
 
 String _authenticatedTarget(Uri currentUri) {
-  if (currentUri.path == AppRoutePaths.login) {
-    final redirect = currentUri.queryParameters['redirect'];
-    if (redirect != null && redirect.startsWith('/')) {
+  if (currentUri.path == AppRoutePaths.login ||
+      currentUri.path == AppRoutePaths.onboarding) {
+    final redirect = _preservedRedirect(currentUri);
+    if (redirect != null) {
       return redirect;
     }
   }
 
   return AppRoutePaths.home;
+}
+
+String? _preservedRedirect(Uri currentUri) {
+  if (currentUri.path == AppRoutePaths.login ||
+      currentUri.path == AppRoutePaths.onboarding) {
+    final redirect = currentUri.queryParameters['redirect'];
+    return redirect != null && redirect.startsWith('/') ? redirect : null;
+  }
+
+  return currentUri.toString();
 }

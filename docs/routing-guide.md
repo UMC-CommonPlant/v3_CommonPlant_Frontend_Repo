@@ -120,16 +120,23 @@ lib/app/router/
 
 ## 앱 초기 진입과 온보딩 정책
 
-#287에서 온보딩 완료 여부는 계정이나 인증 token과 분리된 비보안 로컬 값으로
-관리하기로 결정했습니다. 화면을 한 번 표시한 시점이 아니라 사용자가 `시작하기`를
-눌러 온보딩을 완료한 시점에 `hasCompletedOnboarding = true`를 저장합니다.
+#287에서 정한 정책을 #289에서 연결했습니다. 온보딩 완료 여부는 계정이나 인증 token과
+분리된 `SharedPreferencesAsync` 로컬 값으로 관리합니다. 화면을 한 번 표시한 시점이 아니라
+사용자가 `시작하기`를 눌러 온보딩을 완료한 시점에 값을 저장합니다.
 
-초기 진입은 다음 순서를 목표로 하며 아직 코드에는 연결하지 않았습니다.
+초기 진입은 다음 순서를 따릅니다.
 
 1. 로컬 온보딩 완료 값을 확인하는 동안 초기 route 결정을 보류합니다.
 2. 값이 없거나 `false`이면 `/onboarding`을 표시합니다.
 3. `true`이면 인증 세션 복원으로 넘어갑니다.
-4. 온보딩 완료 뒤에는 `/login`으로 이동하고 기존 인증 route policy를 사용합니다.
+4. 온보딩 완료 뒤에는 기존 인증 route policy를 사용합니다. 비인증이면 `/login`, 인증
+   세션이 복원됐으면 보존된 target 또는 `/`로 이동합니다.
+
+`OnboardingLocalStore`는 로컬 bool 읽기·쓰기만 담당하고
+`onboardingControllerProvider`가 초기 확인과 완료 저장 상태를 관리합니다. 라우터는 이
+Provider의 결과만 사용하며 preferences에 직접 접근하지 않습니다. 저장 중에는 시작 버튼을
+잠그고, 저장 실패 시 온보딩에 머물러 안내한 뒤 다시 시도할 수 있습니다. 보호 route에서
+최초 진입한 경우에는 `redirect` query를 온보딩에서 로그인까지 보존합니다.
 
 이 값은 사용자 계정에 귀속하지 않고 secure token 저장소에도 넣지 않습니다. 앱 업데이트와
 일반 재실행에는 값을 유지합니다. 앱 삭제·재설치 때 로컬 값이 삭제되면 온보딩을 다시
@@ -160,23 +167,27 @@ lib/app/router/
 | --- | --- |
 | `features/login/presentation/providers/auth_session_controller.dart` | 앱 시작 token 복원과 로그인/회원가입 결과에 따른 세션 전환을 담당합니다. |
 | `features/login/presentation/providers/auth_session_state.dart` | 앱 전역 인증 상태를 `unauthenticated`, `signupRequired`, `authenticated`로 표현합니다. Provider loading을 `checking`으로 사용합니다. |
-| `app/router/auth_route_policy.dart` | 현재 URI와 인증 상태를 기준으로 redirect location을 계산합니다. |
+| `features/onboarding/presentation/providers/onboarding_controller.dart` | 로컬 온보딩 완료 값 확인과 완료 저장 상태를 담당합니다. |
+| `app/router/auth_route_policy.dart` | 현재 URI와 온보딩·인증 상태를 기준으로 redirect location을 계산합니다. |
 | `app/router/redirect_notifier.dart` | 인증 Provider 변경을 `GoRouter.refreshListenable`로 연결합니다. |
 | `app/router/app_router.dart` | 인증 상태와 현재 location을 기준으로 redirect target을 계산합니다. |
 
 라우터 redirect는 아래 순서를 따릅니다.
 
-1. 인증 상태가 `checking`이면 현재 위치를 유지합니다.
-2. 공개 route는 인증 여부와 관계없이 진입을 허용합니다.
-3. `signupRequired` 상태에서는 `profileSetup`, `terms` route만 허용하고 그 외 route는 `/profile/setup`으로 보냅니다.
-4. `unauthenticated` 상태에서 공개 route가 아닌 route에 접근하면 `/login`으로 보내며, 원래 location은 redirect target으로 보존합니다.
-5. `authenticated` 상태에서 공개 route나 회원가입 진행 route에 접근하면 보존된 redirect target 또는 `/`로 보냅니다.
+1. 온보딩 완료 값을 확인 중이면 현재 위치를 유지합니다.
+2. 완료 값이 없거나 `false`이면 인증 상태와 관계없이 `/onboarding`으로 보내며 원래
+   location을 redirect target으로 보존합니다.
+3. 온보딩이 완료됐지만 인증 상태가 `checking`이면 현재 위치를 유지합니다.
+4. 비인증 공개 route는 `login`이며, `signupRequired` 상태에서는 `profileSetup`, `terms`만 허용합니다.
+5. `unauthenticated` 상태에서 로그인 외 route에 접근하면 `/login`으로 보내며 보존된 target을 유지합니다.
+6. `authenticated` 상태에서 로그인·온보딩·회원가입 진행 route에 접근하면 보존된 target 또는 `/`로 보냅니다.
 
 초기 route policy는 아래처럼 둡니다.
 
 | 정책 | Route name |
 | --- | --- |
-| 공개 route | `onboarding`, `login` |
+| 초기 진입 gate | `onboarding` |
+| 비인증 공개 route | `login` |
 | 회원가입 진행 route | `profileSetup`, `terms` |
 | 인증 필요 route | `home`, `placeInvitations`, `placeCreate`, `addressSearch`, `placeFriendAdd`, `placeEdit`, `placeDetail`, `friendManagement`, `plantSearch`, `plantCreateDetails`, `plantEdit`, `plantDetail`, `memoWrite`, `memoList`, `userProfile`, `userSettings`, `userProfileEdit` |
 

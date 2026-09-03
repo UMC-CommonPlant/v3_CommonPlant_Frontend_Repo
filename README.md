@@ -100,6 +100,7 @@ fvm flutter run \
 | `flutter_svg` | `^2.2.0` | SVG 아이콘 렌더링 |
 | `dio` | `^5.9.2` | 공통 HTTP client와 multipart API 요청 |
 | `flutter_secure_storage` | `^10.2.0` | 인증 access/refresh token 보관 |
+| `shared_preferences` | `^2.5.5` | 온보딩 완료 여부 등 비보안 로컬 값 보관 |
 
 ### Development
 
@@ -165,7 +166,7 @@ tool/
 - 인증 토큰은 `flutter_secure_storage`에 보관합니다. #249에서 계정별 데이터 세션과 토큰 저장·삭제 순서를 분리해 이전 계정의 조회·후처리가 새 계정에 섞이지 않도록 구현했습니다. #287은 refresh token만 남은 상태에서 갱신을 먼저 시도하도록 정책을 확정했지만 API가 없어 아직 구현하지 않았고, 서버 로그아웃 연동은 우선순위에서 제외했습니다. [작업 이력](docs/work-history/session-cache-isolation-249.md)에서 현재 검증 범위와 제한을 확인합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
 - Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 사용합니다.
-- Integration test는 remote API를 사용하지 않는 Home 진입과 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 [remote integration test 준비 계약](docs/remote-integration-test-readiness.md)의 인증, 데이터 격리, cleanup, secret 승인 gate가 충족되기 전까지 end-to-end 범위는 `Blocked`입니다.
+- Integration test는 remote API를 사용하지 않는 온보딩 완료 → Home → 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 [remote integration test 준비 계약](docs/remote-integration-test-readiness.md)의 인증, 데이터 격리, cleanup, secret 승인 gate가 충족되기 전까지 end-to-end 범위는 `Blocked`입니다.
 
 ## 프로젝트 문서
 

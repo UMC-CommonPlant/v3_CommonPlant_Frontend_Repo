@@ -136,7 +136,7 @@ Compact width 적용 gap과 대상 화면 회귀 테스트는 #197에서 완료�
 
 - Flutter SDK의 `integration_test`를 dev dependency로 등록한다.
 - `integration_test/app_smoke_test.dart`에서 production `main()`을 실행하고 `COMMONPLANT_USE_API=false`를 assertion으로 고정한다.
-- Home의 기본 콘텐츠를 확인한 뒤 `장소 요청 3건`을 탭해 장소 친구 요청 화면까지 이동한다.
+- 온보딩 완료 값을 초기화하고 `시작하기`로 Home에 진입한 뒤 기본 콘텐츠를 확인합니다. 이어서 `장소 요청 3건`을 탭해 장소 친구 요청 화면까지 이동합니다.
 - 로컬 명령은 Android device ID를 명시하고, GitHub Actions는 Android API 35 Google APIs x86_64 Pixel 6 emulator의 수동 workflow로 실행한다.
 - `develop` 수동 run 3회가 assertion 실패나 재시도 없이 연속 성공했다.
 - emulator 준비와 Flutter test 실행이 로그에서 구분되며, 측정된 job 실행 시간은 5분 1초~7분 32초다.

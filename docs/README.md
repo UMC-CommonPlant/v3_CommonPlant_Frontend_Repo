@@ -67,6 +67,7 @@
 | 후속 개발 순서·보류 범위 #267 | [Follow-up Development Roadmap](work-history/follow-up-development-roadmap-267.md) |
 | 소셜 로그인 SDK·가입 분기 #285 | [Social Login SDK](work-history/social-login-sdk-285.md) |
 | 온보딩·토큰 갱신 정책 #287 | [Onboarding·Refresh Policy](work-history/onboarding-refresh-policy-287.md) |
+| 온보딩 로컬 완료 상태 #289 | [Onboarding Local State](work-history/onboarding-local-state-289.md) |
 
 Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 작업 이력](screen-api-integration-plan.md#작업-이력), 문서 정리 #247은 [개발 감사 체크리스트](development-audit-checklist.md)에서 확인합니다.
 

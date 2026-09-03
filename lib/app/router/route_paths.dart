@@ -57,6 +57,17 @@ abstract final class AppRoutePaths {
     return Uri(path: login, queryParameters: {'redirect': redirect}).toString();
   }
 
+  static String onboardingLocation({String? redirect}) {
+    if (redirect == null || redirect.isEmpty) {
+      return onboarding;
+    }
+
+    return Uri(
+      path: onboarding,
+      queryParameters: {'redirect': redirect},
+    ).toString();
+  }
+
   static String termsLocation({String? next}) {
     if (next == null) {
       return terms;

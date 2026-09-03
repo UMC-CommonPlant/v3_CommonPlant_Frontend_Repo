@@ -216,6 +216,17 @@ Provider 책임은 아래처럼 나눕니다.
 | 로그인/회원가입 Controller | repository 호출과 유효한 결과의 인증 전환을 담당합니다. 실제 token 저장은 repository가 `AuthTokenWriter`를 통해 수행합니다. |
 | 로그아웃 Controller | 즉시 `unauthenticated`로 전환하고 로컬 token clear를 기다립니다. 서버 로그아웃 API 연동은 현재 우선순위에서 제외합니다. |
 
+온보딩은 인증과 수명이 다르므로 같은 상태나 secure storage에 넣지 않습니다.
+
+| 대상 | 책임 |
+| --- | --- |
+| `OnboardingLocalStore` | `SharedPreferencesAsync`로 온보딩 완료 bool만 읽고 씁니다. |
+| `onboardingControllerProvider` | 초기 로컬 값 확인, 완료 저장의 loading/error와 재시도를 관리합니다. |
+| `appRouterProvider` | 온보딩 Provider가 완료된 뒤 인증 Provider 결과로 다음 route를 결정합니다. |
+
+온보딩 저장 실패는 인증 상태를 변경하지 않고 현재 화면에 머뭅니다. 화면은 Controller의
+loading 동안 중복 탭을 막고, 실패 안내 뒤 같은 Controller로 저장을 재시도합니다.
+
 `authSessionControllerProvider`와 `socialAuthCredentialGatewayProvider`는 테스트에서 override할 수 있으며, router test는 `unauthenticated`, `signupRequired`, `authenticated` 상태별 redirect를 직접 검증합니다.
 
 ### 앱 시작 token 복원 정책

@@ -173,7 +173,9 @@ List<RouteBase> buildAppRoutes() {
 Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
   return switch (route.name) {
     AppRouteNames.home => const HomeScreen(),
-    AppRouteNames.onboarding => const OnboardingPage(),
+    AppRouteNames.onboarding => OnboardingPage(
+      redirect: _queryParameter(state, 'redirect'),
+    ),
     AppRouteNames.login => const LoginPage(),
     AppRouteNames.profileSetup => const ProfileSetupPage(),
     AppRouteNames.terms => TermsPage(
