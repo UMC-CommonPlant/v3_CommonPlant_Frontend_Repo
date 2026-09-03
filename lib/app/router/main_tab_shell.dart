@@ -7,11 +7,7 @@ import 'package:go_router/go_router.dart';
 const String mainTabComingSoonMessage = '준비 중인 기능입니다';
 
 class MainTabShell extends StatelessWidget {
-  const MainTabShell({
-    super.key,
-    required this.location,
-    required this.child,
-  });
+  const MainTabShell({super.key, required this.location, required this.child});
 
   final String location;
   final Widget child;
