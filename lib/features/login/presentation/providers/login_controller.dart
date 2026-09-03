@@ -110,6 +110,17 @@ class LoginController extends Notifier<LoginState> {
         SignupRequiredResult() => LoginOutcome.signupRequired,
         AuthenticatedResult() => LoginOutcome.authenticated,
       };
+    } on SocialAuthCanceledException {
+      if (!requestRef.mounted ||
+          (requestSession != null &&
+              !isCurrentUserDataSession(requestRef, requestSession))) {
+        return null;
+      }
+      state = state.copyWith(
+        submitStatus: LoginSubmitStatus.idle,
+        clearSubmittingProvider: true,
+        clearErrorMessage: true,
+      );
     } on SocialAuthNotConfiguredException {
       if (!requestRef.mounted ||
           (requestSession != null &&

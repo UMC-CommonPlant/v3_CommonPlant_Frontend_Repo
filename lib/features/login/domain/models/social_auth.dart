@@ -22,3 +22,7 @@ abstract interface class SocialAuthCredentialGateway {
 class SocialAuthNotConfiguredException implements Exception {
   const SocialAuthNotConfiguredException();
 }
+
+class SocialAuthCanceledException implements Exception {
+  const SocialAuthCanceledException();
+}

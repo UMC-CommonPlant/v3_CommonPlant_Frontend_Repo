@@ -42,7 +42,7 @@ Figma 파일 `Common Plant 복제`의 `phase 0` 페이지를 기준으로 프레
 | --- | --- | --- | --- | --- |
 | Home | `home` | `/` | `#2 Main`, `#2 Main/D` | 인증 후 홈, My place/My plant 요약 |
 | Onboarding | `onboarding` | `/onboarding` | `#1-1` | 시작/온보딩 |
-| Login | `login` | `/login` | `#1-2 Log in` | 카카오/Apple 소셜 로그인 |
+| Login | `login` | `/login` | `#1-2 Log in` | Kakao·Google 로그인, iOS에서만 Apple 로그인 |
 | Login | `profileSetup` | `/profile/setup` | `#1-2-2 Log in` | 닉네임, 프로필 이미지 설정 |
 | Terms | `terms` | `/terms/privacy` | `#1-2-3 Sign up / 2D` | 개인정보 이용약관 |
 | Place | `placeInvitations` | `/places/invitations` | `#2-2 Main / 장소 친구 요청` | 장소 초대 요청 목록 |
@@ -127,6 +127,8 @@ lib/app/router/
 3. 인증 토큰은 `flutter_secure_storage` 기반 저장소를 통해 관리하되, 라우터는 token storage에 직접 접근하지 않고 인증 Provider의 상태만 봅니다.
 4. 확인된 access token 오류와 로그아웃은 인증 Provider 상태를 `unauthenticated`로 바꾸고, 라우터 redirect에서 `/login`으로 이동시킵니다.
 5. 로그인 성공 후에는 사용자가 원래 접근하려던 위치로 복귀할 수 있도록 redirect target을 보존합니다.
+6. 별도 회원가입 시작 route는 만들지 않습니다. `/auth/login`의 `isNewUser: true` 결과만 `profileSetup`으로 보내고, `false`는 인증 완료 route로 보냅니다.
+7. Apple 로그인 버튼과 SDK 호출은 iOS에서만 제공하며 Android에는 Apple route나 빈 버튼 영역을 만들지 않습니다.
 
 인증 판단을 개별 화면의 `initState`나 `build`에서 처리하지 않습니다.
 

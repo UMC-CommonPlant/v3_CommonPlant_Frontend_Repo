@@ -212,7 +212,7 @@ Provider 책임은 아래처럼 나눕니다.
 | `AuthInterceptor` | 활성 데이터 세션의 요청에만 token을 첨부합니다. token 읽기 전후와 응답 시 세션을 검사하고, 확인된 인증 만료를 composition root의 handler에 한 번 알립니다. redirect는 직접 수행하지 않습니다. |
 | `userDataSessionProvider` | token·개인정보 없이 데이터 수명의 세대와 활성 여부를 노출합니다. |
 | `authSessionControllerProvider` | token 복원·인증 결과·로그아웃·확인된 인증 만료로 route 상태와 데이터 세션을 전환합니다. 만료 상태는 로그인 안내 이유를 보존합니다. |
-| `SocialAuthCredentialGateway` | Kakao/Google/Apple SDK에서 받은 provider token을 로그인 Controller에 전달합니다. SDK 미설정 기본 구현은 설정 안내 오류를 반환합니다. |
+| `SocialAuthCredentialGateway` | #285에서 Kakao access token, Google ID token, iOS Apple identity token을 로그인 Controller에 전달합니다. credential 미설정은 API 호출 전에 설정 안내로 종료합니다. |
 | 로그인/회원가입 Controller | repository 호출과 유효한 결과의 인증 전환을 담당합니다. 실제 token 저장은 repository가 `AuthTokenWriter`를 통해 수행합니다. |
 | 로그아웃 Controller | 즉시 `unauthenticated`로 전환하고 로컬 token clear를 기다립니다. 서버 로그아웃 API는 backend #149 계약 후 추가합니다. |
 

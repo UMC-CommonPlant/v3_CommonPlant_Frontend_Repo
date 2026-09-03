@@ -16,6 +16,7 @@
 | --- | --- | --- | --- | --- |
 | AUTH-01 | Auth | `POST /auth/register` request part의 실제 schema는 무엇인가? | #216 multipart datasource/repository 반영 완료 | Done |
 | AUTH-02 | Auth | 회원가입은 이미지가 없어도 항상 multipart로 보내야 하는가? | #216 image optional 전송 기준 반영 완료 | Done |
+| AUTH-03 | Auth | `APPLE` 로그인의 identity token 검증을 제공하는가? | #285 iOS SDK·UI 준비, backend #152 배포 전 실제 로그인 불가 | Blocked |
 | MULTIPART-01 | 공통 | multipart JSON part의 `Content-Type`은 `application/json`이 필수인가? | Auth/Place/Plant/User multipart 일관성 확인 필요 | Open |
 | PLACE-01 | Place | Place 조회/생성/수정/삭제 성공 response body 구조는 무엇인가? | #239 목록·상세, #243 생성 code·수정 결과 반영 | Answered |
 | PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | #239 목록·상세 mapper와 화면 반영 | Done |
@@ -70,6 +71,22 @@
 - 프론트 반영: #216에서 `FormData` 기반으로 바꾸고 image가 있을 때만 binary part를 추가했다. #227에서 화면 submit을 연결했으며 실제 이미지 파일 선택은 별도 UI 작업으로 남아 있다.
 - 답변: 이미지가 없어도 multipart이며 `image` part만 생략한다.
 - 상태: Done
+
+### AUTH-03. Apple identity token 검증
+
+- 현재 근거: 2026-09-02 backend `main`의 로그인 request enum은 `APPLE`을 허용하지만
+  `AuthServiceImpl.verifySocialToken`은 Google과 Kakao만 처리하고 나머지는 unsupported
+  provider 예외를 반환한다.
+- 프론트 영향: #285에서 Apple 버튼을 iOS에만 노출하고 identity token 전달 경계를 준비할
+  수 있지만, 실제 Apple 로그인 성공과 신규/기존 사용자 분기는 서버 verifier 배포 전까지
+  검증할 수 없다.
+- 확인 질문: Apple identity token의 서명, issuer, audience, 만료와 nonce를 검증하는 서버
+  구현은 언제 dev에 배포되는가? 최초 로그인에서만 제공될 수 있는 email/name의 보존
+  정책은 무엇인가?
+- 프론트 반영: Apple SDK 호출은 iOS로 제한하고 backend #152가 배포되기 전까지 실제 계정
+  E2E를 완료로 표시하지 않는다.
+- 답변: backend #152 대기.
+- 상태: Blocked
 
 ## 공통 Multipart
 

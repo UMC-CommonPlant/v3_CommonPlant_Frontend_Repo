@@ -87,7 +87,7 @@ class _LoginAuthRemoteDataSource extends AuthRemoteDataSource {
     'result': {
       'accessToken': '${request.token}-access',
       'refreshToken': '${request.token}-refresh',
-      'newUser': false,
+      'isNewUser': false,
     },
   };
 }
@@ -128,7 +128,7 @@ class _RegisterAuthRemoteDataSource extends AuthRemoteDataSource {
       'result': {
         'accessToken': 'access-token',
         'refreshToken': 'refresh-token',
-        'newUser': false,
+        'isNewUser': true,
       },
     };
   }

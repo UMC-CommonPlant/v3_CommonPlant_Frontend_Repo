@@ -9,6 +9,18 @@ abstract final class AppEnvironment {
     'COMMONPLANT_API_BASE_URL',
     defaultValue: 'https://commonplant.site/api/v1',
   );
+
+  static const String kakaoNativeAppKey = String.fromEnvironment(
+    'COMMONPLANT_KAKAO_NATIVE_APP_KEY',
+  );
+
+  static const String googleServerClientId = String.fromEnvironment(
+    'COMMONPLANT_GOOGLE_SERVER_CLIENT_ID',
+  );
+
+  static const String googleIosClientId = String.fromEnvironment(
+    'COMMONPLANT_GOOGLE_IOS_CLIENT_ID',
+  );
 }
 
 final useRemoteApiProvider = Provider<bool>((ref) {

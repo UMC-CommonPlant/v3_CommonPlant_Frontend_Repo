@@ -17,6 +17,7 @@
 | Feature 구조·DTO·repository | [Feature 작업 가이드](feature-development-guide.md) |
 | Provider·Controller·비동기 상태 | [상태관리 기준](state-management-guide.md) |
 | route·인증 redirect | [라우팅 가이드](routing-guide.md) |
+| 소셜 로그인·신규 사용자 분기·SDK 설정 | [소셜 로그인 연동 가이드](social-login-integration-guide.md) |
 | Figma 화면 구현·반응형 | [퍼블리싱 규칙](screen-publishing-rules.md), [Figma 프레임 매핑](figma-frame-map.md) |
 | 색·폰트·spacing·radius | [디자인 토큰 규칙](design-token-rules.md) |
 | 공용 UI·소유권·미사용 위젯 보존 | [공용 위젯 가이드](shared-widget-guide.md) |
@@ -38,6 +39,7 @@
 | [후속 결정 체크리스트](follow-up-decision-checklist.md) | 팀 결정·외부 승인·백엔드 준비가 필요한 항목 |
 | [품질·테스트 후속 계획](quality-testing-follow-up-plan.md) | QA·golden·smoke 결정 이력과 남은 품질 항목 |
 | [원격 integration 준비 계약](remote-integration-test-readiness.md) | 인증·데이터 격리·cleanup·Environment 승인 gate |
+| [소셜 로그인 연동 가이드](social-login-integration-guide.md) | `isNewUser` 가입 분기, provider token, iOS 전용 Apple 노출과 SDK 설정 |
 
 ## 기능별 작업 이력
 
@@ -63,6 +65,7 @@
 | 비활성 공용 입력 clear 차단 #255 | [Disabled Text Field Clear](work-history/disabled-text-field-clear-255.md) |
 | 수정 정보 Provider 전달 단순화 #256 | [Form Edit Provider Flow](work-history/form-edit-provider-flow-256.md) |
 | 후속 개발 순서·보류 범위 #267 | [Follow-up Development Roadmap](work-history/follow-up-development-roadmap-267.md) |
+| 소셜 로그인 SDK·가입 분기 #285 | [Social Login SDK](work-history/social-login-sdk-285.md) |
 
 Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 작업 이력](screen-api-integration-plan.md#작업-이력), 문서 정리 #247은 [개발 감사 체크리스트](development-audit-checklist.md)에서 확인합니다.
 

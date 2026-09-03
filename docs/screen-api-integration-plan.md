@@ -40,11 +40,19 @@
 
 2026-09-01 #283에서 live OpenAPI 19개 path와 backend main `7d572cb`를 다시 확인했으며 Memo path/schema와 구현 파일은 없었습니다. backend #50~#55는 endpoint 초안이지만 본문 최대 200/500자, 이미지 생략 시 유지/삭제, 작성자·권한, pagination, 성공 wrapper가 확정되지 않았습니다. [backend #50 계약 확인 코멘트](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50#issuecomment-5488630254)의 텍스트 CRUD 조건과 live OpenAPI가 일치한 뒤 별도 Feature 이슈를 생성합니다.
 
+### 소셜 로그인 SDK 재개 #285
+
+2026-09-02 사용자 결정으로 소셜 로그인 SDK를 보류 범위에서 꺼냈습니다. 별도 회원가입
+진입은 만들지 않고 Kakao·Google·iOS Apple SDK token을 `/auth/login`에 전달한 뒤 실제
+`isNewUser` 값으로 기존 사용자 인증과 신규 사용자 프로필·약관·`/auth/register` 흐름을
+분기합니다. Apple 버튼은 iOS에서만 표시하며 실제 Apple 서버 검증은 backend #152 배포
+전까지 Blocked입니다. 상세 계약은 [소셜 로그인 연동 가이드](social-login-integration-guide.md)를
+단일 기준으로 사용합니다.
+
 ### 사용자 보류 범위
 
 다음 항목은 취소가 아니라 **이번 실행 큐에서 제외하고 다음 작업으로 보류**합니다.
 
-- Kakao·Google·Apple 로그인 SDK 구현과 credential·네이티브 설정
 - 실제 주소 검색 서비스 선정, API key·과금 정책과 adapter 연결
 - 업로드 방식 변경이 필요한 이미지 선택·업로드·교체·삭제. 새 방식이 확정될 때까지 #248의 기존 key 보존·미확인 key 차단과 사진이 있는 Place 수정 제한 유지
 - 인증된 원격 E2E, 테스트 인증·데이터 격리·cleanup과 GitHub Environment
@@ -58,7 +66,7 @@ P0~P7은 기존 구현 순서를 보존한 표입니다. 다음 작업 순서는
 
 | 순서 | 수직 슬라이스 | 범위 | 상태 |
 | --- | --- | --- | --- |
-| P0 | Auth 로그인·회원가입 | 로그인 화면, 인증 세션, 프로필 등록, route redirect, `/auth/login`, `/auth/register` | #227 / PR #228 병합 완료 |
+| P0 | Auth 로그인·회원가입 | 로그인 화면, 인증 세션, 프로필 등록, route redirect, `/auth/login`, `/auth/register` | #227 / PR #228 병합, 실제 SDK·`isNewUser` 계약은 #285 / PR #286 리뷰 중 |
 | P1 | Home 초기 데이터 | 인증 사용자 정보와 장소·식물 요약을 화면 상태로 연결 | #232 / PR #233 병합 완료 |
 | P2 | Plant 핵심 동선 | 목록, 상세, 생성, 수정 API와 각 화면 상태 연결 | #229, #231 병합 완료 |
 | P3 | User 프로필 | 내 정보 조회·수정과 프로필 화면 연결 | #237 / PR #238 병합 완료, 이미지 파일 선택 정책과 분리 |
@@ -120,10 +128,11 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 ## Auth 첫 수직 슬라이스
 
-#227은 기존 #216의 Auth datasource/repository를 실제 화면과 앱 세션에 연결합니다.
+#227은 기존 #216의 Auth datasource/repository를 실제 화면과 앱 세션에 연결했습니다.
 
-- 소셜 로그인 버튼은 `LoginController`를 통해 provider credential과 `/auth/login`을 연결합니다.
-- 실제 Kakao/Google/Apple SDK가 준비되지 않은 현재는 `SocialAuthCredentialGateway` 기본 구현이 설정 안내 오류를 반환합니다. SDK 도입 시 이 gateway 구현만 교체합니다.
+- 소셜 로그인 버튼은 `LoginController`를 통해 provider credential과 `/auth/login`을 연결합니다. #285 / PR #286은 Kakao access token, Google ID token과 iOS Apple identity token을 기존 gateway에 공급합니다.
+- `/auth/login`의 실제 `isNewUser`가 `true`면 `signupToken`을 보존하고 프로필 설정으로, `false`면 access/refresh token을 저장하고 Home으로 이동합니다. 별도 회원가입 시작 route는 만들지 않습니다.
+- Apple 버튼과 SDK 호출은 iOS에서만 제공합니다. Android에서는 버튼·간격·Semantics를 렌더링하지 않으며 backend #152 배포 전까지 실제 Apple 인증은 Blocked입니다.
 - 신규 사용자는 `signupToken`, 추천 이름, 추천 이미지 URL을 세션에 보존하고 프로필·약관 화면으로 이동합니다.
 - 약관 동의 후 프로필 이름과 `signupToken`으로 `/auth/register`를 호출하고 인증 세션으로 전환합니다.
 - 프로필 샘플 이미지는 로컬 UI 상태이므로 서버 multipart 이미지로 임의 전송하지 않습니다. 실제 파일 선택 결과가 준비될 때 optional image 경계에 연결합니다.

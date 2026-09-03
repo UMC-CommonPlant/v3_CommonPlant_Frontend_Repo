@@ -184,6 +184,7 @@ tool/
 | [화면 퍼블리싱 작업 규칙](docs/screen-publishing-rules.md) | Figma 화면 구현 시 공용 컴포넌트, 상태 UI, 반응형 기준 |
 | [Assets 및 Icons 규칙](docs/asset-icon-rules.md) | 아이콘/이미지 네이밍, 등록, 사용 기준 |
 | [상태관리 Provider 작성 기준](docs/state-management-guide.md) | Riverpod Provider 선택, 파일 배치, async 상태 처리 기준 |
+| [소셜 로그인 연동 가이드](docs/social-login-integration-guide.md) | `isNewUser` 가입 분기, provider별 token과 iOS 전용 Apple 로그인 정책 |
 | [폼 검증 및 에러 메시지 작성 기준](docs/form-validation-error-guide.md) | 입력 검증 위치, helper/error 메시지, 서버 에러 처리 기준 |
 | [테스트 작성 기준](docs/testing-guide.md) | unit/widget test 작성 기준, 실행 명령, CI/pre-commit 연계 |
 | [품질·테스트 후속 작업 계획](docs/quality-testing-follow-up-plan.md) | QA 필수 viewport, golden/integration test 도입 순서, Ready/Blocked 경계 |
@@ -251,7 +252,8 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 6. #279 / PR #280에서 UX-02의 inline 상태·Snackbar·Dialog 기준을 확정하고, 반복 Snackbar만 최소 helper로 통일했습니다. 단일 목적지 삭제 결과와 전달용 getter는 제거하고 실제 분기·재사용이 있는 상태와 result는 유지했습니다.
 7. #281 / PR #282에서 현재 PR 본문 기준을 단일 기본 template으로 고정했습니다. 유형별 template과 metadata 자동화는 실제 반복 요구가 생기기 전까지 추가하지 않습니다.
 8. #283에서 Memo 텍스트 CRUD 계약을 재확인했습니다. live OpenAPI에는 Memo path/schema가 없고 backend #50~#55의 초안도 본문 길이·이미지 유지·작성자·pagination 계약이 충돌하거나 빠져 있어 [백엔드 #50 계약 확인](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50#issuecomment-5488630254) 답변 전까지 로컬 화면을 유지합니다.
+9. #285에서 보류했던 소셜 SDK 연결을 재개했습니다. Kakao access token, Google ID token, iOS 전용 Apple identity token을 `/auth/login`에 전달하고 실제 `isNewUser` 값으로 가입 완료 흐름을 분기합니다. Apple 서버 검증은 [백엔드 #152](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/152) 배포 전까지 완료로 표시하지 않습니다.
 
-로그인 SDK, 실제 주소 검색 서비스, 업로드 방식 변경이 필요한 이미지 흐름, 인증된 원격 E2E, 스토어·릴리즈 준비는 사용자가 다음 작업으로 보류했습니다. 기존 안전 차단과 질문·위험 기록은 유지하며 이 항목들이 위 실행 순서를 막는 전역 blocker가 되지 않게 분리합니다.
+실제 주소 검색 서비스, 업로드 방식 변경이 필요한 이미지 흐름, 인증된 원격 E2E, 스토어·릴리즈 준비는 사용자가 다음 작업으로 보류했습니다. 기존 안전 차단과 질문·위험 기록은 유지하며 이 항목들이 위 실행 순서를 막는 전역 blocker가 되지 않게 분리합니다.
 
 완료되어 현행 문서로 대체된 초기 계획은 저장소에 중복 보관하지 않으며 Git 이력과 기존 이슈·PR에서 조회합니다. 새 작업도 `중복 확인·이슈 생성 -> Project 10 등록 -> develop 기반 브랜치 -> 검증·커밋·푸시 -> PR` 순서를 따르고, PR 병합은 사용자가 진행합니다.
