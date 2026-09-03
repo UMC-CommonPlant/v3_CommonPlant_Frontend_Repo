@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_motion.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
@@ -11,13 +12,11 @@ class HomeBottomTabBar extends StatelessWidget {
   const HomeBottomTabBar({
     super.key,
     this.selectedTab = HomeBottomTab.garden,
-    this.onGardenPressed,
-    this.onMyPressed,
+    required this.onTabSelected,
   });
 
   final HomeBottomTab selectedTab;
-  final VoidCallback? onGardenPressed;
-  final VoidCallback? onMyPressed;
+  final ValueChanged<HomeBottomTab> onTabSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -37,20 +36,23 @@ class HomeBottomTabBar extends StatelessWidget {
                   icon: Icons.article_outlined,
                   semanticsLabel: '정보',
                   isSelected: selectedTab == HomeBottomTab.info,
+                  onTap: () => onTabSelected(HomeBottomTab.info),
                 ),
                 _HomeBottomTabItem(
                   icon: Icons.chat_bubble_outline,
                   semanticsLabel: '이야기',
                   isSelected: selectedTab == HomeBottomTab.story,
+                  onTap: () => onTabSelected(HomeBottomTab.story),
                 ),
                 _HomeGardenTabItem(
                   isSelected: selectedTab == HomeBottomTab.garden,
-                  onTap: onGardenPressed,
+                  onTap: () => onTabSelected(HomeBottomTab.garden),
                 ),
                 _HomeBottomTabItem(
                   icon: Icons.calendar_today_outlined,
                   semanticsLabel: '캘린더',
                   isSelected: selectedTab == HomeBottomTab.calendar,
+                  onTap: () => onTabSelected(HomeBottomTab.calendar),
                 ),
                 _HomeBottomTabItem(
                   icon: selectedTab == HomeBottomTab.my
@@ -59,7 +61,7 @@ class HomeBottomTabBar extends StatelessWidget {
                   semanticsLabel: '마이',
                   iconSize: AppSizes.iconLarge,
                   isSelected: selectedTab == HomeBottomTab.my,
-                  onTap: onMyPressed,
+                  onTap: () => onTabSelected(HomeBottomTab.my),
                 ),
               ],
             ),
@@ -151,21 +153,36 @@ class _HomeBottomTabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final duration = AppMotion.durationOf(context, AppMotion.fast);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         child,
-        if (isSelected) ...[
-          const SizedBox(height: AppSpacing.x8),
-          Container(
-            width: 6,
-            height: 6,
-            decoration: const BoxDecoration(
-              color: AppColors.brandAccent,
-              shape: BoxShape.circle,
+        AnimatedContainer(
+          key: const ValueKey('homeBottomTabIndicator'),
+          duration: duration,
+          curve: AppMotion.standardCurve,
+          height: isSelected ? AppSpacing.x8 + 6 : 0,
+          clipBehavior: Clip.hardEdge,
+          decoration: const BoxDecoration(),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: AnimatedOpacity(
+              duration: duration,
+              curve: AppMotion.standardCurve,
+              opacity: isSelected ? 1 : 0,
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: AppColors.brandAccent,
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
           ),
-        ],
+        ),
       ],
     );
   }

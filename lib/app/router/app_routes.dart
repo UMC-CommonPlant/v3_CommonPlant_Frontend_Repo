@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/app/router/app_route_spec.dart';
+import 'package:commonplant_frontend/app/router/main_tab_shell.dart';
 import 'package:commonplant_frontend/app/router/route_parameter_error_page.dart';
 import 'package:commonplant_frontend/app/router/route_parameters.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
@@ -159,15 +160,41 @@ const List<AppRouteSpec> appRouteSpecs = [
   ),
 ];
 
+const Set<String> _mainTabRouteNames = {
+  AppRouteNames.home,
+  AppRouteNames.userProfile,
+};
+
 List<RouteBase> buildAppRoutes() {
   return [
+    ShellRoute(
+      builder: (context, state, child) =>
+          MainTabShell(location: state.uri.path, child: child),
+      routes: [
+        for (final route in appRouteSpecs)
+          if (_mainTabRouteNames.contains(route.name))
+            _buildGoRoute(route, withoutTransition: true),
+      ],
+    ),
     for (final route in appRouteSpecs)
-      GoRoute(
-        name: route.name,
-        path: route.path,
-        builder: (context, state) => _buildRoutePage(route, state),
-      ),
+      if (!_mainTabRouteNames.contains(route.name)) _buildGoRoute(route),
   ];
+}
+
+GoRoute _buildGoRoute(AppRouteSpec route, {bool withoutTransition = false}) {
+  return GoRoute(
+    name: route.name,
+    path: route.path,
+    pageBuilder: withoutTransition
+        ? (context, state) => NoTransitionPage<void>(
+            key: state.pageKey,
+            child: _buildRoutePage(route, state),
+          )
+        : null,
+    builder: withoutTransition
+        ? null
+        : (context, state) => _buildRoutePage(route, state),
+  );
 }
 
 Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {

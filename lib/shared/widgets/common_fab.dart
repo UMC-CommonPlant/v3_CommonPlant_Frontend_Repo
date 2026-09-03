@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/core/theme/app_motion.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
@@ -32,6 +33,7 @@ class CommonFab extends StatelessWidget {
       width: size,
       height: size,
       child: FloatingActionButton(
+        heroTag: null,
         onPressed: onPressed,
         backgroundColor: backgroundColor ?? tokens.brandPrimary,
         foregroundColor: foregroundColor ?? tokens.onBrand,
@@ -73,30 +75,44 @@ class CommonFabDial extends StatefulWidget {
 
 class _CommonFabDialState extends State<CommonFabDial> {
   final LayerLink _layerLink = LayerLink();
-  OverlayEntry? _overlayEntry;
+  bool _isOpen = false;
 
-  void _showOverlay() {
-    if (_overlayEntry != null) {
+  Future<void> _showOverlay() async {
+    if (_isOpen) {
       return;
     }
 
-    _overlayEntry = OverlayEntry(builder: _buildOverlay);
-    Overlay.of(context, rootOverlay: true).insert(_overlayEntry!);
-    setState(() {});
-  }
+    _isOpen = true;
+    final selectedAction = await showGeneralDialog<CommonFabDialAction>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: '확장 메뉴 닫기',
+      barrierColor: commonFabBarrierColor,
+      transitionDuration: AppMotion.durationOf(context, AppMotion.fast),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: AppMotion.standardCurve,
+        );
 
-  void _hideOverlay() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
+        return FadeTransition(
+          opacity: curvedAnimation,
+          child: ScaleTransition(
+            alignment: Alignment.bottomRight,
+            scale: Tween<double>(begin: 0.96, end: 1).animate(curvedAnimation),
+            child: child,
+          ),
+        );
+      },
+      pageBuilder: (dialogContext, animation, secondaryAnimation) {
+        return _buildOverlay(dialogContext);
+      },
+    );
+    _isOpen = false;
+
     if (mounted) {
-      setState(() {});
+      selectedAction?.onPressed();
     }
-  }
-
-  @override
-  void dispose() {
-    _overlayEntry?.remove();
-    super.dispose();
   }
 
   @override
@@ -113,13 +129,6 @@ class _CommonFabDialState extends State<CommonFabDial> {
 
     return Stack(
       children: [
-        Positioned.fill(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _hideOverlay,
-            child: const ColoredBox(color: commonFabBarrierColor),
-          ),
-        ),
         CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
@@ -139,7 +148,7 @@ class _CommonFabDialState extends State<CommonFabDial> {
                       label: action.label,
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
-                        onTap: () => _invokeAction(action),
+                        onTap: () => _closeWithAction(context, action),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -154,7 +163,8 @@ class _CommonFabDialState extends State<CommonFabDial> {
                               size: AppSizes.miniFabSize,
                               backgroundColor: tokens.surfaceBase,
                               foregroundColor: tokens.textHeadline,
-                              onPressed: () => _invokeAction(action),
+                              onPressed: () =>
+                                  _closeWithAction(context, action),
                               child: action.icon,
                             ),
                           ],
@@ -163,7 +173,10 @@ class _CommonFabDialState extends State<CommonFabDial> {
                     ),
                   ),
                 ),
-                CommonFab(onPressed: _hideOverlay, child: widget.child),
+                CommonFab(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: widget.child,
+                ),
               ],
             ),
           ),
@@ -172,8 +185,10 @@ class _CommonFabDialState extends State<CommonFabDial> {
     );
   }
 
-  void _invokeAction(CommonFabDialAction action) {
-    _hideOverlay();
-    action.onPressed();
+  void _closeWithAction(
+    BuildContext dialogContext,
+    CommonFabDialAction action,
+  ) {
+    Navigator.of(dialogContext).pop(action);
   }
 }
