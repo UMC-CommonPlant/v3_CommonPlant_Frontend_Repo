@@ -214,13 +214,32 @@ Provider 책임은 아래처럼 나눕니다.
 | `authSessionControllerProvider` | token 복원·인증 결과·로그아웃·확인된 인증 만료로 route 상태와 데이터 세션을 전환합니다. 만료 상태는 로그인 안내 이유를 보존합니다. |
 | `SocialAuthCredentialGateway` | #285에서 Kakao access token, Google ID token, iOS Apple identity token을 로그인 Controller에 전달합니다. credential 미설정은 API 호출 전에 설정 안내로 종료합니다. |
 | 로그인/회원가입 Controller | repository 호출과 유효한 결과의 인증 전환을 담당합니다. 실제 token 저장은 repository가 `AuthTokenWriter`를 통해 수행합니다. |
-| 로그아웃 Controller | 즉시 `unauthenticated`로 전환하고 로컬 token clear를 기다립니다. 서버 로그아웃 API는 backend #149 계약 후 추가합니다. |
+| 로그아웃 Controller | 즉시 `unauthenticated`로 전환하고 로컬 token clear를 기다립니다. 서버 로그아웃 API 연동은 현재 우선순위에서 제외합니다. |
 
 `authSessionControllerProvider`와 `socialAuthCredentialGatewayProvider`는 테스트에서 override할 수 있으며, router test는 `unauthenticated`, `signupRequired`, `authenticated` 상태별 redirect를 직접 검증합니다.
 
+### 앱 시작 token 복원 정책
+
+저장소에서 읽은 token 조합은 아래 기준으로 처리합니다. `목표 처리`는 refresh API 계약이
+제공된 뒤 구현할 동작이며, 현재 구현이 완료됐다는 의미가 아닙니다.
+
+| access token | refresh token | 목표 처리 | 현재 처리 |
+| --- | --- | --- | --- |
+| 있음 | 있음 | 기존 세션을 복원하고 access token 만료 시 refresh를 시도 | 인증 세션 복원 |
+| 있음 | 없음 | 불완전한 세션이므로 token을 정리하고 로그인 | token 정리 후 로그인 |
+| 없음 | 있음 | refresh API를 먼저 호출하고 성공 시 새 token 쌍을 저장한 뒤 인증 | endpoint 부재로 token 정리 후 로그인 |
+| 없음 | 없음 | 로그인 | 로그인 |
+
+refresh 성공 응답은 새 access token을 필수로 받고, rotation 정책에 따라 새 refresh token도
+원자적으로 교체해야 합니다. 실패·만료·위조 응답이면 부분 token과 사용자 데이터 세션을
+정리하고 로그인으로 이동합니다. 여러 요청이 동시에 만료를 감지한 경우 갱신은 한 번만
+실행하고, 성공한 경우에만 각 원요청을 최대 한 번 재시도하는 것을 기본안으로 둡니다.
+정확한 endpoint, token 전달 위치, response, rotation과 오류 code는 backend #149의 답변
+후 확정합니다.
+
 2026-08-31 확인 기준으로 active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·사용자 데이터 세션을 즉시 닫고 secure token 삭제를 시작합니다. 한 interceptor 세션에서 종료 알림은 한 번만 보내며, 계정 전환 뒤 도착한 이전 세션 응답은 새 세션에 반영하지 않습니다. 로그인 화면은 `expired` 종료 이유를 사용자 안내로 표시합니다.
 
-`TOKEN-01` refresh API가 확정되기 전까지 access token 자동 갱신과 원요청 재시도는 구현하지 않습니다. refresh rotation·single-flight와 서버 logout invalidation은 backend #149 계약 이후 별도 이슈에서 다룹니다.
+`TOKEN-01` refresh API가 확정되기 전까지 access token 자동 갱신과 원요청 재시도는 구현하지 않습니다. refresh rotation·single-flight는 backend #149 계약 이후 별도 구현 이슈에서 다룹니다. 서버 logout invalidation은 우선순위에서 제외하고 기존 로컬 로그아웃 동작을 유지합니다.
 
 ### 사용자 데이터 세션 격리
 

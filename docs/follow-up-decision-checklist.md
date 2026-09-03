@@ -83,7 +83,7 @@
 | [ ] | API-FRIEND | Friend 요청 목록과 액션 정책 | FRIEND-01, FRIEND-02, FRIEND-03, FRIEND-04 | #241 수신 처리와 #243 발신 연결 완료, 이름 오매칭은 수용 위험으로 추적 | Partial |
 | [ ] | API-IMAGE | Image upload/download/update/delete 정책 | IMAGE-01, IMAGE-02, IMAGE-03, IMAGE-04 | #248에서 Plant key 보존·Place 사진 수정 차단을 구현했다. 독립 Image 응답·Place key 조회·동시 수정 보호 계약은 미확정이다. | Partial |
 | [x] | API-ERROR | 공통/도메인 에러 response 정책 | ERROR-01, ERROR-02 | #275 typed 오류·field error·안전 메시지 연결. 인증 쓰기 validation smoke는 원격 E2E 보류 범위 | Done |
-| [ ] | API-TOKEN | refresh token과 로그아웃 정책 | TOKEN-01, TOKEN-02 | #275 확인 code의 로컬 세션 종료 완료. refresh·server invalidation은 backend #149 대기 | Partial |
+| [ ] | API-TOKEN | refresh token과 로그아웃 정책 | TOKEN-01, TOKEN-02 | #287 refresh-only 갱신 우선 결정, API는 backend #149 대기. 서버 logout은 우선순위 제외 | Partial |
 | [ ] | API-SEARCH | 주소/식물/사용자 검색 정책 | SEARCH-01, SEARCH-02, SEARCH-03 | 주소 검색, 식물 검색, 친구 추가 검색 UX | Open |
 | [ ] | API-MEMO | Memo CRUD와 이미지 첨부 정책 | MEMO-01, MEMO-02, MEMO-03 | #283에서 backend #50에 텍스트 CRUD 계약을 요청했다. 구현·OpenAPI 전까지 원격 연결 금지, 이미지는 사용자 보류 | Blocked |
 | [x] | API-ENV-DEV | dev 서버 환경값과 Swagger | ENV-01-A | #213에서 dev origin, API base URL과 문서 endpoint를 확인했다. | Decided |

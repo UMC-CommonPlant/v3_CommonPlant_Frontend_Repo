@@ -101,7 +101,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Plant | 식물 상세 | detail/delete, 등록일 계산·실제 값, #273 code resolver loading/error/missing/success·재시도 연결 | Memo CRUD·물주기 액션, resolver N+1 최적화 | `GET/DELETE /plants/{id}`, `GET /place/user`, `GET /place/{code}`; Memo·물주기 API 없음 | #231 상세 연결, #273 code 복원 |
 | Memo | 메모 작성 | 로컬 Provider 저장 | 텍스트 DTO, repository, async submit. 이미지는 별도 보류 | backend #50·#51 구현과 OpenAPI request/response·200자 validation 계약 필요 | #283 Blocked |
 | Memo | 메모 목록·수정·삭제 | 로컬 fixture·상태 | 작성자·권한·pagination, 수정·삭제, 상세 갱신 | backend #50·#52~#55 구현과 OpenAPI schema·오류 계약 필요 | #283 Blocked |
-| Onboarding | 온보딩 | 정적 화면 완료 | 필요 시 최초 실행 여부 로컬 저장 | 서버 API 불필요 | 연결 제외 |
+| Onboarding | 온보딩 | 정적 화면 완료 | #287 로컬 완료 값과 초기 route 연결 | 서버 API 불필요, 재설치·백업 복원 UX는 미결정 | 정책 확정·구현 분리 |
 
 ## 병렬 작업 설계
 
@@ -136,8 +136,9 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 - 신규 사용자는 `signupToken`, 추천 이름, 추천 이미지 URL을 세션에 보존하고 프로필·약관 화면으로 이동합니다.
 - 약관 동의 후 프로필 이름과 `signupToken`으로 `/auth/register`를 호출하고 인증 세션으로 전환합니다.
 - 프로필 샘플 이미지는 로컬 UI 상태이므로 서버 multipart 이미지로 임의 전송하지 않습니다. 실제 파일 선택 결과가 준비될 때 optional image 경계에 연결합니다.
-- API 모드는 secure storage의 access/refresh token 쌍으로 세션을 복원합니다. refresh와 서버 로그아웃은 endpoint 확정 전까지 추가하지 않습니다.
-- #275에서 active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·데이터 세션을 종료하고 로그인 만료 안내로 연결합니다. refresh endpoint가 없으므로 자동 갱신·원요청 재시도는 하지 않으며 backend #149에서 계약을 추적합니다.
+- API 모드는 secure storage의 access/refresh token 쌍으로 세션을 복원합니다. #287은 access token 없이 refresh token만 있으면 갱신을 먼저 시도하는 목표를 확정했지만, 현재는 endpoint가 없어 부분 token 삭제를 유지합니다.
+- #275에서 active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·데이터 세션을 종료하고 로그인 만료 안내로 연결합니다. refresh endpoint가 없으므로 자동 갱신·원요청 재시도는 하지 않으며 backend #149에서 계약을 추적합니다. 서버 로그아웃 연동은 현재 우선순위에서 제외합니다.
+- 온보딩은 #287에서 비보안 로컬 완료 값을 사용하기로 했습니다. 값이 없으면 온보딩, 있으면 인증 복원으로 진입하며 앱 삭제·재설치 중 OS 백업이 복원된 경우의 재노출 여부는 구현 전 결정합니다.
 - #249에서 로그인·회원가입 결과마다 사용자 데이터 세션을 교체합니다. 늦은 SDK·API 결과는 이전 세션에 반영하지 않으며 token 저장·삭제는 같은 큐에서 순서대로 처리합니다.
 - #250에서 가입 프로필 입력 중에도 제출 잠금을 유지하고 세션 확인 전 닉네임을 캡처합니다. 실패 후 새 입력값으로 재시도하며, 인증·이미지 계약은 바꾸지 않습니다.
 - 라우터는 `unauthenticated`, `signupRequired`, `authenticated` 세션에 따라 접근을 제어하고 로그인 전 target을 보존합니다.

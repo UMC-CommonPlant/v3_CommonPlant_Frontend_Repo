@@ -162,7 +162,7 @@ tool/
 - 앱 version과 build number는 `pubspec.yaml`의 `X.Y.Z+N`을 단일 원본으로 사용하고 release 브랜치에서 수동 증가합니다. store 이력 확인 전에는 CI 실행 번호로 덮어쓰지 않습니다.
 - Production 제출은 내부 테스트에서 검증한 동일 artifact를 승격하고, 심사 제출과 사용자 공개를 분리해 실행자 외 승인을 받습니다. 최초 MVP 출시는 Android/iOS 모두 수동 공개하며 unattended full rollout은 사용하지 않습니다.
 - 현재 API 모델은 수기 DTO·mapper로 구현되어 있습니다. `freezed`·`json_serializable` 도입은 미적용 제안이며, 별도 이슈에서 필요성과 생성 규칙을 정하기 전까지 현행 방식을 따릅니다.
-- 인증 토큰은 `flutter_secure_storage`에 보관합니다. #249에서 계정별 데이터 세션과 토큰 저장·삭제 순서를 분리해 이전 계정의 조회·후처리가 새 계정에 섞이지 않도록 구현했습니다. 서버 token 갱신·로그아웃 API와 실제 인증 E2E는 별도이며, [작업 이력](docs/work-history/session-cache-isolation-249.md)에서 검증 범위와 제한을 확인합니다.
+- 인증 토큰은 `flutter_secure_storage`에 보관합니다. #249에서 계정별 데이터 세션과 토큰 저장·삭제 순서를 분리해 이전 계정의 조회·후처리가 새 계정에 섞이지 않도록 구현했습니다. #287은 refresh token만 남은 상태에서 갱신을 먼저 시도하도록 정책을 확정했지만 API가 없어 아직 구현하지 않았고, 서버 로그아웃 연동은 우선순위에서 제외했습니다. [작업 이력](docs/work-history/session-cache-isolation-249.md)에서 현재 검증 범위와 제한을 확인합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
 - Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 사용합니다.
 - Integration test는 remote API를 사용하지 않는 Home 진입과 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 [remote integration test 준비 계약](docs/remote-integration-test-readiness.md)의 인증, 데이터 격리, cleanup, secret 승인 gate가 충족되기 전까지 end-to-end 범위는 `Blocked`입니다.
@@ -247,7 +247,7 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 1. #267 / PR #268에서 #256·Epic #226의 병합 완료 상태와 아래 실행·보류 범위를 문서에 동기화했습니다.
 2. #271 / PR #272에서 Home 친구 요청 배지의 loading·조회 실패·정상 0건·성공 수와 오류 재시도를 연결했습니다.
 3. #273 / PR #274에서 기존 Place API의 정확한 plant ID 대조로 Plant 소속 장소 code를 복원했습니다. 식물 검색 API는 백엔드 #92 완료 전까지 API 모드 fixture를 차단하고 미연결 안내를 유지합니다.
-4. #275 / PR #276에서 표준 API 오류와 필드 오류를 안전하게 매핑하고, 확인된 access token 오류 `A003`·`A004`·`A009`는 현재 세션을 종료해 로그인 안내로 연결했습니다. refresh·서버 로그아웃은 백엔드 #149 계약 전까지 재시도하거나 추정하지 않습니다.
+4. #275 / PR #276에서 표준 API 오류와 필드 오류를 안전하게 매핑하고, 확인된 access token 오류 `A003`·`A004`·`A009`는 현재 세션을 종료해 로그인 안내로 연결했습니다. #287은 refresh-only 상태의 갱신 우선 원칙을 정했지만 backend #149 계약 전까지 요청을 추정하지 않으며, 서버 로그아웃 연동은 우선순위에서 제외합니다.
 5. #277에서 Place 멤버·Friend 쓰기 계약을 재확인했습니다. 멤버 ID·역할·변경 endpoint와 Friend 고유 대상·부분 결과가 없어 [백엔드 #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150) 답변 전까지 기존 조회 전용·안전 차단을 유지합니다.
 6. #279 / PR #280에서 UX-02의 inline 상태·Snackbar·Dialog 기준을 확정하고, 반복 Snackbar만 최소 helper로 통일했습니다. 단일 목적지 삭제 결과와 전달용 getter는 제거하고 실제 분기·재사용이 있는 상태와 result는 유지했습니다.
 7. #281 / PR #282에서 현재 PR 본문 기준을 단일 기본 template으로 고정했습니다. 유형별 template과 metadata 자동화는 실제 반복 요구가 생기기 전까지 추가하지 않습니다.

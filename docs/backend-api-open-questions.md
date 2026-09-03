@@ -36,8 +36,8 @@
 | IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | #248 Plant key 보존·Place 사진 수정 차단 구현, Place key 조회·동시 수정 보호 계약 필요 | Partial |
 | ERROR-01 | Error | 에러 response body의 공통 `code`, `message` 필드명은 무엇인가? | #275 표준 오류·field error 파싱 반영 | Answered |
 | ERROR-02 | Error | 도메인별 에러 코드 표준과 의미는 무엇인가? | #275 HTTP 범주·확인 코드 매핑, 미확인 코드는 안전 fallback | Answered |
-| TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | 백엔드 #149 전까지 자동 갱신 없이 인증 만료 시 로컬 세션 종료 | Blocked |
-| TOKEN-02 | Token | 로그아웃 API와 서버 token invalidation 정책이 있는가? | 백엔드 #149 전까지 로컬 token·세션만 제거 | Blocked |
+| TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | refresh-only 상태는 갱신 우선이 목표이나 backend #149 전까지 현재의 부분 token 삭제 유지 | Blocked |
+| TOKEN-02 | Token | 로그아웃 API와 서버 token invalidation 정책이 있는가? | 현재 우선순위 제외, 기존 로컬 token·세션 제거 유지 | Open |
 | SEARCH-01 | 검색 | 주소 검색 API를 백엔드가 제공하는가? | 장소 등록 주소 검색 실데이터 보류 | Open |
 | SEARCH-02 | 검색 | 식물 학명/추천 검색 API를 백엔드가 제공하는가? | 백엔드 #92 대기, #273에서 API mode fixture 차단 | Blocked |
 | SEARCH-03 | 검색 | `GET /users/{keyword}`는 부분 검색인가, exact 검색인가? | #277 친구 선택·중복 이름 UX, backend #150 답변 필요 | Open |
@@ -278,21 +278,21 @@
 
 ### TOKEN-01. Refresh token 재발급 API
 
-- 현재 근거: 2026-08-31 live OpenAPI 19 paths와 backend main Controller에 refresh token 재발급 endpoint가 없다. backend 내부에는 refresh token 저장·발급 코드가 있으나 호출 계약은 제공되지 않는다.
-- 프론트 영향: access token 만료 시 자동 복구 흐름을 구현할 수 없다.
+- 현재 근거: 2026-09-03 live OpenAPI 19 paths·27 operations에는 `/auth/login`, `/auth/register`만 있고 backend main `f67ee6c`의 `AuthController`·`AuthService`에도 refresh token 재발급 endpoint가 없다. backend 내부에는 refresh token 저장·발급 코드가 있으나 호출 계약은 제공되지 않는다.
+- 프론트 영향: access token 만료와 access token 없이 refresh token만 남은 앱 시작 상태에서 자동 복구 흐름을 구현할 수 없다.
 - 확인 질문: refresh token으로 access token을 재발급하는 endpoint, request, response는 무엇인가?
-- 프론트 반영: #275는 `A003`, `A004`, `A009`를 받은 현재 access-token 세션을 한 번만 종료하고 로그인 화면에서 만료 이유를 안내한다. refresh 요청·원요청 재시도·동시 갱신은 구현하지 않는다.
+- 프론트 반영: #287에서 refresh token만 있으면 삭제보다 갱신을 우선하는 목표 정책을 확정했다. 다만 endpoint가 없는 현재 코드는 #275의 부분 token 삭제와 `A003`, `A004`, `A009` 세션 종료를 유지한다. API 계약 후 single-flight 갱신, token 원자적 교체, 원요청 최대 1회 재시도를 별도 구현한다.
 - 답변: backend [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)에 endpoint·rotation·오류 코드·single-flight 계약을 요청했다.
 - 상태: Blocked
 
 ### TOKEN-02. 로그아웃 API와 token invalidation
 
-- 현재 근거: 2026-08-31 live OpenAPI와 backend main Controller에 로그아웃 endpoint가 없다.
+- 현재 근거: 2026-09-03 live OpenAPI와 backend main `f67ee6c` Controller에 로그아웃 endpoint가 없다.
 - 프론트 영향: 로그아웃 시 로컬 토큰 삭제만 해야 하는지 서버 invalidate가 필요한지 불명확하다.
 - 확인 질문: 로그아웃 endpoint가 제공되는가? refresh token 폐기 정책은 무엇인가?
 - 프론트 반영: 명시적 로그아웃과 #275 인증 만료는 사용자 데이터 세션과 인증 상태를 먼저 닫고 secure token을 로컬에서 삭제한다. 서버 폐기를 성공한 것처럼 표시하지 않는다.
-- 답변: backend [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)에 invalidation·다중 기기·TTL 정책을 함께 요청했다.
-- 상태: Blocked
+- 답변: backend [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)에 invalidation·다중 기기·TTL 정책을 함께 요청했지만, 사용자 결정으로 서버 로그아웃 연동은 현재 우선순위에서 제외한다.
+- 상태: Open
 
 ## 검색
 
