@@ -3,6 +3,7 @@
 ## 작업 기준
 
 - 이슈: [#289](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/289)
+- PR: [#290](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/290) (`In Review`)
 - 작업일: 2026-09-03
 - 기준 `develop`: `03ba27d` (PR #288 병합)
 - 브랜치: `feature/onboarding-local-state-289`
