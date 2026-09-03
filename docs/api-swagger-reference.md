@@ -16,6 +16,7 @@
 - Plant 수정의 필수 query·조회 schema 재확인: 2026-08-29, live OpenAPI JSON HTTP 200. 이 재확인은 Plant 범위이며 backend main 재검증이나 실제 인증 쓰기 검증을 뜻하지 않는다.
 - Plant 소속 장소 조회·식물 검색 계약 재확인: 2026-08-31 (live OpenAPI 19 paths, backend main `7d572cb` 동일). Plant direct code·검색 endpoint는 없고 기존 Place 목록·상세의 code와 `plantList[].plantId` 조합은 사용 가능하다.
 - 오류·token 계약 재확인: 2026-08-31. token 없는 사용자 조회는 HTTP 401 `A009`, 잘못된 bearer token은 `A003`을 반환했다. backend `ErrorResponse` 구조와 전체 error enum을 대조했으며 refresh·logout endpoint는 live OpenAPI와 Controller 모두에 없다.
+- token endpoint 재확인: 2026-09-03 (live OpenAPI 19 paths·27 operations, backend main `f67ee6c`). Auth endpoint는 `/auth/login`, `/auth/register`뿐이며 refresh·logout은 여전히 없다.
 - Place 멤버·Friend 쓰기 계약 재확인: 2026-08-31 (live OpenAPI, backend main `7d572cb` 동일). 멤버 ID·역할·변경 endpoint와 Friend 고유 대상·부분 결과 계약은 없으며 backend #150에 요청했다.
 - 접속 결과: Swagger UI, OpenAPI JSON, Swagger config HTTP 200
 - 개발 서버 루트: HTTP 404. 루트 route가 없다는 의미이며 Swagger/API endpoint 상태와 분리한다.
@@ -56,6 +57,7 @@
 - #275는 HTTP·전송 오류를 안전한 사용자 메시지 범주로 변환하고 validation `field`·`reason`을 Place·Plant·User·가입 프로필 폼에 연결한다. top-level 서버 상세 문구와 미확인 code는 화면에 그대로 노출하지 않는다.
 - 활성 access-token 요청의 확인된 `A003`, `A004`, `A009`만 현재 세션 만료로 처리한다. 한 세션에서 종료 요청은 한 번만 실행하며 계정 전환 뒤 도착한 이전 응답은 폐기한다.
 - refresh 재발급과 서버 로그아웃은 제공되지 않는다. backend [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)가 endpoint·rotation·invalidation 계약을 제공하기 전까지 refresh 요청이나 원요청 재시도를 만들지 않는다.
+- #287의 목표 정책은 access token 없이 refresh token만 남은 경우 token 삭제보다 갱신을 먼저 시도하는 것이다. 이는 API 제공 뒤 구현할 정책이며 현재 동작은 아니다. 서버 로그아웃 연동은 우선순위에서 제외한다.
 
 ### 2026-08-31 Place 멤버·Friend 식별자 쓰기 경계
 
@@ -674,7 +676,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 - 반영: `ApiResponseParser`가 공통 wrapper의 `result.content.items` 목록을 읽도록 보강했다.
 - 반영: #275에서 표준 오류의 status·code·traceId·field reason을 `ApiException`으로 파싱하고 rejected `value`를 폐기한다. 주요 폼과 변경 action은 안전한 범주 메시지를 사용한다.
-- 반영: active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·데이터 세션을 종료하고 로그인 만료 안내로 연결한다. refresh와 서버 로그아웃은 backend #149 전까지 미구현이다.
+- 반영: active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·데이터 세션을 종료하고 로그인 만료 안내로 연결한다. #287은 refresh-only 상태의 갱신 우선 원칙만 확정했으며 endpoint 제공 전까지 현재 부분 token 삭제를 유지한다. 서버 로그아웃은 우선순위에서 제외한다.
 - 반영: Plant 목록 mapper가 Swagger `PlantSummary`의 `plantId`, `nickname`, `representativeImageUrl`을 화면 모델로 매핑한다.
 - 반영: `CreatePlantRequest.placeId`를 `placeCode` 문자열로 변경했다.
 - 반영: `GET /plants/{plantId}`와 `GET /plants/{plantId}/edit` 호출에서 `placeId` query parameter를 제거했다.
@@ -743,7 +745,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 | Friend | 고유 대상 request, 사용자 검색 정책, 다중 대상 원자성·부분 결과·멱등 | #277은 backend #150 전까지 이름 기반 위험 수용 경계를 확장하지 않음 |
 | Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물/메모 이미지 key/url 매핑 보류 |
 | Error | live/backend source와 dev 배포의 실제 인증 쓰기 오류 일치 여부 | #275 공통 사용자 메시지와 field error 매핑 완료, 원격 validation smoke 보류 |
-| Token | refresh token 재발급, 로그아웃 API 제공 여부 | #275 로컬 세션 종료 적용, backend #149 전까지 자동 복구·서버 invalidation 차단 |
+| Token | refresh token 재발급, 로그아웃 API 제공 여부 | #287 refresh-only 갱신 우선 원칙, backend #149 전까지 현재 종료 동작 유지·서버 logout 제외 |
 | 검색 | 주소 검색, 식물 검색 API 제공 여부와 사용자 검색 매칭 정책 | 주소 검색은 보류, 식물 검색은 백엔드 #92 대기 중이며 API mode fixture 차단 |
 | Memo | backend #50~#55의 메모 CRUD, 작성자·권한·pagination·오류와 이미지 생략 정책 | #283 계약 확인과 live OpenAPI 동기화 전 텍스트 CRUD 연결 Blocked, 이미지 별도 보류 |
 | 환경 | dev URL은 확인, staging/prod full base URL과 API versioning 정책은 미확정 | dev 로컬 실행 가능, release 검증 보류 |
