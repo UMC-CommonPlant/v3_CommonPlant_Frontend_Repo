@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/app/router/app_router.dart';
+import 'package:commonplant_frontend/app/router/main_tab_shell.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/user/presentation/pages/user_settings_page.dart';
@@ -32,17 +33,63 @@ void main() {
     );
   });
 
-  testWidgets('홈 하단 마이 탭에서 마이페이지로 이동한다', (tester) async {
+  testWidgets('하단 탭으로 정원과 마이페이지를 오간다', (tester) async {
     await _setPhoneViewport(tester);
     final router = createAppRouter(initialLocation: AppRoutePaths.home);
     addTearDown(router.dispose);
 
     await tester.pumpWidget(_buildRouterApp(router));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.person_outline));
+    await tester.tap(find.bySemanticsLabel('마이'));
     await tester.pumpAndSettle();
 
     expect(find.text('alwaysweave@gmail.com'), findsOneWidget);
+
+    await tester.tap(find.bySemanticsLabel('정원'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('My place'), findsOneWidget);
+    expect(find.text('alwaysweave@gmail.com'), findsNothing);
+  });
+
+  testWidgets('미구현 메인 탭은 현재 화면에서 준비 중 안내를 표시한다', (tester) async {
+    await _setPhoneViewport(tester);
+    final router = createAppRouter(initialLocation: AppRoutePaths.home);
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(_buildRouterApp(router));
+    await tester.pumpAndSettle();
+
+    for (final label in ['정보', '이야기', '캘린더']) {
+      await tester.tap(find.bySemanticsLabel(label));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text(mainTabComingSoonMessage), findsOneWidget);
+      expect(find.text('My place'), findsOneWidget);
+    }
+  });
+
+  testWidgets('마이 상세 화면은 하단 탭을 숨기고 뒤로가면 다시 표시한다', (tester) async {
+    await _setPhoneViewport(tester);
+    final router = createAppRouter(initialLocation: AppRoutePaths.userProfile);
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(_buildRouterApp(router));
+    await tester.pumpAndSettle();
+    expect(find.bySemanticsLabel('정원'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('userSettingsButton')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('설정'), findsOneWidget);
+    expect(find.bySemanticsLabel('정원'), findsNothing);
+
+    router.pop();
+    await tester.pumpAndSettle();
+
+    expect(find.text('alwaysweave@gmail.com'), findsOneWidget);
+    expect(find.bySemanticsLabel('정원'), findsOneWidget);
   });
 
   testWidgets('톱니바퀴와 수정 버튼이 각 Figma 화면으로 이동한다', (tester) async {

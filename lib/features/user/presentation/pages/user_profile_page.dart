@@ -4,7 +4,6 @@ import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/home/presentation/widgets/home_bottom_tab_bar.dart';
 import 'package:commonplant_frontend/features/user/domain/entities/user_profile.dart';
 import 'package:commonplant_frontend/features/user/presentation/providers/current_user_provider.dart';
 import 'package:commonplant_frontend/features/user/presentation/widgets/user_profile_avatar.dart';
@@ -36,10 +35,6 @@ class UserProfilePage extends ConsumerWidget {
       ),
       child: Scaffold(
         backgroundColor: AppColors.white,
-        bottomNavigationBar: HomeBottomTabBar(
-          selectedTab: HomeBottomTab.my,
-          onGardenPressed: () => context.go(AppRoutePaths.home),
-        ),
         body: SafeArea(
           bottom: false,
           child: Stack(

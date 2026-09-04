@@ -264,6 +264,7 @@ CommonAddressOrPlaceField(
 
 ```dart
 showCommonSnackBar(context, '장소 삭제에 실패했어요');
+showCommonSnackBar(context, '준비 중인 기능입니다');
 ```
 
 - 새 안내를 표시하기 전에 현재 Snackbar를 닫아 메시지가 쌓이지 않게 합니다.
@@ -280,6 +281,7 @@ showCommonSnackBar(context, '장소 삭제에 실패했어요');
 - divider: `separatorColors` 36%
 - 아이콘: 24x24
 - 텍스트: 16/500
+- 화면에 띄울 때는 `AppMotion.fast`의 fade/scale을 사용하고 애니메이션 축소 설정을 따릅니다.
 
 ### CommonFabDial
 
@@ -289,6 +291,8 @@ FAB 확장 메뉴입니다.
 - 확장 시 barrier: black 60%
 - 라벨: 16/700
 - 라벨 배경 없음
+- 열기·닫기는 FAB 위치를 기준으로 `AppMotion.fast`의 fade/scale을 사용합니다.
+- action은 닫기 전환이 끝난 뒤 실행하고, 별도 Overlay controller나 motion Provider는 두지 않습니다.
 
 ## 아이콘 사용
 
