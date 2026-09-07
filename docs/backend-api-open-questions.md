@@ -83,9 +83,9 @@
 - 확인 질문: Apple identity token의 서명, issuer, audience, 만료와 nonce를 검증하는 서버
   구현은 언제 dev에 배포되는가? 최초 로그인에서만 제공될 수 있는 email/name의 보존
   정책은 무엇인가?
-- 프론트 반영: Apple SDK 호출은 iOS로 제한하고 backend #152가 배포되기 전까지 실제 계정
+- 프론트 반영: #293에서 Apple SDK 호출은 iPhone 앱으로 제한하고 backend #152가 배포되기 전까지 실제 계정
   E2E를 완료로 표시하지 않는다.
-- 답변: backend #152 대기.
+- 답변: 2026-09-07에도 backend #152 OPEN, 실제 Apple 검증은 대기.
 - 상태: Blocked
 
 ## 공통 Multipart

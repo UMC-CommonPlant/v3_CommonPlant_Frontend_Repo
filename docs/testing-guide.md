@@ -102,6 +102,16 @@ API 모드의 사용자별 조회·변경은 활성 `userDataSessionProvider`가
 
 #249의 [작업 이력](work-history/session-cache-isolation-249.md)에 세션·네트워크·화면별 회귀 테스트를 연결합니다.
 
+### 소셜 로그인 회귀 테스트
+
+`test/app/router/social_login_flow_test.dart`는 실제 LoginPage·가입 화면·Controller·Repository·
+DTO·router에 fake SDK token loader, HTTP adapter, 메모리 token store를 주입합니다.
+Kakao·Google 신규/기존, 가입 완료, 재로그인, 새 앱 세션 복원, 오류·취소·중복 제출·재시도를
+확인합니다. SDK 네이티브 UI·실제 `/auth/login` 응답·OS secure storage 영속성은 검증하지
+않으므로 [#293 실기기 기록](work-history/social-login-verification-293.md)과 별도로 봅니다.
+Apple 기기 판별 channel은 mock으로 iPhone·iPad·실패를 확인하고 비iOS·웹은 SDK 호출 전
+거절을 검증합니다. iPad·Mac 화면 최적화는 후순위이며 Apple 비노출 확인은 유지합니다.
+
 ### 폼 제출 잠금 회귀 테스트
 
 - fake repository의 `Completer`로 첫 요청을 지연하고 이름·주소·날짜·선택값을 변경한 뒤 `submit()`을 다시 호출합니다. 요청 횟수는 1회, payload는 첫 제출값, 두 번째 호출 결과는 비성공이어야 합니다.
@@ -286,7 +296,7 @@ remote API의 상세 준비 조건은 [Remote integration test 준비 계약](re
 | Place/Plant CRUD | run별 격리 데이터 생성과 항상 실행되는 cleanup | Blocked |
 | Friend/Image/Memo 확장 | schema와 도메인별 cleanup 확보 | Blocked |
 
-첫 remote pilot은 데이터 변경이 없는 authenticated read-only probe로 제한합니다. 이는 인증과 dev 연결 준비를 확인하는 workflow-level probe이며 Flutter 화면 E2E 완료로 계산하지 않습니다. 실제 앱 smoke는 로그인/프로필 화면이 Auth repository에 연결된 뒤 별도 이슈로 추가합니다.
+첫 remote pilot은 데이터 변경이 없는 authenticated read-only probe로 제한합니다. 이는 인증과 dev 연결 준비를 확인하는 workflow-level probe이며 Flutter 화면 E2E 완료로 계산하지 않습니다. 로그인/프로필·SDK·repository 연결은 #227·#285에서 완료했습니다. #293은 개인 테스트 계정의 수동 실기기 검증을 재개하며, 아래 무인 CI 인증 조건과 구분합니다. 기기·설정·계정이 없으면 실기기 항목은 미검증으로 유지합니다.
 
 고정 access token이나 개인 소셜 계정을 장기 secret으로 사용하지 않습니다. credential/token을 `--dart-define`으로 전달하거나 앱 binary, 로그, artifact에 남기는 방식도 사용하지 않습니다. 팀이 승인한 인증 bootstrap, token lifecycle, fixture 격리와 cleanup, GitHub Environment가 모두 준비되기 전에는 실행 가능한 remote 명령이나 workflow를 저장소에 추가하지 않습니다.
 

@@ -17,6 +17,7 @@
 - Plant 소속 장소 조회·식물 검색 계약 재확인: 2026-08-31 (live OpenAPI 19 paths, backend main `7d572cb` 동일). Plant direct code·검색 endpoint는 없고 기존 Place 목록·상세의 code와 `plantList[].plantId` 조합은 사용 가능하다.
 - 오류·token 계약 재확인: 2026-08-31. token 없는 사용자 조회는 HTTP 401 `A009`, 잘못된 bearer token은 `A003`을 반환했다. backend `ErrorResponse` 구조와 전체 error enum을 대조했으며 refresh·logout endpoint는 live OpenAPI와 Controller 모두에 없다.
 - token endpoint 재확인: 2026-09-03 (live OpenAPI 19 paths·27 operations, backend main `f67ee6c`). Auth endpoint는 `/auth/login`, `/auth/register`뿐이며 refresh·logout은 여전히 없다.
+- #293 재확인: 2026-09-07 live OpenAPI HTTP 200, 19 paths·27 operations, Auth는 login/register뿐. backend #149·#152는 OPEN이며 실제 로그인 응답은 이번 실행에서 획득하지 않았다.
 - Place 멤버·Friend 쓰기 계약 재확인: 2026-08-31 (live OpenAPI, backend main `7d572cb` 동일). 멤버 ID·역할·변경 endpoint와 Friend 고유 대상·부분 결과 계약은 없으며 backend #150에 요청했다.
 - 접속 결과: Swagger UI, OpenAPI JSON, Swagger config HTTP 200
 - 개발 서버 루트: HTTP 404. 루트 route가 없다는 의미이며 Swagger/API endpoint 상태와 분리한다.
@@ -137,7 +138,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | Domain | API | 변경 내용 | 프론트 영향 |
 | --- | --- | --- | --- |
 | Auth | `POST /auth/login` | 성공 response가 `LoginSuccessJsonResponse` 또는 `LoginNewUserJsonResponse` `oneOf`로 보강됨 | wrapper의 `result`와 실제 응답 `isNewUser` 기준으로 DTO를 분기함 |
-| Auth | `POST /auth/register` | request content type이 `multipart/form-data`로 변경되고 `RegisterMultipartRequest`가 연결됨 | 현재 코드의 JSON body 전송과 충돌. 단, 연결된 `Register` schema가 응답 필드처럼 보여 백엔드 확인 필요 |
+| Auth | `POST /auth/register` | request content type이 `multipart/form-data`로 변경되고 `RegisterMultipartRequest`가 연결됨 | #216에서 multipart register JSON part와 optional image 반영 완료. 아래 현행 RegisterRequest/Response 계약 참고 |
 | User | `GET /users` | `UserJsonResponse`와 `UserResponse` schema 추가 | 내 정보 DTO 작성 가능 |
 | User | `PUT /users` | 식물 `UpdateRequest` 오연결이 해소되고 `UserUpdateMultipartRequest`로 변경됨 | 프로필 이미지 포함 수정 API 설계 가능 |
 | User | `DELETE /users` | `UserDeleteJsonResponse` schema 추가 | 성공 wrapper 처리 가능 |
@@ -703,7 +704,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: #241에서 `POST /friends/accept`, `POST /friends/decline`을 항목별 submit 상태와 목록 invalidate 정책에 연결했다.
 - 반영: `POST /plants`와 `PUT /plants/{plantId}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
 - 반영: #285에서 Auth login DTO는 실제 응답 `isNewUser`로 분기하고 `newUser`는 배포
-  호환 입력으로만 허용한다. 결과 타입과 중복되는 boolean은 보존하지 않는다.
+  호환 입력으로만 허용한다. #293은 JSON bool과 비어 있지 않은 문자열 token을 검증한다. 결과 타입과 중복되는 boolean은 보존하지 않는다.
 - 반영: #243에서 Friend 신규 요청을 화면 submit까지 연결했다. 표시 이름 중복 오매칭과 대상별 결과 미검증 위험은 `docs/accepted-implementation-risks.md`에서 수용 상태로 추적한다.
 - 반영: Image 업로드/조회/수정/삭제 endpoint는 response schema가 없으므로 raw 또는 void 경계로 datasource/repository만 추가했다.
 
@@ -754,7 +755,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 
 초기 Auth·Home·Plant·User·Place·Friend 연결과 감사 회귀 수정 PR은 병합됐다. 현행 우선순위와 미완료 동선은 [화면·API 매트릭스](screen-api-integration-plan.md)를 따른다.
 
-소셜 SDK 연결은 #285에서 진행하며 실제 provider credential·네이티브 설정과 Apple backend
+소셜 SDK 연결은 #285에서 완료했고 #293에서 코드·설정·자동 테스트를 보완한다. 실제 provider credential·네이티브 설정과 Apple backend
 #152는 외부 준비 항목으로 분리한다. 실제 주소 검색과 이미지 파일 선택·key 조회는 여전히
 별도 준비가 필요하다. Memo 텍스트 CRUD는 backend #50 계약 답변·구현·live OpenAPI 동기화를,
 Place 멤버 변경·나가기와 Friend 고유 대상·부분 결과는 backend #150을 선행 조건으로 둔다.
