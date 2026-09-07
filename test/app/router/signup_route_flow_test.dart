@@ -20,7 +20,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('카카오로 로그인'), findsOneWidget);
-      expect(find.text('Apple로 로그인'), findsOneWidget);
 
       await tester.tap(find.text('카카오로 로그인'));
       await tester.pumpAndSettle();

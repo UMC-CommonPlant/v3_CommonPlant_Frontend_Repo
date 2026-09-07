@@ -58,6 +58,18 @@ void main() {
     expect(tokenStore.accessToken, isNull);
   });
 
+  test('refreshToken만 있으면 재발급을 추정하지 않고 현재 로그인 경로를 유지한다', () async {
+    final store = _MemoryAuthTokenStore(refreshToken: 'refresh-only');
+    final container = _remoteContainer(store);
+    addTearDown(container.dispose);
+    final session = await container.read(authSessionControllerProvider.future);
+    expect(session.isUnauthenticated, isTrue);
+    expect(store.clearCalls, 1);
+    expect(store.accessToken, isNull);
+    expect(store.refreshToken, isNull);
+    expect(container.read(userDataSessionProvider).isActive, isFalse);
+  });
+
   test('신규 사용자 로그인 결과에서 회원가입 진행 정보를 보존한다', () async {
     final container = _remoteContainer(_MemoryAuthTokenStore());
     addTearDown(container.dispose);
