@@ -38,6 +38,54 @@ void main() {
       expect(signup.suggestedImgUrl, 'https://example.com/profile.png');
     });
 
+    for (final invalid in <Object?>[null, '', 'true', 'false', 0, 1, [], {}]) {
+      test('잘못된 isNewUser $invalid 값을 호환 키로 대체하지 않는다', () {
+        expect(
+          () => loginAuthResultFromJson({
+            'result': {
+              'isNewUser': invalid,
+              'newUser': false,
+              'accessToken': 'access',
+              'refreshToken': 'refresh',
+            },
+          }),
+          throwsA(isA<ApiException>()),
+        );
+      });
+    }
+
+    for (final key in ['signupToken', 'accessToken', 'refreshToken']) {
+      for (final invalid in <Object?>[null, '', '   ', 123, true, [], {}]) {
+        test('$key의 누락·빈 값·잘못된 타입 $invalid 응답을 거절한다', () {
+          expect(
+            () => loginAuthResultFromJson({
+              'result': {
+                'isNewUser': key == 'signupToken',
+                'signupToken': 'signup',
+                'accessToken': 'access',
+                'refreshToken': 'refresh',
+                key: invalid,
+              },
+            }),
+            throwsA(isA<ApiException>()),
+          );
+        });
+      }
+    }
+
+    test('isNewUser가 호환 키·token 존재 여부보다 우선한다', () {
+      expect(
+        loginAuthResultFromJson({
+          'isNewUser': true,
+          'newUser': false,
+          'signupToken': 'signup',
+          'accessToken': 'access',
+          'refreshToken': 'refresh',
+        }),
+        isA<SignupRequiredResult>(),
+      );
+    });
+
     test('OpenAPI newUser 필드는 배포 호환 입력으로 허용한다', () {
       final result = loginAuthResultFromJson({
         'result': {
@@ -61,6 +109,23 @@ void main() {
   });
 
   group('registerAuthResultFromJson', () {
+    for (final key in ['accessToken', 'refreshToken']) {
+      for (final invalid in <Object?>[null, '', '   ', 123, true, [], {}]) {
+        test('가입 완료의 잘못된 $key $invalid 응답을 거절한다', () {
+          expect(
+            () => registerAuthResultFromJson({
+              'result': {
+                'accessToken': 'access',
+                'refreshToken': 'refresh',
+                key: invalid,
+              },
+            }),
+            throwsA(isA<ApiException>()),
+          );
+        });
+      }
+    }
+
     test('isNewUser=true가 있어도 가입 완료 token을 인증 결과로 매핑한다', () {
       final result = registerAuthResultFromJson({
         'result': {

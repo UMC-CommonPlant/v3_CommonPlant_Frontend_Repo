@@ -31,17 +31,18 @@ AuthResult loginAuthResultFromJson(JsonMap json) {
   final object = json['isNewUser'] == null && json['newUser'] == null
       ? unwrapJsonObject(json, context: 'Auth')
       : json;
-  final isNewUser = readOptionalBool(object, const ['isNewUser', 'newUser']);
+  // 실제 키가 있으면 잘못된 값도 호환 키로 대체하지 않는다.
+  final isNewUser = object.containsKey('isNewUser')
+      ? object['isNewUser']
+      : object['newUser'];
 
-  if (isNewUser == null) {
-    throw const ApiException(message: '로그인 응답에 isNewUser 필드가 없습니다.');
+  if (isNewUser is! bool) {
+    throw const ApiException(message: '로그인 응답의 isNewUser가 bool이 아닙니다.');
   }
 
   if (isNewUser) {
     return SignupRequiredResult(
-      signupToken: readRequiredString(object, const [
-        'signupToken',
-      ], 'signupToken'),
+      signupToken: _readAuthToken(object, 'signupToken'),
       suggestedName: readOptionalString(object, const [
         'suggestedName',
         'name',
@@ -55,12 +56,8 @@ AuthResult loginAuthResultFromJson(JsonMap json) {
   }
 
   return AuthenticatedResult(
-    accessToken: readRequiredString(object, const [
-      'accessToken',
-    ], 'accessToken'),
-    refreshToken: readRequiredString(object, const [
-      'refreshToken',
-    ], 'refreshToken'),
+    accessToken: _readAuthToken(object, 'accessToken'),
+    refreshToken: _readAuthToken(object, 'refreshToken'),
   );
 }
 
@@ -68,11 +65,15 @@ AuthenticatedResult registerAuthResultFromJson(JsonMap json) {
   final object = unwrapJsonObject(json, context: 'Auth register');
 
   return AuthenticatedResult(
-    accessToken: readRequiredString(object, const [
-      'accessToken',
-    ], 'accessToken'),
-    refreshToken: readRequiredString(object, const [
-      'refreshToken',
-    ], 'refreshToken'),
+    accessToken: _readAuthToken(object, 'accessToken'),
+    refreshToken: _readAuthToken(object, 'refreshToken'),
   );
+}
+
+String _readAuthToken(JsonMap object, String key) {
+  final value = object[key];
+  if (value is! String || value.trim().isEmpty) {
+    throw ApiException(message: '인증 응답의 $key가 비어 있거나 문자열이 아닙니다.');
+  }
+  return value.trim();
 }

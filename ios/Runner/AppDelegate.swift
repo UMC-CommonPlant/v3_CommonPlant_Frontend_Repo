@@ -8,6 +8,22 @@ import UIKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+    if let controller = window?.rootViewController as? FlutterViewController {
+      FlutterMethodChannel(
+        name: "com.plant.common/social_auth",
+        binaryMessenger: controller.binaryMessenger
+      ).setMethodCallHandler { call, result in
+        guard call.method == "isIPhone" else {
+          result(FlutterMethodNotImplemented)
+          return
+        }
+        if #available(iOS 14.0, *), ProcessInfo.processInfo.isiOSAppOnMac {
+          result(false)
+          return
+        }
+        result(UIDevice.current.userInterfaceIdiom == .phone)
+      }
+    }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
