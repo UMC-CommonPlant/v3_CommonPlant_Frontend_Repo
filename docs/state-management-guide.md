@@ -321,3 +321,7 @@ Provider 이름은 feature와 역할을 함께 드러냅니다.
 
 - API 공통 에러 타입과 사용자 메시지 매핑 기준이 필요합니다.
 - Riverpod code generation 사용 여부는 아직 정해지지 않았습니다.
+
+### 폼 사진 초안 #295
+
+각 기존 Form State에 `SelectedImage? selectedImage`와 `isPickingImage`를 보관한다. SDK 선택은 `ImageSelectionGateway`, 제출과 세션 검증은 기존 Controller가 담당한다. 선택 중에는 제출을, 제출 중에는 사진 변경을 막는다. 취소/실패는 기존 초안을 보존하고 새 제출마다 multipart를 다시 만든다. 폼 재생성·세션 변경·dispose 이후 결과는 폐기한다. UI는 `CommonFormImageField`에 미리보기와 callback을 전달한다. [수명·검증·실기기 제한](work-history/form-image-selection-295.md)을 참고한다.

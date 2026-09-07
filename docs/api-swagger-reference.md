@@ -564,9 +564,11 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 ### Image
 
+#295는 최신 도메인 service와 대조하여 폼의 직접 multipart 파일 전송을 연결했다. [사진 선택 작업 기록](work-history/form-image-selection-295.md)에 보존·교체 조건과 실기기 미검증 항목을 정리했다.
+
 #### GET `/s3/images`
 
-- 이미지 key로 presigned download URL을 조회한다.
+- 이미지 key로 만료 없는 Garage 공개 URL을 조회한다(2026-09-07 dev OpenAPI 재확인).
 - Query parameter:
   - `key`: 이미지 key, required
 - 성공 response body schema는 없다.
@@ -710,7 +712,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 ### Image 화면 연결 판단
 
-프로필 수정, 장소 생성/수정, 식물 생성/수정은 실제 파일 선택기가 `MultipartFile`을 제공하면 repository의 optional `image` part로 전달할 수 있다. 파일 선택기 도입과 기존 이미지 보존은 별도 작업이다.
+#295에서 가입·프로필 수정·장소 생성/수정·식물 생성/수정의 앨범 파일 선택, 미리보기, 교체, 초안 취소와 optional multipart `image` 전송을 연결했다. 아래 보존 계약은 파일 미선택 수정에 계속 적용한다.
 
 Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아니다.
 
@@ -727,10 +729,10 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 
 독립형 Image API(`/s3/images`)는 response schema가 없어 화면에서 반환된 image key/url을 확정적으로 읽을 수 없다. 따라서 프로필, 장소, 식물, 메모 화면에서 `/s3/images` 업로드 결과를 `imageKey`, `imgUrl`, `imageUrl`로 임의 매핑하지 않는다.
 
-현재 보류 범위:
+현재 구현과 남은 범위:
 
-- 프로필 설정의 회원가입 multipart는 #216, 화면 submit은 #227에서 연결했다. 실제 image picker 파일 연결은 남아 있다.
-- 장소/식물 화면은 도메인 multipart `image` part 전달 경계까지만 열어두고, 실제 파일 선택기 도입은 별도 UI 작업에서 진행한다.
+- #295가 기존 회원가입 multipart와 도메인 repository 경계에 파일을 연결했다. 2026-09-07 backend `f67ee6c`에서도 같은 유지/교체 조건을 재확인했다. 새 파일이 있으면 key 미조회 상태의 Place/Plant 교체도 허용한다. 파일이 없으면 위 #248의 보존 차단을 유지한다.
+- 실제 기기 앨범·권한·서버 저장 QA는 자동 테스트와 구분한다. [검증 기록](work-history/form-image-selection-295.md)을 참고한다.
 - 메모 화면은 아직 Memo API가 없어 로컬 사진 상태만 유지한다.
 - `/s3/images` 다운로드 URL 조회는 성공 response의 URL 필드 또는 wrapper 구조가 확정된 뒤 화면 fallback 정책과 함께 연결한다.
 
@@ -744,7 +746,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 | 공통 Multipart | JSON part의 `Content-Type: application/json` 필요 여부 | Auth/Place/Plant/User multipart 전송 정책 정합성 |
 | Place | 멤버 ID·역할, self leave, owner 멤버 관리 endpoint와 권한·오류 | #277은 backend #150 전까지 조회 전용·member 나가기 숨김 유지 |
 | Friend | 고유 대상 request, 사용자 검색 정책, 다중 대상 원자성·부분 결과·멱등 | #277은 backend #150 전까지 이름 기반 위험 수용 경계를 확장하지 않음 |
-| Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물/메모 이미지 key/url 매핑 보류 |
+| Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물은 #295 직접 multipart 연결, 독립 Image schema와 Memo 계약은 남음 |
 | Error | live/backend source와 dev 배포의 실제 인증 쓰기 오류 일치 여부 | #275 공통 사용자 메시지와 field error 매핑 완료, 원격 validation smoke 보류 |
 | Token | refresh token 재발급, 로그아웃 API 제공 여부 | #287 refresh-only 갱신 우선 원칙, backend #149 전까지 현재 종료 동작 유지·서버 logout 제외 |
 | 검색 | 주소 검색, 식물 검색 API 제공 여부와 사용자 검색 매칭 정책 | 주소 검색은 보류, 식물 검색은 백엔드 #92 대기 중이며 API mode fixture 차단 |

@@ -146,6 +146,11 @@ CommonAddressOrPlaceField(
 
 ## 이미지 입력
 
+### CommonFormImageField
+
+#295는 네 폼에서 반복되는 단일 사진 미리보기와 선택/교체, 로딩, 선택 취소를 기존 이미지 입력 위젯으로 조합합니다. ImageProvider와 callback만 받고 SDK·파일 검증·업로드는 Controller에 둡니다. `onReset`은 저장 전 선택 초안 취소이며 서버 이미지 삭제를 뜻하지 않습니다.
+
+
 ### CommonCircleImageBox
 
 프로필 이미지 추가 영역입니다.

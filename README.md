@@ -98,6 +98,7 @@ fvm flutter run \
 | `go_router` | `^17.2.0` | 앱 라우팅 및 라우트 구조 관리 |
 | `flutter_riverpod` | `^3.3.1` | 상태관리 및 의존성 주입 |
 | `flutter_svg` | `^2.2.0` | SVG 아이콘 렌더링 |
+| `image_picker` | `^1.2.1` (lock 1.2.2) | 폼 앨범 사진 선택 |
 | `dio` | `^5.9.2` | 공통 HTTP client와 multipart API 요청 |
 | `flutter_secure_storage` | `^10.2.0` | 인증 access/refresh token 보관 |
 | `shared_preferences` | `^2.5.5` | 온보딩 완료 여부 등 비보안 로컬 값 보관 |
