@@ -13,7 +13,6 @@ class CommonFormImageField extends StatelessWidget {
     this.onReset,
     this.isPicking = false,
     this.isCircular = false,
-    this.size = AppSizes.profileImageBoxSize,
   });
 
   final ImageProvider<Object>? imageProvider;
@@ -21,7 +20,6 @@ class CommonFormImageField extends StatelessWidget {
   final VoidCallback? onReset;
   final bool isPicking;
   final bool isCircular;
-  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +37,7 @@ class CommonFormImageField extends StatelessWidget {
                 CommonCircleImageBox(
                   imageProvider: imageProvider,
                   onTap: onPick,
-                  size: size,
+                  size: AppSizes.profileImageBoxSize,
                 )
               else
                 CommonPlaceImageAddButton(

@@ -131,6 +131,47 @@ void main() {
     expect(find.text('완료'), findsOneWidget);
   });
 
+  testWidgets('작은 화면에서 사진 선택 후 키보드를 열어도 입력과 완료 버튼에 접근한다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 640);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          imageSelectionGatewayProvider.overrideWithValue(
+            FakeImageSelectionGateway(() async => testSelectedImage()),
+          ),
+        ],
+        child: const MaterialApp(home: ProfileSetupPage()),
+      ),
+    );
+    await tester.tap(find.byKey(const ValueKey('profileAvatar')));
+    await tester.pumpAndSettle();
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getBottomRight(find.byKey(const ValueKey('profileCompleteButton')))
+          .dy,
+      lessThanOrEqualTo(340),
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('profileNicknameField')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getBottomRight(find.byKey(const ValueKey('profileNicknameField')))
+          .dy,
+      lessThanOrEqualTo(
+        tester.getTopLeft(find.byKey(const ValueKey('profileTermsRow'))).dy,
+      ),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('프로필 설정 화면은 약관 동의 상태를 체크 아이콘에 반영한다', (tester) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);

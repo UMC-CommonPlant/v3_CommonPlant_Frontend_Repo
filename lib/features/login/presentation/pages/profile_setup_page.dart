@@ -85,7 +85,6 @@ class ProfileSetupPage extends ConsumerWidget {
     return ProfileSetupLayout(
       imageField: CommonFormImageField(
         key: const ValueKey('profileAvatar'),
-        size: 100,
         isCircular: true,
         imageProvider: state.selectedImage == null
             ? null
