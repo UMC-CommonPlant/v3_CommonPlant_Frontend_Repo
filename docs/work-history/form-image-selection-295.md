@@ -74,3 +74,11 @@ Apple 로그인 backend #152와 refreshToken 재발급 #149 의존성은 기존 
 | `159f4fd` | 사진 폼 키보드 가림·스크롤 보완 | 전체 671개 통과·1개 스킵 |
 
 문서 마무리 커밋은 자기 해시를 같은 커밋에 기록하지 않는다.
+
+## iPhone 재확인과 Bundle ID 변경
+
+후속 재확인에서 iPhone 16 Pro는 유선 연결·paired·개발자 모드 enabled 상태였다. 개발자 모드 차단은 해소됐지만 설치는 Mac에 유효한 개발 서명 인증서가 없어 차단됐다(`No valid code signing certificates were found`, valid identities 0개).
+
+사용자 요청으로 iOS Runner의 Debug/Profile/Release Bundle ID를 `com.commonplant.app`, RunnerTests를 `com.commonplant.app.RunnerTests`로 변경했다. 사용자의 로컬 Development Team 설정은 보존하고 커밋에서 제외한다. Android 식별자는 그대로다. 새 iOS ID에 맞는 Apple provisioning 및 Kakao/Google iOS 앱 등록이 필요하며 이 변경만으로 설치·소셜 로그인 검증이 끝난 것은 아니다.
+
+변경 후 `plutil -lint`와 `git diff --check`, `fvm flutter build ios --debug --no-codesign`을 통과했다. 생성된 Runner.app의 CFBundleIdentifier도 `com.commonplant.app`으로 확인했다. Flutter 소스 변경은 없다.
