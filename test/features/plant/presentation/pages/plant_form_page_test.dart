@@ -9,6 +9,7 @@ import 'package:commonplant_frontend/features/plant/presentation/pages/plant_for
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_controller.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_registration_place_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_form_scaffold.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -76,7 +77,7 @@ void main() {
     expect(find.text('식물 수정'), findsOneWidget);
     expect(find.text('몬테'), findsOneWidget);
     expect(find.text('2/10', findRichText: true), findsOneWidget);
-    expect(find.bySemanticsLabel('식물 사진 수정'), findsOneWidget);
+    expect(find.bySemanticsLabel('사진 선택'), findsOneWidget);
 
     final completeButton = tester.widget<FilledButton>(
       find.widgetWithText(FilledButton, '완료'),
@@ -447,6 +448,7 @@ class _PendingPlantCreateRepository extends Fake implements PlantRepository {
 
   @override
   Future<void> createPlant({
+    MultipartFile? image,
     required String placeCode,
     required String nickname,
     String? scientificNameKo,
@@ -464,6 +466,7 @@ class _FailingPlantCreateRepository extends Fake implements PlantRepository {
 
   @override
   Future<void> createPlant({
+    MultipartFile? image,
     required String placeCode,
     required String nickname,
     String? scientificNameKo,
@@ -482,6 +485,7 @@ class _PendingPlantRepository extends Fake implements PlantRepository {
 
   @override
   Future<void> updatePlant({
+    MultipartFile? image,
     required String plantId,
     required String placeCode,
     String? imageKey,
@@ -503,6 +507,7 @@ class _FailingPlantUpdateRepository extends Fake implements PlantRepository {
 
   @override
   Future<void> updatePlant({
+    MultipartFile? image,
     required String plantId,
     required String placeCode,
     String? imageKey,
@@ -536,6 +541,7 @@ class _StaticEditInfoPlantRepository extends Fake implements PlantRepository {
 
   @override
   Future<void> updatePlant({
+    MultipartFile? image,
     required String plantId,
     required String placeCode,
     String? imageKey,

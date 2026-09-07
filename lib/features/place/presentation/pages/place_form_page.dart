@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/features/place/presentation/providers/place
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_state.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_form_scaffold.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_form_status_scaffold.dart';
+import 'package:commonplant_frontend/shared/widgets/common_form_image_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,6 +49,24 @@ class PlaceFormPage extends ConsumerWidget {
 
     if (!formState.isEdit) {
       return PlaceCreateScaffold(
+        imageField: CommonFormImageField(
+          isCircular: false,
+          imageProvider: formState.selectedImage != null
+              ? MemoryImage(formState.selectedImage!.bytes)
+              : (formState.initialImageUrl?.trim().isNotEmpty ?? false)
+              ? NetworkImage(formState.initialImageUrl!)
+              : null,
+          isPicking: formState.isPickingImage,
+          onPick: formState.isSubmitting || formState.isPickingImage
+              ? null
+              : () => _pickImage(context, ref),
+          onReset:
+              formState.selectedImage != null &&
+                  !formState.isSubmitting &&
+                  !formState.isPickingImage
+              ? controller.clearSelectedImage
+              : null,
+        ),
         name: formState.currentName,
         address: formState.currentAddress,
         nameErrorMessage: formState.nameErrorMessage,
@@ -64,6 +83,24 @@ class PlaceFormPage extends ConsumerWidget {
     }
 
     return PlaceEditScaffold(
+      imageField: CommonFormImageField(
+        isCircular: false,
+        imageProvider: formState.selectedImage != null
+            ? MemoryImage(formState.selectedImage!.bytes)
+            : (formState.initialImageUrl?.trim().isNotEmpty ?? false)
+            ? NetworkImage(formState.initialImageUrl!)
+            : null,
+        isPicking: formState.isPickingImage,
+        onPick: formState.isSubmitting || formState.isPickingImage
+            ? null
+            : () => _pickImage(context, ref),
+        onReset:
+            formState.selectedImage != null &&
+                !formState.isSubmitting &&
+                !formState.isPickingImage
+            ? controller.clearSelectedImage
+            : null,
+      ),
       name: formState.currentName,
       address: formState.currentAddress,
       nameErrorMessage: formState.nameErrorMessage,
@@ -84,6 +121,16 @@ class PlaceFormPage extends ConsumerWidget {
       AppRoutePaths.addressSearch,
     );
     return context.mounted ? result : null;
+  }
+
+  Future<void> _pickImage(BuildContext context, WidgetRef ref) async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    final message = await ref
+        .read(placeFormControllerProvider(placeId).notifier)
+        .selectImage();
+    if (context.mounted && message != null) {
+      showCommonSnackBar(context, message);
+    }
   }
 
   Future<void> _submit(BuildContext context, WidgetRef ref) async {

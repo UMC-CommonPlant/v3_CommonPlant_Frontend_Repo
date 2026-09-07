@@ -42,9 +42,6 @@ class CommonCircleImageBox extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.transparent,
-                image: imageProvider != null
-                    ? DecorationImage(image: imageProvider!, fit: BoxFit.cover)
-                    : null,
               ),
               alignment: Alignment.center,
               child: imageProvider == null
@@ -57,7 +54,18 @@ class CommonCircleImageBox extends StatelessWidget {
                             color: placeholderColor,
                             semanticsLabel: '프로필 추가',
                           )
-                  : null,
+                  : ClipOval(
+                      child: Image(
+                        image: imageProvider!,
+                        width: size,
+                        height: size,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Center(
+                              child: Icon(Icons.broken_image_outlined),
+                            ),
+                      ),
+                    ),
             ),
           ),
         ),

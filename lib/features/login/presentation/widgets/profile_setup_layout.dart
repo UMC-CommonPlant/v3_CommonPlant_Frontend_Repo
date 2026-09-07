@@ -24,6 +24,7 @@ class ProfileSetupLayout extends StatelessWidget {
     this.nicknameErrorMessage,
     required this.hasImage,
     this.profileImageUrl,
+    this.imageField,
     required this.isTermsAccepted,
     required this.isCompleteEnabled,
     required this.isSubmitting,
@@ -38,6 +39,7 @@ class ProfileSetupLayout extends StatelessWidget {
 
   final String nickname;
   final String? nicknameErrorMessage;
+  final Widget? imageField;
   final bool hasImage;
   final String? profileImageUrl;
   final bool isTermsAccepted;
@@ -122,11 +124,12 @@ class ProfileSetupLayout extends StatelessWidget {
                 width: contentWidth,
                 child: Column(
                   children: [
-                    ProfileAvatar(
-                      hasImage: hasImage,
-                      imageUrl: profileImageUrl,
-                      onTap: onImagePressed,
-                    ),
+                    imageField ??
+                        ProfileAvatar(
+                          hasImage: hasImage,
+                          imageUrl: profileImageUrl,
+                          onTap: onImagePressed,
+                        ),
                     const SizedBox(height: AppSpacing.x16),
                     ProfileNicknameField(
                       nickname: nickname,

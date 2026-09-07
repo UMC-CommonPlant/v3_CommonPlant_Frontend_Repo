@@ -1,10 +1,12 @@
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_summary.dart';
+import 'package:dio/dio.dart';
 
 abstract interface class PlantRepository {
   Future<List<PlantSummary>> fetchPlants({int page = 0, int size = 20});
 
   Future<void> createPlant({
+    MultipartFile? image,
     required String placeCode,
     required String nickname,
     String? scientificNameKo,
@@ -18,6 +20,7 @@ abstract interface class PlantRepository {
   Future<PlantEditInfo> fetchPlantEditInfo({required String plantId});
 
   Future<void> updatePlant({
+    MultipartFile? image,
     required String plantId,
     required String placeCode,
     String? imageKey,

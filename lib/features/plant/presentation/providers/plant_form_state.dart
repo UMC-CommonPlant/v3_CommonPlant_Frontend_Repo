@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/features/image/data/models/selected_image.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_registration_place.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 
@@ -46,6 +47,8 @@ class PlantFormState {
     required this.selectedPlaceId,
     required this.loadStatus,
     required this.submitState,
+    this.selectedImage,
+    this.isPickingImage = false,
     this.initialImageKey,
     this.initialImageUrl,
     this.loadErrorMessage,
@@ -161,6 +164,9 @@ class PlantFormState {
         submitState: const FormSubmitState.idle(),
       );
 
+  final SelectedImage? selectedImage;
+  final bool isPickingImage;
+
   final String? plantId;
   final String? placeId;
   final PlantFormMode mode;
@@ -190,6 +196,7 @@ class PlantFormState {
       (initialImageKey?.trim().isEmpty ?? true);
 
   bool get hasChanges =>
+      selectedImage != null ||
       currentName.trim() != initialName ||
       currentLastWateredDate != initialLastWateredDate;
 
@@ -210,7 +217,9 @@ class PlantFormState {
   }
 
   bool get canSubmit {
-    if (loadStatus != PlantFormLoadStatus.ready || isSubmitting) {
+    if (loadStatus != PlantFormLoadStatus.ready ||
+        isSubmitting ||
+        isPickingImage) {
       return false;
     }
 
@@ -222,6 +231,9 @@ class PlantFormState {
   }
 
   PlantFormState copyWith({
+    SelectedImage? selectedImage,
+    bool clearSelectedImage = false,
+    bool? isPickingImage,
     String? currentName,
     Object? currentLastWateredDate = _unset,
     List<PlantRegistrationPlace>? places,
@@ -231,6 +243,10 @@ class PlantFormState {
     FormSubmitState? submitState,
   }) {
     return PlantFormState(
+      selectedImage: clearSelectedImage
+          ? null
+          : selectedImage ?? this.selectedImage,
+      isPickingImage: isPickingImage ?? this.isPickingImage,
       plantId: plantId,
       placeId: placeId,
       mode: mode,

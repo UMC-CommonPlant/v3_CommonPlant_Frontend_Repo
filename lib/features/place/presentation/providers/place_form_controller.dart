@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
+import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
 import 'package:commonplant_frontend/features/place/place_feature_provider.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/address_search_result.dart';
@@ -39,8 +40,11 @@ class PlaceFormController extends Notifier<PlaceFormState> {
 
   final String? placeId;
 
+  int _imageGeneration = 0;
+
   @override
   PlaceFormState build() {
+    _imageGeneration++;
     if (ref.watch(useRemoteApiProvider)) {
       ref.watch(userDataSessionProvider);
     }
@@ -98,6 +102,45 @@ class PlaceFormController extends Notifier<PlaceFormState> {
   }
 
   void clearAddress() => updateAddress(null);
+
+  Future<String?> selectImage() async {
+    if (state.isSubmitting || state.isPickingImage) return null;
+    final requestRef = ref;
+    final generation = _imageGeneration;
+    final session = ref.read(userDataSessionProvider);
+    bool isCurrent() =>
+        requestRef.mounted &&
+        generation == _imageGeneration &&
+        isCurrentUserDataSession(requestRef, session);
+    state = state.copyWith(
+      isPickingImage: true,
+      submitState: const FormSubmitState.idle(),
+    );
+    try {
+      final image = await ref.read(imageSelectionGatewayProvider).pickImage();
+      if (isCurrent() && image != null) {
+        state = state.copyWith(selectedImage: image);
+      }
+    } catch (error) {
+      if (!isCurrent()) return null;
+      final message = error is ImageSelectionException
+          ? error.message
+          : imageSelectionFailureMessage;
+      state = state.copyWith(submitState: FormSubmitState.failure(message));
+      return message;
+    } finally {
+      if (isCurrent()) state = state.copyWith(isPickingImage: false);
+    }
+    return null;
+  }
+
+  void clearSelectedImage() {
+    if (state.isSubmitting || state.isPickingImage) return;
+    state = state.copyWith(
+      clearSelectedImage: true,
+      submitState: const FormSubmitState.idle(),
+    );
+  }
 
   Future<void> applyAddressSelection(
     Future<AddressSearchResult?> selection,
@@ -186,7 +229,11 @@ class PlaceFormController extends Notifier<PlaceFormState> {
 
       placeCode = await ref
           .read(placeRepositoryProvider)
-          .createPlace(name: name, address: requiredAddress);
+          .createPlace(
+            name: name,
+            address: requiredAddress,
+            image: state.selectedImage?.toMultipartFile(),
+          );
     } else {
       placeCode = ref
           .read(placeListProvider.notifier)
@@ -205,7 +252,7 @@ class PlaceFormController extends Notifier<PlaceFormState> {
 
     if (ref.read(useRemoteApiProvider)) {
       // Place 조회는 URL만 제공하므로 유지에 필요한 key를 추측하지 않는다.
-      if (state.hasExistingImage) {
+      if (state.hasExistingImage && state.selectedImage == null) {
         throw const _PlaceFormValidationException(
           placeFormImagePreservationMessage,
         );
@@ -215,7 +262,12 @@ class PlaceFormController extends Notifier<PlaceFormState> {
 
       final updatedPlace = await ref
           .read(placeRepositoryProvider)
-          .updatePlace(code: placeId, name: name, address: requiredAddress);
+          .updatePlace(
+            code: placeId,
+            name: name,
+            address: requiredAddress,
+            image: state.selectedImage?.toMultipartFile(),
+          );
       resultPlaceCode = updatedPlace.id;
     } else {
       ref

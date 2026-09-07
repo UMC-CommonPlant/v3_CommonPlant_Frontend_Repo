@@ -12,6 +12,7 @@ import 'package:commonplant_frontend/features/plant/plant_repository_provider.da
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_form_scaffold.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -233,6 +234,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
 
   @override
   Future<void> createPlant({
+    MultipartFile? image,
     required String placeCode,
     required String nickname,
     String? scientificNameKo,

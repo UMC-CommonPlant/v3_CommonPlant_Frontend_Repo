@@ -3,6 +3,7 @@ import 'package:commonplant_frontend/features/plant/presentation/providers/plant
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_form_state.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_form_scaffold.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_state_view.dart';
+import 'package:commonplant_frontend/shared/widgets/common_form_image_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -82,6 +83,24 @@ class PlantFormPage extends ConsumerWidget {
 
     if (!formState.isEdit) {
       return PlantCreateScaffold(
+        imageField: CommonFormImageField(
+          isCircular: false,
+          imageProvider: formState.selectedImage != null
+              ? MemoryImage(formState.selectedImage!.bytes)
+              : (formState.initialImageUrl?.trim().isNotEmpty ?? false)
+              ? NetworkImage(formState.initialImageUrl!)
+              : null,
+          isPicking: formState.isPickingImage,
+          onPick: formState.isSubmitting || formState.isPickingImage
+              ? null
+              : () => _pickImage(context, ref),
+          onReset:
+              formState.selectedImage != null &&
+                  !formState.isSubmitting &&
+                  !formState.isPickingImage
+              ? controller.clearSelectedImage
+              : null,
+        ),
         places: formState.places,
         selectedPlaceId: formState.selectedPlaceId,
         lastWateredDate: formState.currentLastWateredDate,
@@ -99,6 +118,24 @@ class PlantFormPage extends ConsumerWidget {
     }
 
     return PlantEditScaffold(
+      imageField: CommonFormImageField(
+        isCircular: false,
+        imageProvider: formState.selectedImage != null
+            ? MemoryImage(formState.selectedImage!.bytes)
+            : (formState.initialImageUrl?.trim().isNotEmpty ?? false)
+            ? NetworkImage(formState.initialImageUrl!)
+            : null,
+        isPicking: formState.isPickingImage,
+        onPick: formState.isSubmitting || formState.isPickingImage
+            ? null
+            : () => _pickImage(context, ref),
+        onReset:
+            formState.selectedImage != null &&
+                !formState.isSubmitting &&
+                !formState.isPickingImage
+            ? controller.clearSelectedImage
+            : null,
+      ),
       name: formState.currentName,
       lastWateredDate: formState.currentLastWateredDate,
       nameErrorMessage: formState.nameErrorMessage,
@@ -149,6 +186,16 @@ class PlantFormPage extends ConsumerWidget {
     }
 
     context.go(AppRoutePaths.home);
+  }
+
+  Future<void> _pickImage(BuildContext context, WidgetRef ref) async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    final message = await ref
+        .read(plantFormControllerProvider(_args).notifier)
+        .selectImage();
+    if (context.mounted && message != null) {
+      showCommonSnackBar(context, message);
+    }
   }
 
   Future<void> _submit(BuildContext context, WidgetRef ref) async {

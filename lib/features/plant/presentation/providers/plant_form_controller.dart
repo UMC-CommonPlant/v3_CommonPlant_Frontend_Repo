@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
+import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
 import 'package:commonplant_frontend/features/place/place_feature_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_detail_remote_provider.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
@@ -52,8 +53,11 @@ class PlantFormController extends Notifier<PlantFormState> {
 
   final PlantFormArgs args;
 
+  int _imageGeneration = 0;
+
   @override
   PlantFormState build() {
+    _imageGeneration++;
     final useRemoteApi = ref.watch(useRemoteApiProvider);
     if (useRemoteApi) {
       ref.watch(userDataSessionProvider);
@@ -166,6 +170,45 @@ class PlantFormController extends Notifier<PlantFormState> {
     ref.invalidate(remotePlantEditInfoProvider(plantId));
   }
 
+  Future<String?> selectImage() async {
+    if (state.isSubmitting || state.isPickingImage) return null;
+    final requestRef = ref;
+    final generation = _imageGeneration;
+    final session = ref.read(userDataSessionProvider);
+    bool isCurrent() =>
+        requestRef.mounted &&
+        generation == _imageGeneration &&
+        isCurrentUserDataSession(requestRef, session);
+    state = state.copyWith(
+      isPickingImage: true,
+      submitState: const FormSubmitState.idle(),
+    );
+    try {
+      final image = await ref.read(imageSelectionGatewayProvider).pickImage();
+      if (isCurrent() && image != null) {
+        state = state.copyWith(selectedImage: image);
+      }
+    } catch (error) {
+      if (!isCurrent()) return null;
+      final message = error is ImageSelectionException
+          ? error.message
+          : imageSelectionFailureMessage;
+      state = state.copyWith(submitState: FormSubmitState.failure(message));
+      return message;
+    } finally {
+      if (isCurrent()) state = state.copyWith(isPickingImage: false);
+    }
+    return null;
+  }
+
+  void clearSelectedImage() {
+    if (state.isSubmitting || state.isPickingImage) return;
+    state = state.copyWith(
+      clearSelectedImage: true,
+      submitState: const FormSubmitState.idle(),
+    );
+  }
+
   Future<PlantFormSubmitResult?> submit() async {
     _syncRegistrationPlaces();
     if (!state.canSubmit) {
@@ -177,7 +220,8 @@ class PlantFormController extends Notifier<PlantFormState> {
     if (ref.read(useRemoteApiProvider) && !session.isActive) return null;
     if (state.isEdit &&
         ref.read(useRemoteApiProvider) &&
-        state.hasUnresolvedImage) {
+        state.hasUnresolvedImage &&
+        state.selectedImage == null) {
       state = state.copyWith(
         submitState: const FormSubmitState.failure(
           plantFormImagePreservationMessage,
@@ -242,6 +286,7 @@ class PlantFormController extends Notifier<PlantFormState> {
             placeCode: selectedPlace.id,
             nickname: plantName,
             lastWateredDate: state.currentLastWateredDate,
+            image: state.selectedImage?.toMultipartFile(),
           );
       if (!isCurrentUserDataSession(requestRef, session)) return null;
       ref.invalidate(remotePlantListProvider);
@@ -279,6 +324,7 @@ class PlantFormController extends Notifier<PlantFormState> {
             imageKey: state.initialImageKey,
             nickname: plantName,
             lastWateredDate: state.currentLastWateredDate,
+            image: state.selectedImage?.toMultipartFile(),
           );
       if (!isCurrentUserDataSession(requestRef, session)) return null;
     }

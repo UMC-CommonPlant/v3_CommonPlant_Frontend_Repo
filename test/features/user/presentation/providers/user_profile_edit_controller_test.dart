@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
 import 'package:commonplant_frontend/features/user/data/dtos/user_requests.dart';
 import 'package:commonplant_frontend/features/user/data/repositories/user_repository.dart';
 import 'package:commonplant_frontend/features/user/domain/entities/user_profile.dart';
@@ -11,6 +12,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/image_selection.dart';
 import '../../../../helpers/user_data_session.dart';
 
 void main() {
@@ -21,6 +23,27 @@ void main() {
   );
   const args = UserProfileEditArgs(user: initialUser);
 
+  test('이름 변경 없이 프로필 사진만 서버에 저장한다', () async {
+    final repository = _RecordingUserRepository(initialUser: initialUser);
+    final container = ProviderContainer(
+      overrides: [
+        authenticatedUserDataSession,
+        useRemoteApiProvider.overrideWithValue(true),
+        userRepositoryProvider.overrideWithValue(repository),
+        imageSelectionGatewayProvider.overrideWithValue(
+          FakeImageSelectionGateway(() async => testSelectedImage()),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final provider = userProfileEditControllerProvider(args);
+    container.listen(provider, (_, _) {});
+    final controller = container.read(provider.notifier);
+    await controller.selectImage();
+    expect(container.read(provider).canSubmit, isTrue);
+    expect(await controller.submit(), isTrue);
+    expect(repository.images.single?.contentType.toString(), 'image/png');
+  });
   for (final fails in [false, true]) {
     test(
       '회원정보 요청 중 이름을 바꿔도 잠금을 유지하고 ${fails ? '새 입력으로 재시도한다' : '성공을 한 번 반환한다'}',
@@ -220,6 +243,7 @@ class _RecordingUserRepository extends Fake implements UserRepository {
   final UserProfile initialUser;
   final Object? updateError;
   Completer<void>? writeBarrier;
+  final images = <MultipartFile?>[];
   int updateCalls = 0;
   UpdateUserRequest? latestRequest;
 
@@ -232,6 +256,7 @@ class _RecordingUserRepository extends Fake implements UserRepository {
     MultipartFile? image,
   }) async {
     updateCalls++;
+    images.add(image);
     latestRequest = request;
     await writeBarrier?.future;
 

@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/features/image/data/models/selected_image.dart';
 import 'package:commonplant_frontend/features/user/domain/entities/user_profile.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 
@@ -20,6 +21,8 @@ class UserProfileEditState {
     required this.initialName,
     required this.currentName,
     required this.submitState,
+    this.selectedImage,
+    this.isPickingImage = false,
   });
 
   factory UserProfileEditState.initial(UserProfile user) {
@@ -29,6 +32,9 @@ class UserProfileEditState {
       submitState: const FormSubmitState.idle(),
     );
   }
+
+  final SelectedImage? selectedImage;
+  final bool isPickingImage;
 
   final String initialName;
   final String currentName;
@@ -40,20 +46,28 @@ class UserProfileEditState {
     return normalizedName.length >= 2 && normalizedName.length <= 10;
   }
 
-  bool get hasChanges => normalizedName != initialName;
+  bool get hasChanges => selectedImage != null || normalizedName != initialName;
 
   bool get isSubmitting => submitState.isSubmitting;
 
   String? get nameErrorMessage => submitState.fieldError('name');
 
-  bool get canSubmit => isNameValid && hasChanges && !isSubmitting;
+  bool get canSubmit =>
+      isNameValid && hasChanges && !isSubmitting && !isPickingImage;
 
   UserProfileEditState copyWith({
+    SelectedImage? selectedImage,
+    bool clearSelectedImage = false,
+    bool? isPickingImage,
     String? initialName,
     String? currentName,
     FormSubmitState? submitState,
   }) {
     return UserProfileEditState(
+      selectedImage: clearSelectedImage
+          ? null
+          : selectedImage ?? this.selectedImage,
+      isPickingImage: isPickingImage ?? this.isPickingImage,
       initialName: initialName ?? this.initialName,
       currentName: currentName ?? this.currentName,
       submitState: submitState ?? this.submitState,
