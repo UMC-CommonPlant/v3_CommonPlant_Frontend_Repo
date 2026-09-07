@@ -2,6 +2,11 @@
 
 이 문서는 dev API를 사용하는 TEST-02-B를 재현 가능한 방식으로 실행하기 위해 백엔드, 프론트엔드, GitHub Actions가 각각 준비해야 할 조건을 정의한다. 실제 계정, secret 값, endpoint 이름은 임의로 만들지 않으며, 조건이 충족되기 전에는 remote workflow를 구현하거나 dev 데이터를 변경하지 않는다.
 
+#293은 2026-09-07 사용자 요청으로 개인 테스트 계정의 수동 소셜 로그인 검증을 재개합니다.
+아래 무인 CI bootstrap 계약과 구분하며 실제 기기·설정·계정 확보 여부는
+[소셜 로그인 검증 기록](work-history/social-login-verification-293.md)에 남깁니다.
+가짜 SDK·HTTP·메모리 저장소를 사용한 widget test를 원격 E2E로 계산하지 않습니다.
+
 ## 현재 판정
 
 - 기준일: 2026-08-23
@@ -23,7 +28,7 @@
 | 회원가입 | 신규 사용자 `signupToken`은 10분 동안만 유효 | 장기 fixture 생성 수단으로 사용 불가 |
 | token lifecycle | access token 재발급과 logout endpoint가 Swagger에 없음 | 만료·폐기 대응 미확정 |
 | 앱 인증 계층 | Auth repository, secure token store, bearer interceptor는 구현됨 | data 계층 준비 |
-| 앱 화면 연결 | 로그인 버튼은 repository를 호출하지 않고 `/profile/setup`으로 이동하며 프로필 제출도 local state만 사용 | 실제 UI E2E 선행 구현 필요 |
+| 앱 화면 연결 | #227·#285에서 SDK → login repository → 프로필·register → 인증 router 연결 완료, #293에서 fake 기반 전체 흐름 검증 | 실제 기기·설정·계정 검증 대기 |
 | 데이터 API | Place/Plant 삭제 endpoint는 있으나 Place 성공 schema와 multipart 일부가 미확정 | CRUD pilot 보류 |
 | Memo | OpenAPI inventory에 Memo endpoint가 없음 | Memo E2E 불가 |
 

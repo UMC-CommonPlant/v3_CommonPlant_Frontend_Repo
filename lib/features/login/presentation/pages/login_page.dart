@@ -3,15 +3,16 @@ import 'dart:math' as math;
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
+import 'package:commonplant_frontend/features/login/data/gateways/social_auth_credential_gateway.dart';
 import 'package:commonplant_frontend/features/login/domain/models/social_auth.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/login_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -36,11 +37,13 @@ class LoginPage extends ConsumerWidget {
     WidgetRef ref,
     SocialAuthProvider provider,
   ) async {
+    final usesRemoteApi = ref.read(useRemoteApiProvider);
     final outcome = await ref
         .read(loginControllerProvider.notifier)
         .login(provider);
 
-    if (!context.mounted || outcome == null) {
+    // API 인증은 세션 변경을 구독하는 라우터가 보존된 목적지까지 결정한다.
+    if (!context.mounted || outcome == null || usesRemoteApi) {
       return;
     }
 
@@ -60,7 +63,8 @@ class LoginPage extends ConsumerWidget {
         .value
         ?.noticeMessage;
     final errorMessage = loginState.errorMessage ?? sessionNotice;
-    final showsAppleLogin = defaultTargetPlatform == TargetPlatform.iOS;
+    final showsAppleLogin =
+        ref.watch(appleLoginSupportedProvider).value == true;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceAlt,
@@ -77,6 +81,15 @@ class LoginPage extends ConsumerWidget {
           final horizontalInset = math.max(
             AppSpacing.x20,
             (constraints.maxWidth - contentWidth) / 2,
+          );
+          final buttonCount = showsAppleLogin ? 3 : 2;
+          final buttonGroupHeight =
+              _buttonHeight * buttonCount + AppSpacing.x12 * (buttonCount - 1);
+          final buttonBottom = math.max(
+            math.max(AppSpacing.x20, MediaQuery.viewPaddingOf(context).bottom),
+            constraints.maxHeight -
+                _buttonTop * verticalScale -
+                buttonGroupHeight,
           );
 
           return Stack(
@@ -99,7 +112,8 @@ class LoginPage extends ConsumerWidget {
                 ),
               ),
               Positioned(
-                top: _buttonTop * verticalScale,
+                // 오류 문구가 늘면 위로 확장해 하단 시스템 영역을 피한다.
+                bottom: buttonBottom,
                 left: horizontalInset,
                 right: horizontalInset,
                 child: Column(

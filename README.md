@@ -34,7 +34,7 @@
 
 ## 프로젝트 개요
 
-- 지원 플랫폼: Android, iOS
+- 지원 플랫폼: Android, iOS (휴대폰 최적화 우선, iPad·Mac 설치 가능성 유지·전용 최적화 후순위)
 - 공통 기준 Flutter 버전: `3.35.7`
 - 공통 기준 Dart 버전: `3.9.2`
 - 기본 명령어 표기: `fvm flutter`
@@ -185,7 +185,7 @@ tool/
 | [화면 퍼블리싱 작업 규칙](docs/screen-publishing-rules.md) | Figma 화면 구현 시 공용 컴포넌트, 상태 UI, 반응형 기준 |
 | [Assets 및 Icons 규칙](docs/asset-icon-rules.md) | 아이콘/이미지 네이밍, 등록, 사용 기준 |
 | [상태관리 Provider 작성 기준](docs/state-management-guide.md) | Riverpod Provider 선택, 파일 배치, async 상태 처리 기준 |
-| [소셜 로그인 연동 가이드](docs/social-login-integration-guide.md) | `isNewUser` 가입 분기, provider별 token과 iOS 전용 Apple 로그인 정책 |
+| [소셜 로그인 연동 가이드](docs/social-login-integration-guide.md) | `isNewUser` 가입 분기, provider별 token과 iPhone 전용 Apple 로그인 정책 |
 | [폼 검증 및 에러 메시지 작성 기준](docs/form-validation-error-guide.md) | 입력 검증 위치, helper/error 메시지, 서버 에러 처리 기준 |
 | [테스트 작성 기준](docs/testing-guide.md) | unit/widget test 작성 기준, 실행 명령, CI/pre-commit 연계 |
 | [품질·테스트 후속 작업 계획](docs/quality-testing-follow-up-plan.md) | QA 필수 viewport, golden/integration test 도입 순서, Ready/Blocked 경계 |
@@ -241,7 +241,7 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 
 ## 현재 진행 상태와 다음 작업
 
-2026-09-03 `develop`의 PR #290 병합 상태(`8092783`)를 기준으로 합니다. Epic #226의 하위 이슈 20/20과 감사 #248~#256이 완료되어 Epic과 Project 상태를 `Done`으로 종료했습니다. 이는 실제 인증 E2E나 모든 화면 동선의 완성을 뜻하지 않으며, 후속 실행 범위는 [화면·모델·API 연결 계획](docs/screen-api-integration-plan.md#후속-개발-실행-순서-267)에서 관리합니다.
+2026-09-07 확인한 `develop`의 PR #292 병합 상태(`e3c9e60`)를 기준으로 합니다. Epic #226의 하위 이슈 20/20과 감사 #248~#256이 완료되어 Epic과 Project 상태를 `Done`으로 종료했습니다. 이는 실제 인증 E2E나 모든 화면 동선의 완성을 뜻하지 않으며, 후속 실행 범위는 [화면·모델·API 연결 계획](docs/screen-api-integration-plan.md#후속-개발-실행-순서-267)에서 관리합니다.
 
 현재 우선순위는 사용자 결정에 따라 다음과 같습니다.
 
@@ -257,6 +257,7 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 10. #287 / PR #288에서 온보딩 최초 노출과 refresh token만 남은 초기 세션 정책을 정리했습니다. refresh API가 없어 자동 갱신 구현은 계속 대기합니다.
 11. #289 / PR #290에서 온보딩 완료 여부를 로컬에 저장하고 앱 시작 redirect에 연결했습니다.
 12. #291 / PR #292에서 정원·마이 하단 탭을 단순 Shell로 통합하고, 정보·이야기·캘린더에는 구현 예정 안내를 연결하며 짧은 popup·FAB motion을 통일했습니다.
+13. #293에서 소셜 로그인 응답 검증·카카오 네이티브 취소·iPhone 전용 Apple 접근·로그인 후 목적지 보존·Android release 인터넷 권한을 보완합니다. 실기기와 자동 테스트 결과는 [검증 기록](docs/work-history/social-login-verification-293.md)에서 구분합니다.
 
 실제 주소 검색 서비스, 업로드 방식 변경이 필요한 이미지 흐름, 인증된 원격 E2E, 스토어·릴리즈 준비는 사용자가 다음 작업으로 보류했습니다. 기존 안전 차단과 질문·위험 기록은 유지하며 이 항목들이 위 실행 순서를 막는 전역 blocker가 되지 않게 분리합니다.
 

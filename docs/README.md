@@ -1,6 +1,6 @@
 # 문서 인덱스
 
-문서 분류 기준일: 2026-09-03, `develop` PR #290 및 #291 메인 탭 작업 반영.
+문서 분류 기준일: 2026-09-07, `develop` PR #292 병합 및 #293 소셜 로그인 검증 반영.
 
 작업 전 저장소 [README](../README.md)와 [에이전트 지침](../AGENTS.md)을 먼저 확인합니다. 현재 코드를 기준으로 판단하며, 완료되어 대체된 계획은 Git 이력과 기존 이슈·PR에서 확인합니다.
 
@@ -39,7 +39,7 @@
 | [후속 결정 체크리스트](follow-up-decision-checklist.md) | 팀 결정·외부 승인·백엔드 준비가 필요한 항목 |
 | [품질·테스트 후속 계획](quality-testing-follow-up-plan.md) | QA·golden·smoke 결정 이력과 남은 품질 항목 |
 | [원격 integration 준비 계약](remote-integration-test-readiness.md) | 인증·데이터 격리·cleanup·Environment 승인 gate |
-| [소셜 로그인 연동 가이드](social-login-integration-guide.md) | `isNewUser` 가입 분기, provider token, iOS 전용 Apple 노출과 SDK 설정 |
+| [소셜 로그인 연동 가이드](social-login-integration-guide.md) | `isNewUser` 가입 분기, provider token, iPhone 전용 Apple 노출과 SDK 설정 |
 
 ## 기능별 작업 이력
 
@@ -65,6 +65,7 @@
 | 비활성 공용 입력 clear 차단 #255 | [Disabled Text Field Clear](work-history/disabled-text-field-clear-255.md) |
 | 수정 정보 Provider 전달 단순화 #256 | [Form Edit Provider Flow](work-history/form-edit-provider-flow-256.md) |
 | 후속 개발 순서·보류 범위 #267 | [Follow-up Development Roadmap](work-history/follow-up-development-roadmap-267.md) |
+| 소셜 로그인 검증·누락 보완 #293 | [Social Login Verification](work-history/social-login-verification-293.md) |
 | 소셜 로그인 SDK·가입 분기 #285 | [Social Login SDK](work-history/social-login-sdk-285.md) |
 | 온보딩·토큰 갱신 정책 #287 | [Onboarding·Refresh Policy](work-history/onboarding-refresh-policy-287.md) |
 | 온보딩 로컬 완료 상태 #289 | [Onboarding Local State](work-history/onboarding-local-state-289.md) |

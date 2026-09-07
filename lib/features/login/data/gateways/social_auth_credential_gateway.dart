@@ -1,12 +1,37 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/login/domain/models/social_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 typedef SocialAuthTokenLoader = Future<String?> Function();
+
+final appleLoginSupportedProvider = FutureProvider<bool>((ref) {
+  return isAppleLoginSupported();
+});
+
+Future<bool> isAppleLoginSupported({
+  TargetPlatform? targetPlatform,
+  bool isWeb = kIsWeb,
+}) async {
+  if (isWeb ||
+      (targetPlatform ?? defaultTargetPlatform) != TargetPlatform.iOS) {
+    return false;
+  }
+  try {
+    return await const MethodChannel(
+          'com.plant.common/social_auth',
+        ).invokeMethod<bool>('isIPhone') ??
+        false;
+  } on PlatformException {
+    return false;
+  } on MissingPluginException {
+    return false;
+  }
+}
 
 void initializeSocialAuthSdks() {
   final kakaoNativeAppKey = AppEnvironment.kakaoNativeAppKey.trim();
@@ -22,6 +47,7 @@ final socialAuthCredentialGatewayProvider =
         googleServerClientId: AppEnvironment.googleServerClientId,
         googleIosClientId: AppEnvironment.googleIosClientId,
         targetPlatform: defaultTargetPlatform,
+        appleSupportChecker: () => ref.read(appleLoginSupportedProvider.future),
       ),
     );
 
@@ -31,6 +57,8 @@ class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
     required String googleServerClientId,
     required String googleIosClientId,
     required TargetPlatform targetPlatform,
+    bool isWeb = kIsWeb,
+    Future<bool> Function()? appleSupportChecker,
     SocialAuthTokenLoader? kakaoTokenLoader,
     SocialAuthTokenLoader? googleTokenLoader,
     SocialAuthTokenLoader? appleTokenLoader,
@@ -38,6 +66,13 @@ class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
        _googleServerClientId = googleServerClientId.trim(),
        _googleIosClientId = googleIosClientId.trim(),
        _targetPlatform = targetPlatform,
+       _isWeb = isWeb,
+       _appleSupportChecker =
+           appleSupportChecker ??
+           (() => isAppleLoginSupported(
+             targetPlatform: targetPlatform,
+             isWeb: isWeb,
+           )),
        _kakaoTokenLoader = kakaoTokenLoader,
        _googleTokenLoader = googleTokenLoader,
        _appleTokenLoader = appleTokenLoader;
@@ -46,6 +81,8 @@ class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
   final String _googleServerClientId;
   final String _googleIosClientId;
   final TargetPlatform _targetPlatform;
+  final bool _isWeb;
+  final Future<bool> Function() _appleSupportChecker;
   final SocialAuthTokenLoader? _kakaoTokenLoader;
   final SocialAuthTokenLoader? _googleTokenLoader;
   final SocialAuthTokenLoader? _appleTokenLoader;
@@ -128,8 +165,10 @@ class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
   }
 
   Future<String?> _authorizeApple() async {
-    if (_targetPlatform != TargetPlatform.iOS) {
-      throw UnsupportedError('Apple 로그인은 iOS에서만 지원합니다.');
+    if (_isWeb ||
+        _targetPlatform != TargetPlatform.iOS ||
+        !await _appleSupportChecker()) {
+      throw UnsupportedError('Apple 로그인은 iPhone 앱에서만 지원합니다.');
     }
 
     if (_appleTokenLoader case final loader?) {
@@ -158,6 +197,7 @@ class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
 
   bool _isKakaoCancellation(Object error) {
     return switch (error) {
+      PlatformException(:final code) => code == 'CANCELED',
       KakaoClientException(:final reason) =>
         reason == ClientErrorCause.cancelled,
       KakaoAuthException(:final error) => error == AuthErrorCause.accessDenied,

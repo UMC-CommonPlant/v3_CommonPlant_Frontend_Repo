@@ -1,0 +1,7 @@
+{
+  "COMMONPLANT_USE_API": true,
+  "COMMONPLANT_API_BASE_URL": "https://commonplant-dev.okbear.dev/api/v1",
+  "COMMONPLANT_KAKAO_NATIVE_APP_KEY": "",
+  "COMMONPLANT_GOOGLE_SERVER_CLIENT_ID": "",
+  "COMMONPLANT_GOOGLE_IOS_CLIENT_ID": ""
+}

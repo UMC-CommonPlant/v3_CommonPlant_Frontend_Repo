@@ -7,10 +7,43 @@ import 'package:commonplant_frontend/features/login/presentation/providers/auth_
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_state.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/login_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  const deviceChannel = MethodChannel('com.plant.common/social_auth');
+  final messenger =
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+  setUp(() {
+    messenger.setMockMethodCallHandler(deviceChannel, (call) async => true);
+  });
+  tearDown(() => messenger.setMockMethodCallHandler(deviceChannel, null));
+
+  for (final deviceResult in <Object?>[
+    false,
+    null,
+    PlatformException(code: 'unavailable'),
+  ]) {
+    testWidgets(
+      'iPad 또는 기기 확인 실패 $deviceResult 환경에서 Apple을 숨긴다',
+      (tester) async {
+        messenger.setMockMethodCallHandler(deviceChannel, (call) async {
+          if (deviceResult is PlatformException) throw deviceResult;
+          return deviceResult;
+        });
+        await tester.pumpWidget(_loginPageApp());
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('loginAppleButton')), findsNothing);
+        expect(find.bySemanticsLabel('Apple로 로그인'), findsNothing);
+        expect(find.text('카카오로 로그인'), findsOneWidget);
+        expect(find.text('구글로 로그인'), findsOneWidget);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
+  }
+
   testWidgets(
     '로그인 화면은 Figma 기준 로고와 소셜 로그인 버튼을 표시한다',
     (tester) async {
@@ -20,6 +53,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(_loginPageApp());
+      await tester.pumpAndSettle();
 
       expect(find.text('9:41'), findsNothing);
       expect(find.bySemanticsLabel('Common'), findsOneWidget);
@@ -70,6 +104,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(_loginPageApp());
+      await tester.pumpAndSettle();
 
       final illustrationSize = tester.getSize(
         find.bySemanticsLabel('로그인 일러스트'),
@@ -92,6 +127,7 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(_loginPageApp());
+      await tester.pumpAndSettle();
 
       expect(find.byKey(const ValueKey('loginAppleButton')), findsNothing);
       expect(find.text('Apple로 로그인'), findsNothing);
@@ -103,6 +139,41 @@ void main() {
     },
     variant: TargetPlatformVariant.only(TargetPlatform.android),
   );
+
+  for (final viewport in [const Size(320, 640), const Size(375, 667)]) {
+    testWidgets(
+      'iPhone $viewport 로그인 오류가 화면 아래로 잘리지 않는다',
+      (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = viewport;
+        tester.view.viewPadding = const FakeViewPadding(bottom: 34);
+        addTearDown(tester.view.resetViewPadding);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.view.resetPhysicalSize);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              useRemoteApiProvider.overrideWithValue(true),
+              authTokenStoreProvider.overrideWithValue(_EmptyAuthTokenStore()),
+            ],
+            child: const MaterialApp(home: LoginPage()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('카카오로 로그인'));
+        await tester.pumpAndSettle();
+        expect(find.text(socialLoginNotConfiguredMessage), findsOneWidget);
+        expect(
+          tester
+              .getBottomLeft(find.byKey(const ValueKey('loginErrorMessage')))
+              .dy,
+          lessThanOrEqualTo(viewport.height - 34),
+        );
+        expect(find.text('Apple로 로그인'), findsOneWidget);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
+  }
 
   testWidgets('API 모드에서 SDK adapter가 없으면 설정 안내를 표시한다', (tester) async {
     await tester.pumpWidget(

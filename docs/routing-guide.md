@@ -43,7 +43,7 @@ Figma 파일 `Common Plant 복제`의 `phase 0` 페이지를 기준으로 프레
 | --- | --- | --- | --- | --- |
 | Home | `home` | `/` | `#2 Main`, `#2 Main/D` | 인증 후 홈, My place/My plant 요약 |
 | Onboarding | `onboarding` | `/onboarding` | `#1-1` | 시작/온보딩 |
-| Login | `login` | `/login` | `#1-2 Log in` | Kakao·Google 로그인, iOS에서만 Apple 로그인 |
+| Login | `login` | `/login` | `#1-2 Log in` | Kakao·Google 로그인, iPhone 앱에서만 Apple 로그인 |
 | Login | `profileSetup` | `/profile/setup` | `#1-2-2 Log in` | 닉네임, 프로필 이미지 설정 |
 | Terms | `terms` | `/terms/privacy` | `#1-2-3 Sign up / 2D` | 개인정보 이용약관 |
 | Place | `placeInvitations` | `/places/invitations` | `#2-2 Main / 장소 친구 요청` | 장소 초대 요청 목록 |
@@ -157,7 +157,9 @@ Provider의 결과만 사용하며 preferences에 직접 접근하지 않습니�
 4. 확인된 access token 오류와 로그아웃은 인증 Provider 상태를 `unauthenticated`로 바꾸고, 라우터 redirect에서 `/login`으로 이동시킵니다.
 5. 로그인 성공 후에는 사용자가 원래 접근하려던 위치로 복귀할 수 있도록 redirect target을 보존합니다.
 6. 별도 회원가입 시작 route는 만들지 않습니다. `/auth/login`의 `isNewUser: true` 결과만 `profileSetup`으로 보내고, `false`는 인증 완료 route로 보냅니다.
-7. Apple 로그인 버튼과 SDK 호출은 iOS에서만 제공하며 Android에는 Apple route나 빈 버튼 영역을 만들지 않습니다.
+7. Apple 로그인 버튼과 SDK 호출은 iPhone 네이티브 앱에서만 제공하며 iPad·Mac·Android·웹에는 Apple route나 빈 버튼 영역을 만들지 않습니다.
+
+#293은 API 로그인 성공 뒤 LoginPage가 다시 Home으로 이동해 보존 target을 덮던 동작을 제거했습니다. 신규 가입은 기존 정책대로 프로필로 이동하고 가입 완료 뒤 Home으로 갑니다.
 
 인증 판단을 개별 화면의 `initState`나 `build`에서 처리하지 않습니다.
 
@@ -239,7 +241,8 @@ flowchart LR
 | 탭 전환 또는 최상위 이동 | `context.go(...)` |
 | 생성/수정 화면처럼 되돌아갈 화면이 명확함 | `context.push(...)` |
 | 저장 완료 후 이전 화면 갱신이 필요함 | `context.pop(result)` 또는 상태 Provider invalidate |
-| 로그인 완료 후 홈 진입 | `context.go(...)` |
+| API 로그인 완료 | 인증 세션 변경으로 router redirect, 보존 target 또는 Home |
+| API 비사용 로그인 흐름 | 화면에서 `context.go(...)` |
 
 ### 주소 선택 반환 계약
 

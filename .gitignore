@@ -24,3 +24,7 @@ android_*.png
 
 # FVM Version Cache
 .fvm/
+
+# Local API / social provider configuration
+/env/*.json
+!/env/*.example.json
