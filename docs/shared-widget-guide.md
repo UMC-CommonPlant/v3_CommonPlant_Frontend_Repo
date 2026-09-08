@@ -356,3 +356,5 @@ const CommonSvgIcon(
 - [ ] 샘플 화면에서 확인 가능한가?
 - [ ] `fvm flutter analyze`를 통과하는가?
 - [ ] 필요한 경우 widget test를 갱신했는가?
+
+#295 실기기 보완: CommonButton은 비활성 상태에도 명시적인 배경·전경색을 사용한다. Material 기본 반투명 disabled 배경으로 인해 키보드 위 버튼 뒤의 입력 구분선이 비치지 않도록 한다. 비활성/로딩 상태의 탭 차단은 유지한다.

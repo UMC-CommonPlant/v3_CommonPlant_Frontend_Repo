@@ -337,6 +337,8 @@ class _CommonButtonStyle {
     return FilledButton.styleFrom(
       backgroundColor: backgroundColor,
       foregroundColor: foregroundColor,
+      disabledBackgroundColor: backgroundColor,
+      disabledForegroundColor: foregroundColor,
       minimumSize: Size(0, metrics.height),
       maximumSize: Size(double.infinity, metrics.height),
       padding: metrics.padding,
@@ -351,6 +353,8 @@ class _CommonButtonStyle {
     return OutlinedButton.styleFrom(
       backgroundColor: backgroundColor,
       foregroundColor: foregroundColor,
+      disabledBackgroundColor: backgroundColor,
+      disabledForegroundColor: foregroundColor,
       minimumSize: Size(0, metrics.height),
       maximumSize: Size(double.infinity, metrics.height),
       padding: metrics.padding,
@@ -365,6 +369,8 @@ class _CommonButtonStyle {
     return TextButton.styleFrom(
       backgroundColor: backgroundColor,
       foregroundColor: foregroundColor,
+      disabledBackgroundColor: backgroundColor,
+      disabledForegroundColor: foregroundColor,
       minimumSize: Size(0, metrics.height),
       maximumSize: Size(double.infinity, metrics.height),
       padding: metrics.padding,

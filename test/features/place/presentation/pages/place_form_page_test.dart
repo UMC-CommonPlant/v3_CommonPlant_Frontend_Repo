@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/api_exception.dart';
+import 'package:commonplant_frontend/core/theme/app_theme_tokens.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
@@ -17,6 +18,32 @@ import '../../../../helpers/test_viewport.dart';
 import '../../../../helpers/user_data_session.dart';
 
 void main() {
+  testWidgets('키보드 위 비활성 다음 버튼은 불투명 배경과 입력 잠금을 유지한다', (tester) async {
+    configureTestViewport(tester, TestViewports.shortHeight);
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: PlaceFormPage())),
+    );
+    await tester.pumpAndSettle();
+    final button = find.widgetWithText(FilledButton, '다음');
+    final initialBottom = tester.getBottomRight(button).dy;
+    await tester.tap(find.byType(TextField));
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpAndSettle();
+    expect(tester.getBottomRight(button).dy, lessThan(initialBottom));
+    expect(tester.getBottomRight(button).dy, lessThanOrEqualTo(667 - 300));
+    expect(tester.widget<FilledButton>(button).onPressed, isNull);
+    final material = tester.widget<Material>(
+      find.descendant(of: button, matching: find.byType(Material)).first,
+    );
+    expect(material.color, AppThemeTokens.light.surfaceDisabled);
+    expect(material.color!.a, 1);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(find.byType(PlaceFormPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final viewport in [
     TestViewports.reference,
     TestViewports.compactWidth,
