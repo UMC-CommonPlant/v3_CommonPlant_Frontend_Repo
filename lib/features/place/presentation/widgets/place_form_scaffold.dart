@@ -1,4 +1,3 @@
-import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
@@ -13,6 +12,7 @@ import 'package:flutter/material.dart';
 class PlaceCreateScaffold extends StatelessWidget {
   const PlaceCreateScaffold({
     super.key,
+    this.imageField,
     required this.name,
     required this.address,
     this.nameErrorMessage,
@@ -26,6 +26,7 @@ class PlaceCreateScaffold extends StatelessWidget {
     required this.onNext,
   });
 
+  final Widget? imageField;
   final String name;
   final String? address;
   final String? nameErrorMessage;
@@ -69,7 +70,9 @@ class PlaceCreateScaffold extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Center(
-                            child: CommonPlaceImageAddButton(onTap: onImageTap),
+                            child:
+                                imageField ??
+                                CommonPlaceImageAddButton(onTap: onImageTap),
                           ),
                           const SizedBox(height: AppSpacing.x32),
                           PlaceNameField(
@@ -113,6 +116,7 @@ class PlaceCreateScaffold extends StatelessWidget {
 class PlaceEditScaffold extends StatelessWidget {
   const PlaceEditScaffold({
     super.key,
+    this.imageField,
     required this.name,
     required this.address,
     this.nameErrorMessage,
@@ -126,6 +130,7 @@ class PlaceEditScaffold extends StatelessWidget {
     required this.onComplete,
   });
 
+  final Widget? imageField;
   final String name;
   final String? address;
   final String? nameErrorMessage;
@@ -169,11 +174,12 @@ class PlaceEditScaffold extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Center(
-                            child: CommonPlaceImageAddButton(
-                              imageAsset: AppImageAssets.placeEditLivingRoom,
-                              imageSemanticsLabel: '장소 대표 이미지',
-                              onTap: onImageTap,
-                            ),
+                            child:
+                                imageField ??
+                                CommonPlaceImageAddButton(
+                                  imageSemanticsLabel: '장소 대표 이미지',
+                                  onTap: onImageTap,
+                                ),
                           ),
                           const SizedBox(height: AppSpacing.x32),
                           PlaceNameField(

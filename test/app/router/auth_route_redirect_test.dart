@@ -16,6 +16,40 @@ import 'package:go_router/go_router.dart';
 import '../../helpers/test_app.dart';
 
 void main() {
+  testWidgets('기본 앱 시작하기는 소셜 선택·프로필·약관을 거쳐 홈으로 이동한다', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          useRemoteApiProvider.overrideWithValue(false),
+          onboardingLocalStoreProvider.overrideWithValue(
+            TestOnboardingLocalStore(),
+          ),
+        ],
+        child: const CommonPlantApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('시작하기'));
+    await tester.pumpAndSettle();
+    expect(find.text('카카오로 로그인'), findsOneWidget);
+    expect(find.text('구글로 로그인'), findsOneWidget);
+    expect(find.text('My place'), findsNothing);
+    await tester.tap(find.text('카카오로 로그인'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '초록');
+    await tester.tapAt(const Offset(24, 24));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('완료'));
+    await tester.tap(find.text('완료'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('동의합니다'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('확인'));
+    await tester.pumpAndSettle();
+    expect(find.text('My place'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('실제 앱 router는 API 모드의 빈 세션을 로그인으로 보낸다', (tester) async {
     await tester.pumpWidget(
       ProviderScope(

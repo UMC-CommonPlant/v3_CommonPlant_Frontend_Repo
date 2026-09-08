@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/api_exception.dart';
+import 'package:commonplant_frontend/core/theme/app_theme_tokens.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_form_page.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_controller.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +18,32 @@ import '../../../../helpers/test_viewport.dart';
 import '../../../../helpers/user_data_session.dart';
 
 void main() {
+  testWidgets('키보드 위 비활성 다음 버튼은 불투명 배경과 입력 잠금을 유지한다', (tester) async {
+    configureTestViewport(tester, TestViewports.shortHeight);
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: PlaceFormPage())),
+    );
+    await tester.pumpAndSettle();
+    final button = find.widgetWithText(FilledButton, '다음');
+    final initialBottom = tester.getBottomRight(button).dy;
+    await tester.tap(find.byType(TextField));
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpAndSettle();
+    expect(tester.getBottomRight(button).dy, lessThan(initialBottom));
+    expect(tester.getBottomRight(button).dy, lessThanOrEqualTo(667 - 300));
+    expect(tester.widget<FilledButton>(button).onPressed, isNull);
+    final material = tester.widget<Material>(
+      find.descendant(of: button, matching: find.byType(Material)).first,
+    );
+    expect(material.color, AppThemeTokens.light.surfaceDisabled);
+    expect(material.color!.a, 1);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(find.byType(PlaceFormPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final viewport in [
     TestViewports.reference,
     TestViewports.compactWidth,
@@ -98,7 +126,7 @@ void main() {
     expect(find.text('장소 수정'), findsOneWidget);
     expect(find.text('스윗 홈_ 거실'), findsOneWidget);
     expect(find.text('주소'), findsOneWidget);
-    expect(find.bySemanticsLabel('장소 대표 이미지'), findsOneWidget);
+    expect(find.bySemanticsLabel('사진 선택'), findsOneWidget);
     expect(find.bySemanticsLabel('텍스트 삭제'), findsOneWidget);
 
     final completeButton = tester.widget<FilledButton>(
@@ -241,7 +269,11 @@ class _PendingPlaceRepository extends Fake implements PlaceRepository {
   int createCalls = 0;
 
   @override
-  Future<String> createPlace({required String name, required String address}) {
+  Future<String> createPlace({
+    MultipartFile? image,
+    required String name,
+    required String address,
+  }) {
     createCalls++;
     return _completer.future;
   }
@@ -265,6 +297,7 @@ class _EditablePlaceRepository extends Fake implements PlaceRepository {
 
   @override
   Future<PlaceSummary> updatePlace({
+    MultipartFile? image,
     required String code,
     required String name,
     required String address,

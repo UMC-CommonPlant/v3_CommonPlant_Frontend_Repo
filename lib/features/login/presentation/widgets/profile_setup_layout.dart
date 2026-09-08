@@ -17,6 +17,7 @@ const double _sheetRadius = 10;
 const double _backButtonTop = 63;
 const double _profileContentTop = 147;
 const double _bottomActionsTop = 626;
+const double _bottomActionsHeight = 56 + AppSpacing.x16 + AppSizes.buttonHeight;
 
 class ProfileSetupLayout extends StatelessWidget {
   const ProfileSetupLayout({
@@ -24,6 +25,7 @@ class ProfileSetupLayout extends StatelessWidget {
     this.nicknameErrorMessage,
     required this.hasImage,
     this.profileImageUrl,
+    this.imageField,
     required this.isTermsAccepted,
     required this.isCompleteEnabled,
     required this.isSubmitting,
@@ -38,6 +40,7 @@ class ProfileSetupLayout extends StatelessWidget {
 
   final String nickname;
   final String? nicknameErrorMessage;
+  final Widget? imageField;
   final bool hasImage;
   final String? profileImageUrl;
   final bool isTermsAccepted;
@@ -59,6 +62,10 @@ class ProfileSetupLayout extends StatelessWidget {
           final verticalScale = math.min(
             1.0,
             constraints.maxHeight / _figmaFrameHeight,
+          );
+          final actionsTop = math.min(
+            _bottomActionsTop * verticalScale,
+            math.max(0.0, constraints.maxHeight - _bottomActionsHeight),
           );
           final contentWidth = math.min(
             _figmaFrameWidth - (AppSpacing.x20 * 2),
@@ -120,24 +127,33 @@ class ProfileSetupLayout extends StatelessWidget {
                 top: _profileContentTop * verticalScale,
                 left: horizontalInset,
                 width: contentWidth,
-                child: Column(
-                  children: [
-                    ProfileAvatar(
-                      hasImage: hasImage,
-                      imageUrl: profileImageUrl,
-                      onTap: onImagePressed,
-                    ),
-                    const SizedBox(height: AppSpacing.x16),
-                    ProfileNicknameField(
-                      nickname: nickname,
-                      serverErrorMessage: nicknameErrorMessage,
-                      onChanged: onNicknameChanged,
-                    ),
-                  ],
+                height: math.max(
+                  0.0,
+                  actionsTop -
+                      (_profileContentTop * verticalScale) -
+                      AppSpacing.x16,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      imageField ??
+                          ProfileAvatar(
+                            hasImage: hasImage,
+                            imageUrl: profileImageUrl,
+                            onTap: onImagePressed,
+                          ),
+                      const SizedBox(height: AppSpacing.x16),
+                      ProfileNicknameField(
+                        nickname: nickname,
+                        serverErrorMessage: nicknameErrorMessage,
+                        onChanged: onNicknameChanged,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Positioned(
-                top: _bottomActionsTop * verticalScale,
+                top: actionsTop,
                 left: 0,
                 right: 0,
                 child: Column(

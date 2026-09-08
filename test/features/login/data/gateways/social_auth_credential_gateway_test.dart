@@ -74,24 +74,27 @@ void main() {
     PlatformException(code: 'unavailable'),
     MissingPluginException(),
   ]) {
-    test('iPad·기기 판별 실패 $deviceResult 환경에서는 Apple SDK 접근을 차단한다', () async {
-      messenger.setMockMethodCallHandler(deviceChannel, (call) async {
-        expect(call.method, 'isIPhone');
-        if (deviceResult is Exception) throw deviceResult;
-        return deviceResult;
-      });
-      final gateway = SdkSocialAuthCredentialGateway(
-        kakaoNativeAppKey: '',
-        googleServerClientId: '',
-        googleIosClientId: '',
-        targetPlatform: TargetPlatform.iOS,
-        appleTokenLoader: () async => fail('SDK call'),
-      );
-      await expectLater(
-        gateway.authorize(SocialAuthProvider.apple),
-        throwsUnsupportedError,
-      );
-    });
+    test(
+      'Apple 비활성 빌드·iPad·지원 판별 실패 $deviceResult 환경에서는 Apple SDK 접근을 차단한다',
+      () async {
+        messenger.setMockMethodCallHandler(deviceChannel, (call) async {
+          expect(call.method, 'isAppleLoginSupported');
+          if (deviceResult is Exception) throw deviceResult;
+          return deviceResult;
+        });
+        final gateway = SdkSocialAuthCredentialGateway(
+          kakaoNativeAppKey: '',
+          googleServerClientId: '',
+          googleIosClientId: '',
+          targetPlatform: TargetPlatform.iOS,
+          appleTokenLoader: () async => fail('SDK call'),
+        );
+        await expectLater(
+          gateway.authorize(SocialAuthProvider.apple),
+          throwsUnsupportedError,
+        );
+      },
+    );
   }
 
   for (final talkInstalled in [true, false]) {

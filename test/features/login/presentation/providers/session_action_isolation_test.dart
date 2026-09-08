@@ -348,11 +348,15 @@ class _PendingRepositories extends Fake
   }
 
   @override
-  Future<String> createPlace({required String name, required String address}) =>
-      createPlaceResult.future;
+  Future<String> createPlace({
+    MultipartFile? image,
+    required String name,
+    required String address,
+  }) => createPlaceResult.future;
 
   @override
   Future<void> createPlant({
+    MultipartFile? image,
     required String placeCode,
     required String nickname,
     String? scientificNameKo,

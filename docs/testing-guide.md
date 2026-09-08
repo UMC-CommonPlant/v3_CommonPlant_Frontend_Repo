@@ -239,6 +239,7 @@ Integration test는 MVP 기본 PR 필수 게이트가 아닙니다. 백엔드 �
 첫 pilot인 `integration_test/app_smoke_test.dart`는 production `main()`으로 실제 앱을 시작하고 아래 계약을 확인합니다.
 
 - `COMMONPLANT_USE_API=false`를 명시하고 테스트 안에서도 remote API가 꺼져 있는지 확인합니다.
+- 온보딩 완료 후 카카오 선택 → 로컬 프로필·약관 동의 → Home 이동을 확인합니다. 실제 소셜 SDK·백엔드 인증은 실행하지 않습니다.
 - Home의 `My place`, `My plant`, `장소 요청 3건`을 확인합니다.
 - `장소 요청 3건`을 탭해 장소 친구 요청 화면과 요청 항목이 노출되는지 확인합니다.
 - 네트워크, 계정, seed 데이터에 의존하지 않으며 기존 unit/widget test를 대체하지 않습니다.
@@ -349,5 +350,9 @@ GitHub Actions의 기본 CI는 `develop` 대상 PR과 `develop` push에서 `flut
 ## 후속 결정 필요
 
 - TEST-01 pilot은 #199에서 `OnboardingPage`, `375×812`, DPR 1, Ubuntu canonical, exact comparator로 확정했습니다. 추가 화면과 viewport baseline은 회귀 위험과 유지 비용을 확인해 별도 이슈로 확장합니다.
-- TEST-02-A는 #203에서 API 비사용 Home → 장소 친구 요청 Android smoke와 수동 workflow로 도입했고, #289에서 로컬 완료 값을 초기화한 뒤 온보딩 → Home 구간을 앞에 추가했습니다. #218에서 `develop` run 3회의 연속 성공과 로그 구분을 확인했고, #224 결정에 따라 Android smoke는 수동으로 유지합니다.
+- TEST-02-A는 #203에서 API 비사용 Home → 장소 친구 요청 Android smoke와 수동 workflow로 도입했고, #289에서 로컬 완료 값을 초기화한 뒤 온보딩 구간을 앞에 추가했고, #295에서 소셜 선택 → 로컬 프로필·약관 → Home 순서를 반영했습니다. #218에서 `develop` run 3회의 연속 성공과 로그 구분을 확인했고, #224 결정에 따라 Android smoke는 수동으로 유지합니다.
 - TEST-02-B의 dev API URL은 #213에서 확인했고 #220에서 인증, token lifecycle, 데이터 격리·cleanup, secret 승인 gate를 구체화했습니다. 첫 단계는 authenticated read-only probe이며, 외부 조건이 준비되기 전 상태는 `Blocked`입니다.
+
+## 폼 사진 선택 #295
+
+`test/features/image`는 파일 검사, OS 선택기 경계, 네 폼의 초안 수명과 모바일 미리보기를 검증합니다. 실제 앨범·권한·Garage 저장은 자동 테스트로 대체하지 않습니다. [작업 기록과 실기기 절차](work-history/form-image-selection-295.md)를 참고합니다.

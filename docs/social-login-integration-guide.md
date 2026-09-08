@@ -94,9 +94,9 @@ Apple은 identity token을 전달한다. 2026-09-02 backend `main`은 요청 enu
 
 ## Apple 노출 정책
 
-- Apple 로그인 버튼과 SDK 진입은 iPhone 네이티브 앱에서만 허용한다.
+- Apple 로그인 버튼과 SDK 진입은 Apple 로그인이 활성화된 iPhone 네이티브 빌드에서만 허용한다.
 - `appleLoginSupportedProvider`가 iOS·비웹 여부를 먼저 검사하고 네이티브
-  `UIDevice.current.userInterfaceIdiom == .phone` 결과를 읽는다. iOS 앱의 Mac 실행도 제외한다.
+  `isAppleLoginSupported` 채널로 빌드의 `CommonPlantAppleSignInEnabled`와 `UIDevice.current.userInterfaceIdiom == .phone` 조건을 함께 확인한다. iOS 앱의 Mac 실행도 제외한다.
 - 화면 크기로 iPhone/iPad를 추측하지 않는다. 확인 중·실패·iPad·Mac·Android·웹에서는
   Apple 버튼과 해당 간격·Semantics를 렌더링하지 않는다.
 - gateway에도 동일한 판별을 적용해 UI 외 경로의 Apple SDK 접근을 차단한다.
@@ -129,11 +129,11 @@ Apple은 identity token을 전달한다. 2026-09-02 backend `main`은 요청 enu
 
 provider console과 네이티브 프로젝트에는 별도로 아래 설정이 필요하다.
 
-- Kakao: `com.plant.common` Android/iOS 플랫폼 등록, Android key hash, 양 플랫폼의
+- Kakao: Android `com.plant.common`, iOS `com.commonplant.umc` 플랫폼 등록, Android key hash, 양 플랫폼의
   `kakao{NATIVE_APP_KEY}://oauth` URL scheme
 - Google Android: package name, debug/release signing SHA와 Web OAuth client 등록
 - Google iOS: iOS client ID와 reversed client ID URL scheme 등록
-- Apple iOS: `com.plant.common` App ID의 Sign in with Apple capability와 갱신된 provisioning
+- Apple iOS: `com.commonplant.umc` App ID의 Sign in with Apple capability와 갱신된 provisioning
   profile
 - Apple backend: identity token의 서명·issuer·audience·만료·nonce 검증과 최초 email 보존
 
@@ -227,3 +227,18 @@ scheme들이 생성되지 않는다. 실제 값이 없는 현재 파일을 그�
 
 - [Flutter platform channels](https://docs.flutter.dev/platform-integration/platform-channels)
 - [Apple device idiom](https://developer.apple.com/documentation/uikit/uidevice/userinterfaceidiom)
+
+#295에서 사용자 요청으로 iOS Bundle ID를 `com.commonplant.umc`으로 변경했다. Google iOS OAuth client의 Bundle ID, Kakao iOS 플랫폼, Apple App ID와 provisioning도 같은 식별자로 준비해야 한다. 내부 `com.plant.common/social_auth`는 SDK 확인용 MethodChannel 이름으로 앱 Bundle ID와 독립적이다.
+
+## Personal Team으로 iPhone Debug 실행
+
+Personal Team은 Sign in with Apple capability를 지원하지 않는다([Apple capability 기준](https://developer.apple.com/help/account/reference/supported-capabilities-ios/)). #295는 사진·카카오·구글 검증을 위한 Debug 실행에서 Apple 로그인 권한을 제외했다.
+
+| Configuration | CODE_SIGN_ENTITLEMENTS | COMMONPLANT_APPLE_SIGN_IN_ENABLED |
+| --- | --- | --- |
+| Debug | `Runner/RunnerDebug.entitlements` (빈 entitlement) | `NO` |
+| Profile / Release | `Runner/Runner.entitlements` | `YES` |
+
+Info.plist의 `CommonPlantAppleSignInEnabled`가 빌드 설정을 받아 네이티브 판별에 사용된다. Debug iPhone에서도 Apple 버튼과 SDK 접근을 막으며 카카오·구글 흐름은 유지한다. `fvm flutter run --debug` 또는 Xcode Run의 Debug configuration으로 실행한다.
+
+실제 Apple SDK 검증은 지원되는 유료 Developer Program 팀·App ID·provisioning이 필요하다. 유료 팀에서 Debug Apple 검증이 필요하면 로컬 Build Settings의 Debug entitlement를 `Runner/Runner.entitlements`, `COMMONPLANT_APPLE_SIGN_IN_ENABLED`를 `YES`로 함께 변경한다. 백엔드 #152 검증 의존성은 여전히 남는다. Personal Team 선택 상태에서 Xcode의 All/Release 화면은 Apple capability 제한을 계속 표시할 수 있으므로 실제 Run configuration을 Debug로 확인한다.

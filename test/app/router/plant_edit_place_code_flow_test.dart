@@ -13,6 +13,7 @@ import 'package:commonplant_frontend/features/plant/plant_repository_provider.da
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_view_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_place_code_provider.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -317,6 +318,7 @@ class _EditRepository extends Fake implements PlantRepository {
 
   @override
   Future<void> updatePlant({
+    MultipartFile? image,
     required String plantId,
     required String placeCode,
     String? imageKey,

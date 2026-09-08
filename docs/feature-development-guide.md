@@ -244,5 +244,5 @@ Swagger에 성공 response body schema가 없는 API는 mapper에서 확인 가�
 ## 결정 필요
 
 - dev API와 Swagger URL은 #213에서 확인했습니다. staging/prod full base URL과 API versioning 정책은 배포 환경 준비 시 별도로 확정해야 합니다.
-- MVP 앱명 `커먼플랜트`와 Android/iOS 식별자 `com.plant.common`은 확정됐습니다. 별도 설치·배포 채널이 필요해지면 dev/staging flavor를 `docs/release-workflow.md` 기준으로 검토합니다.
+- MVP 앱명 `커먼플랜트`와 Android 식별자 `com.plant.common`, iOS Bundle ID `com.commonplant.umc`을 사용합니다(#295 사용자 변경 요청 반영). 별도 설치·배포 채널이 필요해지면 dev/staging flavor를 `docs/release-workflow.md` 기준으로 검토합니다.
 - 백엔드 에러 코드가 확정되면 `api_exception.dart`의 mapping table을 갱신해야 합니다.

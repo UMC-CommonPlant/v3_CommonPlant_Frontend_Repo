@@ -1,6 +1,7 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/onboarding/data/onboarding_local_store.dart';
 import 'package:commonplant_frontend/main.dart' as app;
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,6 +25,20 @@ void main() {
 
     expect(find.text('식물을 내 공간으로,\n공간은 내 폰으로'), findsOneWidget);
     await tester.tap(find.text('시작하기'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('카카오로 로그인'), findsOneWidget);
+    await tester.tap(find.text('카카오로 로그인'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '초록');
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('완료'));
+    await tester.tap(find.text('완료'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('동의합니다'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('확인'));
     await tester.pumpAndSettle();
 
     expect(find.text('My place'), findsOneWidget);

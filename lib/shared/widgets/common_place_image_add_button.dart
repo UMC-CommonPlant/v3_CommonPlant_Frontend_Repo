@@ -11,12 +11,14 @@ class CommonPlaceImageAddButton extends StatelessWidget {
     this.onTap,
     this.size = AppSizes.placeImageAddButtonSize,
     this.imageAsset,
+    this.imageProvider,
     this.imageSemanticsLabel,
   });
 
   final VoidCallback? onTap;
   final double size;
   final String? imageAsset;
+  final ImageProvider<Object>? imageProvider;
   final String? imageSemanticsLabel;
 
   @override
@@ -33,7 +35,17 @@ class CommonPlaceImageAddButton extends StatelessWidget {
               child: SizedBox(
                 width: AppSizes.placeImageAddInnerSize,
                 height: AppSizes.placeImageAddInnerSize,
-                child: imageAsset == null
+                child: imageProvider != null
+                    ? Image(
+                        image: imageProvider!,
+                        fit: BoxFit.cover,
+                        semanticLabel: imageSemanticsLabel,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Center(
+                              child: Icon(Icons.broken_image_outlined),
+                            ),
+                      )
+                    : imageAsset == null
                     ? const ColoredBox(
                         color: AppColors.borderDefault,
                         child: Center(

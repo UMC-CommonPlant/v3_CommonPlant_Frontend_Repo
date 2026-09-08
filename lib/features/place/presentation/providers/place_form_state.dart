@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/features/image/data/models/selected_image.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
 
 enum PlaceFormMode { create, edit }
@@ -14,6 +15,8 @@ class PlaceFormState {
     required this.currentAddress,
     required this.loadStatus,
     required this.submitState,
+    this.selectedImage,
+    this.isPickingImage = false,
     this.initialImageUrl,
     this.loadErrorMessage,
   });
@@ -84,6 +87,9 @@ class PlaceFormState {
         loadErrorMessage: message,
       );
 
+  final SelectedImage? selectedImage;
+  final bool isPickingImage;
+
   final String? placeId;
   final PlaceFormMode mode;
   final String initialName;
@@ -106,10 +112,14 @@ class PlaceFormState {
   bool get hasExistingImage => initialImageUrl?.trim().isNotEmpty ?? false;
 
   bool get hasChanges =>
-      currentName.trim() != initialName || currentAddress != initialAddress;
+      selectedImage != null ||
+      currentName.trim() != initialName ||
+      currentAddress != initialAddress;
 
   bool get canSubmit {
-    if (loadStatus != PlaceFormLoadStatus.ready || isSubmitting) {
+    if (loadStatus != PlaceFormLoadStatus.ready ||
+        isSubmitting ||
+        isPickingImage) {
       return false;
     }
 
@@ -117,11 +127,18 @@ class PlaceFormState {
   }
 
   PlaceFormState copyWith({
+    SelectedImage? selectedImage,
+    bool clearSelectedImage = false,
+    bool? isPickingImage,
     String? currentName,
     Object? currentAddress = _unset,
     FormSubmitState? submitState,
   }) {
     return PlaceFormState(
+      selectedImage: clearSelectedImage
+          ? null
+          : selectedImage ?? this.selectedImage,
+      isPickingImage: isPickingImage ?? this.isPickingImage,
       placeId: placeId,
       mode: mode,
       initialName: initialName,

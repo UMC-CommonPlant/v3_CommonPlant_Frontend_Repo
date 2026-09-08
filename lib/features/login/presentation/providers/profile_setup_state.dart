@@ -1,3 +1,5 @@
+import 'package:commonplant_frontend/features/image/data/models/selected_image.dart';
+
 const int profileNicknameMinLength = 2;
 const int profileNicknameMaxLength = 10;
 
@@ -10,6 +12,8 @@ class ProfileSetupState {
     required this.profileImageUrl,
     required this.isPrivacyTermsAccepted,
     required this.submitStatus,
+    this.selectedImage,
+    this.isPickingImage = false,
     this.errorMessage,
     this.nicknameErrorMessage,
   });
@@ -24,6 +28,9 @@ class ProfileSetupState {
          isPrivacyTermsAccepted: false,
          submitStatus: ProfileSetupSubmitStatus.idle,
        );
+
+  final SelectedImage? selectedImage;
+  final bool isPickingImage;
 
   final String nickname;
   final bool hasImage;
@@ -41,9 +48,12 @@ class ProfileSetupState {
 
   bool get isSubmitting => submitStatus == ProfileSetupSubmitStatus.submitting;
 
-  bool get canSubmit => hasValidNickname && !isSubmitting;
+  bool get canSubmit => hasValidNickname && !isSubmitting && !isPickingImage;
 
   ProfileSetupState copyWith({
+    SelectedImage? selectedImage,
+    bool clearSelectedImage = false,
+    bool? isPickingImage,
     String? nickname,
     bool? hasImage,
     String? profileImageUrl,
@@ -56,6 +66,10 @@ class ProfileSetupState {
     bool clearProfileImageUrl = false,
   }) {
     return ProfileSetupState(
+      selectedImage: clearSelectedImage
+          ? null
+          : selectedImage ?? this.selectedImage,
+      isPickingImage: isPickingImage ?? this.isPickingImage,
       nickname: nickname ?? this.nickname,
       hasImage: hasImage ?? this.hasImage,
       profileImageUrl: clearProfileImageUrl

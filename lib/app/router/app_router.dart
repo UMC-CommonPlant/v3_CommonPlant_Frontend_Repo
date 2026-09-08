@@ -2,6 +2,7 @@ import 'package:commonplant_frontend/app/router/app_routes.dart';
 import 'package:commonplant_frontend/app/router/auth_route_policy.dart';
 import 'package:commonplant_frontend/app/router/redirect_notifier.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
+import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_state.dart';
 import 'package:commonplant_frontend/features/onboarding/presentation/providers/onboarding_controller.dart';
@@ -23,7 +24,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   });
 
   final router = createAppRouter(
-    authSessionReader: () => ref.read(authSessionControllerProvider),
+    authSessionReader: ref.watch(useRemoteApiProvider)
+        ? () => ref.read(authSessionControllerProvider)
+        : null,
     onboardingCompletionReader: () => ref.read(onboardingControllerProvider),
     refreshListenable: refreshNotifier,
   );
@@ -47,6 +50,17 @@ GoRouter createAppRouter({
         : (context, state) {
             final authSession = authSessionReader?.call();
             final onboardingCompletion = onboardingCompletionReader?.call();
+
+            // API 비사용 화면 확인 모드에는 인증 gate를 적용하지 않는다.
+            // 온보딩 완료 뒤에도 로그인 선택과 가입 화면을 확인할 수 있다.
+            if (authSessionReader == null &&
+                onboardingCompletion?.value == true) {
+              return state.uri.path == AppRoutePaths.onboarding
+                  ? AppRoutePaths.loginLocation(
+                      redirect: state.uri.queryParameters['redirect'],
+                    )
+                  : null;
+            }
 
             return authRedirectLocation(
               session: authSession?.value,

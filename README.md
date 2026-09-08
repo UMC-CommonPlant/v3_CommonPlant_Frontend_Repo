@@ -98,6 +98,7 @@ fvm flutter run \
 | `go_router` | `^17.2.0` | 앱 라우팅 및 라우트 구조 관리 |
 | `flutter_riverpod` | `^3.3.1` | 상태관리 및 의존성 주입 |
 | `flutter_svg` | `^2.2.0` | SVG 아이콘 렌더링 |
+| `image_picker` | `^1.2.1` (lock 1.2.2) | 폼 앨범 사진 선택 |
 | `dio` | `^5.9.2` | 공통 HTTP client와 multipart API 요청 |
 | `flutter_secure_storage` | `^10.2.0` | 인증 access/refresh token 보관 |
 | `shared_preferences` | `^2.5.5` | 온보딩 완료 여부 등 비보안 로컬 값 보관 |
@@ -157,7 +158,7 @@ tool/
 - 배포 후보는 `develop`에서 `release/*` 브랜치를 생성해 안정화한 뒤 `main`으로 PR을 보냅니다.
 - 운영 긴급 수정만 예외적으로 `main`에서 `hotfix/*` 브랜치를 생성하고, 배포 후 `develop`에 되돌려 반영합니다.
 - HTTP 클라이언트는 `core/network`의 공통 `dio` client를 사용하며 feature datasource에 주입합니다.
-- MVP 앱은 `커먼플랜트`, Android/iOS 식별자 `com.plant.common`인 단일 prod 앱으로 운영합니다.
+- MVP 앱은 `커먼플랜트`, Android 식별자 `com.plant.common`, iOS Bundle ID `com.commonplant.umc`인 단일 prod 앱으로 운영합니다.
 - 실제 API 사용 여부와 base URL은 `dart-define` 또는 CI/CD 환경값으로 주입합니다. dev/staging flavor는 별도 설치·배포 채널·환경별 Firebase가 필요해질 때 도입합니다.
 - dev API base URL은 `https://commonplant-dev.okbear.dev/api/v1`이며, staging/prod URL은 별도 확인 전까지 확정하지 않습니다.
 - 앱 version과 build number는 `pubspec.yaml`의 `X.Y.Z+N`을 단일 원본으로 사용하고 release 브랜치에서 수동 증가합니다. store 이력 확인 전에는 CI 실행 번호로 덮어쓰지 않습니다.
@@ -166,7 +167,7 @@ tool/
 - 인증 토큰은 `flutter_secure_storage`에 보관합니다. #249에서 계정별 데이터 세션과 토큰 저장·삭제 순서를 분리해 이전 계정의 조회·후처리가 새 계정에 섞이지 않도록 구현했습니다. #287은 refresh token만 남은 상태에서 갱신을 먼저 시도하도록 정책을 확정했지만 API가 없어 아직 구현하지 않았고, 서버 로그아웃 연동은 우선순위에서 제외했습니다. [작업 이력](docs/work-history/session-cache-isolation-249.md)에서 현재 검증 범위와 제한을 확인합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
 - Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 사용합니다.
-- Integration test는 remote API를 사용하지 않는 온보딩 완료 → Home → 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 [remote integration test 준비 계약](docs/remote-integration-test-readiness.md)의 인증, 데이터 격리, cleanup, secret 승인 gate가 충족되기 전까지 end-to-end 범위는 `Blocked`입니다.
+- Integration test는 remote API를 사용하지 않는 온보딩 완료 → 소셜 선택 → 로컬 프로필·약관 → Home → 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 [remote integration test 준비 계약](docs/remote-integration-test-readiness.md)의 인증, 데이터 격리, cleanup, secret 승인 gate가 충족되기 전까지 end-to-end 범위는 `Blocked`입니다.
 
 ## 프로젝트 문서
 

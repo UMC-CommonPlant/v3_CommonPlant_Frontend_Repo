@@ -1,8 +1,11 @@
+import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
 import 'package:commonplant_frontend/features/login/presentation/pages/profile_setup_page.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../../helpers/image_selection.dart';
 
 void main() {
   testWidgets('프로필 설정 기본 화면은 Figma 기준 빈 입력 상태를 표시한다', (tester) async {
@@ -49,56 +52,27 @@ void main() {
     );
   });
 
-  testWidgets('프로필 사진 액션 시트에서 샘플 이미지를 선택할 수 있다', (tester) async {
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(375, 812);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    addTearDown(tester.view.resetPhysicalSize);
-
-    await tester.pumpWidget(_profileSetupApp());
-
+  testWidgets('실제 선택 초안을 미리보고 교체·취소한다', (tester) async {
+    final image = testSelectedImage();
+    final gateway = FakeImageSelectionGateway(() async => image);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [imageSelectionGatewayProvider.overrideWithValue(gateway)],
+        child: const MaterialApp(home: ProfileSetupPage()),
+      ),
+    );
     await tester.tap(find.byKey(const ValueKey('profileAvatar')));
     await tester.pumpAndSettle();
-
-    expect(find.text('프로필 사진 설정'), findsOneWidget);
-    expect(find.text('앨범에서 사진 선택'), findsOneWidget);
-    expect(find.text('기본 이미지로 변경'), findsOneWidget);
-    expect(find.text('취소'), findsOneWidget);
-
-    await tester.tap(find.text('앨범에서 사진 선택'));
+    expect(gateway.calls, 1);
+    expect(find.byType(Image), findsOneWidget);
+    expect(tester.widget<Image>(find.byType(Image)).image, isA<MemoryImage>());
+    await tester.tap(find.bySemanticsLabel('사진 교체'));
     await tester.pumpAndSettle();
-
-    expect(find.textContaining('사용자의 사진에 접근하려고 합니다'), findsOneWidget);
-    expect(find.text('사진 선택...'), findsOneWidget);
-
-    await tester.tap(find.text('사진 선택...'));
+    expect(gateway.calls, 2);
+    await tester.tap(find.text('선택 취소'));
     await tester.pumpAndSettle();
-
-    expect(find.bySemanticsLabel('프로필 이미지'), findsOneWidget);
-  });
-
-  testWidgets('프로필 사진을 기본 이미지로 되돌릴 수 있다', (tester) async {
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(375, 812);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    addTearDown(tester.view.resetPhysicalSize);
-
-    await tester.pumpWidget(_profileSetupApp());
-
-    await tester.tap(find.byKey(const ValueKey('profileAvatar')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('앨범에서 사진 선택'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('사진 선택...'));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(const ValueKey('profileAvatar')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('기본 이미지로 변경'));
-    await tester.pumpAndSettle();
-
-    expect(find.bySemanticsLabel('프로필 추가'), findsOneWidget);
-    expect(find.bySemanticsLabel('프로필 이미지'), findsNothing);
+    expect(find.byType(Image), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('프로필 설정 입력 화면은 성공 상태와 활성 완료 버튼을 표시한다', (tester) async {
@@ -155,6 +129,47 @@ void main() {
     );
     expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
     expect(find.text('완료'), findsOneWidget);
+  });
+
+  testWidgets('작은 화면에서 사진 선택 후 키보드를 열어도 입력과 완료 버튼에 접근한다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 640);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          imageSelectionGatewayProvider.overrideWithValue(
+            FakeImageSelectionGateway(() async => testSelectedImage()),
+          ),
+        ],
+        child: const MaterialApp(home: ProfileSetupPage()),
+      ),
+    );
+    await tester.tap(find.byKey(const ValueKey('profileAvatar')));
+    await tester.pumpAndSettle();
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getBottomRight(find.byKey(const ValueKey('profileCompleteButton')))
+          .dy,
+      lessThanOrEqualTo(340),
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('profileNicknameField')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getBottomRight(find.byKey(const ValueKey('profileNicknameField')))
+          .dy,
+      lessThanOrEqualTo(
+        tester.getTopLeft(find.byKey(const ValueKey('profileTermsRow'))).dy,
+      ),
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('프로필 설정 화면은 약관 동의 상태를 체크 아이콘에 반영한다', (tester) async {

@@ -23,8 +23,10 @@ class PlantEditScaffold extends StatelessWidget {
     required this.onWateringDateTap,
     required this.onSubmit,
     super.key,
+    this.imageField,
   });
 
+  final Widget? imageField;
   final String name;
   final String? lastWateredDate;
   final String? nameErrorMessage;
@@ -62,7 +64,7 @@ class PlantEditScaffold extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      const PlantEditPhotoButton(),
+                      imageField ?? const PlantEditPhotoButton(),
                       const SizedBox(height: AppSpacing.x32),
                       PlantNameField(
                         name: name,
@@ -112,8 +114,10 @@ class PlantCreateScaffold extends StatelessWidget {
     required this.onCancel,
     required this.onSubmit,
     super.key,
+    this.imageField,
   });
 
+  final Widget? imageField;
   final List<PlantRegistrationPlace> places;
   final String? selectedPlaceId;
   final String? lastWateredDate;
@@ -152,6 +156,10 @@ class PlantCreateScaffold extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (imageField != null) ...[
+                        Center(child: imageField),
+                        const SizedBox(height: AppSpacing.x32),
+                      ],
                       PlantPlacePicker(
                         places: places,
                         selectedPlaceId: selectedPlaceId,

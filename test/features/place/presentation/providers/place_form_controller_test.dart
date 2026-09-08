@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/api_exception.dart';
+import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/address_search_fixture.dart';
@@ -11,12 +12,62 @@ import 'package:commonplant_frontend/features/place/presentation/providers/place
 import 'package:commonplant_frontend/features/place/presentation/providers/place_form_state.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/image_selection.dart';
 import '../../../../helpers/user_data_session.dart';
 
 void main() {
+  for (final edit in [false, true]) {
+    test('장소 ${edit ? '사진 교체' : '등록'} 실패 후 새 multipart로 재시도한다', () async {
+      final repository = _RecordingPlaceRepository(
+        imageUrl: edit ? 'https://example.com/old.png' : null,
+      )..writeError = StateError('실패');
+      final container = ProviderContainer(
+        overrides: [
+          authenticatedUserDataSession,
+          useRemoteApiProvider.overrideWithValue(true),
+          placeRepositoryProvider.overrideWithValue(repository),
+          imageSelectionGatewayProvider.overrideWithValue(
+            FakeImageSelectionGateway(() async => testSelectedImage()),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final provider = placeFormControllerProvider(edit ? 'place-1' : null);
+      container.listen(provider, (_, _) {});
+      if (edit) {
+        await container.read(placeSummaryProvider('place-1').future);
+        await container.pump();
+      }
+      final controller = container.read(provider.notifier);
+      if (!edit) {
+        controller.updateName('거실');
+        controller.updateAddress('서울시 성북구');
+      }
+      await controller.selectImage();
+      expect(container.read(provider).canSubmit, isTrue);
+      expect(await controller.submit(), isNull);
+      expect(container.read(provider).selectedImage, isNotNull);
+      final bytes = await repository.images.single!
+          .finalize()
+          .expand((bytes) => bytes)
+          .toList();
+      repository.writeError = null;
+      expect(await controller.submit(), isNotNull);
+      expect(repository.images, hasLength(2));
+      expect(
+        await repository.images.last!
+            .finalize()
+            .expand((bytes) => bytes)
+            .toList(),
+        bytes,
+      );
+    });
+  }
+
   group('PlaceFormController', () {
     for (final isEdit in [false, true]) {
       for (final fails in [false, true]) {
@@ -475,6 +526,7 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
   final String? imageUrl;
   Completer<void>? writeBarrier;
   Object? writeError;
+  final images = <MultipartFile?>[];
   int createCalls = 0;
   int updateCalls = 0;
   String? latestUpdateCode;
@@ -496,10 +548,12 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
 
   @override
   Future<String> createPlace({
+    MultipartFile? image,
     required String name,
     required String address,
   }) async {
     createCalls++;
+    images.add(image);
     latestCreateName = name;
     latestCreateAddress = address;
 
@@ -511,12 +565,14 @@ class _RecordingPlaceRepository extends Fake implements PlaceRepository {
 
   @override
   Future<PlaceSummary> updatePlace({
+    MultipartFile? image,
     required String code,
     required String name,
     required String address,
     String? imageKey,
   }) async {
     updateCalls++;
+    images.add(image);
     latestUpdateCode = code;
     latestUpdateName = name;
     latestUpdateAddress = address;

@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/features/place/domain/entities/place_detail.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_summary.dart';
+import 'package:dio/dio.dart';
 
 abstract interface class PlaceRepository {
   Future<List<PlaceSummary>> fetchMyGardenPlaces();
@@ -12,9 +13,14 @@ abstract interface class PlaceRepository {
 
   Future<List<PlaceMember>> fetchPlaceMembers(String code);
 
-  Future<String> createPlace({required String name, required String address});
+  Future<String> createPlace({
+    MultipartFile? image,
+    required String name,
+    required String address,
+  });
 
   Future<PlaceSummary> updatePlace({
+    MultipartFile? image,
     required String code,
     required String name,
     required String address,

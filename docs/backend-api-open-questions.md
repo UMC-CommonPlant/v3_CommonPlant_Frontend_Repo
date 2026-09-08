@@ -31,8 +31,8 @@
 | FRIEND-04 | Friend | `friendDecisionReq.friendId`는 요청 id인가, 사용자 id인가? | 요청 PK 사용 확인, 수락·거절 연결 가능 | Answered |
 | FRIEND-05 | Friend | 고유 대상 요청과 다중 대상 원자성·부분 결과 계약은 무엇인가? | #277 고유 ID payload·대상별 상태 연결 보류 | Blocked |
 | IMAGE-01 | Image | `/s3/images` upload/download/update/delete 성공 response schema는 무엇인가? | image key/url mapper 보류 | Open |
-| IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | 프로필/장소/식물/메모 이미지 흐름 확정 불가 | Open |
-| IMAGE-03 | Image | presigned download URL 응답 필드와 wrapper 구조는 무엇인가? | 네트워크 이미지 fallback 정책 보류 | Open |
+| IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | #295 프로필/장소/식물 직접 multipart 연결, Memo 별도 계약 | Partial |
+| IMAGE-03 | Image | Garage 공개 URL 응답 필드와 wrapper 구조는 무엇인가? | #295 폼은 도메인 URL 표시, 독립 endpoint schema 확인 남음 | Partial |
 | IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | #248 Plant key 보존·Place 사진 수정 차단 구현, Place key 조회·동시 수정 보호 계약 필요 | Partial |
 | ERROR-01 | Error | 에러 response body의 공통 `code`, `message` 필드명은 무엇인가? | #275 표준 오류·field error 파싱 반영 | Answered |
 | ERROR-02 | Error | 도메인별 에러 코드 표준과 의미는 무엇인가? | #275 HTTP 범주·확인 코드 매핑, 미확인 코드는 안전 fallback | Answered |
@@ -229,23 +229,18 @@
 - 답변: 미확인
 - 상태: Open
 
-### IMAGE-02. 화면 이미지 업로드 흐름
+### IMAGE-02. 도메인 이미지 업로드 흐름
 
-- 현재 근거: User/Place/Plant API는 optional `image` multipart part가 있고, 별도 `/s3/images` API도 존재한다.
-- 프론트 영향: 화면에서 먼저 `/s3/images`를 호출해야 하는지, 도메인 API에 파일을 직접 넣어야 하는지 불명확하다.
-- 확인 질문: 프로필, 장소, 식물, 메모 각각의 권장 이미지 업로드 흐름은 무엇인가?
-- 프론트 반영: 답변 후 이미지 선택 Controller와 도메인 제출 흐름을 연결한다.
-- 답변: 미확인
-- 상태: Open
+- 2026-09-07 dev OpenAPI와 backend main `f67ee6c`의 도메인 service는 optional multipart `image` 직접 전송을 지원한다. `/s3/images` 다중 업로드 설명도 레거시 범용 경로라고 명시한다.
+- #295 가입·회원정보·Plant·Place 폼은 선택한 파일을 도메인 API에 직접 전달한다. 독립 선업로드·key mapper는 추가하지 않는다.
+- Memo는 서버 계약 확인 전 별도 보류한다.
+- 상태: Partial (네 폼 연결, Memo 미확정)
 
-### IMAGE-03. Presigned download URL 응답
+### IMAGE-03. Garage 공개 URL 응답
 
-- 현재 근거: `GET /s3/images?key=...`는 URL 조회 API로 설명되지만 schema가 없다.
-- 프론트 영향: 네트워크 이미지 fallback과 캐싱 정책을 정할 수 없다.
-- 확인 질문: 응답은 문자열인가, `{ url }`, `{ imageUrl }`, `{ downloadUrl }` 같은 object인가, 공통 wrapper `result` 안에 들어가는가?
-- 프론트 반영: 답변 후 image key 기반 표시 helper를 추가한다.
-- 답변: 미확인
-- 상태: Open
+- 2026-09-07 dev OpenAPI는 `GET /s3/images`를 만료 없는 Garage 공개 URL 조회로 설명한다. presigned URL이라는 이전 설명은 더 이상 현재 기준이 아니다.
+- 도메인 조회 응답의 URL을 직접 표시하고 실패 시 기본 placeholder를 사용한다. 독립 endpoint 성공 schema는 live OpenAPI에 없으므로 raw 경계를 유지한다.
+- 상태: Partial (폼 URL 표시 연결, 독립 endpoint schema 동기화 남음)
 
 ### IMAGE-04. 이미지 key 생명주기
 
@@ -254,7 +249,7 @@
 - 프론트 영향: 이미지 선택기가 없어도 텍스트 수정 요청에서 기존 key를 잃으면 이미지가 삭제될 수 있다. Plant edit 응답은 key를 제공하지만 Place 상세에는 `imgUrl`만 있다.
 - 확인 질문: Place의 기존 image key를 안전하게 조회하는 계약은 무엇인가? 조회 이후 다른 클라이언트가 사진을 변경한 경우의 조건부 수정·명시적 유지 동작은 어떻게 보장하는가? User·Memo와 독립 `/s3/images`의 생명주기 정책은 별도 확인이 필요하다.
 - 프론트 반영: [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 Plant의 초기 key를 상태와 요청에 보존하고 URL만 있는 불완전 정보는 차단한다. Place는 기존 사진 URL을 폼까지 전달하고 사진이 있으면 수정 API를 호출하지 않는다. 사진 없는 장소·fixture 수정은 유지하며 URL에서 key를 추측하지 않는다. 원격 삭제 검증은 실행하지 않았다.
-- 제한 해제: Place key 조회 또는 명시적 유지 계약 확인 후 별도 이슈에서 사진이 있는 장소 수정과 동시 수정 보호를 구현한다. [작업 이력](work-history/form-image-preservation-248.md)에 현재 제한과 검증을 기록했다.
+- #295에서 새 파일을 선택한 Place/Plant 교체를 허용했다. 미선택 상태에서는 위 보존 차단을 유지한다. User는 파일 생략 시 서버가 기존 사진을 유지한다. Place의 사진 미교체 수정과 동시 수정 보호는 key 조회 또는 명시적 유지 계약 확인이 필요하다. [작업 이력](work-history/form-image-preservation-248.md)에 현재 제한과 검증을 기록했다.
 - 상태: Partial
 
 ## Error

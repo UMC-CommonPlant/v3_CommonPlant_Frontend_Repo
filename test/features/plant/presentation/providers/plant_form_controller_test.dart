@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
 import 'package:commonplant_frontend/features/plant/domain/repositories/plant_repository.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_registration_place_fixture.dart';
@@ -10,12 +11,58 @@ import 'package:commonplant_frontend/features/plant/presentation/providers/plant
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_registration_place_provider.dart';
 import 'package:commonplant_frontend/shared/forms/form_submit_state.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/image_selection.dart';
 import '../../../../helpers/user_data_session.dart';
 
 void main() {
+  for (final edit in [false, true]) {
+    test('사진만 변경한 식물 ${edit ? '수정' : '등록'}에 multipart 파일을 전달한다', () async {
+      final repository = _RecordingPlantRepository(
+        editInfo: const PlantEditInfo(
+          name: '몬테',
+          imageUrl: 'https://example.com/old.png',
+        ),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          authenticatedUserDataSession,
+          useRemoteApiProvider.overrideWithValue(true),
+          plantRepositoryProvider.overrideWithValue(repository),
+          plantRegistrationPlaceProvider.overrideWith(
+            (ref) => plantRegistrationPlaceFallbacks,
+          ),
+          imageSelectionGatewayProvider.overrideWithValue(
+            FakeImageSelectionGateway(() async => testSelectedImage()),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final provider = plantFormControllerProvider(
+        PlantFormArgs(
+          plantId: edit ? 'plant-1' : null,
+          placeId: edit ? 'place-1' : null,
+          initialPlantName: '몬테',
+        ),
+      );
+      container.listen(provider, (_, _) {});
+      if (edit) {
+        await container.read(remotePlantEditInfoProvider('plant-1').future);
+      } else {
+        await container.read(plantRegistrationPlaceProvider.future);
+      }
+      await container.pump();
+      final controller = container.read(provider.notifier);
+      await controller.selectImage();
+      expect(container.read(provider).canSubmit, isTrue);
+      expect(await controller.submit(), isNotNull);
+      expect(repository.images.single?.contentType.toString(), 'image/png');
+    });
+  }
+
   group('PlantFormController', () {
     for (final isEdit in [false, true]) {
       for (final fails in [false, true]) {
@@ -417,6 +464,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
   final bool failFirstUpdate;
   Completer<void>? writeBarrier;
   final List<String?> updatedImageKeys = [];
+  final images = <MultipartFile?>[];
   int createCalls = 0;
   int updateCalls = 0;
   String? latestUpdatePlantId;
@@ -435,6 +483,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
 
   @override
   Future<void> createPlant({
+    MultipartFile? image,
     required String placeCode,
     required String nickname,
     String? scientificNameKo,
@@ -443,6 +492,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
     String? description,
   }) async {
     createCalls++;
+    images.add(image);
     latestCreatePlaceCode = placeCode;
     latestCreateNickname = nickname;
     latestCreateScientificNameKo = scientificNameKo;
@@ -452,6 +502,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
 
   @override
   Future<void> updatePlant({
+    MultipartFile? image,
     required String plantId,
     required String placeCode,
     String? imageKey,
@@ -459,6 +510,7 @@ class _RecordingPlantRepository extends Fake implements PlantRepository {
     String? lastWateredDate,
   }) async {
     updateCalls++;
+    images.add(image);
     updatedImageKeys.add(imageKey);
     latestUpdatePlantId = plantId;
     latestUpdatePlaceCode = placeCode;

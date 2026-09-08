@@ -146,6 +146,11 @@ CommonAddressOrPlaceField(
 
 ## 이미지 입력
 
+### CommonFormImageField
+
+#295는 네 폼에서 반복되는 단일 사진 미리보기와 선택/교체, 로딩, 선택 취소를 기존 이미지 입력 위젯으로 조합합니다. ImageProvider와 callback만 받고 SDK·파일 검증·업로드는 Controller에 둡니다. `onReset`은 저장 전 선택 초안 취소이며 서버 이미지 삭제를 뜻하지 않습니다.
+
+
 ### CommonCircleImageBox
 
 프로필 이미지 추가 영역입니다.
@@ -351,3 +356,5 @@ const CommonSvgIcon(
 - [ ] 샘플 화면에서 확인 가능한가?
 - [ ] `fvm flutter analyze`를 통과하는가?
 - [ ] 필요한 경우 widget test를 갱신했는가?
+
+#295 실기기 보완: CommonButton은 비활성 상태에도 명시적인 배경·전경색을 사용한다. Material 기본 반투명 disabled 배경으로 인해 키보드 위 버튼 뒤의 입력 구분선이 비치지 않도록 한다. 비활성/로딩 상태의 탭 차단은 유지한다.

@@ -1,9 +1,7 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
-import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
-import 'package:commonplant_frontend/features/login/presentation/widgets/profile_image_action_sheet.dart';
-import 'package:commonplant_frontend/features/login/presentation/widgets/profile_photo_permission_dialog.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_setup_layout.dart';
+import 'package:commonplant_frontend/shared/widgets/common_form_image_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,53 +10,13 @@ import 'package:go_router/go_router.dart';
 class ProfileSetupPage extends ConsumerWidget {
   const ProfileSetupPage({super.key});
 
-  Future<void> _openProfileImageSheet(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _pickImage(BuildContext context, WidgetRef ref) async {
     FocusManager.instance.primaryFocus?.unfocus();
-
-    final action = await showModalBottomSheet<ProfileImageSheetAction>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      barrierColor: AppColors.textHeadline.withValues(alpha: 0.6),
-      elevation: 0,
-      builder: (context) => const ProfileImageActionSheet(),
-    );
-
-    if (!context.mounted || action == null) {
-      return;
-    }
-
-    switch (action) {
-      case ProfileImageSheetAction.selectFromAlbum:
-        await _openPhotoPermissionDialog(context, ref);
-      case ProfileImageSheetAction.resetToDefault:
-        ref.read(profileSetupControllerProvider.notifier).resetProfileImage();
-    }
-  }
-
-  Future<void> _openPhotoPermissionDialog(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final action = await showDialog<ProfilePhotoPermissionAction>(
-      context: context,
-      barrierColor: AppColors.textHeadline.withValues(alpha: 0.6),
-      builder: (context) => const ProfilePhotoPermissionDialog(),
-    );
-
-    if (!context.mounted) {
-      return;
-    }
-
-    switch (action) {
-      case ProfilePhotoPermissionAction.selectLimited:
-      case ProfilePhotoPermissionAction.allowAll:
-        ref.read(profileSetupControllerProvider.notifier).selectProfileImage();
-      case ProfilePhotoPermissionAction.deny:
-      case null:
-        break;
+    final message = await ref
+        .read(profileSetupControllerProvider.notifier)
+        .selectImage();
+    if (context.mounted && message != null) {
+      showCommonSnackBar(context, message);
     }
   }
 
@@ -125,6 +83,23 @@ class ProfileSetupPage extends ConsumerWidget {
     final controller = ref.read(profileSetupControllerProvider.notifier);
 
     return ProfileSetupLayout(
+      imageField: CommonFormImageField(
+        key: const ValueKey('profileAvatar'),
+        isCircular: true,
+        imageProvider: state.selectedImage == null
+            ? null
+            : MemoryImage(state.selectedImage!.bytes),
+        isPicking: state.isPickingImage,
+        onPick: state.isPickingImage || state.isSubmitting
+            ? null
+            : () => _pickImage(context, ref),
+        onReset:
+            state.selectedImage != null &&
+                !state.isPickingImage &&
+                !state.isSubmitting
+            ? controller.clearSelectedImage
+            : null,
+      ),
       nickname: state.nickname,
       nicknameErrorMessage: state.nicknameErrorMessage,
       hasImage: state.hasImage,
@@ -133,7 +108,7 @@ class ProfileSetupPage extends ConsumerWidget {
       isCompleteEnabled: state.canSubmit,
       isSubmitting: state.isSubmitting,
       onBack: () => _goBack(context),
-      onImagePressed: () => _openProfileImageSheet(context, ref),
+      onImagePressed: () => _pickImage(context, ref),
       onNicknameChanged: controller.updateNickname,
       onTermsPressed: () =>
           _handleTermsCheck(context, ref, state.isPrivacyTermsAccepted),

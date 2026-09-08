@@ -1,6 +1,8 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
+import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
+import 'package:commonplant_frontend/features/image/data/models/selected_image.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
 import 'package:commonplant_frontend/features/login/data/repositories/auth_repository.dart';
@@ -17,8 +19,11 @@ final profileSetupControllerProvider =
     );
 
 class ProfileSetupController extends Notifier<ProfileSetupState> {
+  int _imageGeneration = 0;
+
   @override
   ProfileSetupState build() {
+    _imageGeneration++;
     final session = ref.watch(useRemoteApiProvider)
         ? ref.watch(authSessionControllerProvider).unwrapPrevious().value
         : ref.read(authSessionControllerProvider).value;
@@ -48,13 +53,7 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
     );
   }
 
-  void selectProfileImage() {
-    state = state.copyWith(hasImage: true, clearProfileImageUrl: true);
-  }
-
-  void resetProfileImage() {
-    state = state.copyWith(hasImage: false, clearProfileImageUrl: true);
-  }
+  void resetProfileImage() => clearSelectedImage();
 
   void setPrivacyTermsAccepted(bool isAccepted) {
     state = state.copyWith(isPrivacyTermsAccepted: isAccepted);
@@ -62,6 +61,53 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
 
   void togglePrivacyTermsAccepted() {
     setPrivacyTermsAccepted(!state.isPrivacyTermsAccepted);
+  }
+
+  Future<String?> selectImage() async {
+    if (state.isSubmitting || state.isPickingImage) return null;
+    final requestRef = ref;
+    final generation = _imageGeneration;
+    final session = ref.read(userDataSessionProvider);
+    bool isCurrent() =>
+        requestRef.mounted &&
+        generation == _imageGeneration &&
+        isCurrentUserDataSession(requestRef, session);
+    state = state.copyWith(
+      isPickingImage: true,
+      submitStatus: ProfileSetupSubmitStatus.idle,
+      clearErrorMessage: true,
+    );
+    try {
+      final image = await ref.read(imageSelectionGatewayProvider).pickImage();
+      if (isCurrent() && image != null) {
+        state = state.copyWith(
+          selectedImage: image,
+          hasImage: true,
+          clearProfileImageUrl: true,
+        );
+      }
+    } catch (error) {
+      if (!isCurrent()) return null;
+      final message = error is ImageSelectionException
+          ? error.message
+          : imageSelectionFailureMessage;
+      state = state.copyWith(errorMessage: message);
+      return message;
+    } finally {
+      if (isCurrent()) state = state.copyWith(isPickingImage: false);
+    }
+    return null;
+  }
+
+  void clearSelectedImage() {
+    if (state.isSubmitting || state.isPickingImage) return;
+    state = state.copyWith(
+      clearSelectedImage: true,
+      submitStatus: ProfileSetupSubmitStatus.idle,
+      clearErrorMessage: true,
+      hasImage: false,
+      clearProfileImageUrl: true,
+    );
   }
 
   Future<bool> submit({Future<void> Function()? action}) async {
@@ -72,6 +118,7 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
     final requestRef = ref;
     final dataSession = ref.read(userDataSessionProvider);
     final nickname = state.nickname.trim();
+    final image = state.selectedImage;
     state = state.copyWith(
       submitStatus: ProfileSetupSubmitStatus.submitting,
       clearErrorMessage: true,
@@ -81,7 +128,7 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
       if (action != null) {
         await action();
       } else if (ref.read(useRemoteApiProvider)) {
-        return await _register(requestRef, dataSession, nickname);
+        return await _register(requestRef, dataSession, nickname, image);
       }
       if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
       state = state.copyWith(submitStatus: ProfileSetupSubmitStatus.success);
@@ -105,6 +152,7 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
     Ref requestRef,
     UserDataSession dataSession,
     String nickname,
+    SelectedImage? image,
   ) async {
     final session = await ref.read(authSessionControllerProvider.future);
     if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
@@ -116,7 +164,10 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
 
     final result = await ref
         .read(authRepositoryProvider)
-        .register(RegisterRequest(signupToken: signupToken, name: nickname));
+        .register(
+          RegisterRequest(signupToken: signupToken, name: nickname),
+          image: image?.toMultipartFile(),
+        );
 
     if (!isCurrentUserDataSession(requestRef, dataSession)) return false;
     if (result is! AuthenticatedResult) {

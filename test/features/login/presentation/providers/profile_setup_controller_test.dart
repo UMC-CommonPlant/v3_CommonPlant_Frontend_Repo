@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/api_exception.dart';
+import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
 import 'package:commonplant_frontend/features/login/data/repositories/auth_repository.dart';
@@ -13,7 +14,21 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../helpers/image_selection.dart';
+
 void main() {
+  test('가입 사진을 register multipart에 전달한다', () async {
+    final repository = _FakeAuthRepository();
+    final container = _remoteSignupContainer(repository);
+    addTearDown(container.dispose);
+    await container.read(authSessionControllerProvider.future);
+    container.listen(profileSetupControllerProvider, (_, _) {});
+    final controller = container.read(profileSetupControllerProvider.notifier);
+    await controller.selectImage();
+    expect(await controller.submit(), isTrue);
+    expect(repository.images.single?.contentType.toString(), 'image/png');
+  });
+
   for (final fails in [false, true]) {
     test(
       '가입 프로필 요청 중 닉네임·사진·동의 변경은 잠금을 유지하고 ${fails ? '실패 후 재시도한다' : '성공을 한 번 반환한다'}',
@@ -39,7 +54,7 @@ void main() {
         final pendingStates = <ProfileSetupState>[];
         for (final edit in <void Function()>[
           () => controller.updateNickname('다음 제출'),
-          controller.selectProfileImage,
+          controller.selectImage,
           controller.resetProfileImage,
           () => controller.setPrivacyTermsAccepted(true),
           controller.togglePrivacyTermsAccepted,
@@ -120,18 +135,6 @@ void main() {
     controller.updateNickname('커먼');
     expect(container.read(profileSetupControllerProvider).nickname, '커먼');
     expect(container.read(profileSetupControllerProvider).canSubmit, isTrue);
-  });
-
-  test('프로필 이미지 선택과 초기화 상태를 관리한다', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-    final controller = container.read(profileSetupControllerProvider.notifier);
-
-    controller.selectProfileImage();
-    expect(container.read(profileSetupControllerProvider).hasImage, isTrue);
-
-    controller.resetProfileImage();
-    expect(container.read(profileSetupControllerProvider).hasImage, isFalse);
   });
 
   test('개인정보 약관 동의 상태를 설정하고 전환한다', () {
@@ -310,6 +313,9 @@ ProviderContainer _remoteSignupContainer(AuthRepository repository) {
     overrides: [
       useRemoteApiProvider.overrideWithValue(true),
       authRepositoryProvider.overrideWithValue(repository),
+      imageSelectionGatewayProvider.overrideWithValue(
+        FakeImageSelectionGateway(() async => testSelectedImage()),
+      ),
       authSessionControllerProvider.overrideWith(
         _SignupAuthSessionController.new,
       ),
@@ -333,6 +339,7 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
 
   final Completer<AuthResult>? pendingResult;
   final started = Completer<void>();
+  final images = <MultipartFile?>[];
   int registerCalls = 0;
   RegisterRequest? latestRequest;
 
@@ -342,6 +349,7 @@ class _FakeAuthRepository extends Fake implements AuthRepository {
     MultipartFile? image,
   }) async {
     registerCalls++;
+    images.add(image);
     latestRequest = request;
     if (!started.isCompleted) started.complete();
     return pendingResult?.future ??
