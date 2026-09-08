@@ -52,12 +52,17 @@ class PlantFormState {
     this.initialImageKey,
     this.initialImageUrl,
     this.loadErrorMessage,
+    this.initialWateringCycleDays,
+    this.editedWateringCycleInput,
+    this.wateringCycleSupported = false,
   });
 
   PlantFormState.create({
     required String plantName,
     required List<PlantRegistrationPlace> places,
+    bool wateringCycleSupported = false,
   }) : this(
+         wateringCycleSupported: wateringCycleSupported,
          plantId: null,
          placeId: null,
          mode: PlantFormMode.create,
@@ -97,10 +102,14 @@ class PlantFormState {
     required String? lastWateredDate,
     String? imageKey,
     String? imageUrl,
+    int? wateringCycleDays,
+    bool wateringCycleSupported = false,
   }) : this(
          plantId: plantId,
          placeId: placeId,
          mode: PlantFormMode.edit,
+         initialWateringCycleDays: wateringCycleDays,
+         wateringCycleSupported: wateringCycleSupported,
          initialName: name,
          currentName: name,
          initialLastWateredDate: lastWateredDate,
@@ -164,6 +173,27 @@ class PlantFormState {
         submitState: const FormSubmitState.idle(),
       );
 
+  final int? initialWateringCycleDays;
+  final String? editedWateringCycleInput;
+  String get wateringCycleInput =>
+      editedWateringCycleInput ?? initialWateringCycleDays?.toString() ?? '';
+
+  final bool wateringCycleSupported;
+
+  int? get wateringCycleDays => int.tryParse(wateringCycleInput.trim());
+
+  String? get wateringCycleErrorText {
+    if (!wateringCycleSupported || wateringCycleInput.trim().isEmpty) {
+      return null;
+    }
+    if (!RegExp(r'^[0-9]+$').hasMatch(wateringCycleInput.trim()) ||
+        wateringCycleDays == null ||
+        wateringCycleDays! < 1) {
+      return '1 이상의 정수로 입력해 주세요';
+    }
+    return null;
+  }
+
   final SelectedImage? selectedImage;
   final bool isPickingImage;
 
@@ -196,6 +226,8 @@ class PlantFormState {
       (initialImageKey?.trim().isEmpty ?? true);
 
   bool get hasChanges =>
+      (wateringCycleSupported &&
+          wateringCycleDays != initialWateringCycleDays) ||
       selectedImage != null ||
       currentName.trim() != initialName ||
       currentLastWateredDate != initialLastWateredDate;
@@ -223,6 +255,11 @@ class PlantFormState {
       return false;
     }
 
+    if (wateringCycleSupported &&
+        (wateringCycleDays == null || wateringCycleErrorText != null)) {
+      return false;
+    }
+
     if (currentName.trim().isEmpty) {
       return false;
     }
@@ -231,6 +268,7 @@ class PlantFormState {
   }
 
   PlantFormState copyWith({
+    String? wateringCycleInput,
     SelectedImage? selectedImage,
     bool clearSelectedImage = false,
     bool? isPickingImage,
@@ -243,6 +281,9 @@ class PlantFormState {
     FormSubmitState? submitState,
   }) {
     return PlantFormState(
+      initialWateringCycleDays: initialWateringCycleDays,
+      editedWateringCycleInput: wateringCycleInput ?? editedWateringCycleInput,
+      wateringCycleSupported: wateringCycleSupported,
       selectedImage: clearSelectedImage
           ? null
           : selectedImage ?? this.selectedImage,
