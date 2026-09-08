@@ -54,9 +54,9 @@
 
 ## 실기기 상태와 남은 확인
 
-실제 앨범 선택·서버 저장 검증 완료 항목은 아직 **0개**다. `fvm flutter devices`가 무선 iPhone(iOS 26.6.1)을 감지했지만 `fvm flutter run --debug --no-resident`는 개발자 모드 비활성으로 설치 전에 차단되었다. iPad는 연결/개발자 모드 오류, Android 실기기는 감지되지 않았다.
+실제 앨범 선택·서버 저장 검증 완료 항목은 아직 **0개**다. 최초 시도의 개발자 모드·서명 차단은 후속 작업으로 해소했으며, 2026-09-08에는 iPhone 설치와 Runner 프로세스 실행을 확인했다. 무선 Dart VM 연결은 시간 초과로 미완료다. iPad는 연결 불가, Android 실기기는 감지되지 않았다.
 
-1. iPhone 설정 → 개인정보 보호 및 보안 → 개발자 모드를 활성화하고 재시동한다. 컴퓨터 신뢰 확인 후 잠금 해제 상태로 연결한다.
+1. iPhone을 USB로 연결하고 잠금 해제 상태에서 앱 화면을 확인한다. 로컬 네트워크 접근 요청이 나오면 허용한 뒤 디버거 연결을 재확인한다. 개발자 모드 활성화와 설치는 완료됐다.
 2. 실행에 필요한 로컬 소셜 설정과 테스트 계정으로 로그인한다. 토큰/개인 사진 원본은 이슈에 붙이지 않는다.
 3. 프로필·식물·장소에서 JPG/PNG/WebP 선택 → 미리보기 → 재선택 → 선택 취소를 확인한다. 취소/권한 거부/10MB 초과/HEIC 반환도 확인한다.
 4. 실제 저장 후 상세·프로필 재조회와 앱 재실행에서 서버 사진을 확인한다. 네트워크 실패 후 재시도 때 초안이 남는지 확인한다.
@@ -82,3 +82,11 @@ Apple 로그인 backend #152와 refreshToken 재발급 #149 의존성은 기존 
 사용자 요청으로 iOS Runner의 Debug/Profile/Release Bundle ID를 `com.commonplant.app`, RunnerTests를 `com.commonplant.app.RunnerTests`로 변경했다. 사용자의 로컬 Development Team 설정은 보존하고 커밋에서 제외한다. Android 식별자는 그대로다. 새 iOS ID에 맞는 Apple provisioning 및 Kakao/Google iOS 앱 등록이 필요하며 이 변경만으로 설치·소셜 로그인 검증이 끝난 것은 아니다.
 
 변경 후 `plutil -lint`와 `git diff --check`, `fvm flutter build ios --debug --no-codesign`을 통과했다. 생성된 Runner.app의 CFBundleIdentifier도 `com.commonplant.app`으로 확인했다. Flutter 소스 변경은 없다.
+
+## Personal Team capability 오류 보완
+
+사용자의 Personal Team이 Sign in with Apple을 지원하지 않아 발생한 서명 오류를 확인했다. Debug entitlement를 빈 파일로 분리하고 빌드별 플래그를 기존 네이티브 Apple 지원 채널에 연결했다. Debug에서는 Apple 버튼·SDK를 차단하며 Profile/Release의 권한과 iPhone 제한을 유지한다. 사용자가 로컬에서 선택한 Team과 `com.commonplant.umc` Bundle ID, Info.plist 변경은 덮어쓰거나 커밋하지 않는다.
+
+2026-09-08 재시도에서 Xcode 서명 빌드(17.0초), 실기기 설치와 Runner 프로세스 실행을 확인했다. 설치 artifact의 Apple entitlement가 없고 `CommonPlantAppleSignInEnabled = NO`임을 확인했다. 무선 Dart VM Service 검색은 75초 이후에도 완료되지 않아 대기하던 Flutter 실행 명령을 종료했다. 앱 화면·앨범 선택·실제 로그인·서버 저장은 미검증이며 설치 성공으로 대체하지 않는다.
+
+현재 보완 코드에서 format(333개 파일 변경 없음), analyze, 전체 test(671개 통과·Linux 전용 golden 1개 스킵), plist/project 문법 검사와 `git diff --check`를 통과했다.

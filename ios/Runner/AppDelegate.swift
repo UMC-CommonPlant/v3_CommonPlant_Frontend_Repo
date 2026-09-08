@@ -13,8 +13,12 @@ import UIKit
         name: "com.plant.common/social_auth",
         binaryMessenger: controller.binaryMessenger
       ).setMethodCallHandler { call, result in
-        guard call.method == "isIPhone" else {
+        guard call.method == "isAppleLoginSupported" else {
           result(FlutterMethodNotImplemented)
+          return
+        }
+        guard Bundle.main.object(forInfoDictionaryKey: "CommonPlantAppleSignInEnabled") as? String == "YES" else {
+          result(false)
           return
         }
         if #available(iOS 14.0, *), ProcessInfo.processInfo.isiOSAppOnMac {

@@ -526,3 +526,7 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 | 이슈 | 커밋 | 변경 범위 | 검증 |
 | --- | --- | --- | --- |
 | #222 | `1df75c3` | production 제출/공개 승인 gate, 동일 artifact 승격, 최초 출시와 후속 rollout, halt/pause/hotfix 경계 확정 | GitHub/Google Play/Apple 공식 문서와 저장소 Environment 상태 대조, `git diff --check` |
+
+### Personal Team 개발 실행
+
+#295부터 Debug는 Apple capability 없는 `RunnerDebug.entitlements`와 Apple 로그인 비활성 빌드 값을 사용한다. Profile/Release는 기존 Apple entitlement를 사용하므로 지원되는 Developer Program 팀으로 서명한다. [설정과 Apple 검증 조건](social-login-integration-guide.md#personal-team으로-iphone-debug-실행)을 참고한다.

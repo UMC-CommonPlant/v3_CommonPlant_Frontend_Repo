@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CommonPlantAppleSignInEnabled</key>
+	<string>$(COMMONPLANT_APPLE_SIGN_IN_ENABLED)</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>프로필, 식물, 장소에 사용할 사진을 선택합니다.</string>
 	<key>CFBundleDevelopmentRegion</key>

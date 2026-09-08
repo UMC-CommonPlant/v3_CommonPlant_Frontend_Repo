@@ -24,7 +24,7 @@ Future<bool> isAppleLoginSupported({
   try {
     return await const MethodChannel(
           'com.plant.common/social_auth',
-        ).invokeMethod<bool>('isIPhone') ??
+        ).invokeMethod<bool>('isAppleLoginSupported') ??
         false;
   } on PlatformException {
     return false;
