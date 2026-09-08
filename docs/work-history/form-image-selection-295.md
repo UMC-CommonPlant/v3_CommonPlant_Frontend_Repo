@@ -91,7 +91,7 @@ Apple 로그인 backend #152와 refreshToken 재발급 #149 의존성은 기존 
 
 현재 보완 코드에서 format(333개 파일 변경 없음), analyze, 전체 test(671개 통과·Linux 전용 golden 1개 스킵), plist/project 문법 검사와 `git diff --check`를 통과했다.
 
-이번 실행은 `COMMONPLANT_USE_API`를 주입하지 않은 기본 모드다. `AuthSessionController`는 이 모드에서 인증된 fixture 세션을 반환하므로 로그인 화면을 건너뛴다. 실제 로그인 검증은 API 모드와 provider 설정으로 별도 실행해야 한다.
+UI 피드백 보완 전 실행은 `COMMONPLANT_USE_API`를 주입하지 않은 기본 모드였다. `AuthSessionController`는 이 모드에서 인증된 fixture 세션을 반환해 당시 로그인 화면을 건너뛰었다. 아래 후속 보완에서 화면 확인용 라우팅을 수정했다. 실제 로그인 검증은 API 모드와 provider 설정으로 별도 실행해야 한다.
 
 ## 실기기 피드백: 로그인 선택과 비활성 버튼
 
@@ -100,3 +100,5 @@ Apple 로그인 backend #152와 refreshToken 재발급 #149 의존성은 기존 
 - 실제 앱 ProviderScope 기반 시작 흐름, 버튼 variant별 불투명 배경, 짧은 높이·키보드 300px 조건의 장소 다음 버튼을 회귀 테스트한다. Android integration smoke도 새 로컬 시작 순서로 갱신하되 실기기 실행 완료로 간주하지 않는다.
 
 보완 후 format(333개 파일 변경 없음), analyze, 전체 unit/widget test 678개 통과·기존 Linux 전용 golden 1개 스킵 및 `git diff --check`를 확인했다.
+
+수정 iPhone Debug 빌드는 9.4초에 성공했고 새 앱 설치·Runner 프로세스 실행을 확인했다. `--route=/login`으로 실행했으나 무선 VM 연결은 75초 이후에도 완료되지 않아 대기 명령을 종료했다. 변경 후 소셜 선택 화면과 버튼 선 제거의 실기기 시각 확인은 사용자 재확인 전이며 자동 테스트 결과와 구분한다.
