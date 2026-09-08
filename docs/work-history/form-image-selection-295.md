@@ -87,6 +87,8 @@ Apple 로그인 backend #152와 refreshToken 재발급 #149 의존성은 기존 
 
 사용자의 Personal Team이 Sign in with Apple을 지원하지 않아 발생한 서명 오류를 확인했다. Debug entitlement를 빈 파일로 분리하고 빌드별 플래그를 기존 네이티브 Apple 지원 채널에 연결했다. Debug에서는 Apple 버튼·SDK를 차단하며 Profile/Release의 권한과 iPhone 제한을 유지한다. 사용자가 로컬에서 선택한 Team과 `com.commonplant.umc` Bundle ID, Info.plist 변경은 덮어쓰거나 커밋하지 않는다.
 
-2026-09-08 재시도에서 Xcode 서명 빌드(17.0초), 실기기 설치와 Runner 프로세스 실행을 확인했다. 설치 artifact의 Apple entitlement가 없고 `CommonPlantAppleSignInEnabled = NO`임을 확인했다. 무선 Dart VM Service 검색은 75초 이후에도 완료되지 않아 대기하던 Flutter 실행 명령을 종료했다. 앱 화면·앨범 선택·실제 로그인·서버 저장은 미검증이며 설치 성공으로 대체하지 않는다.
+2026-09-08 재시도에서 Xcode 서명 빌드(17.0초), 실기기 설치와 Runner 프로세스 실행을 확인했다. 설치 artifact의 Apple entitlement가 없고 `CommonPlantAppleSignInEnabled = NO`임을 확인했다. 무선 Dart VM Service 검색은 75초 이후에도 완료되지 않아 대기하던 Flutter 실행 명령을 종료했다. 이후 사용자가 iPhone 앱 화면의 정상 동작을 확인했다. 반응 속도가 느리다는 피드백은 Debug·무선 실행 조건에서의 관찰이며 성능 원인은 확정하지 않았다. 앨범 선택·실제 로그인·서버 저장은 미검증이며 화면 실행 성공으로 대체하지 않는다.
 
 현재 보완 코드에서 format(333개 파일 변경 없음), analyze, 전체 test(671개 통과·Linux 전용 golden 1개 스킵), plist/project 문법 검사와 `git diff --check`를 통과했다.
+
+이번 실행은 `COMMONPLANT_USE_API`를 주입하지 않은 기본 모드다. `AuthSessionController`는 이 모드에서 인증된 fixture 세션을 반환하므로 로그인 화면을 건너뛴다. 실제 로그인 검증은 API 모드와 provider 설정으로 별도 실행해야 한다.
