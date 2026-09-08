@@ -779,3 +779,7 @@ Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 �
 | #277 | 이 문서의 최종 커밋 | Place 멤버·Friend 쓰기 계약 재검증, backend #150 질문과 안전 차단 유지 | live OpenAPI·backend main·중복 이슈 확인, `git diff --check` |
 
 작업 이력만 갱신하는 후속 문서 커밋은 자기 자신의 해시를 생략할 수 있다.
+
+## URL 발급 업로드 전환 #297
+
+사용자가 URL 발급 → 해당 URL에 파일 전송 → 도메인 저장을 최종 방향으로 지정했다. 2026-09-08 backend develop과 dev OpenAPI에서는 아직 서버 직접 multipart만 확인했다. 앞의 직접 전송 설명은 현행 코드 계약이며 최종 제품 방향이 아니다. 발급 API와 새 key 연결 계약 확인 전 전환은 보류한다. [확인 근거와 필요한 계약](work-history/image-upload-url-297.md)을 참고한다.
