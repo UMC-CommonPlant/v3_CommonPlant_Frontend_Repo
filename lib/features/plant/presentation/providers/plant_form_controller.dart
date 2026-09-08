@@ -84,6 +84,8 @@ class PlantFormController extends Notifier<PlantFormState> {
               return PlantFormState.edit(
                 plantId: plantId,
                 placeId: placeId,
+                wateringCycleSupported: !useRemoteApi,
+                wateringCycleDays: info.wateringCycleDays,
                 name: info.name.trim(),
                 imageKey: info.imageKey,
                 imageUrl: info.imageUrl,
@@ -108,6 +110,7 @@ class PlantFormController extends Notifier<PlantFormState> {
 
     return _withRegistrationPlaces(
       PlantFormState.create(
+        wateringCycleSupported: !useRemoteApi,
         plantName: _normalizedInitialPlantName(args.initialPlantName),
         places: const [],
       ),
@@ -126,6 +129,18 @@ class PlantFormController extends Notifier<PlantFormState> {
       submitState: state.isSubmitting
           ? state.submitState
           : const FormSubmitState.idle(),
+    );
+  }
+
+  void updateWateringCycle(String value) {
+    if (!state.wateringCycleSupported ||
+        state.isSubmitting ||
+        state.loadStatus != PlantFormLoadStatus.ready) {
+      return;
+    }
+    state = state.copyWith(
+      wateringCycleInput: value,
+      submitState: const FormSubmitState.idle(),
     );
   }
 
@@ -298,6 +313,9 @@ class PlantFormController extends Notifier<PlantFormState> {
           name: plantName,
           placeId: selectedPlace.id,
           placeName: selectedPlace.name,
+          wateringCycleDays: state.wateringCycleSupported
+              ? state.wateringCycleDays
+              : null,
         );
 
     return const PlantFormSubmitResult.home();
@@ -331,7 +349,13 @@ class PlantFormController extends Notifier<PlantFormState> {
 
     ref
         .read(plantListProvider.notifier)
-        .updatePlant(id: plantId, name: plantName);
+        .updatePlant(
+          id: plantId,
+          name: plantName,
+          wateringCycleDays: state.wateringCycleSupported
+              ? state.wateringCycleDays
+              : null,
+        );
 
     return PlantFormSubmitResult.plantDetail(
       plantId: plantId,

@@ -32,10 +32,12 @@ class PlantEditInfo {
     this.lastWateredDate,
     this.imageKey,
     this.imageUrl,
+    this.wateringCycleDays,
   });
 
   final String name;
   final String? lastWateredDate;
   final String? imageKey;
   final String? imageUrl;
+  final int? wateringCycleDays;
 }

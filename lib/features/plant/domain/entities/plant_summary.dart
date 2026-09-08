@@ -6,6 +6,7 @@ class PlantSummary {
     this.placeName,
     this.description,
     this.imageUrl,
+    this.wateringCycleDays,
   });
 
   final String id;
@@ -14,6 +15,7 @@ class PlantSummary {
   final String? placeName;
   final String? description;
   final String? imageUrl;
+  final int? wateringCycleDays;
 
   PlantSummary copyWith({
     String? id,
@@ -22,6 +24,7 @@ class PlantSummary {
     String? placeName,
     String? description,
     String? imageUrl,
+    int? wateringCycleDays,
   }) {
     return PlantSummary(
       id: id ?? this.id,
@@ -30,6 +33,7 @@ class PlantSummary {
       placeName: placeName ?? this.placeName,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
+      wateringCycleDays: wateringCycleDays ?? this.wateringCycleDays,
     );
   }
 }

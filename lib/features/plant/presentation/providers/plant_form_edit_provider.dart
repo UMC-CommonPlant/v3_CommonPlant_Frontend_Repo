@@ -2,6 +2,7 @@ import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart';
 import 'package:commonplant_frontend/features/plant/plant_repository_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 export 'package:commonplant_frontend/features/plant/domain/entities/plant_detail.dart'
@@ -12,7 +13,16 @@ const String plantFormDefaultEditName = '몬테';
 final plantFormEditInfoProvider =
     Provider.family<AsyncValue<PlantEditInfo?>, String>((ref, plantId) {
       if (!ref.watch(useRemoteApiProvider)) {
-        return const AsyncData(PlantEditInfo(name: plantFormDefaultEditName));
+        final plant = ref
+            .watch(plantListProvider)
+            .where((plant) => plant.id == plantId)
+            .firstOrNull;
+        return AsyncData(
+          PlantEditInfo(
+            name: plant?.name ?? plantFormDefaultEditName,
+            wateringCycleDays: plant?.wateringCycleDays,
+          ),
+        );
       }
 
       return ref
