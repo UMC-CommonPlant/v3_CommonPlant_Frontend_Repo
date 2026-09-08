@@ -129,11 +129,11 @@ Apple은 identity token을 전달한다. 2026-09-02 backend `main`은 요청 enu
 
 provider console과 네이티브 프로젝트에는 별도로 아래 설정이 필요하다.
 
-- Kakao: Android `com.plant.common`, iOS `com.commonplant.app` 플랫폼 등록, Android key hash, 양 플랫폼의
+- Kakao: Android `com.plant.common`, iOS `com.commonplant.umc` 플랫폼 등록, Android key hash, 양 플랫폼의
   `kakao{NATIVE_APP_KEY}://oauth` URL scheme
 - Google Android: package name, debug/release signing SHA와 Web OAuth client 등록
 - Google iOS: iOS client ID와 reversed client ID URL scheme 등록
-- Apple iOS: `com.commonplant.app` App ID의 Sign in with Apple capability와 갱신된 provisioning
+- Apple iOS: `com.commonplant.umc` App ID의 Sign in with Apple capability와 갱신된 provisioning
   profile
 - Apple backend: identity token의 서명·issuer·audience·만료·nonce 검증과 최초 email 보존
 
@@ -228,7 +228,7 @@ scheme들이 생성되지 않는다. 실제 값이 없는 현재 파일을 그�
 - [Flutter platform channels](https://docs.flutter.dev/platform-integration/platform-channels)
 - [Apple device idiom](https://developer.apple.com/documentation/uikit/uidevice/userinterfaceidiom)
 
-#295에서 사용자 요청으로 iOS Bundle ID를 `com.commonplant.app`으로 변경했다. Google iOS OAuth client의 Bundle ID, Kakao iOS 플랫폼, Apple App ID와 provisioning도 같은 식별자로 준비해야 한다. 내부 `com.plant.common/social_auth`는 SDK 확인용 MethodChannel 이름으로 앱 Bundle ID와 독립적이다.
+#295에서 사용자 요청으로 iOS Bundle ID를 `com.commonplant.umc`으로 변경했다. Google iOS OAuth client의 Bundle ID, Kakao iOS 플랫폼, Apple App ID와 provisioning도 같은 식별자로 준비해야 한다. 내부 `com.plant.common/social_auth`는 SDK 확인용 MethodChannel 이름으로 앱 Bundle ID와 독립적이다.
 
 ## Personal Team으로 iPhone Debug 실행
 

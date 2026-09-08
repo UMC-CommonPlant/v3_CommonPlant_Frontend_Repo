@@ -250,15 +250,15 @@ GitHub Environment required reviewer는 최대 여섯 사용자/팀을 지정할
 
 ### MVP 앱 정체성
 
-RELEASE-01은 #209에서 확정했으며, iOS Bundle ID는 #295 실기기 검증 중 사용자 요청으로 `com.commonplant.app`으로 변경했습니다.
+RELEASE-01은 #209에서 확정했으며, iOS Bundle ID는 #295 실기기 검증 중 사용자 요청으로 `com.commonplant.umc`으로 변경했습니다.
 
 | 항목 | MVP 기준 |
 | --- | --- |
 | 운영 형태 | 별도 flavor 없는 단일 prod 앱 |
 | 사용자 표시 이름 | `커먼플랜트` |
 | Android namespace/application id | `com.plant.common` |
-| iOS Runner bundle identifier | `com.commonplant.app` |
-| iOS RunnerTests bundle identifier | `com.commonplant.app.RunnerTests` |
+| iOS Runner bundle identifier | `com.commonplant.umc` |
+| iOS RunnerTests bundle identifier | `com.commonplant.umc.RunnerTests` |
 | 앱 아이콘 | v1/v2에서 사용한 집·새싹 브랜드 아이콘 재사용 |
 | Firebase | 현재 패키지와 설정 파일이 없고 MVP 요구 기능도 없어 `Not needed` |
 
@@ -368,11 +368,11 @@ MVP에서는 `GITHUB_RUN_NUMBER`나 별도 versioning action을 build number 원
 
 ### 최초 업로드 전 확인
 
-현재 `version: 1.0.0+1`은 개발 기본값이며 store upload 번호로 확정된 값이 아닙니다. 이전 `com.plant.common` bundle identifier를 사용한 [v2 iOS 프로젝트](https://github.com/UMC-CommonPlant/v2_CommonPlant-iOS-refactoring/blob/develop/CommonPlant/CommonPlant.xcodeproj/project.pbxproj)에 marketing version `1.0`, build `1` 설정이 남아 있으므로 현재 iOS 식별자 `com.commonplant.app`과 Android `com.plant.common` 각각의 실제 업로드 이력을 확인해야 합니다.
+현재 `version: 1.0.0+1`은 개발 기본값이며 store upload 번호로 확정된 값이 아닙니다. 이전 `com.plant.common` bundle identifier를 사용한 [v2 iOS 프로젝트](https://github.com/UMC-CommonPlant/v2_CommonPlant-iOS-refactoring/blob/develop/CommonPlant/CommonPlant.xcodeproj/project.pbxproj)에 marketing version `1.0`, build `1` 설정이 남아 있으므로 현재 iOS 식별자 `com.commonplant.umc`과 Android `com.plant.common` 각각의 실제 업로드 이력을 확인해야 합니다.
 
 Play Console과 App Store Connect가 준비되면 아래 순서로 최초 번호를 확정합니다.
 
-1. Android `com.plant.common`과 iOS `com.commonplant.app`의 기존 version/build 이력을 각 스토어에서 확인합니다.
+1. Android `com.plant.common`과 iOS `com.commonplant.umc`의 기존 version/build 이력을 각 스토어에서 확인합니다.
 2. Android의 최대 `versionCode`와 iOS의 대상 version/build 이력보다 큰 공통 `N`을 선택합니다.
 3. `release/x.y.z`의 `pubspec.yaml`에 `X.Y.Z+N`을 커밋합니다.
 4. 기본 Flutter build 명령으로 Android/iOS artifact를 만들고 산출물의 version을 다시 확인합니다.

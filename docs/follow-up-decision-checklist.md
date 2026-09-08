@@ -52,7 +52,7 @@
 
 | 체크 | ID | 결정 항목 | 출처 | 다음 액션 | 상태 |
 | --- | --- | --- | --- | --- | --- |
-| [x] | RELEASE-01 | MVP 앱명, application id, bundle id, 아이콘, flavor와 Firebase 범위 | `docs/release-workflow.md` | #209에서 단일 prod 앱과 기존 브랜드 아이콘을 적용했다. #295 사용자 요청으로 iOS는 `com.commonplant.app`으로 변경했고 Android는 `com.plant.common`을 사용한다. dev/staging flavor와 Firebase는 실제 분리 요구가 생길 때 도입한다. | Decided |
+| [x] | RELEASE-01 | MVP 앱명, application id, bundle id, 아이콘, flavor와 Firebase 범위 | `docs/release-workflow.md` | #209에서 단일 prod 앱과 기존 브랜드 아이콘을 적용했다. #295 사용자 요청으로 iOS는 `com.commonplant.umc`으로 변경했고 Android는 `com.plant.common`을 사용한다. dev/staging flavor와 Firebase는 실제 분리 요구가 생길 때 도입한다. | Decided |
 | [x] | RELEASE-02-A | 앱 version과 build number 관리 방식 | `docs/release-workflow.md` | #211에서 `pubspec.yaml`의 `X.Y.Z+N`을 단일 원본으로 두고 release 브랜치에서 수동 증가하며 CI override를 금지한다. | Decided |
 | [ ] | RELEASE-02-B | 최초 store build number 기준값 | `docs/release-workflow.md` | 같은 식별자를 쓴 v2와 Play/App Store의 최대 업로드 번호를 RELEASE-03에서 확인한 뒤 공통 `N`을 확정한다. | Blocked |
 | [ ] | RELEASE-03 | Android Play Console과 Apple Developer/App Store Connect 계정 준비 여부 | `docs/release-workflow.md` | #215는 계정 소유자 확인과 승인이 필요해 Backlog로 보류한다. 앱/role/signing/store 이력은 소유자 협의 후 재개한다. | Blocked |

@@ -102,3 +102,11 @@ UI 피드백 보완 전 실행은 `COMMONPLANT_USE_API`를 주입하지 않은 �
 보완 후 format(333개 파일 변경 없음), analyze, 전체 unit/widget test 678개 통과·기존 Linux 전용 golden 1개 스킵 및 `git diff --check`를 확인했다.
 
 수정 iPhone Debug 빌드는 9.4초에 성공했고 새 앱 설치·Runner 프로세스 실행을 확인했다. `--route=/login`으로 실행했으나 무선 VM 연결은 75초 이후에도 완료되지 않아 대기 명령을 종료했다. 변경 후 소셜 선택 화면과 버튼 선 제거의 실기기 시각 확인은 사용자 재확인 전이며 자동 테스트 결과와 구분한다.
+
+## 최종 iOS Bundle ID 확정
+
+사용자가 Apple에 등록한 식별자로 `com.commonplant.umc`를 확정했다. 기존 `com.commonplant.app` 변경 이력 이후의 최종값이며 Runner Debug/Profile/Release와 RunnerTests(`com.commonplant.umc.RunnerTests`)에 반영한다. Team과 Info.plist의 사용자 로컬 수정은 그대로 보존한다. 현행 README·릴리즈·소셜 설정 문서도 최종값을 사용한다.
+
+사용자는 이미지 업로드 방향을 “업로드용 URL 발급 → 해당 URL에 파일 전송 → 도메인 저장 연결”로 정정했다. 앞의 직접 multipart 구현은 현재 코드 상태의 기록이며 확정된 최종 업로드 방향이 아니다. URL 발급 응답·메서드·헤더·최종 저장 필드를 확인해 전환해야 하며 이 Bundle ID 변경에서 업로드 전환까지 완료했다고 처리하지 않는다.
+
+최종 ID 반영 후 `plutil -lint`, `git diff --check`, `fvm flutter build ios --debug --no-codesign`을 통과했고 생성 앱의 CFBundleIdentifier가 `com.commonplant.umc`임을 확인했다. Dart 소스 변경은 없다.
