@@ -31,7 +31,7 @@
 | FRIEND-04 | Friend | `friendDecisionReq.friendId`는 요청 id인가, 사용자 id인가? | 요청 PK 사용 확인, 수락·거절 연결 가능 | Answered |
 | FRIEND-05 | Friend | 고유 대상 요청과 다중 대상 원자성·부분 결과 계약은 무엇인가? | #277 고유 ID payload·대상별 상태 연결 보류 | Blocked |
 | IMAGE-01 | Image | `/s3/images` upload/download/update/delete 성공 response schema는 무엇인가? | image key/url mapper 보류 | Open |
-| IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | #297 사용자 확정 URL 발급 방식의 서버 계약 대기 | Blocked |
+| IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | #297 Swagger 직접 multipart 재확인, URL 발급 대기 철회 | Answered |
 | IMAGE-03 | Image | Garage 공개 URL 응답 필드와 wrapper 구조는 무엇인가? | #295 폼은 도메인 URL 표시, 독립 endpoint schema 확인 남음 | Partial |
 | IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | #248 Plant key 보존·Place 사진 수정 차단 구현, Place key 조회·동시 수정 보호 계약 필요 | Partial |
 | ERROR-01 | Error | 에러 response body의 공통 `code`, `message` 필드명은 무엇인가? | #275 표준 오류·field error 파싱 반영 | Answered |
@@ -231,11 +231,11 @@
 
 ### IMAGE-02. 도메인 이미지 업로드 흐름
 
-- 2026-09-07 dev OpenAPI와 backend main `f67ee6c`의 도메인 service는 optional multipart `image` 직접 전송을 지원한다. `/s3/images` 다중 업로드 설명도 레거시 범용 경로라고 명시한다.
-- #295 가입·회원정보·Plant·Place 폼은 선택한 파일을 도메인 API에 직접 전달한다. 독립 선업로드·key mapper는 추가하지 않는다.
-- Memo는 서버 계약 확인 전 별도 보류한다.
-- 2026-09-08 사용자 확정 방향은 URL 발급 → 파일 직접 업로드 → 도메인 저장이다. #297에서 backend develop과 dev OpenAPI를 재확인했지만 발급 API와 신규 key 연결 계약은 없었다. 사용자도 발급 API가 아직 없음을 확인했다. 발급 API 구현과 도메인 이미지 연결 계약이 필요하다. [근거·전환 지점](work-history/image-upload-url-297.md)
-- 상태: Blocked (현행 직접 multipart는 유지, URL 발급 방식 전환 미완료)
+- 최신 사용자 정정에 따라 별도 URL 발급이 아니라 Swagger의 API 주소로 직접 multipart 전송한다.
+- #295의 가입·회원정보·Plant·Place 도메인 JSON + optional `image` 전송은 live Swagger와 일치하므로 유지한다. 독립 `/s3/images` 선업로드 전환은 필요하지 않다.
+- #297의 URL 발급 API 미구현 차단 조건은 철회했다. [정정 근거](work-history/image-upload-url-297.md)
+- Memo 계약과 실제 계정의 서버 저장 QA는 각각 기존 이슈에 남긴다.
+- 상태: Answered (직접 전송 방식 확인, 실기기 저장 검증 완료를 뜻하지 않음)
 
 ### IMAGE-03. Garage 공개 URL 응답
 
