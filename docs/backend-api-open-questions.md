@@ -424,4 +424,4 @@ TESTENV 질문의 상세 수용 조건과 단계별 도입 범위는 `docs/remot
 
 ## Plant 물주기 주기 #299
 
-사용자가 일 단위 필수 주기와 API 기본값 우선·없으면 null 초기값 정책을 확정했다. 현재 PlantRequest/PlantResponse/Plant에는 lastWateredDate만 있어 주기 저장·조회·추천 기본값 계약이 필요하다. 프런트 생성·수정 UI와 기본 모드 메모리 보관을 구현하고 API 모드는 입력 비활성·미지원 안내로 구분한다. 추정 JSON 필드를 전송하지 않는다. [작업·검증 범위](work-history/plant-watering-cycle-299.md)
+사용자가 일 단위 필수 주기와 API 기본값 우선·없으면 null 초기값 정책을 확정했다. 2026-09-19 live OpenAPI와 backend develop `e0e8cada565e2e1c00a86d56da7ae3e6aa00b148`을 재확인했으며 PlantRequest/PlantResponse/Plant에는 lastWateredDate만 있어 주기 저장·조회·추천 기본값 계약이 여전히 필요하다. 프런트 생성·수정 UI와 기본 모드 메모리 보관을 구현하고 API 모드는 입력 비활성·미지원 안내로 구분한다. 추정 JSON 필드를 전송하지 않는다. [작업·검증 범위](work-history/plant-watering-cycle-299.md)
