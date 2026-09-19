@@ -10,6 +10,10 @@ abstract final class AppEnvironment {
     defaultValue: 'https://commonplant.site/api/v1',
   );
 
+  static const String weatherServiceKey = String.fromEnvironment(
+    'COMMONPLANT_WEATHER_SERVICE_KEY',
+  );
+
   static const String kakaoNativeAppKey = String.fromEnvironment(
     'COMMONPLANT_KAKAO_NATIVE_APP_KEY',
   );
