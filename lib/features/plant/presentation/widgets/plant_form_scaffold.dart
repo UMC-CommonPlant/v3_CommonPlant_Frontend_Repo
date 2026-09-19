@@ -6,6 +6,7 @@ import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_e
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_form_bottom_actions.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_name_field.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_place_picker.dart';
+import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_watering_cycle_field.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_watering_date_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
@@ -15,6 +16,11 @@ class PlantEditScaffold extends StatelessWidget {
   const PlantEditScaffold({
     required this.name,
     required this.lastWateredDate,
+    required this.wateringCycle,
+    required this.wateringCycleEnabled,
+    required this.wateringCycleHelperText,
+    required this.onWateringCycleChanged,
+    this.wateringCycleErrorText,
     this.nameErrorMessage,
     this.lastWateredDateErrorMessage,
     required this.canSubmit,
@@ -29,6 +35,11 @@ class PlantEditScaffold extends StatelessWidget {
   final Widget? imageField;
   final String name;
   final String? lastWateredDate;
+  final String wateringCycle;
+  final bool wateringCycleEnabled;
+  final String wateringCycleHelperText;
+  final String? wateringCycleErrorText;
+  final ValueChanged<String> onWateringCycleChanged;
   final String? nameErrorMessage;
   final String? lastWateredDateErrorMessage;
   final bool canSubmit;
@@ -72,6 +83,14 @@ class PlantEditScaffold extends StatelessWidget {
                         onChanged: onChanged,
                       ),
                       const SizedBox(height: AppSpacing.x32),
+                      PlantWateringCycleField(
+                        value: wateringCycle,
+                        enabled: wateringCycleEnabled,
+                        helperText: wateringCycleHelperText,
+                        errorText: wateringCycleErrorText,
+                        onChanged: onWateringCycleChanged,
+                      ),
+                      const SizedBox(height: AppSpacing.x32),
                       PlantWateringDateField(
                         lastWateredDate: lastWateredDate,
                         errorText: lastWateredDateErrorMessage,
@@ -107,6 +126,11 @@ class PlantCreateScaffold extends StatelessWidget {
     required this.places,
     required this.selectedPlaceId,
     required this.lastWateredDate,
+    required this.wateringCycle,
+    required this.wateringCycleEnabled,
+    required this.wateringCycleHelperText,
+    required this.onWateringCycleChanged,
+    this.wateringCycleErrorText,
     this.lastWateredDateErrorMessage,
     required this.isSubmitting,
     required this.onPlaceSelected,
@@ -121,6 +145,11 @@ class PlantCreateScaffold extends StatelessWidget {
   final List<PlantRegistrationPlace> places;
   final String? selectedPlaceId;
   final String? lastWateredDate;
+  final String wateringCycle;
+  final bool wateringCycleEnabled;
+  final String wateringCycleHelperText;
+  final String? wateringCycleErrorText;
+  final ValueChanged<String> onWateringCycleChanged;
   final String? lastWateredDateErrorMessage;
   final bool isSubmitting;
   final ValueChanged<PlantRegistrationPlace> onPlaceSelected;
@@ -164,6 +193,14 @@ class PlantCreateScaffold extends StatelessWidget {
                         places: places,
                         selectedPlaceId: selectedPlaceId,
                         onPlaceSelected: onPlaceSelected,
+                      ),
+                      const SizedBox(height: AppSpacing.x32),
+                      PlantWateringCycleField(
+                        value: wateringCycle,
+                        enabled: wateringCycleEnabled,
+                        helperText: wateringCycleHelperText,
+                        errorText: wateringCycleErrorText,
+                        onChanged: onWateringCycleChanged,
                       ),
                       const SizedBox(height: AppSpacing.x32),
                       PlantWateringDateField(

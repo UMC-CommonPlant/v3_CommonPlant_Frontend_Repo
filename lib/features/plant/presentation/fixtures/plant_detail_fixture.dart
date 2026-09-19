@@ -1,11 +1,15 @@
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
+import 'package:commonplant_frontend/features/plant/domain/entities/plant_summary.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_detail_view_data.dart';
 
-PlantDetailViewData plantDetailFixture({String? placeCode}) {
+PlantDetailViewData plantDetailFixture({
+  String? placeCode,
+  PlantSummary? localPlant,
+}) {
   return PlantDetailViewData(
     placeCode: placeCode,
-    placeName: '스윗홈_거실',
-    name: '몬테',
+    placeName: localPlant?.placeName ?? '스윗홈_거실',
+    name: localPlant?.name ?? '몬테',
     species: 'Monstera deliciosa',
     imageUrl: null,
     imageAsset: AppImageAssets.plantEditMonstera,
@@ -13,7 +17,11 @@ PlantDetailViewData plantDetailFixture({String? placeCode}) {
     dDayLabel: 'D-3',
     startDate: '2022.11.24',
     lastWateredDate: '2022.11.24',
-    wateringCycleLabel: '10 Day',
+    wateringCycleLabel: localPlant == null
+        ? '10 Day'
+        : localPlant.wateringCycleDays == null
+        ? null
+        : '${localPlant.wateringCycleDays}일마다',
     representativeMemo: null,
     plantInfo: null,
     memos: const [

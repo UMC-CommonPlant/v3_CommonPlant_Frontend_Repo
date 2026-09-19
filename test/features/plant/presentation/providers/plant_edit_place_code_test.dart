@@ -215,6 +215,7 @@ void main() {
         .addPlant(name: '몬테');
     final form = plantFormControllerProvider(PlantFormArgs(plantId: plant.id));
     container.listen(form, (_, _) {});
+    container.read(form.notifier).updateWateringCycle('7');
     container.read(form.notifier).updateName('로컬 수정');
 
     expect(await container.read(form.notifier).submit(), isNotNull);

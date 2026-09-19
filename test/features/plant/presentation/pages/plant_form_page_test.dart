@@ -38,7 +38,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '몬테라');
+    await tester.enterText(find.byType(TextField).first, '몬테라');
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, '완료'));
     await tester.pumpAndSettle();
@@ -90,6 +90,7 @@ void main() {
       const ProviderScope(child: MaterialApp(home: PlantFormPage())),
     );
 
+    await tester.ensureVisible(find.text('날짜 선택'));
     await tester.tap(find.text('날짜 선택'));
     await tester.pumpAndSettle();
 
@@ -292,14 +293,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), '몬테라');
+      await tester.enterText(find.byType(TextField).first, '몬테라');
       await tester.pump();
 
       final button = find.widgetWithText(FilledButton, '완료');
       final repeatSubmit = tester.widget<FilledButton>(button).onPressed!;
       await tester.tap(button);
       await tester.pump();
-      await tester.enterText(find.byType(TextField), '다음 이름');
+      await tester.enterText(find.byType(TextField).first, '다음 이름');
       await tester.pump();
       repeatSubmit();
       await tester.pump();
@@ -340,7 +341,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), '몬테라');
+    await tester.enterText(find.byType(TextField).first, '몬테라');
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, '완료'));
     await tester.pumpAndSettle();

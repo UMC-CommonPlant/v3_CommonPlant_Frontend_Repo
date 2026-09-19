@@ -240,6 +240,8 @@ void main() {
     expect(container.read(_form).places, plantRegistrationPlaceFallbacks);
     await container.pump();
     expect(container.read(_form).places, plantRegistrationPlaceFallbacks);
+    expect(container.read(_form).canSubmit, isFalse);
+    container.read(_form.notifier).updateWateringCycle('7');
     expect(container.read(_form).canSubmit, isTrue);
     expect(await container.read(_form.notifier).submit(), isNotNull);
     expect(places.requests, isEmpty);

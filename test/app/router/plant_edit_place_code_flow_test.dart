@@ -121,7 +121,7 @@ void main() {
         router.routeInformationProvider.value.uri.queryParameters['placeId'],
         ' PLACE-A ',
       );
-      await tester.enterText(find.byType(TextField), '수정 애칭');
+      await tester.enterText(find.byType(TextField).first, '수정 애칭');
       final dateField = find.text('2026. 08. 20');
       await tester.ensureVisible(dateField);
       await tester.tap(dateField);
@@ -180,7 +180,7 @@ void main() {
       AppRoutePaths.plantEditLocation('1', placeId: 'PLACE-A'),
     );
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '첫 수정');
+    await tester.enterText(find.byType(TextField).first, '첫 수정');
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, '완료'));
     await tester.pump();
@@ -198,7 +198,7 @@ void main() {
     await tester.pump(tester.widget<SnackBar>(find.byType(SnackBar)).duration);
     await tester.pumpAndSettle();
     repository.barrier = null;
-    await tester.enterText(find.byType(TextField), '재시도 수정');
+    await tester.enterText(find.byType(TextField).first, '재시도 수정');
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, '완료'));
     await tester.pumpAndSettle();

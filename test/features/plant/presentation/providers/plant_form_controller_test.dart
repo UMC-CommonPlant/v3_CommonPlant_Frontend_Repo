@@ -193,6 +193,7 @@ void main() {
       final controller = container.read(
         plantFormControllerProvider(args).notifier,
       );
+      controller.updateWateringCycle('7');
       controller.selectPlace(plantRegistrationPlaceFallbacks[1]);
       controller.updateLastWateredDate(DateTime(2026, 8, 25));
 
@@ -274,6 +275,7 @@ void main() {
       expect(initialState.currentName, '몬테');
       expect(initialState.canSubmit, isFalse);
 
+      controller.updateWateringCycle('7');
       controller.updateName('몬테라');
       final result = await controller.submit();
       final plants = container.read(plantListProvider);

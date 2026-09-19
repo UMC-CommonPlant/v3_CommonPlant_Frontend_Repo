@@ -103,6 +103,14 @@ class PlantFormPage extends ConsumerWidget {
         ),
         places: formState.places,
         selectedPlaceId: formState.selectedPlaceId,
+        wateringCycle: formState.wateringCycleInput,
+        wateringCycleEnabled:
+            formState.wateringCycleSupported && !formState.isSubmitting,
+        wateringCycleHelperText: formState.wateringCycleSupported
+            ? '물주는 간격을 일 단위로 입력해 주세요 (필수)'
+            : '물주기 주기 저장 기능을 준비 중이에요',
+        wateringCycleErrorText: formState.wateringCycleErrorText,
+        onWateringCycleChanged: controller.updateWateringCycle,
         lastWateredDate: formState.currentLastWateredDate,
         lastWateredDateErrorMessage: formState.lastWateredDateErrorMessage,
         isSubmitting: formState.isSubmitting,
@@ -137,6 +145,14 @@ class PlantFormPage extends ConsumerWidget {
             : null,
       ),
       name: formState.currentName,
+      wateringCycle: formState.wateringCycleInput,
+      wateringCycleEnabled:
+          formState.wateringCycleSupported && !formState.isSubmitting,
+      wateringCycleHelperText: formState.wateringCycleSupported
+          ? '물주는 간격을 일 단위로 입력해 주세요 (필수)'
+          : '물주기 주기 저장 기능을 준비 중이에요',
+      wateringCycleErrorText: formState.wateringCycleErrorText,
+      onWateringCycleChanged: controller.updateWateringCycle,
       lastWateredDate: formState.currentLastWateredDate,
       nameErrorMessage: formState.nameErrorMessage,
       lastWateredDateErrorMessage: formState.lastWateredDateErrorMessage,

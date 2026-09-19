@@ -39,13 +39,18 @@ class PlantListNotifier extends Notifier<List<PlantSummary>> {
     String? placeId,
     String? placeName,
     String? description,
+    int? wateringCycleDays,
   }) {
+    while (state.any((plant) => plant.id == 'plant-$_nextId')) {
+      _nextId++;
+    }
     final plant = PlantSummary(
       id: 'plant-${_nextId++}',
       name: name,
       placeId: placeId,
       placeName: placeName,
       description: description,
+      wateringCycleDays: wateringCycleDays,
     );
     state = [...state, plant];
     return plant;
@@ -57,7 +62,15 @@ class PlantListNotifier extends Notifier<List<PlantSummary>> {
     String? placeId,
     String? placeName,
     String? description,
+    int? wateringCycleDays,
   }) {
+    if (!state.any((plant) => plant.id == id) && wateringCycleDays != null) {
+      state = [
+        ...state,
+        PlantSummary(id: id, name: name, wateringCycleDays: wateringCycleDays),
+      ];
+      return;
+    }
     state = [
       for (final plant in state)
         if (plant.id == id)
@@ -66,6 +79,7 @@ class PlantListNotifier extends Notifier<List<PlantSummary>> {
             placeId: placeId,
             placeName: placeName,
             description: description,
+            wateringCycleDays: wateringCycleDays,
           )
         else
           plant,

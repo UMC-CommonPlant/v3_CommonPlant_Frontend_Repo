@@ -416,6 +416,9 @@ void main() {
     await tester.tap(find.text('몬스테라 델리오사'));
     await tester.pumpAndSettle();
 
+    await tester.enterText(find.byType(TextField), '7');
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('등록'));
     await tester.tap(find.text('등록'));
     await tester.pumpAndSettle();

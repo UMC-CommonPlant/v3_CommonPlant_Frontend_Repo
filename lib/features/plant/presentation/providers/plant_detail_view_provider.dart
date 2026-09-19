@@ -3,6 +3,7 @@ import 'package:commonplant_frontend/features/plant/presentation/fixtures/plant_
 import 'package:commonplant_frontend/features/plant/presentation/mappers/plant_detail_view_mapper.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_detail_view_data.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_detail_remote_provider.dart';
+import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_place_code_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -29,7 +30,14 @@ final plantLocalDetailViewProvider =
       ref,
       request,
     ) {
-      return plantDetailFixture(placeCode: request.placeCode);
+      final plant = ref
+          .watch(plantListProvider)
+          .where((plant) => plant.id == request.plantId)
+          .firstOrNull;
+      return plantDetailFixture(
+        placeCode: request.placeCode,
+        localPlant: plant,
+      );
     });
 
 final plantRemoteDetailViewProvider =
