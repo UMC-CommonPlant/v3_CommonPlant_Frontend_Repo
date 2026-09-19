@@ -82,4 +82,4 @@ Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 �
 
 - [폼 사진 선택·미리보기·교체 #295](work-history/form-image-selection-295.md): multipart 연결, 자동 검증과 실기기 QA 제한
 
-- [발급 URL 이미지 업로드 전환 #297](work-history/image-upload-url-297.md): 사용자 확정 방향, 현행 서버 계약 차이와 구현 대기 조건
+- [이미지 업로드 방식 정정 #297](work-history/image-upload-url-297.md): Swagger 직접 multipart, URL 발급 대기 철회

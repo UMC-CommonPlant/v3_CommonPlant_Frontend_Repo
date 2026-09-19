@@ -107,6 +107,6 @@ UI 피드백 보완 전 실행은 `COMMONPLANT_USE_API`를 주입하지 않은 �
 
 사용자가 Apple에 등록한 식별자로 `com.commonplant.umc`를 확정했다. 기존 `com.commonplant.app` 변경 이력 이후의 최종값이며 Runner Debug/Profile/Release와 RunnerTests(`com.commonplant.umc.RunnerTests`)에 반영한다. Team과 Info.plist의 사용자 로컬 수정은 그대로 보존한다. 현행 README·릴리즈·소셜 설정 문서도 최종값을 사용한다.
 
-사용자는 이미지 업로드 방향을 “업로드용 URL 발급 → 해당 URL에 파일 전송 → 도메인 저장 연결”로 정정했다. 앞의 직접 multipart 구현은 현재 코드 상태의 기록이며 확정된 최종 업로드 방향이 아니다. URL 발급 응답·메서드·헤더·최종 저장 필드를 확인해 전환해야 하며 이 Bundle ID 변경에서 업로드 전환까지 완료했다고 처리하지 않는다.
+당시 업로드용 URL 발급 방식으로 해석했으나, 최신 사용자 정정과 Swagger 재확인으로 API 주소에 직접 multipart 전송하는 방식임을 확인했다. 기존 구현을 유지하며 URL 발급 API 대기는 철회한다. [#297 정정 기록](image-upload-url-297.md)을 따른다.
 
 최종 ID 반영 후 `plutil -lint`, `git diff --check`, `fvm flutter build ios --debug --no-codesign`을 통과했고 생성 앱의 CFBundleIdentifier가 `com.commonplant.umc`임을 확인했다. Dart 소스 변경은 없다.
