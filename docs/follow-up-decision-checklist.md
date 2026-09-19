@@ -9,6 +9,13 @@
 - 결론이 나면 이 문서와 원본 문서를 함께 갱신한다.
 - 구현 작업이 필요한 결론은 별도 GitHub 이슈로 분리한다.
 
+## 2026-09-19 장소 좌표·날씨 조회 방침
+
+- #302에서 장소 조회에 x/y 좌표를 함께 제공할 예정임을 기록했다. `xPosition`, `yPosition`은 임시 명칭이며 백엔드 최종 계약 확정 후 수정·연동한다.
+- 날씨 조회는 프런트엔드가 공공데이터 API를 호출하는 것으로 결정했다. 날씨를 백엔드 응답에 포함하는 구현을 기다리지 않는다.
+- 사용자 검토안은 각 호출과 5초 타이머의 race, 총 최대 3회(최초 1회 + 재시도 2회), 전부 실패하면 날씨 정보와 동일한 위치에 재호출 아이콘 노출이다.
+- 좌표계·최종 필드명·공공데이터 API 선택 등 남은 확인 항목과 미구현 경계는 [조회 방침](screen-api-integration-plan.md#장소-좌표프런트-날씨-조회-방침-302), [PLACE-07](backend-api-open-questions.md#place-07-장소-조회-좌표-계약)을 따른다. 문서화 완료를 날씨 구현 완료로 처리하지 않는다.
+
 ## 2026-09-02 소셜 로그인 SDK 재개
 
 - 사용자가 #285에서 Kakao·Google·Apple SDK 연결을 재개했다.
@@ -76,6 +83,8 @@
 | [x] | STATE-01 | API 공통 에러 타입과 사용자 메시지 매핑 기준 | `docs/state-management-guide.md` | #275에서 표준 오류·field reason을 typed 상태로 분리하고 rejected value와 raw top-level message 노출을 차단했다. | Decided |
 | [ ] | ROUTING-01 | 하단 탭 도입 시 `ShellRoute`와 단순 탭 상태 중 선택 | `docs/routing-guide.md` | bottom navigation 화면 범위가 확정되면 라우팅 구조를 결정한다. | Open |
 | [x] | GIT-01 | PR template 파일 추가 여부 | `docs/git-workflow.md`, `.github/pull_request_template.md` | #281에서 현재 PR 본문 기준을 단일 기본 template으로 고정했다. | Decided |
+| [x] | WEATHER-01 | 날씨 조회 담당과 데이터 출처 | `docs/screen-api-integration-plan.md` | #302에서 프런트엔드의 공공데이터 API 호출로 결정. 좌표·API 계약 확정 후 구현한다. | Decided |
+| [ ] | WEATHER-02 | timeout·재시도·실패 UI | `docs/screen-api-integration-plan.md` | #302의 시도별 5초·총 3회·날씨 위치 재호출 아이콘 검토안을 후속 구현 전에 확정한다. | Open |
 
 ## 백엔드 확인 질문
 
@@ -86,6 +95,7 @@
 | [ ] | API-AUTH | Auth 로그인·회원가입과 provider 검증 정책 | AUTH-01, AUTH-02, AUTH-03 | #216·#227 화면/API와 #285 / PR #286 SDK 연결 완료. Apple 실제 로그인은 backend #152 대기 | Partial |
 | [ ] | API-MULTIPART | Place multipart JSON part 정책 | MULTIPART-01 | Auth/User/Plant의 `application/json` encoding은 확인됐고 Place encoding은 백엔드 확인이 필요하다. | Open |
 | [ ] | API-PLACE | Place response와 식별자 정책 | PLACE-01, PLACE-02, PLACE-03, PLACE-04 | #239·#243 목록/상세/생성/수정, #245 멤버 조회 연결 완료; 멤버 변경은 보류 | Partial |
+| [ ] | API-PLACE-COORD | 날씨 조회용 장소 좌표 계약 | PLACE-07 | 임시 `xPosition`·`yPosition`의 최종 명칭·응답 위치·타입·좌표계 확정 후 프런트 날씨 연결 | Partial |
 | [ ] | API-FRIEND | Friend 요청 목록과 액션 정책 | FRIEND-01, FRIEND-02, FRIEND-03, FRIEND-04 | #241 수신 처리와 #243 발신 연결 완료, 이름 오매칭은 수용 위험으로 추적 | Partial |
 | [ ] | API-IMAGE | Image upload/download/update/delete 정책 | IMAGE-01, IMAGE-02, IMAGE-03, IMAGE-04 | #248에서 Plant key 보존·Place 사진 수정 차단을 구현했다. 독립 Image 응답·Place key 조회·동시 수정 보호 계약은 미확정이다. | Partial |
 | [x] | API-ERROR | 공통/도메인 에러 response 정책 | ERROR-01, ERROR-02 | #275 typed 오류·field error·안전 메시지 연결. 인증 쓰기 validation smoke는 원격 E2E 보류 범위 | Done |
