@@ -59,6 +59,40 @@ void main() {
     );
   });
 
+  test('다른 식물의 목록 변경은 수정 중인 이름·주기·날짜 초안을 지우지 않는다', () async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final list = container.read(plantListProvider.notifier);
+    final plant = list.addPlant(name: '기존 식물', wateringCycleDays: 7);
+    final edit = plantFormControllerProvider(PlantFormArgs(plantId: plant.id));
+    container.listen(edit, (_, _) {});
+    final controller = container.read(edit.notifier);
+    controller.updateName('수정 중인 식물');
+    controller.updateWateringCycle('14');
+    controller.updateLastWateredDate(DateTime(2026, 9, 19));
+
+    final other = list.addPlant(name: '다른 식물', wateringCycleDays: 3);
+    await container.pump();
+    expect(container.read(edit).currentName, '수정 중인 식물');
+    expect(container.read(edit).wateringCycleInput, '14');
+    expect(container.read(edit).currentLastWateredDate, '2026-09-19');
+
+    list.updatePlant(id: other.id, name: '다른 식물 수정', wateringCycleDays: 5);
+    await container.pump();
+    expect(container.read(edit).currentName, '수정 중인 식물');
+    expect(container.read(edit).wateringCycleInput, '14');
+    expect(container.read(edit).currentLastWateredDate, '2026-09-19');
+    expect(container.read(edit).canSubmit, isTrue);
+    expect(await controller.submit(), isNotNull);
+    expect(
+      container
+          .read(plantListProvider)
+          .firstWhere((p) => p.id == plant.id)
+          .wateringCycleDays,
+      14,
+    );
+  });
+
   test('API 모드는 주기 계약이 없으면 null을 유지하고 입력을 저장한 척하지 않는다', () async {
     final container = ProviderContainer(
       overrides: [

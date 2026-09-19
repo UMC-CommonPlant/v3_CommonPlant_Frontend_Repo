@@ -13,10 +13,12 @@ const String plantFormDefaultEditName = '몬테';
 final plantFormEditInfoProvider =
     Provider.family<AsyncValue<PlantEditInfo?>, String>((ref, plantId) {
       if (!ref.watch(useRemoteApiProvider)) {
-        final plant = ref
-            .watch(plantListProvider)
-            .where((plant) => plant.id == plantId)
-            .firstOrNull;
+        final plant = ref.watch(
+          plantListProvider.select(
+            (plants) =>
+                plants.where((plant) => plant.id == plantId).firstOrNull,
+          ),
+        );
         return AsyncData(
           PlantEditInfo(
             name: plant?.name ?? plantFormDefaultEditName,
