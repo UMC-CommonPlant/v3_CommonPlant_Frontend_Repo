@@ -85,3 +85,5 @@ Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 �
 - [이미지 업로드 방식 정정 #297](work-history/image-upload-url-297.md): Swagger 직접 multipart, URL 발급 대기 철회
 
 - [식물 생성·수정 물주기 주기 #299](work-history/plant-watering-cycle-299.md): 필수 입력, null 초기값, 로컬 보관과 원격 미지원 경계
+
+- [공공데이터 초단기 날씨 조회 준비 #304](work-history/place-weather-api-304.md): 실황·예보 API 계층, 5초·3회·취소 검증과 장소 좌표/화면 연결 후속.
