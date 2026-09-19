@@ -698,6 +698,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: #239에서 `GET /place/myGarden`의 `result.placeList`와 대표 이미지를 Home 장소 카드에 연결했다.
 - 반영: #239에서 `GET /place/{code}`를 `PlaceDetail`로 파싱하고 owner·멤버·식물·이미지·날짜를 상세 화면에 연결했다.
 - 반영: #239 remote 상세에서는 서버가 주지 않는 햇빛·습도와 fixture 멤버·식물을 표시하지 않는다.
+- 후속 결정(2026-09-19, #302): 장소 좌표를 받아 프런트엔드에서 공공데이터 API의 날씨를 조회한다. `xPosition`·`yPosition`은 사용자 요청에 따른 문서상 임시 명칭이며 Swagger에서 확인된 필드가 아니다. 백엔드 최종 계약 확정 후 명칭 수정·연동한다. 시도별 5초 race·총 3회·동일 날씨 위치 재호출 아이콘은 [조회 방침의 검토안](screen-api-integration-plan.md#장소-좌표프런트-날씨-조회-방침-302)을 따른다. 현재 코드나 API 구현 완료를 뜻하지 않는다.
 - 반영: #243에서 `POST /place/create`의 result 문자열을 place code로 파싱하고 친구 추가 route에 전달한다.
 - 반영: #243에서 `PUT /place/update/{code}`의 result를 typed `PlaceSummary`로 파싱한다.
 - 반영: #245에서 `GET /place/{code}/members`의 result 배열을 `PlaceMember`로 파싱하고 친구 관리 조회·검색에 연결했다. API 모드는 임시 렌더링 키를 사용자 ID로 사용하지 않고 멤버 변경을 제공하지 않는다.

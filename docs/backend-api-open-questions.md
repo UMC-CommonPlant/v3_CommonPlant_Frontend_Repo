@@ -24,6 +24,7 @@
 | PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #245 친구 관리 조회 연결, 멤버 변경은 별도 계약 필요 | Answered |
 | PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 숨김 유지, #277은 backend #150 답변 대기 | Blocked |
 | PLACE-06 | Place | 멤버 고유 ID·역할과 owner의 제거·권한 변경 endpoint는 무엇인가? | #245 조회 전용 유지, #277 쓰기 연결 보류 | Blocked |
+| PLACE-07 | Place | 장소 조회에 제공할 x/y 좌표의 최종 필드명·응답 위치·좌표계는 무엇인가? | #302 임시 `xPosition`·`yPosition`, 계약 확정 후 프런트 공공데이터 날씨 연결 | Partial |
 | PLANT-01 | Plant | 식물에서 소속 장소 code를 조회할 수 있는 계약을 제공하는가? | #273에서 기존 Place 목록·상세의 정확한 plant ID 대조로 code 복원 | Answered |
 | FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | #241 요청 목록·Home 배지 연결 | Answered |
 | FRIEND-02 | Friend | 친구 요청 전송/수락/거절 성공 response와 화면 갱신 정책은 무엇인가? | #241 수락·거절·갱신, #243 전송 연결 | Answered |
@@ -155,6 +156,14 @@
 - 프론트 반영: #277은 [backend #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150) 답변과 live OpenAPI schema 전까지 #245의 조회 전용 UI와 임시 key 비전송 경계를 유지한다.
 - 답변: 미확인
 - 상태: Blocked
+
+### PLACE-07. 장소 조회 좌표 계약
+
+- 현재 근거: 2026-09-19 사용자가 장소 조회 응답에 x/y 좌표를 함께 제공할 예정이라고 설명했다. 명칭은 미정이므로 문서에서만 `xPosition`, `yPosition`으로 임시 표기한다. 실제 배포 응답을 확인한 기록은 아니다.
+- 확인 질문: 어느 장소 조회 endpoint의 어떤 위치에 제공하는가? 최종 필드명, 숫자 타입·nullable 여부, x/y의 의미·좌표계·단위는 무엇인가? 기존 장소에서 좌표가 없는 경우는 어떻게 표현하는가?
+- 답변: 좌표 제공 방향과 날씨를 프런트엔드에서 공공데이터 API로 조회하는 책임은 결정됐다. 필드명·상세 좌표 계약은 백엔드 확정 대기다.
+- 프론트 반영: 최종 계약이 확정되면 임시 명칭을 수정하고 DTO·mapper·날씨 조회를 구현한다. 확정 전에는 임시 JSON 필드 파싱이나 좌표 변환을 추가하지 않는다. 공공데이터 API 선택은 별도 미정이며, 시도별 5초 race·총 3회·날씨 위치 재호출 아이콘은 [#302 검토안](screen-api-integration-plan.md#장소-좌표프런트-날씨-조회-방침-302)으로 관리한다.
+- 상태: Partial (제공 방향 결정, 최종 계약·구현 대기)
 
 ## Plant
 
