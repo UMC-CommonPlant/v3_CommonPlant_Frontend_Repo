@@ -47,6 +47,7 @@
 
 | 작업 | 이력 |
 | --- | --- |
+| 장소 날씨 화면·백엔드 연결 경계 #306 | [단계별 구현 계획과 변경 표](work-history/place-weather-ui-306.md) |
 | Plant 생성·수정 #229 | [Plant Form](work-history/plant-form-api-state-229.md) |
 | Plant 상세 #231 | [Plant Detail](work-history/plant-detail-api-view-231.md) |
 | Home 사용자 #232 | [Home User](work-history/home-user-api-state-232.md) |
