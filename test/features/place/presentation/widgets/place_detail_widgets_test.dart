@@ -3,6 +3,7 @@ import 'package:commonplant_frontend/features/place/presentation/widgets/place_d
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_detail_header.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_plant_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,8 +15,6 @@ void main() {
           placeId: 'place-1',
           name: '옥상 정원',
           address: '서울시 노원구 광운로 20',
-          sunlightLabel: '9.3 / 5',
-          humidityLabel: '69%',
           friends: const [
             PlaceDetailFriendItem(id: 'me', name: '나', isOwner: true),
             PlaceDetailFriendItem(id: 'mate', name: '커먼맘'),
@@ -26,8 +25,7 @@ void main() {
 
     expect(find.text('옥상 정원'), findsOneWidget);
     expect(find.text('서울시 노원구 광운로 20'), findsOneWidget);
-    expect(find.text('9.3 / 5'), findsOneWidget);
-    expect(find.text('69%'), findsOneWidget);
+    expect(find.text('날씨 정보 준비 중'), findsOneWidget);
     expect(find.text('나'), findsOneWidget);
     expect(find.text('커먼맘'), findsOneWidget);
 
@@ -115,5 +113,5 @@ Widget _buildRouterApp(Widget home) {
     ],
   );
 
-  return MaterialApp.router(routerConfig: router);
+  return ProviderScope(child: MaterialApp.router(routerConfig: router));
 }
