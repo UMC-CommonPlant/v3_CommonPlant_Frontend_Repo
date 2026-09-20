@@ -7,6 +7,7 @@ import 'package:commonplant_frontend/features/place/domain/repositories/place_re
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_detail_page.dart';
+import 'package:commonplant_frontend/features/place/presentation/providers/place_weather_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -175,12 +176,13 @@ void main() {
     expect(find.text('스윗 홈_거실'), findsNothing);
   });
 
-  testWidgets('remote 상세는 API 멤버와 식물만 표시한다', (tester) async {
+  testWidgets('remote 상세는 API 정보와 좌표 없는 날씨 상태를 표시한다', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           authenticatedUserDataSession,
           useRemoteApiProvider.overrideWithValue(true),
+          weatherServiceKeyProvider.overrideWithValue(''),
           placeRepositoryProvider.overrideWithValue(
             _StaticPlaceRepository(
               const PlaceDetail(
@@ -210,7 +212,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('API 정원'), findsOneWidget);
-    expect(find.text('날씨 정보 준비 중'), findsOneWidget);
+    expect(find.text('판교역 기준'), findsOneWidget);
+    expect(find.text('날씨를 불러오지 못했어요'), findsOneWidget);
+    expect(find.byTooltip('날씨 다시 불러오기'), findsOneWidget);
+    expect(find.text('날씨 정보 준비 중'), findsNothing);
     expect(find.text('API 멤버'), findsOneWidget);
     expect(find.text('고무나무'), findsOneWidget);
     expect(find.text('Ficus elastica'), findsOneWidget);
