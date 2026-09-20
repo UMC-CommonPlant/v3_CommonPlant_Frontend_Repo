@@ -1,5 +1,4 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
-import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
@@ -8,7 +7,7 @@ import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_view_data.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_avatar.dart';
-import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
+import 'package:commonplant_frontend/features/place/presentation/widgets/place_weather_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,16 +17,12 @@ class PlaceDetailHeader extends StatelessWidget {
     required this.placeId,
     required this.name,
     required this.address,
-    required this.sunlightLabel,
-    required this.humidityLabel,
     required this.friends,
   });
 
   final String placeId;
   final String name;
   final String address;
-  final String? sunlightLabel;
-  final String? humidityLabel;
   final List<PlaceDetailFriendItem> friends;
 
   @override
@@ -52,20 +47,45 @@ class PlaceDetailHeader extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: _PlaceTitleBlock(name: name, address: address),
-                ),
-                if (sunlightLabel != null || humidityLabel != null) ...[
-                  const SizedBox(width: AppSpacing.x12),
-                  _PlaceMetricStrip(
-                    sunlightLabel: sunlightLabel,
-                    humidityLabel: humidityLabel,
-                  ),
-                ],
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // 제목 120px을 우선 보장하고 날씨 영역은 120~164px로 제한한다.
+                final weatherWidth =
+                    (constraints.maxWidth - 120 - AppSpacing.x12).clamp(
+                      120.0,
+                      164.0,
+                    );
+                final largeText =
+                    MediaQuery.textScalerOf(
+                      context,
+                    ).scale(AppTextStyles.size14Medium.fontSize!) >=
+                    AppTextStyles.size20Medium.fontSize!;
+                final weather = SizedBox(
+                  key: const ValueKey('place-weather-region'),
+                  width: largeText ? constraints.maxWidth : weatherWidth,
+                  child: PlaceWeatherSummary(placeId: placeId),
+                );
+                if (largeText) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _PlaceTitleBlock(name: name, address: address),
+                      const SizedBox(height: AppSpacing.x16),
+                      weather,
+                    ],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _PlaceTitleBlock(name: name, address: address),
+                    ),
+                    const SizedBox(width: AppSpacing.x12),
+                    weather,
+                  ],
+                );
+              },
             ),
             const SizedBox(height: AppSpacing.x24),
             _PlaceFriendStrip(friends: friends, placeId: placeId),
@@ -103,74 +123,6 @@ class _PlaceTitleBlock extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: AppTextStyles.size16Medium.copyWith(
             color: AppColors.textStrong,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _PlaceMetricStrip extends StatelessWidget {
-  const _PlaceMetricStrip({
-    required this.sunlightLabel,
-    required this.humidityLabel,
-  });
-
-  final String? sunlightLabel;
-  final String? humidityLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (sunlightLabel case final label?)
-          _PlaceMetric(
-            icon: AppIconAssets.tagSunlight,
-            label: label,
-            semanticsLabel: '햇빛',
-          ),
-        if (sunlightLabel != null && humidityLabel != null)
-          const SizedBox(width: AppSpacing.x16),
-        if (humidityLabel case final label?)
-          _PlaceMetric(
-            icon: AppIconAssets.tagHumidity,
-            label: label,
-            semanticsLabel: '습도',
-          ),
-      ],
-    );
-  }
-}
-
-class _PlaceMetric extends StatelessWidget {
-  const _PlaceMetric({
-    required this.icon,
-    required this.label,
-    required this.semanticsLabel,
-  });
-
-  final String icon;
-  final String label;
-  final String semanticsLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        CommonSvgIcon(
-          icon,
-          width: AppSizes.iconMedium,
-          height: AppSizes.iconMedium,
-          semanticsLabel: semanticsLabel,
-        ),
-        const SizedBox(height: AppSpacing.x8),
-        Text(
-          label,
-          style: AppTextStyles.size14Medium.copyWith(
-            color: AppColors.textHeadline,
           ),
         ),
       ],

@@ -47,6 +47,7 @@
 
 | 작업 | 이력 |
 | --- | --- |
+| 장소 날씨 화면·백엔드 연결 경계 #306 | [단계별 구현 계획과 변경 표](work-history/place-weather-ui-306.md) |
 | Plant 생성·수정 #229 | [Plant Form](work-history/plant-form-api-state-229.md) |
 | Plant 상세 #231 | [Plant Detail](work-history/plant-detail-api-view-231.md) |
 | Home 사용자 #232 | [Home User](work-history/home-user-api-state-232.md) |
@@ -85,3 +86,5 @@ Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 �
 - [이미지 업로드 방식 정정 #297](work-history/image-upload-url-297.md): Swagger 직접 multipart, URL 발급 대기 철회
 
 - [식물 생성·수정 물주기 주기 #299](work-history/plant-watering-cycle-299.md): 필수 입력, null 초기값, 로컬 보관과 원격 미지원 경계
+
+- [공공데이터 초단기 날씨 조회 준비 #304](work-history/place-weather-api-304.md): 실황·예보 API 계층, 5초·3회·취소 검증과 장소 좌표/화면 연결 후속.

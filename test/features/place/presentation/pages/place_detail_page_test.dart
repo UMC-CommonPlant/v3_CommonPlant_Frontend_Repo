@@ -210,6 +210,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('API 정원'), findsOneWidget);
+    expect(find.text('날씨 정보 준비 중'), findsOneWidget);
     expect(find.text('API 멤버'), findsOneWidget);
     expect(find.text('고무나무'), findsOneWidget);
     expect(find.text('Ficus elastica'), findsOneWidget);

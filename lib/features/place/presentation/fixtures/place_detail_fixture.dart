@@ -12,8 +12,6 @@ PlaceDetailViewData placeDetailFixture(
     role: effectiveRole,
     name: '스윗 홈_거실',
     address: '서울시 노원구 광운로 20',
-    sunlightLabel: '9.3 / 5',
-    humidityLabel: '69%',
     friends: const [
       PlaceDetailFriendItem(
         id: 'me',

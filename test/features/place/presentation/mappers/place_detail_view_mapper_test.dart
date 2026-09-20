@@ -31,8 +31,6 @@ void main() {
     expect(detail?.name, '옥상 정원');
     expect(detail?.address, '서울시 성북구');
     expect(detail?.role, PlaceDetailRole.leader);
-    expect(detail?.sunlightLabel, isNull);
-    expect(detail?.humidityLabel, isNull);
     expect(detail?.friends.single.name, '커먼맘');
     expect(detail?.friends.single.imageUrl, 'https://example.com/user.png');
     expect(detail?.plants.single.name, '몬스테라');

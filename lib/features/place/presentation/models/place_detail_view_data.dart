@@ -8,15 +8,11 @@ class PlaceDetailViewData {
     required this.address,
     required this.friends,
     required this.plants,
-    this.sunlightLabel,
-    this.humidityLabel,
   });
 
   final PlaceDetailRole role;
   final String name;
   final String address;
-  final String? sunlightLabel;
-  final String? humidityLabel;
   final List<PlaceDetailFriendItem> friends;
   final List<PlaceDetailPlantItem> plants;
 }

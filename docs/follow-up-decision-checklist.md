@@ -9,12 +9,12 @@
 - 결론이 나면 이 문서와 원본 문서를 함께 갱신한다.
 - 구현 작업이 필요한 결론은 별도 GitHub 이슈로 분리한다.
 
-## 2026-09-19 장소 좌표·날씨 조회 방침
+## 2026-09-20 장소 날씨 조회·화면 준비
 
-- #302에서 장소 조회에 x/y 좌표를 함께 제공할 예정임을 기록했다. `xPosition`, `yPosition`은 임시 명칭이며 백엔드 최종 계약 확정 후 수정·연동한다.
-- 날씨 조회는 프런트엔드가 공공데이터 API를 호출하는 것으로 결정했다. 날씨를 백엔드 응답에 포함하는 구현을 기다리지 않는다.
-- 사용자 검토안은 각 호출과 5초 타이머의 race, 총 최대 3회(최초 1회 + 재시도 2회), 전부 실패하면 날씨 정보와 동일한 위치에 재호출 아이콘 노출이다.
-- 좌표계·최종 필드명·공공데이터 API 선택 등 남은 확인 항목과 미구현 경계는 [조회 방침](screen-api-integration-plan.md#장소-좌표프런트-날씨-조회-방침-302), [PLACE-07](backend-api-open-questions.md#place-07-장소-조회-좌표-계약)을 따른다. 문서화 완료를 날씨 구현 완료로 처리하지 않는다.
+- #302에서 좌표 제공 방향·프런트 날씨 책임을 정했고 #304에서 사용자가 현재 기온·습도 + 날씨 아이콘을 선택했다.
+- 공공데이터포털 초단기실황·초단기예보 조회, 시도별 5초 제한·최초 포함 3회·취소·늦은 결과 방지는 구현했다.
+- Place 좌표의 최종 명칭·타입·좌표계, 화면의 갱신/캐시 정책은 남아 있다. #306에서 기온·습도·날씨 아이콘, 상태 UI, 같은 자리 재호출 버튼을 구현했다. 실제 값의 조회 연결은 좌표 계약 확정 후 진행한다.
+- API 키를 이용한 실제 서버 QA는 미실행이며 자동 테스트로 대체하지 않는다. [구현 기록](work-history/place-weather-api-304.md), [PLACE-07](backend-api-open-questions.md#place-07-장소-조회-좌표-계약)을 따른다.
 
 ## 2026-09-02 소셜 로그인 SDK 재개
 
@@ -83,8 +83,8 @@
 | [x] | STATE-01 | API 공통 에러 타입과 사용자 메시지 매핑 기준 | `docs/state-management-guide.md` | #275에서 표준 오류·field reason을 typed 상태로 분리하고 rejected value와 raw top-level message 노출을 차단했다. | Decided |
 | [ ] | ROUTING-01 | 하단 탭 도입 시 `ShellRoute`와 단순 탭 상태 중 선택 | `docs/routing-guide.md` | bottom navigation 화면 범위가 확정되면 라우팅 구조를 결정한다. | Open |
 | [x] | GIT-01 | PR template 파일 추가 여부 | `docs/git-workflow.md`, `.github/pull_request_template.md` | #281에서 현재 PR 본문 기준을 단일 기본 template으로 고정했다. | Decided |
-| [x] | WEATHER-01 | 날씨 조회 담당과 데이터 출처 | `docs/screen-api-integration-plan.md` | #302에서 프런트엔드의 공공데이터 API 호출로 결정. 좌표·API 계약 확정 후 구현한다. | Decided |
-| [ ] | WEATHER-02 | timeout·재시도·실패 UI | `docs/screen-api-integration-plan.md` | #302의 시도별 5초·총 3회·날씨 위치 재호출 아이콘 검토안을 후속 구현 전에 확정한다. | Open |
+| [x] | WEATHER-01 | 날씨 조회 담당과 데이터 출처 | `docs/screen-api-integration-plan.md` | #304: 프런트에서 기상청 초단기실황·초단기예보 조회. 현재 기온·습도 + 날씨 아이콘으로 결정하고 API 계층 구현. | Decided |
+| [ ] | WEATHER-02 | timeout·재시도·실패 UI | `docs/screen-api-integration-plan.md` | #304에 시도별 5초·총 3회·취소 구현. #306에서 실패 위치 재호출 UI·중복 탭 차단·휴대폰 상태 검증 완료. 실제 장소 좌표 연결·갱신/캐시 정책·서버 QA는 후속. | Partial |
 
 ## 백엔드 확인 질문
 

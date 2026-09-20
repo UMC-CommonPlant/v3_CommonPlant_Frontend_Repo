@@ -161,8 +161,6 @@ class PlaceDetailPage extends ConsumerWidget {
                   placeId: placeId,
                   name: detail.name,
                   address: detail.address,
-                  sunlightLabel: detail.sunlightLabel,
-                  humidityLabel: detail.humidityLabel,
                   friends: detail.friends,
                 ),
                 PlacePlantList(placeId: placeId, plants: detail.plants),

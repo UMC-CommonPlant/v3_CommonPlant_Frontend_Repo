@@ -59,8 +59,6 @@ void main() {
       expect(detail?.role, PlaceDetailRole.member);
       expect(detail?.friends.single.name, '커먼맘');
       expect(detail?.plants, isEmpty);
-      expect(detail?.sunlightLabel, isNull);
-      expect(detail?.humidityLabel, isNull);
       expect(repository.fetchCalls, 1);
     });
 
