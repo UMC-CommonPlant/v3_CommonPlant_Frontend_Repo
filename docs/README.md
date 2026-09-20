@@ -47,6 +47,7 @@
 
 | 작업 | 이력 |
 | --- | --- |
+| 장소 좌표 누락 시 판교역 날씨 #307 | [기본 위치·조회 검증·후속 계약](work-history/place-weather-fallback-307.md) |
 | 장소 날씨 화면·백엔드 연결 경계 #306 | [단계별 구현 계획과 변경 표](work-history/place-weather-ui-306.md) |
 | Plant 생성·수정 #229 | [Plant Form](work-history/plant-form-api-state-229.md) |
 | Plant 상세 #231 | [Plant Detail](work-history/plant-detail-api-view-231.md) |

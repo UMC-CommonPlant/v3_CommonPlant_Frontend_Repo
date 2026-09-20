@@ -698,7 +698,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: #239에서 `GET /place/myGarden`의 `result.placeList`와 대표 이미지를 Home 장소 카드에 연결했다.
 - 반영: #239에서 `GET /place/{code}`를 `PlaceDetail`로 파싱하고 owner·멤버·식물·이미지·날짜를 상세 화면에 연결했다.
 - 반영: #239 remote 상세에서는 서버가 주지 않는 햇빛·습도와 fixture 멤버·식물을 표시하지 않는다.
-- 후속 결정(#302 → #304 → #306): 장소 좌표를 받아 프런트엔드가 공공데이터포털 초단기실황·초단기예보를 조회한다. 현재 기온·습도 + 날씨 아이콘으로 결정했으며, API 조회·시도별 5초 제한·총 3회·취소 처리를 준비했다. `xPosition`·`yPosition`은 여전히 문서상 임시 명칭이며 Swagger에서 확인된 필드가 아니다. #306에서 기온·습도·아이콘과 동일 위치 재호출 UI를 연결했다. 격자 공급 경계는 null로 두어 준비 상태만 표시하며 백엔드 최종 계약 확정 후 DTO·좌표 변환을 연결한다. [변경 지점과 재검증](work-history/place-weather-ui-306.md#백엔드-확정-후-수정할-영역)을 참고한다. 실제 서버 호출 QA는 미실행이다. [조회 방침](screen-api-integration-plan.md#장소-좌표프런트-날씨-조회-방침-302), [구현 기록](work-history/place-weather-api-304.md)을 참고한다.
+- 후속 결정(#302 → #304 → #306 → #307): 장소 좌표를 받아 프런트엔드가 공공데이터포털 초단기실황·초단기예보를 조회한다. 현재 기온·습도 + 날씨 아이콘으로 결정했으며, API 조회·시도별 5초 제한·총 3회·취소 처리를 준비했다. `xPosition`·`yPosition`은 여전히 문서상 임시 명칭이며 Swagger에서 확인된 필드가 아니다. #306에서 기온·습도·아이콘과 동일 위치 재호출 UI를 연결했다. #307 사용자 요청에 따라 격자가 null이면 판교역 `(62, 123)`로 대체하고 `판교역 기준`을 표시한다. 백엔드 최종 계약 확정 후 DTO·좌표 변환을 연결하며 유효한 장소 격자가 있으면 우선한다. [변경 지점과 재검증](work-history/place-weather-ui-306.md#백엔드-확정-후-수정할-영역)을 참고한다. 판교역 실제 API 확인과 남은 기기 QA는 [#307 기록](work-history/place-weather-fallback-307.md)을 따른다. [조회 방침](screen-api-integration-plan.md#장소-좌표프런트-날씨-조회-방침-302), [구현 기록](work-history/place-weather-api-304.md)을 참고한다.
 - 반영: #243에서 `POST /place/create`의 result 문자열을 place code로 파싱하고 친구 추가 route에 전달한다.
 - 반영: #243에서 `PUT /place/update/{code}`의 result를 typed `PlaceSummary`로 파싱한다.
 - 반영: #245에서 `GET /place/{code}/members`의 result 배열을 `PlaceMember`로 파싱하고 친구 관리 조회·검색에 연결했다. API 모드는 임시 렌더링 키를 사용자 ID로 사용하지 않고 멤버 변경을 제공하지 않는다.
