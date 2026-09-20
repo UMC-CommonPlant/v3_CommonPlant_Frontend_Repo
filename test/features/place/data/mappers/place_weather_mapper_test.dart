@@ -46,6 +46,69 @@ void main() {
     expect(weather.skyForecastAt, DateTime.parse('2026-09-20T10:00:00+09:00'));
   });
 
+  test('실제 0030 요청의 0000 응답을 읽고 발표시각을 보존한다', () {
+    final checkedAt = DateTime.parse('2026-09-21T01:20:00+09:00');
+    final pangyo = WeatherGrid(nx: 62, ny: 123);
+    final observationQuery = WeatherRequest.latest(
+      product: WeatherProduct.observation,
+      grid: pangyo,
+      now: checkedAt,
+    );
+    final forecastQuery = WeatherRequest.latest(
+      product: WeatherProduct.forecast,
+      grid: pangyo,
+      now: checkedAt,
+    );
+    expect(forecastQuery.baseTime, '0030');
+    final readings = weatherResponse(observationQuery);
+    weatherItems(readings)[0]['obsrValue'] = '18.7';
+    weatherItems(readings)[1]['obsrValue'] = '100';
+    final skies = weatherResponse(forecastQuery);
+    for (final item in weatherItems(skies)) {
+      item['baseTime'] = '0000';
+      item['fcstTime'] = '0200';
+      if (item['category'] == 'SKY') item['fcstValue'] = '1';
+    }
+    final weather = placeWeatherFromResponses(
+      observation: readings,
+      forecast: skies,
+      observationRequest: observationQuery,
+      forecastRequest: forecastQuery,
+    );
+    expect(weather.temperatureCelsius, 18.7);
+    expect(weather.humidityPercent, 100);
+    expect(weather.sky, WeatherSky.clear);
+    expect(
+      weather.forecastIssuedAt,
+      DateTime.parse('2026-09-21T00:00:00+09:00'),
+    );
+    expect(weather.skyForecastAt, DateTime.parse('2026-09-21T02:00:00+09:00'));
+  });
+  test('같은 응답에 HH00과 HH30이 섞이면 거절한다', () {
+    weatherItems(forecast).first['baseTime'] = '0900';
+    expect(parse, throwsA(isA<ApiException>()));
+  });
+  for (final value in ['0800', '1000', '0940', '0931', null]) {
+    test('다른 시간대나 허용하지 않은 분의 예보 $value 는 거절한다', () {
+      for (final item in weatherItems(forecast)) {
+        item['baseTime'] = value;
+      }
+      expect(parse, throwsA(isA<ApiException>()));
+    });
+  }
+  test('HH00 응답이어도 다른 날짜와 실황 시각 불일치는 거절한다', () {
+    for (final item in weatherItems(forecast)) {
+      item['baseTime'] = '0900';
+      item['baseDate'] = '20260919';
+    }
+    expect(parse, throwsA(isA<ApiException>()));
+    forecast = weatherResponse(forecastRequest);
+    for (final item in weatherItems(observation)) {
+      item['baseTime'] = '0930';
+    }
+    expect(parse, throwsA(isA<ApiException>()));
+  });
+
   for (final value in ['-999', '900', 'NaN', 'Infinity', null, '']) {
     test('결측·유효하지 않은 관측값 $value 를 실제 날씨로 사용하지 않는다', () {
       weatherItems(observation).first['obsrValue'] = value;
