@@ -201,7 +201,7 @@ lib/core/network/
 
 feature의 datasource는 공통 Dio client를 주입받아 사용하고, 화면이나 Controller에서 직접 Dio를 생성하지 않습니다.
 
-#304의 공공데이터 날씨 조회는 외부 서비스이므로 `core/network/weather_api_client.dart`의 전용 Dio를 주입합니다. CommonPlant 인증 interceptor·쿠키·토큰을 공유하지 않습니다. Place 내부의 날씨 datasource·mapper·repository를 사용하며 임시 장소 좌표를 기상청 격자로 간주하지 않습니다. [구현 기록](work-history/place-weather-api-304.md)을 참고합니다.
+#304의 공공데이터 날씨 조회는 외부 서비스이므로 `core/network/weather_api_client.dart`의 전용 Dio를 주입합니다. CommonPlant 인증 interceptor·쿠키·토큰을 공유하지 않습니다. Place 내부의 날씨 datasource·mapper·repository를 사용하며 임시 장소 좌표를 기상청 격자로 간주하지 않습니다. [구현 기록](work-history/place-weather-api-304.md)을 참고합니다. 장소 주소에 대응하는 확인된 격자가 없으면 요청하지 않고 조회 불가를 안내하며 고정 지역으로 대체하지 않습니다. [현행 조회 정책과 백엔드 변경 지점](work-history/place-weather-unavailable-309.md)을 따릅니다.
 
 사용자별 조회 Provider는 API 모드에서 `requireUserDataSession(ref)`로 세션을 구독합니다. 화면용 `AsyncValue`는 `unwrapPrevious()`로 이전 계정 데이터를 숨기고, 변경 Controller는 await 전후의 세션과 Ref를 확인합니다. 인증 저장·삭제는 `AuthTokenWriter`를 거치며 feature가 저장소에 직접 쓰지 않습니다. [상태관리의 세션 격리 기준](state-management-guide.md#사용자-데이터-세션-격리)을 따릅니다.
 
