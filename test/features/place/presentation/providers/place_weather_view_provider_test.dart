@@ -14,7 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   final grid = WeatherGrid(nx: 60, ny: 127);
   final gridB = WeatherGrid(nx: 61, ny: 128);
-  test('장소 좌표가 없으면 판교역을 조회하고 같은 위치로 재시도한다', () async {
+  test('장소 좌표가 없으면 조회와 재시도를 하지 않는다', () async {
     final repository = _Repository();
     final container = _container(repository, grid, gridOverride: (_) => null);
     addTearDown(container.dispose);
@@ -23,37 +23,29 @@ void main() {
       (_, _) {},
     );
     addTearDown(subscription.close);
-    final pangyo = WeatherGrid(nx: 62, ny: 123);
-    expect(repository.grids, [pangyo]);
-    expect(
-      container.read(placeWeatherLocationProvider('A'))?.usesFallback,
-      isTrue,
-    );
-    repository.pending.first.completeError(Exception('network'));
-    await container.pump();
+    expect(container.read(placeWeatherViewProvider('A')).requireValue, isNull);
     container.read(placeWeatherViewProvider('A').notifier).retry();
     await container.pump();
-    expect(repository.grids, [pangyo, pangyo]);
-    repository.pending.last.complete(_weather(23));
+    expect(repository.grids, isEmpty);
+  });
+  test('확인된 장소 격자로만 조회한다', () async {
+    final repository = _Repository();
+    final container = _container(repository, grid);
+    addTearDown(container.dispose);
+    final subscription = container.listen(
+      placeWeatherViewProvider('A'),
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    expect(repository.grids, [grid]);
+    repository.pending.single.complete(_weather(25));
     await container.pump();
     expect(
       container.read(placeWeatherViewProvider('A')).requireValue?.temperature,
-      '23℃',
+      '25℃',
     );
   });
-  test('실제 장소 격자가 판교역과 같아도 기본 위치 안내를 붙이지 않는다', () async {
-    final repository = _Repository();
-    final pangyo = WeatherGrid(nx: 62, ny: 123);
-    final container = _container(repository, pangyo);
-    addTearDown(container.dispose);
-    expect(
-      container.read(placeWeatherLocationProvider('A'))?.usesFallback,
-      isFalse,
-    );
-    container.read(placeWeatherViewProvider('A'));
-    expect(repository.grids, [pangyo]);
-  });
-  test('기본 위치 조회 중 장소 좌표가 생기면 전환하고 늦은 기본 응답을 무시한다', () async {
+  test('좌표가 생기면 조회하고 사라지면 취소하며 늦은 응답을 숨긴다', () async {
     final repository = _Repository();
     final selectedGrid = StateProvider<WeatherGrid?>((ref) => null);
     final container = _container(
@@ -67,17 +59,22 @@ void main() {
       (_, _) {},
     );
     addTearDown(subscription.close);
+    expect(repository.grids, isEmpty);
     container.read(selectedGrid.notifier).state = grid;
     await container.pump();
-    expect(repository.grids, [WeatherGrid(nx: 62, ny: 123), grid]);
-    expect(repository.tokens.first.isCancelled, isTrue);
-    expect(
-      container.read(placeWeatherLocationProvider('A'))?.usesFallback,
-      isFalse,
-    );
-    repository.pending.last.complete(_weather(25));
+    expect(repository.grids, [grid]);
+    container.read(selectedGrid.notifier).state = null;
     await container.pump();
-    repository.pending.first.complete(_weather(10));
+    expect(repository.tokens.single.isCancelled, isTrue);
+    repository.pending.single.complete(_weather(10));
+    await container.pump();
+    expect(container.read(placeWeatherViewProvider('A')).requireValue, isNull);
+    container.read(placeWeatherViewProvider('A').notifier).retry();
+    expect(repository.grids, [grid]);
+    container.read(selectedGrid.notifier).state = gridB;
+    await container.pump();
+    expect(repository.grids, [grid, gridB]);
+    repository.pending.last.complete(_weather(25));
     await container.pump();
     expect(
       container.read(placeWeatherViewProvider('A')).requireValue?.temperature,
@@ -85,12 +82,8 @@ void main() {
     );
     container.read(selectedGrid.notifier).state = null;
     await container.pump();
-    expect(repository.grids.last, WeatherGrid(nx: 62, ny: 123));
-    expect(container.read(placeWeatherViewProvider('A')).hasValue, isFalse);
-    expect(
-      container.read(placeWeatherLocationProvider('A'))?.usesFallback,
-      isTrue,
-    );
+    expect(container.read(placeWeatherViewProvider('A')).requireValue, isNull);
+    expect(repository.grids, [grid, gridB]);
   });
   test('로컬 모드는 격자가 주어져도 실제 API를 부르지 않는다', () async {
     final repository = _Repository();

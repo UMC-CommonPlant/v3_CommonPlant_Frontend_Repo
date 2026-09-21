@@ -21,7 +21,7 @@ final placeWeatherRepositoryProvider =
       );
     });
 
-/// 검증한 장소 격자 또는 사용자가 지정한 기본 위치의 기상청 격자를 받는다.
+/// 장소 주소에 대응하는 것으로 검증한 기상청 격자를 받는다.
 /// 수동 새로고침은 이 Provider를 invalidate하며, 기존 흐름은 취소된다.
 final placeWeatherProvider = FutureProvider.autoDispose
     .family<PlaceWeather, WeatherGrid>((ref, grid) {

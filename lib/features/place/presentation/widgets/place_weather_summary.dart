@@ -17,66 +17,52 @@ class PlaceWeatherSummary extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(placeWeatherViewProvider(placeId));
-    final usesFallback =
-        ref.watch(placeWeatherLocationProvider(placeId))?.usesFallback ?? false;
     return Semantics(
       container: true,
       explicitChildNodes: true,
       label: '지역 날씨',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (usesFallback) ...[
-            const _WeatherCaption('판교역 기준'),
-            const SizedBox(height: AppSpacing.x4),
-          ],
-          state.when(
-            skipLoadingOnRefresh: false,
-            loading: () => Semantics(
-              liveRegion: true,
-              label: '날씨를 불러오는 중',
-              excludeSemantics: true,
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  SizedBox.square(
-                    dimension: AppSizes.iconMedium,
-                    child: CircularProgressIndicator(
-                      color: AppColors.brandStrong,
-                    ),
-                  ),
-                  SizedBox(height: AppSpacing.x8),
-                  _WeatherCaption('날씨 불러오는 중'),
-                ],
+      child: state.when(
+        skipLoadingOnRefresh: false,
+        loading: () => Semantics(
+          liveRegion: true,
+          label: '날씨를 불러오는 중',
+          excludeSemantics: true,
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              SizedBox.square(
+                dimension: AppSizes.iconMedium,
+                child: CircularProgressIndicator(color: AppColors.brandStrong),
               ),
-            ),
-            error: (_, _) => Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Semantics(
-                  liveRegion: true,
-                  child: const _WeatherCaption('날씨를 불러오지 못했어요'),
-                ),
-                IconButton(
-                  tooltip: '날씨 다시 불러오기',
-                  constraints: const BoxConstraints(
-                    minWidth: AppSizes.buttonHeight,
-                    minHeight: AppSizes.buttonHeight,
-                  ),
-                  color: AppColors.brandStrong,
-                  iconSize: AppSizes.iconMedium,
-                  onPressed: () => ref
-                      .read(placeWeatherViewProvider(placeId).notifier)
-                      .retry(),
-                  icon: const Icon(Icons.refresh),
-                ),
-              ],
-            ),
-            data: (weather) => weather == null
-                ? const _WeatherCaption('날씨 정보 준비 중')
-                : _WeatherReadings(weather: weather),
+              SizedBox(height: AppSpacing.x8),
+              _WeatherCaption('날씨 불러오는 중'),
+            ],
           ),
-        ],
+        ),
+        error: (_, _) => Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Semantics(
+              liveRegion: true,
+              child: const _WeatherCaption('날씨를 불러오지 못했어요'),
+            ),
+            IconButton(
+              tooltip: '날씨 다시 불러오기',
+              constraints: const BoxConstraints(
+                minWidth: AppSizes.buttonHeight,
+                minHeight: AppSizes.buttonHeight,
+              ),
+              color: AppColors.brandStrong,
+              iconSize: AppSizes.iconMedium,
+              onPressed: () =>
+                  ref.read(placeWeatherViewProvider(placeId).notifier).retry(),
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
+        ),
+        data: (weather) => weather == null
+            ? const _WeatherCaption('날씨 정보를 조회할 수 없어요')
+            : _WeatherReadings(weather: weather),
       ),
     );
   }

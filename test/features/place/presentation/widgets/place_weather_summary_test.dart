@@ -20,11 +20,11 @@ import '../../../../helpers/user_data_session.dart';
 import '../../data/weather_fixture.dart';
 
 void main() {
-  testWidgets('로컬 모드는 준비 상태만 보여 주고 조회·재호출하지 않는다', (tester) async {
+  testWidgets('로컬 모드는 조회 불가 안내와 함께 조회·재호출하지 않는다', (tester) async {
     final source = _Source();
     await tester.pumpWidget(_app(source, connected: false, remote: false));
     await tester.pumpAndSettle();
-    expect(find.text('날씨 정보 준비 중'), findsOneWidget);
+    expect(find.text('날씨 정보를 조회할 수 없어요'), findsOneWidget);
     expect(find.byTooltip('날씨 다시 불러오기'), findsNothing);
     expect(source.calls, 0);
     expect(find.text('판교역 기준'), findsNothing);
@@ -32,15 +32,16 @@ void main() {
     expect(find.text('69%'), findsNothing);
   });
 
-  testWidgets('좌표 누락 시 판교역 실황·예보를 요청하고 기본 위치를 표시한다', (tester) async {
+  testWidgets('좌표가 없으면 조회 불가 안내를 표시하고 요청하지 않는다', (tester) async {
     final source = _Source();
     await tester.pumpWidget(_app(source, connected: false));
     await tester.pumpAndSettle();
-    expect(source.calls, 2);
-    expect(source.grids, everyElement(WeatherGrid(nx: 62, ny: 123)));
-    expect(find.text('판교역 기준'), findsOneWidget);
-    expect(find.text('23.5℃'), findsOneWidget);
-    expect(find.text('날씨 정보 준비 중'), findsNothing);
+    expect(source.calls, 0);
+    expect(source.grids, isEmpty);
+    expect(find.text('판교역 기준'), findsNothing);
+    expect(find.text('23.5℃'), findsNothing);
+    expect(find.text('날씨 정보를 조회할 수 없어요'), findsOneWidget);
+    expect(find.byTooltip('날씨 다시 불러오기'), findsNothing);
   });
 
   testWidgets('성공은 기온·습도·예보 이름·시각·출처와 접근성 이름을 표시한다', (tester) async {
@@ -62,7 +63,7 @@ void main() {
 
   testWidgets('실제 5초/3회 흐름 뒤 같은 영역에 재호출을 표시하고 빠른 연속 탭을 막는다', (tester) async {
     final source = _Source(hang: true);
-    await tester.pumpWidget(_app(source, connected: false));
+    await tester.pumpWidget(_app(source));
     await tester.pump();
     final region = find.byKey(const ValueKey('place-weather-region'));
     final originalPosition = tester.getTopLeft(region);
@@ -72,7 +73,7 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
     }
     expect(source.calls, 6);
-    expect(find.text('판교역 기준'), findsOneWidget);
+    expect(find.text('판교역 기준'), findsNothing);
     expect(tester.getTopLeft(region), originalPosition);
     final retry = find.byTooltip('날씨 다시 불러오기');
     expect(retry, findsOneWidget);
@@ -97,8 +98,8 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
     expect(source.calls, 10);
-    expect(source.grids, everyElement(WeatherGrid(nx: 62, ny: 123)));
-    expect(find.text('판교역 기준'), findsOneWidget);
+    expect(source.grids, everyElement(WeatherGrid(nx: 60, ny: 127)));
+    expect(find.text('판교역 기준'), findsNothing);
     expect(find.text('23.5℃'), findsOneWidget);
     expect(tester.getTopLeft(region), originalPosition);
     source.completePending();
@@ -132,26 +133,32 @@ void main() {
 
   for (final width in [320.0, 375.0, 430.0]) {
     for (final scale in [1.0, 2.0]) {
-      testWidgets('휴대폰 $width / 글씨 $scale 에서 성공·실패 overflow가 없다', (
+      testWidgets('휴대폰 $width / 글씨 $scale 에서 성공·실패·조회 불가가 넘치지 않는다', (
         tester,
       ) async {
         configureTestViewport(tester, Size(width, 812));
         final source = _Source();
-        await tester.pumpWidget(
-          _app(source, textScale: scale, connected: false),
-        );
+        await tester.pumpWidget(_app(source, textScale: scale));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(find.text('23.5℃'), findsOneWidget);
         expect(find.text('아주 긴 장소 이름을 가진 옥상 정원'), findsOneWidget);
         // 완전히 다른 scope로 실패 화면도 검증한다.
         await tester.pumpWidget(const SizedBox());
-        await tester.pumpWidget(
-          _app(_Source(fail: true), textScale: scale, connected: false),
-        );
+        await tester.pumpWidget(_app(_Source(fail: true), textScale: scale));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(find.byTooltip('날씨 다시 불러오기'), findsOneWidget);
+        await tester.pumpWidget(const SizedBox());
+        final unavailable = _Source();
+        await tester.pumpWidget(
+          _app(unavailable, connected: false, textScale: scale),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text('날씨 정보를 조회할 수 없어요'), findsOneWidget);
+        expect(find.byTooltip('날씨 다시 불러오기'), findsNothing);
+        expect(unavailable.calls, 0);
       });
     }
   }
