@@ -61,7 +61,7 @@ class PlaceWeatherSummary extends ConsumerWidget {
           ],
         ),
         data: (weather) => weather == null
-            ? const _WeatherCaption('날씨 정보 준비 중')
+            ? const _WeatherCaption('날씨 정보를 조회할 수 없어요')
             : _WeatherReadings(weather: weather),
       ),
     );

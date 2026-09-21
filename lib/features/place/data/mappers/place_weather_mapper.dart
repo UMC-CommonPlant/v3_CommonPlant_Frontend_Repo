@@ -29,12 +29,19 @@ PlaceWeather placeWeatherFromResponses({
     throw _invalid();
   }
 
+  final forecastItems = _items(forecast, forecastRequest);
+  // 실제 초단기예보는 HH30 요청에 같은 시각대의 HH00을 반환하기도 한다.
+  // 요청값으로 덮지 않고 응답의 발표시각을 보존한다. 근거: #307 작업 기록.
+  final forecastBaseAt =
+      forecastItems.first['baseTime'] == forecastRequest.baseTime
+      ? forecastRequest.baseAt
+      : forecastRequest.baseAt.subtract(const Duration(minutes: 30));
   final skies = <DateTime, WeatherSky>{};
-  for (final item in _items(forecast, forecastRequest)) {
+  for (final item in forecastItems) {
     if (item['category'] != 'SKY') continue;
     final time = _koreanTimestamp(item['fcstDate'], item['fcstTime']);
-    if (!time.isAfter(forecastRequest.baseAt) ||
-        time.isAfter(forecastRequest.baseAt.add(const Duration(hours: 6)))) {
+    if (!time.isAfter(forecastBaseAt) ||
+        time.isAfter(forecastBaseAt.add(const Duration(hours: 6)))) {
       throw _invalid();
     }
     final sky = switch (_number(item['fcstValue'])) {
@@ -60,7 +67,7 @@ PlaceWeather placeWeatherFromResponses({
     observedAt: observationRequest.baseAt,
     sky: skies[times.first]!,
     skyForecastAt: times.first,
-    forecastIssuedAt: forecastRequest.baseAt,
+    forecastIssuedAt: forecastBaseAt,
   );
 }
 
@@ -82,10 +89,17 @@ List<Map<String, Object?>> _items(Object? data, WeatherRequest request) {
   if (items is! List || items.isEmpty || body['totalCount'] != items.length) {
     throw _invalid();
   }
+  final responseBaseTime = _map(items.first)['baseTime'];
+  final sameHourForecast =
+      request.product == WeatherProduct.forecast &&
+      responseBaseTime == '${request.baseTime.substring(0, 2)}00';
+  if (responseBaseTime != request.baseTime && !sameHourForecast) {
+    throw _invalid();
+  }
   return items.map((raw) {
     final item = _map(raw);
     if (item['baseDate'] != request.baseDate ||
-        item['baseTime'] != request.baseTime ||
+        item['baseTime'] != responseBaseTime ||
         item['nx'] != request.grid.nx ||
         item['ny'] != request.grid.ny ||
         item['category'] is! String) {

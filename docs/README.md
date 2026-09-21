@@ -47,6 +47,7 @@
 
 | 작업 | 이력 |
 | --- | --- |
+| 장소 좌표 없는 날씨 조회 차단 #309 | [조회 조건·불가 안내·후속 계약](work-history/place-weather-unavailable-309.md) |
 | 장소 날씨 화면·백엔드 연결 경계 #306 | [단계별 구현 계획과 변경 표](work-history/place-weather-ui-306.md) |
 | Plant 생성·수정 #229 | [Plant Form](work-history/plant-form-api-state-229.md) |
 | Plant 상세 #231 | [Plant Detail](work-history/plant-detail-api-view-231.md) |
@@ -87,4 +88,5 @@ Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 �
 
 - [식물 생성·수정 물주기 주기 #299](work-history/plant-watering-cycle-299.md): 필수 입력, null 초기값, 로컬 보관과 원격 미지원 경계
 
-- [공공데이터 초단기 날씨 조회 준비 #304](work-history/place-weather-api-304.md): 실황·예보 API 계층, 5초·3회·취소 검증과 장소 좌표/화면 연결 후속.
+- [공공데이터 초단기 날씨 조회 준비 #304](work-history/place-weather-api-304.md): 실황·예보 API와 5초·3회·취소 구현. 화면 구현 완료, 실제 장소 좌표·기기 QA 후속.
+- [판교역 검증 및 정책 철회 이력 #307](work-history/place-weather-fallback-307.md): 실제 공공데이터 응답 검증·예보 기준시각 수정. 기본 위치 정책은 #309에서 철회.

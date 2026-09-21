@@ -1,5 +1,7 @@
 # 장소 날씨 UI와 연결 경계 #306
 
+> 현재 정책 #309: 장소 주소에 대응하는 좌표로만 조회하며, 좌표 없으면 조회 불가를 안내한다. #307의 판교역 기본값은 철회했다. 단계별 계획·검증 수치는 당시 기록이며, 상태 기준과 후속 변경 표는 [현재 정책](place-weather-unavailable-309.md)에 맞춰 갱신한다. [#307의 실제 API 검증](place-weather-fallback-307.md)과 예보 시각 수정은 유지한다.
+
 ## 구현 전 기록
 
 2026-09-20 사용자 요청: **문서 기록 → 구현 세분화 → 구현·검증을 커밋 단위로 진행**한다. 백엔드 확정이 필요한 부분과 지금 진행 가능한 화면 작업을 구분한다. 선행 #304의 API 계층 위에 구현하며 기존 OPEN PR #305에 이어서 반영한다. 이 문서를 첫 커밋으로 남긴 뒤 코드를 수정한다.
@@ -23,7 +25,7 @@
 - 성공: 기온(℃)·습도(%)와 날씨 아이콘/이름을 표시한다. 관측 시각과 하늘상태 예보 시각을 구분하고 기상청 출처를 안내한다. 강수 관측이 있으면 해당 강수 상태를 우선하고, 강수가 없으면 하늘상태를 **예보**로 표시한다.
 - loading: 같은 영역에 진행 상태를 표시하며 이전 수치와 재호출 버튼을 숨긴다.
 - error: 같은 영역에 짧은 실패 문구와 tooltip/접근성 이름이 있는 재호출 아이콘을 표시한다. 원문 API 오류나 인증키는 표시하지 않는다.
-- 좌표 연결 전/로컬 모드: `날씨 정보 준비 중`을 표시하고 요청과 재호출 버튼을 만들지 않는다. 기존 fixture의 햇빛 점수·습도를 실제 날씨처럼 표시하지 않는다.
+- 좌표 연결 전/로컬 모드: #309에서 `날씨 정보를 조회할 수 없어요`로 변경했다. 요청과 재호출 버튼을 만들지 않는다. 기존 fixture의 햇빛 점수·습도를 실제 날씨처럼 표시하지 않는다.
 - 재호출: 원본 `placeWeatherProvider(grid)`만 무효화한다. 실패 상태에서만 허용하고 무효화 직후 원본 loading도 확인해 빠른 연속 탭을 차단한다. 다른 격자·장소가 늦게 완료돼도 현재 상태를 바꾸지 않는다.
 - 새로운 자동 갱신·영속 캐시 정책은 추가하지 않는다. 조회 Provider는 기존 autoDispose 수명을 따른다.
 
@@ -38,14 +40,14 @@
 | 좌표가 포함되는 endpoint·응답 위치·최종 필드명 | `data/datasources/place_remote_data_source.dart`, `data/mappers/place_mapper.dart`; 현재 좌표 파싱 없음 | 실제 Swagger·서버 응답 근거를 문서화하고 해당 응답 경계에만 필드 추가. 임시 `xPosition`·`yPosition` 별칭을 추측으로 남기지 않음 | 실제 필드명 fixture, 필드 누락·다른 wrapper·잘못된 타입 |
 | x/y 숫자 타입·nullable·값 의미 | `domain/entities/place_detail.dart`; 좌표 모델 없음 | 확정한 원본 좌표의 타입과 nullable 모델 추가. 좌표 없음과 잘못된 응답 구분 | 정수/소수/문자열 계약, 0/null/범위 오류, 부분 누락 |
 | 좌표계·단위·축 순서 | `presentation/providers/place_weather_view_provider.dart`의 `placeWeatherGridProvider`; 현재 null | 기상청 격자면 검증해 직접 사용, 위경도/다른 좌표계면 확인된 공식 변환을 별도 순수 mapper에 구현. 주소 문자열·장소 ID로 격자를 추정하지 않음 | 알려진 장소의 원본좌표 → nx/ny 대조, 축 반전·격자 경계·해외/범위 밖 |
-| 좌표가 포함된 조회의 loading/error/empty | 같은 grid Provider의 반환 계약, `placeDetailProvider` | 단순 `WeatherGrid?`로 충분한지 재검토. 별도 조회가 필요하면 준비 중/조회 오류가 구별되도록 상태 전달. 현재 단계에서 가상의 endpoint 추가 금지 | 실제 장소 실패와 날씨 실패를 분리, 성공한 상세 재사용·중복 조회 없음 |
+| 좌표가 포함된 조회의 loading/error/empty | 같은 grid Provider의 반환 계약, `placeDetailProvider` | 단순 `WeatherGrid?`로 충분한지 재검토. 별도 조회가 필요하면 조회 중/좌표 없음/조회 오류가 구별되도록 상태 전달. 현재 단계에서 가상의 endpoint 추가 금지 | 실제 장소 실패와 날씨 실패를 분리, 성공한 상세 재사용·중복 조회 없음 |
 | 장소 수정 후 좌표 변경 | `place_form_controller.dart`, `place_detail_remote_provider.dart`, grid Provider | 성공 후 기존 장소 상세 무효화가 좌표와 날씨까지 전파되는지 확인·보완 | 같은 장소 좌표 A→B, 이전 A 응답 지연, 실패한 수정 |
-| 좌표 미제공 기존 장소·권한·오류 응답 | grid Provider, `widgets/place_weather_summary.dart` | 현재 준비 중 문구를 확정된 제품 안내/액션으로 갱신 | 기존 장소 null, 접근권한 변경, 계정 전환 시 이전 값 비노출 |
-| 실제 공공데이터 키·좌표 전달 | `COMMONPLANT_WEATHER_SERVICE_KEY`, `place_weather_provider.dart`, 기존 weather datasource | 승인 키 설정 후 실제 응답·발표 시각·동일 지역 값을 검증. 기온/습도 실황과 SKY 예보 구분 유지 | 실제 서버 성공·5초 초과·3회 실패·수동 복구, 키 미설정·잘못된 키 |
+| 좌표 미제공 기존 장소·권한·오류 응답 | grid Provider, `widgets/place_weather_summary.dart` | #309 조회 불가·요청 없음 기준 유지. 좌표 없음과 권한·응답 오류 구분 | 기존 장소 null, 접근권한 변경, 계정 전환 시 이전 값 비노출 |
+| 실제 공공데이터 키·좌표 전달 | `COMMONPLANT_WEATHER_SERVICE_KEY`, `place_weather_provider.dart`, 기존 weather datasource | #307 승인 키·검증용 격자 성공 확인. 실제 장소 좌표·기기에서 값과 발표시각을 검증. 기온/습도 실황과 SKY 예보 구분 유지 | 실제 서버 성공·5초 초과·3회 실패·수동 복구, 키 미설정·잘못된 키 |
 
 파일 경로는 별도 표기가 없으면 `lib/features/place/` 기준이다. 최종 필드명이 확정되면 `docs/backend-api-open-questions.md`의 PLACE-07, `docs/api-swagger-reference.md`, `docs/screen-api-integration-plan.md`, `docs/follow-up-decision-checklist.md`도 함께 갱신한다. 이후 재작업은 이 표에서 해당 행만 선택해 작은 커밋으로 분리한다.
 
-## 검증 기록
+## #306 당시 검증 기록 (2026-09-20)
 
 | 커밋 | 변경 | 검증 |
 | --- | --- | --- |
@@ -55,13 +57,14 @@
 
 추가 확인: Flutter test renderer에서 Pretendard와 Material 아이콘 글꼴을 로드해 375px 성공/실패/준비 상태, 320px 글씨 2배 화면을 렌더링하고 육안 확인했다. 큰 글씨 때 제목 아래 배치로 바꿔 가독성을 보완했다. 임시 캡처용 test 파일은 제거했으며 커밋된 자동 테스트는 API 키·실제 네트워크를 사용하지 않는다.
 
-전체 검증: `fvm dart format --output=none --set-exit-if-changed .` 355개 파일 변경 없음, `fvm flutter analyze` 이상 없음, `fvm flutter test` 751개 통과·기존 Linux golden 1개 macOS 스킵. 새 테스트는 표시/상태 16개 + UI 11개다. 실제 서버·휴대폰 QA는 미실행이다.
+전체 검증: `fvm dart format --output=none --set-exit-if-changed .` 355개 파일 변경 없음, `fvm flutter analyze` 이상 없음, `fvm flutter test` 751개 통과·기존 Linux golden 1개 macOS 스킵. 새 테스트는 표시/상태 16개 + UI 11개다. #306 당시 실제 서버·휴대폰 QA는 미실행이었다. 이후 #307에서 검증용 격자의 실제 API 성공을 확인했고, #309 전체 테스트는 762개 통과했다. 실제 장소·휴대폰 QA는 남아 있다.
 
 ## 남은 외부 의존성
 
 - [ ] PLACE-07 최종 좌표 계약 확인 및 실제 장소 연결
 - [ ] 조회 시점·갱신 주기·캐시/오프라인 정책 별도 확정
-- [ ] 실제 인증키·장소로 기상청 서버 조회 및 기기 QA
+- [x] #307 실제 인증키·검증용 격자로 기상청 정상 응답 확인
+- [ ] 실제 장소 좌표 연결 및 기기·장애 재호출 QA
 
 소셜 로그인·사진 업로드의 미검증 항목(#293, #295)은 이번 작업으로 완료 처리하지 않는다.
 

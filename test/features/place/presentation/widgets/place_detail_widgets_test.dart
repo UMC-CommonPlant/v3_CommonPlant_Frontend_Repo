@@ -25,7 +25,7 @@ void main() {
 
     expect(find.text('옥상 정원'), findsOneWidget);
     expect(find.text('서울시 노원구 광운로 20'), findsOneWidget);
-    expect(find.text('날씨 정보 준비 중'), findsOneWidget);
+    expect(find.text('날씨 정보를 조회할 수 없어요'), findsOneWidget);
     expect(find.text('나'), findsOneWidget);
     expect(find.text('커먼맘'), findsOneWidget);
 

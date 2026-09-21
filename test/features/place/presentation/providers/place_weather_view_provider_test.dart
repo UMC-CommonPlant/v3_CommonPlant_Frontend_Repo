@@ -14,14 +14,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   final grid = WeatherGrid(nx: 60, ny: 127);
   final gridB = WeatherGrid(nx: 61, ny: 128);
-  test('좌표 계약 미정이면 값을 추정하지 않고 조회하지 않는다', () async {
+  test('장소 좌표가 없으면 조회와 재시도를 하지 않는다', () async {
     final repository = _Repository();
-    final container = ProviderContainer(
-      overrides: [
-        useRemoteApiProvider.overrideWithValue(true),
-        placeWeatherRepositoryProvider.overrideWithValue(repository),
-      ],
-    );
+    final container = _container(repository, grid, gridOverride: (_) => null);
     addTearDown(container.dispose);
     final subscription = container.listen(
       placeWeatherViewProvider('A'),
@@ -31,7 +26,64 @@ void main() {
     expect(container.read(placeWeatherViewProvider('A')).requireValue, isNull);
     container.read(placeWeatherViewProvider('A').notifier).retry();
     await container.pump();
-    expect(repository.pending, isEmpty);
+    expect(repository.grids, isEmpty);
+  });
+  test('확인된 장소 격자로만 조회한다', () async {
+    final repository = _Repository();
+    final container = _container(repository, grid);
+    addTearDown(container.dispose);
+    final subscription = container.listen(
+      placeWeatherViewProvider('A'),
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    expect(repository.grids, [grid]);
+    repository.pending.single.complete(_weather(25));
+    await container.pump();
+    expect(
+      container.read(placeWeatherViewProvider('A')).requireValue?.temperature,
+      '25℃',
+    );
+  });
+  test('좌표가 생기면 조회하고 사라지면 취소하며 늦은 응답을 숨긴다', () async {
+    final repository = _Repository();
+    final selectedGrid = StateProvider<WeatherGrid?>((ref) => null);
+    final container = _container(
+      repository,
+      grid,
+      gridOverride: (ref) => ref.watch(selectedGrid),
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(
+      placeWeatherViewProvider('A'),
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    expect(repository.grids, isEmpty);
+    container.read(selectedGrid.notifier).state = grid;
+    await container.pump();
+    expect(repository.grids, [grid]);
+    container.read(selectedGrid.notifier).state = null;
+    await container.pump();
+    expect(repository.tokens.single.isCancelled, isTrue);
+    repository.pending.single.complete(_weather(10));
+    await container.pump();
+    expect(container.read(placeWeatherViewProvider('A')).requireValue, isNull);
+    container.read(placeWeatherViewProvider('A').notifier).retry();
+    expect(repository.grids, [grid]);
+    container.read(selectedGrid.notifier).state = gridB;
+    await container.pump();
+    expect(repository.grids, [grid, gridB]);
+    repository.pending.last.complete(_weather(25));
+    await container.pump();
+    expect(
+      container.read(placeWeatherViewProvider('A')).requireValue?.temperature,
+      '25℃',
+    );
+    container.read(selectedGrid.notifier).state = null;
+    await container.pump();
+    expect(container.read(placeWeatherViewProvider('A')).requireValue, isNull);
+    expect(repository.grids, [grid, gridB]);
   });
   test('로컬 모드는 격자가 주어져도 실제 API를 부르지 않는다', () async {
     final repository = _Repository();

@@ -5,8 +5,8 @@ import 'package:commonplant_frontend/features/place/presentation/providers/place
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 백엔드 확정 후 바꿀 유일한 장소 → 기상청 격자 공급 지점.
-/// PLACE-07의 필드·좌표계가 미정이므로 임시 필드/기본 좌표를 읽지 않는다.
-/// 변경 파일·계약·검증: docs/work-history/place-weather-ui-306.md
+/// PLACE-07의 필드·좌표계가 미정이므로 임시 필드를 읽거나 기본 위치로 대체하지 않는다.
+/// 변경 파일·계약·검증: docs/work-history/place-weather-unavailable-309.md
 final placeWeatherGridProvider = Provider.autoDispose
     .family<WeatherGrid?, String>((ref, placeId) {
       return null;

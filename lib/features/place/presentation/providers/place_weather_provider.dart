@@ -21,7 +21,7 @@ final placeWeatherRepositoryProvider =
       );
     });
 
-/// 장소 DTO 좌표 계약 확정 후 변환한 기상청 격자만 전달한다.
+/// 장소 주소에 대응하는 것으로 검증한 기상청 격자를 받는다.
 /// 수동 새로고침은 이 Provider를 invalidate하며, 기존 흐름은 취소된다.
 final placeWeatherProvider = FutureProvider.autoDispose
     .family<PlaceWeather, WeatherGrid>((ref, grid) {

@@ -9,12 +9,12 @@
 - 결론이 나면 이 문서와 원본 문서를 함께 갱신한다.
 - 구현 작업이 필요한 결론은 별도 GitHub 이슈로 분리한다.
 
-## 2026-09-20 장소 날씨 조회·화면 준비
+## 2026-09-21 장소 날씨 구현·조회 조건
 
 - #302에서 좌표 제공 방향·프런트 날씨 책임을 정했고 #304에서 사용자가 현재 기온·습도 + 날씨 아이콘을 선택했다.
 - 공공데이터포털 초단기실황·초단기예보 조회, 시도별 5초 제한·최초 포함 3회·취소·늦은 결과 방지는 구현했다.
-- Place 좌표의 최종 명칭·타입·좌표계, 화면의 갱신/캐시 정책은 남아 있다. #306에서 기온·습도·날씨 아이콘, 상태 UI, 같은 자리 재호출 버튼을 구현했다. 실제 값의 조회 연결은 좌표 계약 확정 후 진행한다.
-- API 키를 이용한 실제 서버 QA는 미실행이며 자동 테스트로 대체하지 않는다. [구현 기록](work-history/place-weather-api-304.md), [PLACE-07](backend-api-open-questions.md#place-07-장소-조회-좌표-계약)을 따른다.
+- Place 좌표의 최종 명칭·타입·좌표계, 화면의 갱신/캐시 정책은 남아 있다. #306에서 기온·습도·날씨 아이콘, 상태 UI, 같은 자리 재호출 버튼을 구현했다. #309 사용자 결정으로 고정 기본 위치를 제거하고 좌표 없으면 조회 불가를 안내한다. 장소별 실제 좌표 연결은 계약 확정 후 진행한다.
+- 고정 위치 대체를 철회한 현행 정책과 별도로, #307 당시 판교역 격자를 사용한 실제 API 확인 결과는 [#307 기록](work-history/place-weather-fallback-307.md)을 따른다. 장소별 좌표·휴대폰 QA는 자동 테스트로 대체하지 않는다. [구현 기록](work-history/place-weather-api-304.md), [PLACE-07](backend-api-open-questions.md#place-07-장소-조회-좌표-계약)을 따른다.
 
 ## 2026-09-02 소셜 로그인 SDK 재개
 
@@ -84,7 +84,7 @@
 | [ ] | ROUTING-01 | 하단 탭 도입 시 `ShellRoute`와 단순 탭 상태 중 선택 | `docs/routing-guide.md` | bottom navigation 화면 범위가 확정되면 라우팅 구조를 결정한다. | Open |
 | [x] | GIT-01 | PR template 파일 추가 여부 | `docs/git-workflow.md`, `.github/pull_request_template.md` | #281에서 현재 PR 본문 기준을 단일 기본 template으로 고정했다. | Decided |
 | [x] | WEATHER-01 | 날씨 조회 담당과 데이터 출처 | `docs/screen-api-integration-plan.md` | #304: 프런트에서 기상청 초단기실황·초단기예보 조회. 현재 기온·습도 + 날씨 아이콘으로 결정하고 API 계층 구현. | Decided |
-| [ ] | WEATHER-02 | timeout·재시도·실패 UI | `docs/screen-api-integration-plan.md` | #304에 시도별 5초·총 3회·취소 구현. #306에서 실패 위치 재호출 UI·중복 탭 차단·휴대폰 상태 검증 완료. 실제 장소 좌표 연결·갱신/캐시 정책·서버 QA는 후속. | Partial |
+| [ ] | WEATHER-02 | timeout·재시도·실패 UI | `docs/screen-api-integration-plan.md` | #304에 시도별 5초·총 3회·취소 구현. #306에서 실패 위치 재호출 UI·중복 탭 차단·휴대폰 너비의 위젯 상태 검증 완료. #309 좌표 없음은 요청·재호출 없이 조회 불가. #307 실제 공공데이터 성공 확인, 실제 장소 좌표·갱신/캐시·실기기 장애 QA는 후속. | Partial |
 
 ## 백엔드 확인 질문
 

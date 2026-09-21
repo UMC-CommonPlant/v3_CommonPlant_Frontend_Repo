@@ -92,7 +92,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Place | 주소 검색 | #253 / PR #263 typed 결과 반환·취소 보존, 로컬 fixture 검색·empty, API 모드 미연결 안내 | 외부 검색 서비스·키·과금·adapter | `AddressSearchResult` 출처와 세션·화면 수명 검증 | 결과 전달 수정, 실서비스 검색은 미연결 |
 | Place | 장소 등록 중 친구 추가 | User 검색, 생성된 place code, 선택 사용자 요청 submit 연결 | 고유 사용자 식별자와 대상별 결과 검증 | `GET /users/{keyword}`, `POST /friends/request`; 동명이인 위험은 별도 등록 | #243 위험 수용 연결 |
 | Place | 장소 수정 | #248 사진 수정 차단·#250 잠금·#253 / PR #263 주소 결과 연결 병합, 취소 시 서버 주소 보존 | key 계약 후 제한 해제, 실제 주소 검색 | imageKey 생략은 삭제 의미, 상세에는 key 미제공 | 기존 주소 수정 유지, 새 주소 검색·사진 있는 장소 수정은 제한 |
-| Place | 장소 상세 | API 장소·owner·멤버·식물 연결, fixture 병합 제거 | 장소 좌표 기반 프런트 공공데이터 날씨 조회와 물주기 액션 | #302 좌표 임시 명칭 `xPosition`·`yPosition`, 백엔드 최종 계약 후 날씨 연결 | 기존 상세 연결 완료, 날씨는 결정·검토안 문서화 단계 |
+| Place | 장소 상세 | API 장소·owner·멤버·식물 연결, 날씨 API·상태 UI 구현, #309 좌표 없으면 조회 불가 | 실제 장소 좌표 연결·기기 QA와 물주기 액션 | PLACE-07 최종 좌표 계약 필요, 주소 문자열만으로 조회하지 않음 | 날씨 계층·UI 구현 및 공공데이터 실제 응답 검증 완료, 장소 좌표 연결 대기 |
 | Place | 친구 관리 | 실제 멤버·이미지 조회, 닉네임 필터, loading/empty/error/retry 연결 | 멤버 추가·삭제·권한 변경 | `GET /place/{code}/members` 연결, 고유 member id와 변경 endpoint 없음 | #245 조회 전용 연결 |
 | Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
 | Plant | 식물 등록 검색 | #273에서 API mode fixture 차단·미연결 안내, API 비사용 검색·empty·선택 유지 | 실제 검색 모델과 loading/empty/error/success | 백엔드 #92의 식물 종 검색 endpoint·DTO 필요 | Blocked |
@@ -188,7 +188,7 @@ Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Pr
 - Home 장소 목록은 `GET /place/myGarden`의 `result.placeList`에서 code, 이름, 대표 이미지, 멤버 수, 식물 수를 파싱합니다.
 - 장소 상세는 `GET /place/{code}`를 별도 `PlaceDetail` 도메인 모델로 변환하고 owner, 멤버, 식물을 화면 ViewData로 연결합니다.
 - API 모드에서는 서버가 제공하지 않는 햇빛·습도, 물주기 예정값, fixture 멤버·식물을 표시하지 않습니다.
-- 날씨는 #302의 프런트 직접 조회 결정에 따라 #304 API 계층과 #306 상태 화면을 구현했습니다. 실제 장소 좌표 연결과 서버 QA는 PLACE-07 확정 후 진행합니다.
+- 날씨는 #302의 프런트 직접 조회 결정에 따라 #304 API 계층과 #306 상태 화면을 구현했습니다. #307에서 검증용 격자의 실제 공공데이터 응답을 확인했고, #309에서 좌표 없으면 조회 불가로 정리했습니다. 실제 장소 좌표 연결·기기 QA는 PLACE-07 확정 후 진행합니다.
 - 마지막 물주기 날짜가 있으면 확인 가능한 이력으로 표시하고, 물주기 action은 endpoint가 없어 활성화하지 않습니다.
 - `DELETE /place/delete/{code}`는 owner 전용 전체 삭제이므로 owner에게만 삭제 문구와 영향 범위 경고를 표시합니다.
 - 구성원 leave endpoint가 없어 API 모드의 구성원에게는 동작하지 않는 나가기 action을 노출하지 않습니다.
@@ -196,13 +196,13 @@ Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Pr
 
 ### 장소 좌표·프런트 날씨 조회 방침 #302
 
-2026-09-19 [#302](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/302)에서 문서화했고, 2026-09-20 [#304](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/304)에서 공공데이터 조회 계층을 준비했습니다. [#306 화면·연결 계획](work-history/place-weather-ui-306.md)에서 상태 UI와 백엔드 확정 후 변경 표를 이어서 관리합니다.
+2026-09-19 [#302](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/302)에서 문서화했고, 2026-09-20 [#304](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/304)에서 공공데이터 조회 계층을 준비했습니다. [#306 화면 구현 이력](work-history/place-weather-ui-306.md)에 이어 [#309 현행 정책·변경 표](work-history/place-weather-unavailable-309.md)에서 좌표 없는 조회 불가와 백엔드 후속을 관리합니다.
 
 확정한 방향과 현재 구현:
 
 - 날씨는 프런트엔드에서 공공데이터포털 기상청 API로 조회합니다. 사용자가 선택한 표시는 **현재 기온·습도 + 날씨 아이콘**입니다. 초단기실황에서 기온·습도·강수형태, 초단기예보에서 가까운 미래의 하늘상태를 읽습니다. 관측과 예보의 시각은 따로 보관하며 예보를 현재 관측으로 표시하지 않습니다.
 - 장소 조회에 x/y 좌표가 제공될 예정이며 `xPosition`, `yPosition`은 문서상의 임시 명칭입니다. 최종 필드명·응답 위치·타입·좌표계가 확정되기 전에는 DTO 파싱·좌표 변환을 추가하지 않습니다. 기상청 `nx`, `ny`와 같은 좌표라고 추정하지 않습니다.
-- #304의 API·mapper·repository·Provider는 명시적인 기상청 격자를 받아 호출할 준비가 됐습니다. #306에서 Place 헤더가 장소별 화면 상태를 구독하도록 연결했습니다. 격자 공급 경계는 계약 확정 전 null을 반환해 요청을 차단하며 `날씨 정보 준비 중`을 표시합니다. 기존 fixture 환경 수치는 제거했습니다.
+- #304의 API·mapper·repository·Provider는 명시적인 기상청 격자를 받아 호출합니다. #306에서 Place 헤더가 장소별 화면 상태를 구독하도록 연결했습니다. #309 사용자 결정으로 장소 주소에 대응하는 확인된 격자로만 조회합니다. 좌표가 없거나 로컬 모드면 `날씨 정보를 조회할 수 없어요`를 표시하고 요청·재호출 버튼을 만들지 않습니다. 판교역 등 고정 위치 대체는 제거했습니다. 기존 fixture 환경 수치는 제거했습니다.
 
 | 상황 | #304 조회 계층의 동작 |
 | --- | --- |
@@ -213,9 +213,9 @@ Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Pr
 | 명시적인 새 조회 | Provider 무효화로 이전 흐름을 취소하고 최대 3회의 새 조회를 시작할 수 있습니다. |
 | 화면 이탈·계정 변경 | Provider 수명에 맞춰 요청을 취소하고 늦은 결과를 배제합니다. 동일 격자 구독은 조회 흐름을 공유합니다. |
 
-#306은 기온·습도·날씨 아이콘/이름, 관측·예보 시각, 기상청 출처, 준비 중/로딩/오류를 기존 헤더에 표시합니다. 실패한 **동일 날씨 위치에 재호출 아이콘**을 표시하고 원본 loading을 확인해 빠른 연속 탭도 차단합니다. 큰 글씨에서는 제목 아래로 날씨 영역을 옮기며 모든 상태가 같은 영역을 사용합니다. 실제 장소 좌표 연결, 좌표 미제공 시 최종 안내, 갱신/캐시 정책과 실제 서버 QA는 후속입니다. [수정할 파일·계약·재검증 표](work-history/place-weather-ui-306.md#백엔드-확정-후-수정할-영역)를 따릅니다.
+#306은 기온·습도·날씨 아이콘/이름, 관측·예보 시각, 기상청 출처와 상태를 기존 헤더에 표시하며, #309에서 좌표 없는 준비 상태를 조회 불가로 변경했습니다. 실패한 **동일 날씨 위치에 재호출 아이콘**을 표시하고 원본 loading을 확인해 빠른 연속 탭도 차단합니다. 큰 글씨에서는 제목 아래로 날씨 영역을 옮기며 모든 상태가 같은 영역을 사용합니다. 실제 장소 좌표 연결, 갱신/캐시 정책과 기기 QA는 후속입니다. 주소가 있어도 대응 좌표가 없으면 조회 불가 상태입니다. [수정할 파일·계약·재검증 표](work-history/place-weather-unavailable-309.md#백엔드-확정-후-변경할-영역)를 따릅니다.
 
-인증키는 `COMMONPLANT_WEATHER_SERVICE_KEY`로 주입하며 CommonPlant 인증 토큰을 사용하지 않는 전용 Dio를 사용합니다. 키·실제 장소 좌표를 이용한 서버 호출 QA는 미실행입니다. 자세한 설정·공식 계약 근거·검증 범위는 [작업 이력](work-history/place-weather-api-304.md), 백엔드 확인 항목은 [PLACE-07](backend-api-open-questions.md#place-07-장소-조회-좌표-계약)을 따릅니다.
+인증키는 `COMMONPLANT_WEATHER_SERVICE_KEY`로 주입하며 CommonPlant 인증 토큰을 사용하지 않는 전용 Dio를 사용합니다. 고정 위치 정책을 철회한 #309와 별도로, #307 당시 판교역 격자를 검증 입력으로 사용한 실제 API 확인 결과는 [#307 검증 기록](work-history/place-weather-fallback-307.md)을 따릅니다. 실제 장소 좌표 및 휴대폰 화면의 연동 QA는 별도로 남아 있습니다. 자세한 설정·공식 계약 근거는 [작업 이력](work-history/place-weather-api-304.md), 백엔드 확인 항목은 [PLACE-07](backend-api-open-questions.md#place-07-장소-조회-좌표-계약)을 따릅니다.
 
 ## Place 생성·수정 결과 수직 슬라이스
 
