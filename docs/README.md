@@ -25,7 +25,7 @@
 | 입력 검증·제출 오류 | [폼 검증·에러 메시지 가이드](form-validation-error-guide.md) |
 | unit·widget·golden·integration test | [테스트 가이드](testing-guide.md) |
 | 이슈·브랜치·커밋·PR·Project | [Git 작업 규칙](git-workflow.md) |
-| 배포·스토어·릴리즈 정책 | [릴리즈 가이드](release-workflow.md) — 구현 재개는 외부 준비 후 |
+| 배포·스토어·릴리즈 정책 | [릴리즈 가이드](release-workflow.md) — #215 준비 점검 재개, 실제 배포는 외부 조건 충족 후 |
 
 ## 실행 계획·계약·결정
 
@@ -47,6 +47,7 @@
 
 | 작업 | 이력 |
 | --- | --- |
+| 스토어 계정·배포 준비 #215 | [계정·서명 재점검과 후속 순서](work-history/store-readiness-215.md) |
 | 장소 좌표 없는 날씨 조회 차단 #309 | [조회 조건·불가 안내·후속 계약](work-history/place-weather-unavailable-309.md) |
 | 장소 날씨 화면·백엔드 연결 경계 #306 | [단계별 구현 계획과 변경 표](work-history/place-weather-ui-306.md) |
 | Plant 생성·수정 #229 | [Plant Form](work-history/plant-form-api-state-229.md) |
