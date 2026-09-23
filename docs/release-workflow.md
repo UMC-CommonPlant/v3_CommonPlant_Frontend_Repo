@@ -20,7 +20,7 @@
 
 ## 스토어 준비 재개 #215
 
-2026-09-23 계정·서명 준비 확인을 재개했다. Play Console은 현재 계정의 관리자 접근은 가능하지만 본인·기기·전화번호 인증과 앱 등록이 남아 있다. App Store Connect는 사용자 로그인 대기다. 실제 확인한 상태·최신 제출 기준·담당별 다음 단계는 [스토어 재점검 기록](work-history/store-readiness-215.md)을 따른다.
+2026-09-23 계정·서명 준비 확인을 재개했다. Play Console은 현재 계정의 관리자 접근은 가능하지만 본인·기기·전화번호 인증과 앱 등록이 남아 있다. Apple 계정 확인은 사용자 결정으로 우선 보류하며 Android 준비와 분리한다. 실제 확인한 상태·최신 제출 기준·담당별 다음 단계는 [스토어 재점검 기록](work-history/store-readiness-215.md)을 따른다.
 
 Android Release는 아직 Debug signing이며, 이 Mac의 유효한 Distribution identity는 0개다. 이는 팀 전체의 서명 자산 부재를 뜻하지 않는다. repository Actions Secrets·Variables·Environments는 각각 0개로 확인했다. `1.0.0+1`은 스토어 이력 확인 전 개발 기본값으로 유지한다. 이번 재개는 계정/준비 상태 점검이며 업로드·심사 제출·공개 완료를 뜻하지 않는다.
 
@@ -515,7 +515,7 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 - 별도 설치, 배포 채널, 환경별 Firebase가 필요해지면 dev/staging flavor와 식별값을 새 작업에서 정해야 합니다.
 - dev API와 Swagger endpoint는 확인됐습니다. staging/prod 서버 full base URL과 API versioning 정책은 별도로 정해야 합니다.
 - 최초 store build number는 Play Console/App Store Connect의 기존 업로드 이력을 확인한 뒤 정해야 합니다.
-- #215에서 계정 준비 확인을 재개했습니다. Play 소유자 인증과 Apple 로그인 후 앱·권한·서명·빌드 이력 확인을 이어갑니다.
+- #215에서 계정 준비 확인을 재개했습니다. Play 소유자 인증 후 Android 앱·권한·서명·빌드 이력 확인을 이어갑니다. Apple 계정 확인은 사용자가 재개할 때 진행하며 Android 준비의 선행 조건으로 요구하지 않습니다.
 - RELEASE-04 정책은 #222에서 확정했습니다. 실제 production workflow는 RELEASE-02-B/03, ENV-01-B와 내부 배포 안정성 조건이 충족된 뒤 별도 구현합니다.
 
 ## RELEASE-01 작업 이력
