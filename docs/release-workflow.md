@@ -18,6 +18,12 @@
 | Version 전략 | `pubspec.yaml`의 `X.Y.Z+N`을 공통 원본으로 두고 release 브랜치에서 수동 증가 |
 | Production 제출 정책 | #222에서 동일 artifact 승격, 비실행자 승인, 최초 출시 수동 공개를 확정. 실제 workflow는 외부 준비 전까지 보류 |
 
+## 스토어 준비 재개 #215
+
+2026-09-23 계정·서명 준비 확인을 재개했다. Play Console은 현재 계정의 관리자 접근은 가능하지만 본인·기기·전화번호 인증과 앱 등록이 남아 있다. App Store Connect는 사용자 로그인 대기다. 실제 확인한 상태·최신 제출 기준·담당별 다음 단계는 [스토어 재점검 기록](work-history/store-readiness-215.md)을 따른다.
+
+Android Release는 아직 Debug signing이며, 이 Mac의 유효한 Distribution identity는 0개다. 이는 팀 전체의 서명 자산 부재를 뜻하지 않는다. repository Actions Secrets·Variables·Environments는 각각 0개로 확인했다. `1.0.0+1`은 스토어 이력 확인 전 개발 기본값으로 유지한다. 이번 재개는 계정/준비 상태 점검이며 업로드·심사 제출·공개 완료를 뜻하지 않는다.
+
 ## MVP 릴리즈 정책
 
 MVP 릴리즈는 자동 업로드보다 재현 가능한 빌드와 승인 흐름을 우선합니다. signing secret과 store 계정이 준비되지 않은 상태에서는 실패하는 workflow를 추가하지 않고 문서와 수동 체크리스트로 보류 사유를 남깁니다.
@@ -41,7 +47,9 @@ MVP 릴리즈는 자동 업로드보다 재현 가능한 빌드와 승인 흐름
 | production workflow 구현 | RELEASE-04 승인 정책은 #222에서 확정했지만 계정, signing, build number, prod API와 내부 배포가 준비되지 않음 | RELEASE-02-B, RELEASE-03, ENV-01-B와 내부 배포 안정성 기준 충족 |
 | flavor별 앱 분리 | MVP에서 별도 설치·배포할 dev/staging 앱이 필요하지 않음 | 동시 설치, 별도 배포 채널, 환경별 Firebase 중 하나가 실제로 필요해지는 시점 |
 
-store 계정이 준비되면 Android는 Google Play Internal testing을 우선 검토하고, Play Console 준비가 지연될 때만 Firebase App Distribution을 대체 경로로 검토합니다. iOS는 TestFlight를 내부 테스트 배포 기준으로 사용합니다.
+store 계정이 준비되면 Android는 Google Play Internal testing을 우선 검토하고, Play Console 준비가 지연될 때만 Firebase App Distribution을 대체 경로로 검토합니다. iOS는 TestFlight를 내부 테스트 배포 기준으로 사용합니다. 개인 Play 계정의 생성일에 따른 비공개 테스트·프로덕션 접근 조건은 별도로 확인하며 Internal testing으로 대체하지 않습니다.
+
+수동 내부 배포와 자동화 준비를 구분합니다. service account·ASC API key는 자동화 경로에 맞춰 준비하며 수동 업로드의 필수 조건으로 일괄 취급하지 않습니다.
 
 ## 브랜치 전략
 
@@ -490,6 +498,9 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 - [ ] iOS archive가 생성되거나, signing/store 준비 전 보류 사유가 기록되었는가?
 - [ ] 필요한 signing secret과 store token이 GitHub Secrets/Environments에 등록되었는가?
 - [ ] production Environment에 required reviewer와 prevent self-review가 적용되었는가?
+- [ ] 최종 AAB의 target API·16KB 네이티브 호환성과 iOS archive의 SDK·서명·배포 대상을 확인했는가?
+- [ ] 실제 출시 기능에 맞는 설명·스크린샷·지원/개인정보 URL·데이터 공개 항목·등급·심사 접근 방법을 준비했는가?
+- [ ] 개인 Play 계정의 비공개 테스트 조건 적용 여부와 프로덕션 접근 상태를 확인했는가?
 - [ ] QA 승인 또는 내부 테스트 승인이 완료되었는가?
 - [ ] 내부 테스트와 production이 동일 checksum의 artifact를 사용하는가?
 - [ ] store 심사 제출과 사용자 공개 승인이 분리되어 있는가?
@@ -504,7 +515,7 @@ release workflow를 추가할 때도 `GITHUB_RUN_NUMBER`로 `pubspec.yaml`의 bu
 - 별도 설치, 배포 채널, 환경별 Firebase가 필요해지면 dev/staging flavor와 식별값을 새 작업에서 정해야 합니다.
 - dev API와 Swagger endpoint는 확인됐습니다. staging/prod 서버 full base URL과 API versioning 정책은 별도로 정해야 합니다.
 - 최초 store build number는 Play Console/App Store Connect의 기존 업로드 이력을 확인한 뒤 정해야 합니다.
-- Android Play Console과 Apple Developer/App Store Connect 계정 준비 여부를 확인해야 합니다.
+- #215에서 계정 준비 확인을 재개했습니다. Play 소유자 인증과 Apple 로그인 후 앱·권한·서명·빌드 이력 확인을 이어갑니다.
 - RELEASE-04 정책은 #222에서 확정했습니다. 실제 production workflow는 RELEASE-02-B/03, ENV-01-B와 내부 배포 안정성 조건이 충족된 뒤 별도 구현합니다.
 
 ## RELEASE-01 작업 이력
