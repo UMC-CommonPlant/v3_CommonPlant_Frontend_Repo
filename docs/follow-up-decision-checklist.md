@@ -9,6 +9,12 @@
 - 결론이 나면 이 문서와 원본 문서를 함께 갱신한다.
 - 구현 작업이 필요한 결론은 별도 GitHub 이슈로 분리한다.
 
+## 2026-09-23 스토어 준비 확인 재개
+
+- #215의 계정·앱·권한·서명·빌드 이력 확인을 재개했다. 준비 점검 재개와 실제 배포 가능 상태는 구분한다.
+- Play 관리자 접근은 확인했지만 소유자 인증과 앱 등록이 남아 있다. Apple 계정 확인은 사용자 결정으로 보류하며 Android 준비와 분리한다. 배포 서명·스토어 빌드 이력·운영 환경은 미확인 항목을 유지한다.
+- [현재 결과와 후속 순서](work-history/store-readiness-215.md)를 기준으로 RELEASE-02-B/03을 갱신한다. 내부 테스트·심사 제출·공개 workflow는 조건 충족 후 별도 구현한다.
+
 ## 2026-09-21 장소 날씨 구현·조회 조건
 
 - #302에서 좌표 제공 방향·프런트 날씨 책임을 정했고 #304에서 사용자가 현재 기온·습도 + 날씨 아이콘을 선택했다.
@@ -41,7 +47,7 @@
 | 보류 | 실제 주소 검색 서비스 | 서비스·키·과금·adapter 결정을 다음 작업으로 이동 |
 | 보류 | 이미지 흐름 | 업로드 방식 변경 확정 전 구현하지 않고 #248 안전 경계 유지 |
 | 보류 | 인증된 원격 E2E | TEST-02-B 준비 계약과 Environment를 유지하되 이번 실행 큐에서 제외 |
-| 보류 | 스토어·릴리즈 | #215와 RELEASE-02-B/03, ENV-01-B를 유지하되 이번 실행 큐에서 제외 |
+| 실행 재개 | 스토어 준비 확인 | 2026-09-23 #215 계정·서명·앱/빌드 이력 점검 재개. 업로드·심사 제출은 선행 조건 충족 후 |
 
 보류는 `Done`이나 질문 해결을 뜻하지 않습니다. 아래 상태와 원본 질문을 그대로 유지하고 사용자가 재개할 때 준비 조건부터 다시 확인합니다. 주소를 제외한 Plant 검색·사용자 식별자 검색은 실행 범위의 해당 도메인 단계에서 다룹니다. Memo의 이미지 첨부는 이미지 보류에 포함하고, 먼저 텍스트 CRUD·목록 계약을 대상으로 합니다.
 
@@ -62,7 +68,7 @@
 | [x] | RELEASE-01 | MVP 앱명, application id, bundle id, 아이콘, flavor와 Firebase 범위 | `docs/release-workflow.md` | #209에서 단일 prod 앱과 기존 브랜드 아이콘을 적용했다. #295 사용자 요청으로 iOS는 `com.commonplant.umc`으로 변경했고 Android는 `com.plant.common`을 사용한다. dev/staging flavor와 Firebase는 실제 분리 요구가 생길 때 도입한다. | Decided |
 | [x] | RELEASE-02-A | 앱 version과 build number 관리 방식 | `docs/release-workflow.md` | #211에서 `pubspec.yaml`의 `X.Y.Z+N`을 단일 원본으로 두고 release 브랜치에서 수동 증가하며 CI override를 금지한다. | Decided |
 | [ ] | RELEASE-02-B | 최초 store build number 기준값 | `docs/release-workflow.md` | 같은 식별자를 쓴 v2와 Play/App Store의 최대 업로드 번호를 RELEASE-03에서 확인한 뒤 공통 `N`을 확정한다. | Blocked |
-| [ ] | RELEASE-03 | Android Play Console과 Apple Developer/App Store Connect 계정 준비 여부 | `docs/release-workflow.md` | #215는 계정 소유자 확인과 승인이 필요해 Backlog로 보류한다. 앱/role/signing/store 이력은 소유자 협의 후 재개한다. | Blocked |
+| [ ] | RELEASE-03 | Android Play Console과 Apple Developer/App Store Connect 계정 준비 여부 | `docs/release-workflow.md` | #215 재점검 진행. Play 관리자 접근·인증 미완료 확인. Android 앱/role/signing/store 이력 확인을 우선하고 Apple 계정 확인은 사용자 보류. | Blocked |
 | [x] | RELEASE-04 | 내부 테스트 배포 안정화 후 production 제출 자동화 범위 | `docs/release-workflow.md` | #222에서 동일 artifact 승격, 비실행자 승인, 최초 출시 수동 공개, 후속 staged/phased rollout과 hotfix 경계를 확정했다. workflow 구현은 외부 준비 후 별도 진행한다. | Decided |
 | [x] | ENV-01-A | dev backend, API base URL과 Swagger endpoint | `docs/release-workflow.md`, `docs/api-swagger-reference.md`, `docs/backend-api-open-questions.md` | #213에서 dev origin, `/api/v1`, Swagger UI와 OpenAPI JSON/config 접속을 확인했다. | Decided |
 | [ ] | ENV-01-B | staging/prod full base URL과 API versioning 정책 | `docs/release-workflow.md`, `docs/api-swagger-reference.md`, `docs/backend-api-open-questions.md` | 백엔드 답변을 받아 CI/CD 환경값과 release 검증 기준에 반영한다. | Open |
