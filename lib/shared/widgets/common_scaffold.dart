@@ -3,6 +3,7 @@ import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/core/theme/app_theme_tokens.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:flutter/material.dart';
 
 class CommonScaffold extends StatelessWidget {
@@ -20,6 +21,7 @@ class CommonScaffold extends StatelessWidget {
     this.showNavigationBar = true,
     this.showBackButton = true,
     this.onBackPressed,
+    this.contentMaxWidth = AppSizes.formMaxWidth,
   });
 
   final String title;
@@ -34,6 +36,7 @@ class CommonScaffold extends StatelessWidget {
   final bool showNavigationBar;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
+  final double contentMaxWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -47,64 +50,67 @@ class CommonScaffold extends StatelessWidget {
         behavior: HitTestBehavior.translucent,
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: SafeArea(
-          child: Column(
-            children: [
-              if (showNavigationBar)
-                CommonNavigationBar(
-                  title: title,
-                  titleStyle: navigationTitleStyle,
-                  showBackButton: showBackButton,
-                  onBackPressed: onBackPressed,
-                  trailing: trailing ?? _actionsTrailing(actions),
-                  trailingWidth: trailingWidth,
-                ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding:
-                      bodyPadding ??
-                      const EdgeInsets.fromLTRB(
-                        AppSpacing.x20,
-                        AppSpacing.x24,
-                        AppSpacing.x20,
-                        AppSpacing.x24,
-                      ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (!showNavigationBar) ...[
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                title,
-                                style: theme.textTheme.headlineMedium,
-                              ),
-                            ),
-                            if (actions case final actions?)
-                              ...actions.expand(
-                                (widget) => <Widget>[
-                                  const SizedBox(width: AppSpacing.x8),
-                                  widget,
-                                ],
-                              ),
-                          ],
+          child: CommonContentWidth(
+            maxWidth: contentMaxWidth,
+            child: Column(
+              children: [
+                if (showNavigationBar)
+                  CommonNavigationBar(
+                    title: title,
+                    titleStyle: navigationTitleStyle,
+                    showBackButton: showBackButton,
+                    onBackPressed: onBackPressed,
+                    trailing: trailing ?? _actionsTrailing(actions),
+                    trailingWidth: trailingWidth,
+                  ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding:
+                        bodyPadding ??
+                        const EdgeInsets.fromLTRB(
+                          AppSpacing.x20,
+                          AppSpacing.x24,
+                          AppSpacing.x20,
+                          AppSpacing.x24,
                         ),
-                        if (subtitle != null) ...[
-                          const SizedBox(height: AppSpacing.x8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (!showNavigationBar) ...[
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  style: theme.textTheme.headlineMedium,
+                                ),
+                              ),
+                              if (actions case final actions?)
+                                ...actions.expand(
+                                  (widget) => <Widget>[
+                                    const SizedBox(width: AppSpacing.x8),
+                                    widget,
+                                  ],
+                                ),
+                            ],
+                          ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: AppSpacing.x8),
+                            Text(subtitle!, style: theme.textTheme.bodyLarge),
+                          ],
+                          const SizedBox(height: AppSpacing.x24),
+                        ] else if (subtitle != null) ...[
                           Text(subtitle!, style: theme.textTheme.bodyLarge),
+                          const SizedBox(height: AppSpacing.x24),
                         ],
-                        const SizedBox(height: AppSpacing.x24),
-                      ] else if (subtitle != null) ...[
-                        Text(subtitle!, style: theme.textTheme.bodyLarge),
-                        const SizedBox(height: AppSpacing.x24),
+                        child,
                       ],
-                      child,
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
