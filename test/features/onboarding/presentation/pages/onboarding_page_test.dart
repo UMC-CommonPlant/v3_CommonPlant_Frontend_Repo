@@ -2,6 +2,7 @@ import 'package:commonplant_frontend/features/onboarding/presentation/pages/onbo
 import 'package:commonplant_frontend/features/onboarding/presentation/providers/onboarding_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../helpers/test_app.dart';
@@ -53,6 +54,83 @@ void main() {
     expect(illustrationSize.height, lessThan(253.251));
     expect(find.text('시작하기'), findsOneWidget);
     expect(find.text('식물을 내 공간으로,\n공간은 내 폰으로'), findsOneWidget);
+  });
+
+  testWidgets('온보딩은 펼친 창과 짧은 창으로 변경되어도 같은 상태를 유지한다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 640);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    await tester.pumpWidget(buildPageTestApp(const OnboardingPage()));
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(OnboardingPage)),
+    );
+    final controller = container.read(onboardingControllerProvider.notifier);
+
+    for (final viewport in [
+      const Size(1000, 800),
+      const Size(812, 375),
+      const Size(320, 640),
+    ]) {
+      tester.view.physicalSize = viewport;
+      await tester.pumpAndSettle();
+      expect(
+        container.read(onboardingControllerProvider.notifier),
+        same(controller),
+      );
+      final button = find.byKey(const ValueKey('onboardingStartButton'));
+      await tester.ensureVisible(button);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getBottomRight(button).dy,
+        lessThanOrEqualTo(viewport.height),
+      );
+      if (viewport.width >= 720) {
+        expect(
+          tester.getTopLeft(button).dx,
+          greaterThan(
+            tester.getBottomRight(find.bySemanticsLabel('온보딩 일러스트')).dx,
+          ),
+        );
+      }
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('큰 글씨와 시스템 여백이 있는 짧은 창에서 시작하기에 접근한다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 375);
+    tester.view.viewPadding = const FakeViewPadding(top: 24, bottom: 20);
+    tester.view.padding = const FakeViewPadding(top: 24, bottom: 20);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetViewPadding);
+    addTearDown(tester.view.resetPadding);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          onboardingLocalStoreProvider.overrideWithValue(
+            TestOnboardingLocalStore(),
+          ),
+        ],
+        child: MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: const OnboardingPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final button = find.byKey(const ValueKey('onboardingStartButton'));
+    await tester.ensureVisible(button);
+    await tester.pumpAndSettle();
+    expect(tester.getBottomRight(button).dy, lessThanOrEqualTo(355));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('완료 값 저장에 실패하면 안내하고 시작 버튼을 다시 활성화한다', (tester) async {

@@ -7,6 +7,7 @@ import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -100,6 +101,76 @@ class TermsPage extends ConsumerWidget {
       backgroundColor: AppColors.textHeadline,
       body: LayoutBuilder(
         builder: (context, constraints) {
+          // Keep the consent row and button at their usable sizes in short windows.
+          final minimumFixedLayoutHeight =
+              (_termsCheckRowHeight + AppSpacing.x16 + AppSizes.buttonHeight) *
+              _figmaFrameHeight /
+              (_figmaFrameHeight - _bottomActionsTop);
+          if (constraints.maxWidth >= AppSizes.expandedLayoutMinWidth ||
+              constraints.maxHeight < minimumFixedLayoutHeight ||
+              MediaQuery.textScalerOf(context).scale(18) > 18) {
+            return SafeArea(
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(_sheetRadius),
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.x24),
+                  child: CommonContentWidth(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: AppSizes.navigationBarHeight,
+                          child: _TermsHeader(
+                            onBackPressed: () => _goBack(context),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.x20,
+                            vertical: AppSpacing.x24,
+                          ),
+                          child: Text(
+                            _privacyTermsBody,
+                            key: const ValueKey('privacyTermsBody'),
+                            style: AppTextStyles.size16Medium.copyWith(
+                              color: AppColors.textHeadline,
+                            ),
+                          ),
+                        ),
+                        _TermsConsentRow(
+                          isAccepted: isAccepted,
+                          onTap: () => ref
+                              .read(profileSetupControllerProvider.notifier)
+                              .togglePrivacyTermsAccepted(),
+                        ),
+                        const SizedBox(height: AppSpacing.x16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.x20,
+                          ),
+                          child: CommonButton(
+                            key: const ValueKey('privacyTermsConfirmButton'),
+                            label: '확인',
+                            backgroundColor: AppColors.brandAccent,
+                            foregroundColor: AppColors.white,
+                            isLoading: isSubmitting,
+                            onPressed: isSubmitting
+                                ? null
+                                : () => _confirmAgreement(context, ref),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
           final verticalScale = math.min(
             1.0,
             constraints.maxHeight / _figmaFrameHeight,
@@ -239,12 +310,19 @@ class _TermsHeader extends StatelessWidget {
           ),
         ),
         Center(
-          child: Text(
-            '개인정보 이용약관',
-            key: const ValueKey('privacyTermsTitle'),
-            style: AppTextStyles.size18Medium.copyWith(
-              color: AppColors.textHeadline,
-              fontWeight: FontWeight.w700,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.navigationBarSideWidth,
+            ),
+            child: Text(
+              '개인정보 이용약관',
+              key: const ValueKey('privacyTermsTitle'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.size18Medium.copyWith(
+                color: AppColors.textHeadline,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ),
@@ -269,9 +347,8 @@ class _TermsConsentRow extends StatelessWidget {
         key: const ValueKey('privacyTermsCheckRow'),
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: SizedBox(
-          width: double.infinity,
-          height: _termsCheckRowHeight,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: _termsCheckRowHeight),
           child: ExcludeSemantics(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(

@@ -151,6 +151,10 @@ void main() {
     await tester.pumpAndSettle();
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('profileCompleteButton')),
+    );
+    await tester.pumpAndSettle();
     expect(
       tester
           .getBottomRight(find.byKey(const ValueKey('profileCompleteButton')))
@@ -168,6 +172,116 @@ void main() {
       lessThanOrEqualTo(
         tester.getTopLeft(find.byKey(const ValueKey('profileTermsRow'))).dy,
       ),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('접고 펼치거나 짧아져도 프로필 초안과 입력 포커스를 유지한다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(375, 812);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    final gateway = FakeImageSelectionGateway(() async => testSelectedImage());
+    final container = ProviderContainer(
+      overrides: [imageSelectionGatewayProvider.overrideWithValue(gateway)],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: ProfileSetupPage()),
+      ),
+    );
+    await tester.tap(find.byKey(const ValueKey('profileAvatar')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '커먼');
+    container
+        .read(profileSetupControllerProvider.notifier)
+        .setPrivacyTermsAccepted(true);
+    await tester.pump();
+    final controller = container.read(profileSetupControllerProvider.notifier);
+    final input = tester.widget<TextField>(find.byType(TextField));
+    input.controller!.selection = const TextSelection(
+      baseOffset: 0,
+      extentOffset: 2,
+    );
+
+    for (final viewport in [
+      const Size(1000, 800),
+      const Size(812, 375),
+      const Size(320, 640),
+      const Size(375, 812),
+    ]) {
+      tester.view.physicalSize = viewport;
+      await tester.pumpAndSettle();
+      expect(
+        container.read(profileSetupControllerProvider.notifier),
+        same(controller),
+      );
+      expect(container.read(profileSetupControllerProvider).nickname, '커먼');
+      expect(
+        container.read(profileSetupControllerProvider).selectedImage,
+        isNotNull,
+      );
+      expect(find.bySemanticsLabel('개인정보 이용약관 동의됨'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller,
+        same(input.controller),
+      );
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).focusNode,
+        same(input.focusNode),
+      );
+      expect(input.focusNode!.hasFocus, isTrue);
+      expect(
+        input.controller!.selection,
+        const TextSelection(baseOffset: 0, extentOffset: 2),
+      );
+      expect(gateway.calls, 1);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('profileCompleteButton')),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('큰 글씨와 키보드가 있는 짧은 창에서도 약관과 완료까지 스크롤한다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 375);
+    tester.view.viewPadding = const FakeViewPadding(top: 24, bottom: 20);
+    tester.view.padding = const FakeViewPadding(top: 24, bottom: 20);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 150);
+    tester.view.padding = const FakeViewPadding(top: 24);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetViewPadding);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: const ProfileSetupPage(),
+        ),
+      ),
+    );
+    await tester.enterText(find.byType(TextField), '커먼');
+    await tester.pumpAndSettle();
+    final complete = find.byKey(const ValueKey('profileCompleteButton'));
+    await tester.ensureVisible(complete);
+    await tester.pumpAndSettle();
+    expect(tester.getBottomRight(complete).dy, lessThanOrEqualTo(225));
+    await tester.ensureVisible(find.byKey(const ValueKey('profileTermsRow')));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getBottomRight(find.byKey(const ValueKey('profileTermsRow'))).dy,
+      lessThanOrEqualTo(225),
     );
     expect(tester.takeException(), isNull);
   });

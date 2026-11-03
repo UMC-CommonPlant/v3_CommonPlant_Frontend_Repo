@@ -35,6 +35,7 @@ void main() {
 
       expect(find.text('개인정보 이용약관'), findsOneWidget);
 
+      await tester.ensureVisible(find.text('동의합니다'));
       await tester.tap(find.text('동의합니다'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('확인'));
@@ -59,8 +60,10 @@ void main() {
 
     expect(find.text('개인정보 이용약관'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('동의합니다'));
     await tester.tap(find.text('동의합니다'));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('확인'));
     await tester.tap(find.text('확인'));
     await tester.pumpAndSettle();
 

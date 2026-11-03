@@ -1,10 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 const double _nicknameFieldHeight = 56;
-const double _nicknameFieldHeightWithHelper = 80;
 
 class ProfileNicknameField extends StatefulWidget {
   const ProfileNicknameField({
@@ -77,90 +78,78 @@ class _ProfileNicknameFieldState extends State<ProfileNicknameField> {
         ? AppColors.brandStrong
         : AppColors.textDisabled;
 
-    return SizedBox(
+    final inputHeight = math.max(
+      _nicknameFieldHeight,
+      MediaQuery.textScalerOf(context).scale(18) * (24 / 18) + AppSpacing.x32,
+    );
+
+    return Column(
       key: const ValueKey('profileNicknameField'),
-      height: hasValidNickname || hasError
-          ? _nicknameFieldHeightWithHelper
-          : _nicknameFieldHeight,
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            height: _nicknameFieldHeight,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: lineColor)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      focusNode: _focusNode,
-                      onChanged: widget.onChanged,
-                      maxLength: 10,
-                      style: AppTextStyles.size18Medium.copyWith(
-                        color: AppColors.textHeadline,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: inputHeight,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: lineColor)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    onChanged: widget.onChanged,
+                    maxLength: 10,
+                    style: AppTextStyles.size18Medium.copyWith(
+                      color: AppColors.textHeadline,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '닉네임을 입력해 주세요',
+                      hintStyle: AppTextStyles.size18Medium.copyWith(
+                        color: AppColors.textDisabled,
                       ),
-                      decoration: InputDecoration(
-                        hintText: '닉네임을 입력해 주세요',
-                        hintStyle: AppTextStyles.size18Medium.copyWith(
-                          color: AppColors.textDisabled,
-                        ),
-                        counterText: '',
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.x16,
-                        ),
-                        isDense: true,
+                      counterText: '',
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.x16,
                       ),
+                      isDense: true,
                     ),
                   ),
-                  if (!hasText)
-                    RichText(
-                      text: TextSpan(
-                        style: AppTextStyles.size14Medium.copyWith(
-                          color: AppColors.textBody,
-                        ),
-                        children: const [
-                          TextSpan(
-                            text: '0',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          TextSpan(text: '/10'),
-                        ],
+                ),
+                if (!hasText)
+                  RichText(
+                    textScaler: MediaQuery.textScalerOf(context),
+                    text: TextSpan(
+                      style: AppTextStyles.size14Medium.copyWith(
+                        color: AppColors.textBody,
                       ),
+                      children: const [
+                        TextSpan(
+                          text: '0',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        TextSpan(text: '/10'),
+                      ],
                     ),
-                ],
+                  ),
+              ],
+            ),
+          ),
+        ),
+        if (hasValidNickname || hasError)
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.x8),
+            child: Text(
+              errorMessage ?? '사용 가능한 닉네임입니다',
+              style: AppTextStyles.size12Medium.copyWith(
+                color: hasError ? AppColors.danger : AppColors.brandStrong,
               ),
             ),
           ),
-          if (hasValidNickname && !hasError)
-            Positioned(
-              left: 0,
-              top: 64,
-              child: Text(
-                '사용 가능한 닉네임입니다',
-                style: AppTextStyles.size12Medium.copyWith(
-                  color: AppColors.brandStrong,
-                ),
-              ),
-            ),
-          if (hasError)
-            Positioned(
-              left: 0,
-              top: 64,
-              child: Text(
-                errorMessage,
-                style: AppTextStyles.size12Medium.copyWith(
-                  color: AppColors.danger,
-                ),
-              ),
-            ),
-        ],
-      ),
+      ],
     );
   }
 }

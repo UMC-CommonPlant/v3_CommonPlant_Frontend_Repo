@@ -6,12 +6,14 @@ import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/login/data/gateways/social_auth_credential_gateway.dart';
 import 'package:commonplant_frontend/features/login/domain/models/social_auth.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/login_controller.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,6 +72,74 @@ class LoginPage extends ConsumerWidget {
       backgroundColor: AppColors.surfaceAlt,
       body: LayoutBuilder(
         builder: (context, constraints) {
+          final isExpanded =
+              constraints.maxWidth >= AppSizes.expandedLayoutMinWidth;
+          final needsFlowLayout =
+              isExpanded ||
+              constraints.maxHeight < AppSizes.compactLayoutMaxHeight ||
+              MediaQuery.textScalerOf(context).scale(16) > 16 * 1.3;
+          if (needsFlowLayout) {
+            final branding = Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                _LoginWordmark(),
+                SizedBox(height: AppSpacing.x32),
+                CommonSvgIcon(
+                  AppImageAssets.loginHeroIllustration,
+                  width: _heroSize,
+                  height: _heroSize,
+                  semanticsLabel: '로그인 일러스트',
+                ),
+              ],
+            );
+            final actions = CommonContentWidth(
+              maxWidth: _figmaFrameWidth - AppSpacing.x40,
+              child: _socialButtons(
+                context,
+                ref,
+                loginState,
+                showsAppleLogin,
+                errorMessage,
+              ),
+            );
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSpacing.x24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: math.max(
+                      0.0,
+                      constraints.maxHeight -
+                          MediaQuery.paddingOf(context).vertical -
+                          AppSpacing.x24 * 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: CommonContentWidth(
+                      maxWidth: AppSizes.contentMaxWidth,
+                      child: isExpanded
+                          ? Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(child: branding),
+                                const SizedBox(width: AppSpacing.x40),
+                                Expanded(child: actions),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                branding,
+                                const SizedBox(height: AppSpacing.x32),
+                                actions,
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
           final verticalScale = math.min(
             1.0,
             constraints.maxHeight / _figmaFrameHeight,
@@ -116,96 +186,93 @@ class LoginPage extends ConsumerWidget {
                 bottom: buttonBottom,
                 left: horizontalInset,
                 right: horizontalInset,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _LoginSocialButton(
-                      key: const ValueKey('loginKakaoButton'),
-                      label: '카카오로 로그인',
-                      backgroundColor: AppColors.loginKakaoBackground,
-                      foregroundColor: AppColors.textStrong,
-                      logoAssetPath: AppImageAssets.loginKakaoLogo,
-                      logoWidth: 18,
-                      logoHeight: 18,
-                      logoTop: 11,
-                      isLoading:
-                          loginState.submittingProvider ==
-                          SocialAuthProvider.kakao,
-                      onPressed: loginState.isSubmitting
-                          ? null
-                          : () => _handleLogin(
-                              context,
-                              ref,
-                              SocialAuthProvider.kakao,
-                            ),
-                    ),
-                    const SizedBox(height: AppSpacing.x12),
-                    _LoginSocialButton(
-                      key: const ValueKey('loginGoogleButton'),
-                      label: '구글로 로그인',
-                      backgroundColor: AppColors.white,
-                      foregroundColor: AppColors.textStrong,
-                      borderColor: AppColors.borderDefault,
-                      logoAssetPath: AppImageAssets.loginGoogleLogo,
-                      logoWidth: 18,
-                      logoHeight: 18,
-                      logoTop: 10,
-                      isLoading:
-                          loginState.submittingProvider ==
-                          SocialAuthProvider.google,
-                      onPressed: loginState.isSubmitting
-                          ? null
-                          : () => _handleLogin(
-                              context,
-                              ref,
-                              SocialAuthProvider.google,
-                            ),
-                    ),
-                    if (showsAppleLogin) ...[
-                      const SizedBox(height: AppSpacing.x12),
-                      _LoginSocialButton(
-                        key: const ValueKey('loginAppleButton'),
-                        label: 'Apple로 로그인',
-                        backgroundColor: AppColors.textHeadline,
-                        foregroundColor: AppColors.white,
-                        logoAssetPath: AppImageAssets.loginAppleLogo,
-                        logoWidth: 16.26,
-                        logoHeight: 20,
-                        logoTop: 12,
-                        isLoading:
-                            loginState.submittingProvider ==
-                            SocialAuthProvider.apple,
-                        onPressed: loginState.isSubmitting
-                            ? null
-                            : () => _handleLogin(
-                                context,
-                                ref,
-                                SocialAuthProvider.apple,
-                              ),
-                      ),
-                    ],
-                    if (errorMessage != null) ...[
-                      const SizedBox(height: AppSpacing.x8),
-                      Text(
-                        errorMessage,
-                        key: ValueKey(
-                          loginState.errorMessage == null
-                              ? 'loginSessionMessage'
-                              : 'loginErrorMessage',
-                        ),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.size12Medium.copyWith(
-                          color: AppColors.danger,
-                        ),
-                      ),
-                    ],
-                  ],
+                child: _socialButtons(
+                  context,
+                  ref,
+                  loginState,
+                  showsAppleLogin,
+                  errorMessage,
                 ),
               ),
             ],
           );
         },
       ),
+    );
+  }
+
+  Widget _socialButtons(
+    BuildContext context,
+    WidgetRef ref,
+    LoginState loginState,
+    bool showsAppleLogin,
+    String? errorMessage,
+  ) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _LoginSocialButton(
+          key: const ValueKey('loginKakaoButton'),
+          label: '카카오로 로그인',
+          backgroundColor: AppColors.loginKakaoBackground,
+          foregroundColor: AppColors.textStrong,
+          logoAssetPath: AppImageAssets.loginKakaoLogo,
+          logoWidth: 18,
+          logoHeight: 18,
+          logoTop: 11,
+          isLoading: loginState.submittingProvider == SocialAuthProvider.kakao,
+          onPressed: loginState.isSubmitting
+              ? null
+              : () => _handleLogin(context, ref, SocialAuthProvider.kakao),
+        ),
+        const SizedBox(height: AppSpacing.x12),
+        _LoginSocialButton(
+          key: const ValueKey('loginGoogleButton'),
+          label: '구글로 로그인',
+          backgroundColor: AppColors.white,
+          foregroundColor: AppColors.textStrong,
+          borderColor: AppColors.borderDefault,
+          logoAssetPath: AppImageAssets.loginGoogleLogo,
+          logoWidth: 18,
+          logoHeight: 18,
+          logoTop: 10,
+          isLoading: loginState.submittingProvider == SocialAuthProvider.google,
+          onPressed: loginState.isSubmitting
+              ? null
+              : () => _handleLogin(context, ref, SocialAuthProvider.google),
+        ),
+        if (showsAppleLogin) ...[
+          const SizedBox(height: AppSpacing.x12),
+          _LoginSocialButton(
+            key: const ValueKey('loginAppleButton'),
+            label: 'Apple로 로그인',
+            backgroundColor: AppColors.textHeadline,
+            foregroundColor: AppColors.white,
+            logoAssetPath: AppImageAssets.loginAppleLogo,
+            logoWidth: 16.26,
+            logoHeight: 20,
+            logoTop: 12,
+            isLoading:
+                loginState.submittingProvider == SocialAuthProvider.apple,
+            onPressed: loginState.isSubmitting
+                ? null
+                : () => _handleLogin(context, ref, SocialAuthProvider.apple),
+          ),
+        ],
+        if (errorMessage != null) ...[
+          const SizedBox(height: AppSpacing.x8),
+          Text(
+            errorMessage,
+            key: ValueKey(
+              loginState.errorMessage == null
+                  ? 'loginSessionMessage'
+                  : 'loginErrorMessage',
+            ),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.size12Medium.copyWith(color: AppColors.danger),
+          ),
+        ],
+      ],
     );
   }
 }

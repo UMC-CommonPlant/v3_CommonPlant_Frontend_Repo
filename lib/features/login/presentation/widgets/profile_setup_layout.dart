@@ -7,6 +7,7 @@ import 'package:commonplant_frontend/features/login/presentation/widgets/profile
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_complete_button.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_nickname_field.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_terms_agreement_row.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:flutter/material.dart';
 
 const double _figmaFrameWidth = 375;
@@ -19,7 +20,7 @@ const double _profileContentTop = 147;
 const double _bottomActionsTop = 626;
 const double _bottomActionsHeight = 56 + AppSpacing.x16 + AppSizes.buttonHeight;
 
-class ProfileSetupLayout extends StatelessWidget {
+class ProfileSetupLayout extends StatefulWidget {
   const ProfileSetupLayout({
     required this.nickname,
     this.nicknameErrorMessage,
@@ -54,11 +55,98 @@ class ProfileSetupLayout extends StatelessWidget {
   final Future<void> Function() onComplete;
 
   @override
+  State<ProfileSetupLayout> createState() => _ProfileSetupLayoutState();
+}
+
+class _ProfileSetupLayoutState extends State<ProfileSetupLayout> {
+  final GlobalKey _nicknameFieldKey = GlobalKey();
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.textHeadline,
       body: LayoutBuilder(
         builder: (context, constraints) {
+          if (constraints.maxWidth >= AppSizes.expandedLayoutMinWidth ||
+              constraints.maxWidth < AppSizes.mobileWidth ||
+              constraints.maxHeight < AppSizes.compactLayoutMaxHeight ||
+              MediaQuery.textScalerOf(context).scale(18) > 18) {
+            return SafeArea(
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(_sheetRadius),
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.x24),
+                  child: CommonContentWidth(
+                    child: Column(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            width: AppSizes.navigationBarSideWidth,
+                            height: AppSizes.navigationBarHeight,
+                            child: IconButton(
+                              tooltip: '뒤로가기',
+                              onPressed: widget.onBack,
+                              icon: const Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                                size: AppSizes.navigationBackIconSize,
+                                color: AppColors.textStrong,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.x20,
+                            vertical: AppSpacing.x24,
+                          ),
+                          child: Column(
+                            children: [
+                              widget.imageField ??
+                                  ProfileAvatar(
+                                    hasImage: widget.hasImage,
+                                    imageUrl: widget.profileImageUrl,
+                                    onTap: widget.onImagePressed,
+                                  ),
+                              const SizedBox(height: AppSpacing.x16),
+                              ProfileNicknameField(
+                                key: _nicknameFieldKey,
+                                nickname: widget.nickname,
+                                serverErrorMessage: widget.nicknameErrorMessage,
+                                onChanged: widget.onNicknameChanged,
+                              ),
+                            ],
+                          ),
+                        ),
+                        ProfileTermsAgreementRow(
+                          isAccepted: widget.isTermsAccepted,
+                          onCheckPressed: widget.onTermsPressed,
+                          onViewPressed: widget.onTermsViewPressed,
+                        ),
+                        const SizedBox(height: AppSpacing.x16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.x20,
+                          ),
+                          child: ProfileCompleteButton(
+                            enabled: widget.isCompleteEnabled,
+                            isSubmitting: widget.isSubmitting,
+                            onPressed: widget.onComplete,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
           final verticalScale = math.min(
             1.0,
             constraints.maxHeight / _figmaFrameHeight,
@@ -114,7 +202,7 @@ class ProfileSetupLayout extends StatelessWidget {
                   height: AppSizes.navigationBarHeight,
                   child: IconButton(
                     tooltip: '뒤로가기',
-                    onPressed: onBack,
+                    onPressed: widget.onBack,
                     icon: const Icon(
                       Icons.arrow_back_ios_new_rounded,
                       size: AppSizes.navigationBackIconSize,
@@ -136,17 +224,18 @@ class ProfileSetupLayout extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      imageField ??
+                      widget.imageField ??
                           ProfileAvatar(
-                            hasImage: hasImage,
-                            imageUrl: profileImageUrl,
-                            onTap: onImagePressed,
+                            hasImage: widget.hasImage,
+                            imageUrl: widget.profileImageUrl,
+                            onTap: widget.onImagePressed,
                           ),
                       const SizedBox(height: AppSpacing.x16),
                       ProfileNicknameField(
-                        nickname: nickname,
-                        serverErrorMessage: nicknameErrorMessage,
-                        onChanged: onNicknameChanged,
+                        key: _nicknameFieldKey,
+                        nickname: widget.nickname,
+                        serverErrorMessage: widget.nicknameErrorMessage,
+                        onChanged: widget.onNicknameChanged,
                       ),
                     ],
                   ),
@@ -159,9 +248,9 @@ class ProfileSetupLayout extends StatelessWidget {
                 child: Column(
                   children: [
                     ProfileTermsAgreementRow(
-                      isAccepted: isTermsAccepted,
-                      onCheckPressed: onTermsPressed,
-                      onViewPressed: onTermsViewPressed,
+                      isAccepted: widget.isTermsAccepted,
+                      onCheckPressed: widget.onTermsPressed,
+                      onViewPressed: widget.onTermsViewPressed,
                     ),
                     const SizedBox(height: AppSpacing.x16),
                     Padding(
@@ -169,9 +258,9 @@ class ProfileSetupLayout extends StatelessWidget {
                         horizontal: horizontalInset,
                       ),
                       child: ProfileCompleteButton(
-                        enabled: isCompleteEnabled,
-                        isSubmitting: isSubmitting,
-                        onPressed: onComplete,
+                        enabled: widget.isCompleteEnabled,
+                        isSubmitting: widget.isSubmitting,
+                        onPressed: widget.onComplete,
                       ),
                     ),
                   ],
