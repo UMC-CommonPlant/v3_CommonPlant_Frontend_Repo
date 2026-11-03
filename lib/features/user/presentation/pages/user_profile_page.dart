@@ -8,6 +8,7 @@ import 'package:commonplant_frontend/features/user/domain/entities/user_profile.
 import 'package:commonplant_frontend/features/user/presentation/providers/current_user_provider.dart';
 import 'package:commonplant_frontend/features/user/presentation/widgets/user_profile_avatar.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -37,53 +38,55 @@ class UserProfilePage extends ConsumerWidget {
         backgroundColor: AppColors.white,
         body: SafeArea(
           bottom: false,
-          child: Stack(
-            children: [
-              const Positioned(
-                left: 0,
-                right: 0,
-                top: _profileHeaderTop,
-                height: _profileHeaderHeight,
-                child: _ProfileHeaderBackground(),
-              ),
-              Positioned.fill(
-                child: currentUser.when(
-                  data: (user) => _UserProfileContent(user: user),
-                  error: (error, stackTrace) => _UserProfileStatus(
-                    message: '회원 정보를 불러오지 못했어요',
-                    actionLabel: '다시 시도',
-                    onAction: () => ref.invalidate(currentUserProvider),
-                  ),
-                  loading: () => const _UserProfileStatus(
-                    message: '회원 정보를 불러오고 있어요',
-                    isLoading: true,
-                  ),
+          child: CommonContentWidth(
+            child: Stack(
+              children: [
+                const Positioned(
+                  left: 0,
+                  right: 0,
+                  top: _profileHeaderTop,
+                  height: _profileHeaderHeight,
+                  child: _ProfileHeaderBackground(),
                 ),
-              ),
-              Positioned(
-                right: AppSpacing.x10,
-                top: 0,
-                child: Semantics(
-                  button: true,
-                  label: '설정 열기',
-                  child: IconButton(
-                    key: const ValueKey('userSettingsButton'),
-                    onPressed: () => context.push(AppRoutePaths.userSettings),
-                    icon: const CommonSvgIcon(
-                      AppIconAssets.settings,
-                      width: AppSizes.navigationBarSideWidth,
-                      height: AppSizes.navigationBarSideWidth,
-                      semanticsLabel: '설정',
+                Positioned.fill(
+                  child: currentUser.when(
+                    data: (user) => _UserProfileContent(user: user),
+                    error: (error, stackTrace) => _UserProfileStatus(
+                      message: '회원 정보를 불러오지 못했어요',
+                      actionLabel: '다시 시도',
+                      onAction: () => ref.invalidate(currentUserProvider),
                     ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints.tightFor(
-                      width: AppSizes.navigationBarSideWidth,
-                      height: AppSizes.navigationBarSideWidth,
+                    loading: () => const _UserProfileStatus(
+                      message: '회원 정보를 불러오고 있어요',
+                      isLoading: true,
                     ),
                   ),
                 ),
-              ),
-            ],
+                Positioned(
+                  right: AppSpacing.x10,
+                  top: 0,
+                  child: Semantics(
+                    button: true,
+                    label: '설정 열기',
+                    child: IconButton(
+                      key: const ValueKey('userSettingsButton'),
+                      onPressed: () => context.push(AppRoutePaths.userSettings),
+                      icon: const CommonSvgIcon(
+                        AppIconAssets.settings,
+                        width: AppSizes.navigationBarSideWidth,
+                        height: AppSizes.navigationBarSideWidth,
+                        semanticsLabel: '설정',
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: AppSizes.navigationBarSideWidth,
+                        height: AppSizes.navigationBarSideWidth,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -182,35 +185,42 @@ class _UserProfileStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.x20,
-          _profileHeaderHeight,
-          AppSpacing.x20,
-          AppSpacing.x20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isLoading) ...[
-              const CircularProgressIndicator(color: AppColors.brandPrimary),
-              const SizedBox(height: AppSpacing.x16),
-            ],
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.size16Medium,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.x20,
+              _profileHeaderHeight,
+              AppSpacing.x20,
+              AppSpacing.x20,
             ),
-            if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: AppSpacing.x16),
-              CommonButton.secondary(
-                label: actionLabel!,
-                size: CommonButtonSize.medium,
-                onPressed: onAction,
-              ),
-            ],
-          ],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isLoading) ...[
+                  const CircularProgressIndicator(
+                    color: AppColors.brandPrimary,
+                  ),
+                  const SizedBox(height: AppSpacing.x16),
+                ],
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.size16Medium,
+                ),
+                if (actionLabel != null && onAction != null) ...[
+                  const SizedBox(height: AppSpacing.x16),
+                  CommonButton.secondary(
+                    label: actionLabel!,
+                    size: CommonButtonSize.medium,
+                    onPressed: onAction,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );
