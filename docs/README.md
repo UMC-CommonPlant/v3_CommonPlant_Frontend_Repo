@@ -47,6 +47,7 @@
 
 | 작업 | 이력 |
 | --- | --- |
+| 폴더블 가용 화면 UI #313 | [배치·상태 유지·검증 이력](work-history/foldable-layout-313.md) |
 | 스토어 계정·배포 준비 #215 | [계정·서명 재점검과 후속 순서](work-history/store-readiness-215.md) |
 | 장소 좌표 없는 날씨 조회 차단 #309 | [조회 조건·불가 안내·후속 계약](work-history/place-weather-unavailable-309.md) |
 | 장소 날씨 화면·백엔드 연결 경계 #306 | [단계별 구현 계획과 변경 표](work-history/place-weather-ui-306.md) |

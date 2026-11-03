@@ -92,7 +92,7 @@
 - 키보드가 올라오는 입력 화면은 스크롤 가능해야 합니다.
 - SafeArea를 고려하지 않은 절대 배치는 피합니다.
 
-수동 QA의 Android/iOS 필수 profile과 release candidate matrix는 `docs/quality-testing-follow-up-plan.md`를 따릅니다. 가로 모드, tablet, foldable은 제품 지원 범위가 확정되기 전까지 필수 matrix에 임의로 포함하지 않습니다.
+2026-11-03 사용자 요청으로 #313에서 Android 폴더블의 접힌/펼친 창·가로·분할화면을 대응 범위에 포함했습니다. 가용 영역 기준 재배치·접힘 회피·입력 상태 유지와 적용 토큰은 [폴더블 배치 기준](adaptive-layout-guide.md)을 따릅니다. 수동 QA와 자동 논리 viewport는 [품질 검증 계획](quality-testing-follow-up-plan.md)에서 구분합니다. iPad 전용 최적화는 계속 후순위이며, 합성 viewport 통과를 실제 기종 검증으로 표현하지 않습니다.
 
 ## 공용화 판단 기준
 

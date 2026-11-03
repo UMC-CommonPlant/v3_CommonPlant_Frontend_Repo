@@ -12,6 +12,10 @@
 
 ## 레이아웃
 
+### CommonDisplayArea·CommonContentWidth·CommonFormViewport
+
+#313은 앱 루트의 `CommonDisplayArea`로 힌지·반접힘 분리 영역을 피하고 Navigator와 overlay를 같은 pane에 둡니다. `CommonContentWidth`는 기본 최대 560폭을 중앙에 배치하며 상세는 최대 1120폭을 지정합니다. `CommonFormViewport`는 기존 하단 CTA를 유지하되 키보드로 최소 입력 영역도 부족하면 폼 전체를 스크롤합니다. 모두 순수 레이아웃이며 Provider·SDK·API를 소유하지 않습니다. [배치 기준과 사용 범위](adaptive-layout-guide.md)를 따릅니다.
+
 ### CommonScaffold
 
 일반 페이지의 기본 골격입니다.
@@ -21,6 +25,7 @@
 - 중앙 제목 배치
 - 우측 trailing 슬롯 제공
 - 본문 기본 좌우 패딩 `20`
+- `contentMaxWidth`: 기본 560, 넓은 배치가 필요한 상세는 1120 지정. 내비게이션과 본문이 같은 폭을 사용
 
 ```dart
 CommonScaffold(

@@ -145,6 +145,10 @@ final responsiveWidth = availableWidth
 - 중간 viewport의 정확한 픽셀값은 디자인 계약이 아닐 수 있으므로, 구현식과 테스트를 불필요하게 결합하지 않습니다.
 - 화면 전체 폭의 고정 비율만 사용하면 내부 콘텐츠의 최소 폭을 보장하기 어려우므로, component constraint를 근거로 계산합니다.
 
+### 폴더블 가용 영역 토큰 #313
+
+`AppSizes`의 `expandedLayoutMinWidth`(720), `compactLayoutMaxHeight`(500), `formMaxWidth`(560), `contentMaxWidth`(1120), `bottomNavigationMaxWidth`(600)는 기종 규격이 아닌 실제 constraints에 적용하는 앱 배치 기준입니다. 글자·터치 영역을 배율 축소하는 값으로 사용하지 않습니다. [화면별 적용과 검증](adaptive-layout-guide.md)을 참고합니다.
+
 ## Motion 규칙
 
 탭 선택 표시, 작은 popup, FAB 확장 메뉴처럼 짧은 상태 전환에는 `AppMotion.fast`의 180ms와 `AppMotion.standardCurve`를 사용합니다. 시스템에서 애니메이션 축소를 요청하면 `AppMotion.durationOf(context, ...)`가 `Duration.zero`를 반환합니다.
