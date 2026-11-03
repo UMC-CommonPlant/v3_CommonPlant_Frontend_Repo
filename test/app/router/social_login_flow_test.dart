@@ -249,6 +249,66 @@ void main() {
     }
   }
 
+  for (final succeeds in [true, false]) {
+    testWidgets(
+      'refresh-only 확인 중 로그인하지 않고 결과에 따라 보호 route를 처리한다 ($succeeds)',
+      (tester) async {
+        final response = Completer<ResponseBody>();
+        final store = _TokenStore()..refreshToken = 'saved-refresh';
+        final server = _AuthAdapter()..refreshResponse = response;
+        final container = _container(store, server);
+        addTearDown(container.dispose);
+        await _pumpApp(tester, container, settle: false);
+        await tester.pump(const Duration(milliseconds: 100));
+        container.read(appRouterProvider).go(AppRoutePaths.userSettings);
+        await tester.pump(const Duration(milliseconds: 100));
+
+        expect(container.read(authSessionControllerProvider).isLoading, isTrue);
+        expect(find.text('카카오로 로그인'), findsNothing);
+        expect(find.bySemanticsLabel('로그인 확인 중'), findsOneWidget);
+        expect(find.text('데이터를 불러오지 못했어요'), findsNothing);
+        expect(find.text('사용자 정보를 불러오지 못했어요'), findsNothing);
+        expect(find.text('로그아웃'), findsNothing);
+        expect(server.refreshCalls, 1);
+        expect(store.saveCalls, 0);
+        response.complete(
+          ResponseBody.fromString(
+            jsonEncode(
+              succeeds
+                  ? {
+                      'result': {'accessToken': 'refreshed-access'},
+                    }
+                  : {'code': 'A004', 'message': 'expired'},
+            ),
+            succeeds ? 200 : 401,
+            headers: {
+              Headers.contentTypeHeader: ['application/json'],
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final uri = container
+            .read(appRouterProvider)
+            .routeInformationProvider
+            .value
+            .uri;
+        expect(
+          uri.path,
+          succeeds ? AppRoutePaths.userSettings : AppRoutePaths.login,
+        );
+        expect(server.logins, isEmpty);
+        expect(find.bySemanticsLabel('로그인 확인 중'), findsNothing);
+        expect(store.accessToken, succeeds ? 'refreshed-access' : isNull);
+        expect(store.refreshToken, succeeds ? 'saved-refresh' : isNull);
+        if (!succeeds) {
+          expect(uri.queryParameters['redirect'], AppRoutePaths.userSettings);
+          expect(find.text('카카오로 로그인'), findsOneWidget);
+        }
+      },
+    );
+  }
+
   testWidgets('기존 사용자의 로그인 전 보호 route를 성공 후 보존한다', (tester) async {
     final container = _container(
       _TokenStore(),
@@ -267,7 +327,11 @@ void main() {
   });
 }
 
-Future<void> _pumpApp(WidgetTester tester, ProviderContainer container) async {
+Future<void> _pumpApp(
+  WidgetTester tester,
+  ProviderContainer container, {
+  bool settle = true,
+}) async {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = const Size(375, 812);
   addTearDown(tester.view.resetDevicePixelRatio);
@@ -278,7 +342,7 @@ Future<void> _pumpApp(WidgetTester tester, ProviderContainer container) async {
       child: const CommonPlantApp(),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) await tester.pumpAndSettle();
 }
 
 ProviderContainer _container(
@@ -315,6 +379,8 @@ class _AuthAdapter implements HttpClientAdapter {
   String? failure;
   final logins = <Object?>[];
   Object? registration;
+  int refreshCalls = 0;
+  Completer<ResponseBody>? refreshResponse;
 
   @override
   Future<ResponseBody> fetch(
@@ -323,6 +389,11 @@ class _AuthAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     await requestStream?.drain<void>();
+    if (options.path == '/auth/refresh') {
+      refreshCalls++;
+      expect(options.data, {'refreshToken': 'saved-refresh'});
+      return refreshResponse!.future;
+    }
     Object? body;
     var status = 200;
     if (options.path == '/auth/login') {
