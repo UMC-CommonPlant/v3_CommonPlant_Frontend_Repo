@@ -42,8 +42,10 @@ void main() {
     await tester.ensureVisible(find.text('완료'));
     await tester.tap(find.text('완료'));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('동의합니다'));
     await tester.tap(find.text('동의합니다'));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('확인'));
     await tester.tap(find.text('확인'));
     await tester.pumpAndSettle();
     expect(find.text('My place'), findsOneWidget);

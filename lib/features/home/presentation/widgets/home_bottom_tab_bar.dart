@@ -3,6 +3,7 @@ import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_motion.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 
@@ -28,42 +29,45 @@ class HomeBottomTabBar extends StatelessWidget {
         ),
         child: SafeArea(
           top: false,
-          child: SizedBox(
-            height: AppSizes.bottomNavigationBarHeight,
-            child: Row(
-              children: [
-                _HomeBottomTabItem(
-                  icon: Icons.article_outlined,
-                  semanticsLabel: '정보',
-                  isSelected: selectedTab == HomeBottomTab.info,
-                  onTap: () => onTabSelected(HomeBottomTab.info),
-                ),
-                _HomeBottomTabItem(
-                  icon: Icons.chat_bubble_outline,
-                  semanticsLabel: '이야기',
-                  isSelected: selectedTab == HomeBottomTab.story,
-                  onTap: () => onTabSelected(HomeBottomTab.story),
-                ),
-                _HomeGardenTabItem(
-                  isSelected: selectedTab == HomeBottomTab.garden,
-                  onTap: () => onTabSelected(HomeBottomTab.garden),
-                ),
-                _HomeBottomTabItem(
-                  icon: Icons.calendar_today_outlined,
-                  semanticsLabel: '캘린더',
-                  isSelected: selectedTab == HomeBottomTab.calendar,
-                  onTap: () => onTabSelected(HomeBottomTab.calendar),
-                ),
-                _HomeBottomTabItem(
-                  icon: selectedTab == HomeBottomTab.my
-                      ? Icons.person
-                      : Icons.person_outline,
-                  semanticsLabel: '마이',
-                  iconSize: AppSizes.iconLarge,
-                  isSelected: selectedTab == HomeBottomTab.my,
-                  onTap: () => onTabSelected(HomeBottomTab.my),
-                ),
-              ],
+          child: CommonContentWidth(
+            maxWidth: AppSizes.bottomNavigationMaxWidth,
+            child: SizedBox(
+              height: AppSizes.bottomNavigationBarHeight,
+              child: Row(
+                children: [
+                  _HomeBottomTabItem(
+                    icon: Icons.article_outlined,
+                    semanticsLabel: '정보',
+                    isSelected: selectedTab == HomeBottomTab.info,
+                    onTap: () => onTabSelected(HomeBottomTab.info),
+                  ),
+                  _HomeBottomTabItem(
+                    icon: Icons.chat_bubble_outline,
+                    semanticsLabel: '이야기',
+                    isSelected: selectedTab == HomeBottomTab.story,
+                    onTap: () => onTabSelected(HomeBottomTab.story),
+                  ),
+                  _HomeGardenTabItem(
+                    isSelected: selectedTab == HomeBottomTab.garden,
+                    onTap: () => onTabSelected(HomeBottomTab.garden),
+                  ),
+                  _HomeBottomTabItem(
+                    icon: Icons.calendar_today_outlined,
+                    semanticsLabel: '캘린더',
+                    isSelected: selectedTab == HomeBottomTab.calendar,
+                    onTap: () => onTabSelected(HomeBottomTab.calendar),
+                  ),
+                  _HomeBottomTabItem(
+                    icon: selectedTab == HomeBottomTab.my
+                        ? Icons.person
+                        : Icons.person_outline,
+                    semanticsLabel: '마이',
+                    iconSize: AppSizes.iconLarge,
+                    isSelected: selectedTab == HomeBottomTab.my,
+                    onTap: () => onTabSelected(HomeBottomTab.my),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_detail_view_data.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_delete_controller.dart';
@@ -131,39 +132,64 @@ class PlantDetailPage extends ConsumerWidget {
         onDelete: () => _showDeleteDialog(context, ref, detail.placeCode),
       ),
       bodyPadding: EdgeInsets.zero,
+      contentMaxWidth: AppSizes.contentMaxWidth,
       child: SizedBox(
         width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            PlantDetailContentWidth(
-              child: PlantHero(
-                placeName: detail.placeName,
-                name: detail.name,
-                species: detail.species,
-                imageUrl: detail.imageUrl,
-                imageAsset: detail.imageAsset,
-              ),
-            ),
-            PlantCareSummary(
-              name: detail.name,
-              daysTogether: detail.daysTogether,
-              dDayLabel: detail.dDayLabel,
-              startDate: detail.startDate,
-              lastWateredDate: detail.lastWateredDate,
-            ),
-            MemoPreviewSection(
-              plantId: plantId,
-              memos: detail.memos,
-              representativeMemo: detail.representativeMemo,
-              supportsActions: detail.supportsMemoActions,
-            ),
-            PlantInfoSection(
-              wateringCycleLabel: detail.wateringCycleLabel,
-              plantInfo: detail.plantInfo,
-            ),
-            const SizedBox(height: 82),
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final expanded =
+                constraints.maxWidth >= AppSizes.expandedLayoutMinWidth;
+            return Flex(
+              key: const ValueKey('plant-detail-layout'),
+              direction: expanded ? Axis.horizontal : Axis.vertical,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  flex: expanded ? 1 : 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      PlantDetailContentWidth(
+                        child: PlantHero(
+                          placeName: detail.placeName,
+                          name: detail.name,
+                          species: detail.species,
+                          imageUrl: detail.imageUrl,
+                          imageAsset: detail.imageAsset,
+                        ),
+                      ),
+                      PlantCareSummary(
+                        name: detail.name,
+                        daysTogether: detail.daysTogether,
+                        dDayLabel: detail.dDayLabel,
+                        startDate: detail.startDate,
+                        lastWateredDate: detail.lastWateredDate,
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  flex: expanded ? 1 : 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      MemoPreviewSection(
+                        plantId: plantId,
+                        memos: detail.memos,
+                        representativeMemo: detail.representativeMemo,
+                        supportsActions: detail.supportsMemoActions,
+                      ),
+                      PlantInfoSection(
+                        wateringCycleLabel: detail.wateringCycleLabel,
+                        plantInfo: detail.plantInfo,
+                      ),
+                      const SizedBox(height: 82),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

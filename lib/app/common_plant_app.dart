@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/app/router/app_router.dart';
 import 'package:commonplant_frontend/core/theme/app_theme.dart';
+import 'package:commonplant_frontend/shared/widgets/common_display_area.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,6 +16,8 @@ class CommonPlantApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: router,
+      builder: (context, child) =>
+          CommonDisplayArea(child: child ?? const SizedBox.shrink()),
     );
   }
 }

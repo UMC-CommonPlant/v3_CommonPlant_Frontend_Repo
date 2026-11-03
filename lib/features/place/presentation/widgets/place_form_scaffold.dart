@@ -5,6 +5,8 @@ import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_name_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_address_or_place_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
+import 'package:commonplant_frontend/shared/widgets/common_form_viewport.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_image_add_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -44,68 +46,74 @@ class PlaceCreateScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: Column(
-            children: [
-              CommonNavigationBar(
-                title: '장소 등록',
-                titleStyle: AppTextStyles.size18Medium.copyWith(
-                  color: AppColors.textStrong,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.x20,
-                        AppSpacing.x24,
-                        AppSpacing.x20,
-                        AppSizes.buttonHeight + AppSpacing.x40,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Center(
-                            child:
-                                imageField ??
-                                CommonPlaceImageAddButton(onTap: onImageTap),
-                          ),
-                          const SizedBox(height: AppSpacing.x32),
-                          PlaceNameField(
-                            name: name,
-                            hintText: '장소의 이름을 입력해 주세요',
-                            serverErrorMessage: nameErrorMessage,
-                            onChanged: onNameChanged,
-                          ),
-                          const SizedBox(height: AppSpacing.x32),
-                          CommonAddressOrPlaceField(
-                            label: '주소',
-                            value: address,
-                            errorText: addressErrorMessage,
-                            onTap: onAddressTap,
-                            onClear: onAddressClear,
-                          ),
-                        ],
-                      ),
+        child: CommonContentWidth(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: CommonFormViewport(
+              child: Column(
+                children: [
+                  CommonNavigationBar(
+                    title: '장소 등록',
+                    titleStyle: AppTextStyles.size18Medium.copyWith(
+                      color: AppColors.textStrong,
+                      fontWeight: FontWeight.w700,
                     ),
-                    Positioned(
-                      left: AppSpacing.x20,
-                      right: AppSpacing.x20,
-                      bottom: AppSpacing.x16,
-                      child: CommonButton(
-                        label: '다음',
-                        isLoading: isSubmitting,
-                        onPressed: canSubmit ? onNext : null,
-                      ),
+                  ),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.x20,
+                            AppSpacing.x24,
+                            AppSpacing.x20,
+                            AppSizes.buttonHeight + AppSpacing.x40,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Center(
+                                child:
+                                    imageField ??
+                                    CommonPlaceImageAddButton(
+                                      onTap: onImageTap,
+                                    ),
+                              ),
+                              const SizedBox(height: AppSpacing.x32),
+                              PlaceNameField(
+                                name: name,
+                                hintText: '장소의 이름을 입력해 주세요',
+                                serverErrorMessage: nameErrorMessage,
+                                onChanged: onNameChanged,
+                              ),
+                              const SizedBox(height: AppSpacing.x32),
+                              CommonAddressOrPlaceField(
+                                label: '주소',
+                                value: address,
+                                errorText: addressErrorMessage,
+                                onTap: onAddressTap,
+                                onClear: onAddressClear,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          left: AppSpacing.x20,
+                          right: AppSpacing.x20,
+                          bottom: AppSpacing.x16,
+                          child: CommonButton(
+                            label: '다음',
+                            isLoading: isSubmitting,
+                            onPressed: canSubmit ? onNext : null,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -148,72 +156,76 @@ class PlaceEditScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: Column(
-            children: [
-              CommonNavigationBar(
-                title: '장소 수정',
-                titleStyle: AppTextStyles.size18Medium.copyWith(
-                  color: AppColors.textStrong,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.x20,
-                        AppSpacing.x24,
-                        AppSpacing.x20,
-                        AppSizes.buttonHeight + AppSpacing.x40,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Center(
-                            child:
-                                imageField ??
-                                CommonPlaceImageAddButton(
-                                  imageSemanticsLabel: '장소 대표 이미지',
-                                  onTap: onImageTap,
-                                ),
-                          ),
-                          const SizedBox(height: AppSpacing.x32),
-                          PlaceNameField(
-                            name: name,
-                            hintText: '장소 이름을 입력해 주세요',
-                            serverErrorMessage: nameErrorMessage,
-                            forceFocusedDecoration: true,
-                            onChanged: onNameChanged,
-                          ),
-                          const SizedBox(height: AppSpacing.x32),
-                          CommonAddressOrPlaceField(
-                            label: '주소',
-                            value: address,
-                            errorText: addressErrorMessage,
-                            onTap: onAddressTap,
-                            onClear: onAddressClear,
-                          ),
-                        ],
-                      ),
+        child: CommonContentWidth(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: CommonFormViewport(
+              child: Column(
+                children: [
+                  CommonNavigationBar(
+                    title: '장소 수정',
+                    titleStyle: AppTextStyles.size18Medium.copyWith(
+                      color: AppColors.textStrong,
+                      fontWeight: FontWeight.w700,
                     ),
-                    Positioned(
-                      left: AppSpacing.x20,
-                      right: AppSpacing.x20,
-                      bottom: AppSpacing.x16,
-                      child: CommonButton(
-                        label: '완료',
-                        isLoading: isSubmitting,
-                        onPressed: canSubmit ? onComplete : null,
-                      ),
+                  ),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.x20,
+                            AppSpacing.x24,
+                            AppSpacing.x20,
+                            AppSizes.buttonHeight + AppSpacing.x40,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Center(
+                                child:
+                                    imageField ??
+                                    CommonPlaceImageAddButton(
+                                      imageSemanticsLabel: '장소 대표 이미지',
+                                      onTap: onImageTap,
+                                    ),
+                              ),
+                              const SizedBox(height: AppSpacing.x32),
+                              PlaceNameField(
+                                name: name,
+                                hintText: '장소 이름을 입력해 주세요',
+                                serverErrorMessage: nameErrorMessage,
+                                forceFocusedDecoration: true,
+                                onChanged: onNameChanged,
+                              ),
+                              const SizedBox(height: AppSpacing.x32),
+                              CommonAddressOrPlaceField(
+                                label: '주소',
+                                value: address,
+                                errorText: addressErrorMessage,
+                                onTap: onAddressTap,
+                                onClear: onAddressClear,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          left: AppSpacing.x20,
+                          right: AppSpacing.x20,
+                          bottom: AppSpacing.x16,
+                          child: CommonButton(
+                            label: '완료',
+                            isLoading: isSubmitting,
+                            onPressed: canSubmit ? onComplete : null,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

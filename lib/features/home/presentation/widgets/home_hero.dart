@@ -5,6 +5,7 @@ import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/user/presentation/providers/current_user_provider.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,90 +22,102 @@ class HomeHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(child: ColoredBox(color: AppColors.surfaceAlt)),
-        Positioned(
-          left: 0,
-          right: 0,
-          top: topInset,
-          height: contentHeight,
-          child: CommonSvgIcon(
-            AppImageAssets.homeMainHeroBackground,
-            fit: BoxFit.fill,
-            semanticsLabel: '메인 배경',
-          ),
-        ),
-        Positioned(
-          left: AppSpacing.x20,
-          right: AppSpacing.x20,
-          top: topInset + 48,
-          child: const _HomeCurrentUserName(),
-        ),
-        Positioned(
-          left: AppSpacing.x20,
-          top: topInset + 76,
-          child: Stack(
-            children: [
-              Positioned(
-                left: 0,
-                top: 44,
-                child: Container(
-                  width: 70,
-                  height: 10,
-                  color: AppColorPrimitives.unspecifiedGreenGray.withValues(
-                    alpha: 0.16,
+    return ColoredBox(
+      color: AppColors.surfaceAlt,
+      child: LayoutBuilder(
+        builder: (context, constraints) => CommonContentWidth(
+          maxWidth: constraints.maxWidth >= AppSizes.expandedLayoutMinWidth
+              ? AppSizes.mobileWidth
+              : constraints.maxWidth,
+          child: SizedBox(
+            height: topInset + contentHeight,
+            child: Stack(
+              children: [
+                Positioned.fill(child: ColoredBox(color: AppColors.surfaceAlt)),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: topInset,
+                  height: contentHeight,
+                  child: CommonSvgIcon(
+                    AppImageAssets.homeMainHeroBackground,
+                    fit: BoxFit.fill,
+                    semanticsLabel: '메인 배경',
                   ),
                 ),
-              ),
-              RichText(
-                text: TextSpan(
-                  style: AppTextStyles.size20Medium.copyWith(
-                    color: AppColors.textHeadline,
-                    fontWeight: FontWeight.w700,
+                Positioned(
+                  left: AppSpacing.x20,
+                  right: AppSpacing.x20,
+                  top: topInset + 48,
+                  child: const _HomeCurrentUserName(),
+                ),
+                Positioned(
+                  left: AppSpacing.x20,
+                  top: topInset + 76,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 0,
+                        top: 44,
+                        child: Container(
+                          width: 70,
+                          height: 10,
+                          color: AppColorPrimitives.unspecifiedGreenGray
+                              .withValues(alpha: 0.16),
+                        ),
+                      ),
+                      RichText(
+                        text: TextSpan(
+                          style: AppTextStyles.size20Medium.copyWith(
+                            color: AppColors.textHeadline,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          children: const [
+                            TextSpan(text: '님과 함께 친환경 한 걸음을\n'),
+                            TextSpan(
+                              text: '한걸음에',
+                              style: TextStyle(color: AppColors.brandStrong),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  children: const [
-                    TextSpan(text: '님과 함께 친환경 한 걸음을\n'),
-                    TextSpan(
-                      text: '한걸음에',
-                      style: TextStyle(color: AppColors.brandStrong),
+                ),
+                Positioned(
+                  right: 23,
+                  top: topInset + 110,
+                  width: 88,
+                  height: 64,
+                  child: const CommonSvgIcon(
+                    AppIconAssets.userIllustration,
+                    fit: BoxFit.fill,
+                    semanticsLabel: '유저 일러스트',
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: topInset + 161,
+                  height: 27,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFFD8DEDD).withValues(alpha: 0.6),
+                          const Color(0x00D8DEDD),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          right: 23,
-          top: topInset + 110,
-          width: 88,
-          height: 64,
-          child: const CommonSvgIcon(
-            AppIconAssets.userIllustration,
-            fit: BoxFit.fill,
-            semanticsLabel: '유저 일러스트',
-          ),
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          top: topInset + 161,
-          height: 27,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFFD8DEDD).withValues(alpha: 0.6),
-                  const Color(0x00D8DEDD),
-                ],
-              ),
+              ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

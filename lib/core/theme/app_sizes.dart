@@ -4,6 +4,11 @@ abstract final class AppSizes {
   static const double mobileWidth = 375;
   static const double mobileHeight = 812;
   static const double compactMobileWidth = 320;
+  static const double expandedLayoutMinWidth = 720;
+  static const double compactLayoutMaxHeight = 500;
+  static const double formMaxWidth = 560;
+  static const double contentMaxWidth = 1120;
+  static const double bottomNavigationMaxWidth = 600;
 
   static const double iconSmall = 20;
   static const double iconMedium = 24;

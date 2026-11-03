@@ -5,6 +5,7 @@ import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/memo/presentation/providers/memo_list_provider.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 
@@ -20,8 +21,7 @@ class MemoListContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
+    return CommonContentWidth(
       child: Column(
         children: [
           const SizedBox(height: AppSpacing.x32),

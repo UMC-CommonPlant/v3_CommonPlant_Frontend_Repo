@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_view_data.dart';
@@ -27,40 +28,58 @@ class PlacePlantList extends StatelessWidget {
         AppSpacing.x20,
         120,
       ),
-      child: Column(
-        children: [
-          if (plants.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.x32),
-              child: Text(
-                '등록된 식물이 없어요',
-                style: AppTextStyles.size16Medium.copyWith(
-                  color: AppColors.textBody,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (plants.isEmpty) {
+            return SizedBox(
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.x32),
+                child: Text(
+                  '등록된 식물이 없어요',
+                  style: AppTextStyles.size16Medium.copyWith(
+                    color: AppColors.textBody,
+                  ),
                 ),
               ),
-            ),
-          for (final plant in plants) ...[
-            CommonPlacePlantCard(
-              width: double.infinity,
-              name: plant.name,
-              species: plant.species,
-              description: plant.description,
-              imageProvider: _imageProvider(plant),
-              action: plant.canWater
-                  ? CommonWateringButton(onPressed: () {})
-                  : null,
-              trailing: _PlantDueInfo(
-                dDayLabel: plant.dDayLabel,
-                dateLabel: plant.dateLabel,
-                isPrimary: plant.canWater,
-              ),
-              onTap: () => context.push(
-                AppRoutePaths.plantDetailLocation(plant.id, placeId: placeId),
-              ),
-            ),
-            if (plant != plants.last) const SizedBox(height: AppSpacing.x16),
-          ],
-        ],
+            );
+          }
+          final columns =
+              constraints.maxWidth >=
+                  AppSizes.placePlantCardWidth * 2 + AppSpacing.x16
+              ? 2
+              : 1;
+          final cardWidth =
+              (constraints.maxWidth - AppSpacing.x16 * (columns - 1)) / columns;
+          return Wrap(
+            spacing: AppSpacing.x16,
+            runSpacing: AppSpacing.x16,
+            children: [
+              for (final plant in plants)
+                CommonPlacePlantCard(
+                  width: cardWidth,
+                  name: plant.name,
+                  species: plant.species,
+                  description: plant.description,
+                  imageProvider: _imageProvider(plant),
+                  action: plant.canWater
+                      ? CommonWateringButton(onPressed: () {})
+                      : null,
+                  trailing: _PlantDueInfo(
+                    dDayLabel: plant.dDayLabel,
+                    dateLabel: plant.dateLabel,
+                    isPrimary: plant.canWater,
+                  ),
+                  onTap: () => context.push(
+                    AppRoutePaths.plantDetailLocation(
+                      plant.id,
+                      placeId: placeId,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

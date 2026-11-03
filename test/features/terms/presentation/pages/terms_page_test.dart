@@ -44,6 +44,94 @@ void main() {
     );
   });
 
+  testWidgets('약관 동의는 펼친 창과 짧은 창 전환 후에도 유지된다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 640);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const _TermsPageApp(),
+      ),
+    );
+    final checkRow = find.byKey(const ValueKey('privacyTermsCheckRow'));
+    await tester.ensureVisible(checkRow);
+    await tester.pumpAndSettle();
+    await tester.tap(checkRow);
+    await tester.pump();
+    final controller = container.read(profileSetupControllerProvider.notifier);
+
+    for (final viewport in [
+      const Size(1000, 800),
+      const Size(812, 375),
+      const Size(375, 520),
+      const Size(320, 640),
+    ]) {
+      tester.view.physicalSize = viewport;
+      await tester.pumpAndSettle();
+      expect(
+        container.read(profileSetupControllerProvider.notifier),
+        same(controller),
+      );
+      expect(find.bySemanticsLabel('동의합니다 선택됨'), findsOneWidget);
+      final confirm = find.byKey(const ValueKey('privacyTermsConfirmButton'));
+      await tester.ensureVisible(confirm);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getBottomRight(confirm).dy,
+        lessThanOrEqualTo(viewport.height),
+      );
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('큰 글씨와 키보드가 있는 짧은 창에서도 약관 동의에 접근한다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 375);
+    tester.view.viewPadding = const FakeViewPadding(top: 24, bottom: 20);
+    tester.view.padding = const FakeViewPadding(top: 24, bottom: 20);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 150);
+    tester.view.padding = const FakeViewPadding(top: 24);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetViewPadding);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewInsets);
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: const TermsPage(),
+        ),
+      ),
+    );
+    final checkRow = find.byKey(const ValueKey('privacyTermsCheckRow'));
+    await tester.ensureVisible(checkRow);
+    await tester.pumpAndSettle();
+    await tester.tap(checkRow);
+    await tester.pump();
+    expect(
+      container.read(profileSetupControllerProvider).isPrivacyTermsAccepted,
+      isTrue,
+    );
+    final confirm = find.byKey(const ValueKey('privacyTermsConfirmButton'));
+    await tester.ensureVisible(confirm);
+    await tester.pumpAndSettle();
+    expect(tester.getBottomRight(confirm).dy, lessThanOrEqualTo(225));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('개인정보 이용약관 체크는 프로필 설정 상태 Provider에 반영된다', (tester) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -55,7 +143,10 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byKey(const ValueKey('privacyTermsCheckRow')));
+    final checkRow = find.byKey(const ValueKey('privacyTermsCheckRow'));
+    await tester.ensureVisible(checkRow);
+    await tester.pumpAndSettle();
+    await tester.tap(checkRow);
     await tester.pump();
 
     expect(

@@ -102,7 +102,24 @@ QA-01은 정책 결정 상태인 `Decided`로 유지한다. 위 gap은 #197에�
 - 화면 구조가 바뀐 PR은 Android와 iOS에서 각각 한 개 이상의 필수 profile로 smoke QA를 수행한다.
 - release candidate QA에서는 네 profile을 모두 확인한다.
 - 실제 기기는 같은 역할과 같거나 더 작은 사용 가능 viewport를 제공하면 해당 profile을 대체할 수 있다. PR 또는 QA 기록에 기기, OS, 사용 가능 viewport를 남긴다.
-- 가로 모드, tablet, foldable의 필수 지원 여부는 이 항목에서 임의로 확정하지 않으며 제품 지원 범위가 정해지면 QA matrix를 확장한다.
+- 2026-11-03 사용자 요청으로 #313에서 폴더블의 접힌/펼친 창·가로·분할화면을 대응 범위에 포함했다. iPad 전용 최적화는 후순위이며, 아래 합성 viewport 검사와 실제 Android folding QA는 구분한다.
+
+### 폴더블·분할창 검증 #313
+
+2026-11-04 검증은 기종 규격 대신 실제 logical 창 크기를 사용한다.
+
+| 자동 viewport | 확인 목적 |
+| --- | --- |
+| `320×720` | 좁은 커버/분할 창 |
+| `600×800` | 중간 폭과 콘텐츠 너비 제한 |
+| `720×720` | 두 영역 배치 전환 경계 |
+| `884×812` | 펼친 창의 병렬 배치 |
+| `812×375` | 가로로 짧은 창 |
+| `560×320` | 낮은 분할 창 |
+
+`foldable_route_layout_test.dart`는 21개 route를 6개 크기에서 API 비사용 모드로 초기 렌더링한다(126개 조합). 집중 테스트는 같은 페이지의 크기 전환, fake Provider의 loading/error/empty, 입력·사진·포커스·선택 범위와 스크롤, 키보드·큰 글씨·시스템 여백, 합성 힌지·반접힘·flat fold를 검증한다. 실제 서버 조회·물리 기기 검증을 뜻하지 않는다.
+
+실제 폴더블의 접기/펼치기·OS 키보드·system back·Activity 재생성과 실제 display features는 수동 QA가 남아 있다. 기종별 실행이나 바깥 커버 전용 경험을 완료로 표시하지 않는다. [배치 기준](adaptive-layout-guide.md), [구현·검증 기록](work-history/foldable-layout-313.md)을 따른다.
 
 ### 공통 확인 항목
 

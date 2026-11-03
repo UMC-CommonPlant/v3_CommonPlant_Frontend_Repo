@@ -23,6 +23,7 @@ import '../../../../helpers/user_data_session.dart';
 
 void main() {
   testWidgets('식물 상세는 Figma 주요 정보와 더보기 메뉴를 표시한다', (tester) async {
+    configureTestViewport(tester, TestViewports.reference);
     await tester.pumpWidget(
       buildPageTestApp(const PlantDetailPage(plantId: 'plant-1')),
     );

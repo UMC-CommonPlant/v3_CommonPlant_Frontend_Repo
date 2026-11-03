@@ -9,6 +9,8 @@ import 'package:commonplant_frontend/features/memo/presentation/providers/memo_w
 import 'package:commonplant_frontend/features/memo/presentation/providers/memo_write_state.dart';
 import 'package:commonplant_frontend/features/memo/presentation/widgets/memo_content_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
+import 'package:commonplant_frontend/shared/widgets/common_form_viewport.dart';
 import 'package:commonplant_frontend/shared/widgets/common_photo_add_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
@@ -45,60 +47,64 @@ class MemoWritePage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: Column(
-            children: [
-              CommonNavigationBar(
-                title: '메모 작성',
-                titleStyle: AppTextStyles.size18Medium.copyWith(
-                  color: AppColors.textStrong,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.x20,
-                    AppSpacing.x24,
-                    AppSpacing.x20,
-                    AppSpacing.x24,
+        child: CommonContentWidth(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: CommonFormViewport(
+              child: Column(
+                children: [
+                  CommonNavigationBar(
+                    title: '메모 작성',
+                    titleStyle: AppTextStyles.size18Medium.copyWith(
+                      color: AppColors.textStrong,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _MemoPhotoSection(
-                        hasPhoto: state.hasPhoto,
-                        onAddPhoto: controller.selectPhoto,
-                        onRemovePhoto: controller.removePhoto,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.x20,
+                        AppSpacing.x24,
+                        AppSpacing.x20,
+                        AppSpacing.x24,
                       ),
-                      const SizedBox(height: AppSpacing.x32),
-                      MemoContentField(
-                        content: state.content,
-                        maxLength: memoWriteMaxContentLength,
-                        onChanged: controller.updateContent,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _MemoPhotoSection(
+                            hasPhoto: state.hasPhoto,
+                            onAddPhoto: controller.selectPhoto,
+                            onRemovePhoto: controller.removePhoto,
+                          ),
+                          const SizedBox(height: AppSpacing.x32),
+                          MemoContentField(
+                            content: state.content,
+                            maxLength: memoWriteMaxContentLength,
+                            onChanged: controller.updateContent,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.x20,
+                      0,
+                      AppSpacing.x20,
+                      AppSpacing.x16,
+                    ),
+                    child: CommonButton(
+                      label: '완료',
+                      isLoading: state.isSubmitting,
+                      onPressed: state.canSubmit
+                          ? () => _submit(context, ref)
+                          : null,
+                    ),
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.x20,
-                  0,
-                  AppSpacing.x20,
-                  AppSpacing.x16,
-                ),
-                child: CommonButton(
-                  label: '완료',
-                  isLoading: state.isSubmitting,
-                  onPressed: state.canSubmit
-                      ? () => _submit(context, ref)
-                      : null,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

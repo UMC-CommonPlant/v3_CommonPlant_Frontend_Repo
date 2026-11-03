@@ -20,9 +20,9 @@ class ProfileTermsAgreementRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return ConstrainedBox(
       key: const ValueKey('profileTermsRow'),
-      height: _termsRowHeight,
+      constraints: const BoxConstraints(minHeight: _termsRowHeight),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.x20,
@@ -61,8 +61,6 @@ class ProfileTermsAgreementRow extends StatelessWidget {
             Flexible(
               child: Text(
                 '개인정보 이용 약관 동의',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.size16Medium.copyWith(
                   color: AppColors.textHeadline,
                 ),

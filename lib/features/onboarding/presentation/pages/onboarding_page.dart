@@ -3,10 +3,12 @@ import 'dart:math' as math;
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/onboarding/presentation/providers/onboarding_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +52,81 @@ class OnboardingPage extends ConsumerWidget {
       backgroundColor: AppColors.white,
       body: LayoutBuilder(
         builder: (context, constraints) {
+          final isExpanded =
+              constraints.maxWidth >= AppSizes.expandedLayoutMinWidth;
+          final needsFlowLayout =
+              isExpanded ||
+              constraints.maxHeight < AppSizes.compactLayoutMaxHeight ||
+              MediaQuery.textScalerOf(context).scale(24) > 24 * 1.3;
+          if (needsFlowLayout) {
+            const illustration = CommonSvgIcon(
+              AppImageAssets.onboardingHeroIllustration,
+              width: _heroWidth,
+              height: _heroHeight,
+              semanticsLabel: '온보딩 일러스트',
+            );
+            final actions = CommonContentWidth(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '식물을 내 공간으로,\n공간은 내 폰으로',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.size24Medium.copyWith(
+                      color: AppColors.textHeadline,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.x32),
+                  CommonButton(
+                    key: const ValueKey('onboardingStartButton'),
+                    label: '시작하기',
+                    isLoading: completionState.isLoading,
+                    onPressed: () => _handleStart(context, ref),
+                  ),
+                ],
+              ),
+            );
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppSpacing.x24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: math.max(
+                      0.0,
+                      constraints.maxHeight -
+                          MediaQuery.paddingOf(context).vertical -
+                          AppSpacing.x24 * 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: CommonContentWidth(
+                      maxWidth: AppSizes.contentMaxWidth,
+                      child: isExpanded
+                          ? Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Expanded(
+                                  child: Center(child: illustration),
+                                ),
+                                const SizedBox(width: AppSpacing.x40),
+                                Expanded(child: actions),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                illustration,
+                                const SizedBox(height: AppSpacing.x32),
+                                actions,
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
           final verticalScale = math.min(
             1.0,
             constraints.maxHeight / _figmaFrameHeight,

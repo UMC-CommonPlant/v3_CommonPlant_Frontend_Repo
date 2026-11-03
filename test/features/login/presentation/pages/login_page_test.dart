@@ -148,6 +148,7 @@ void main() {
         tester.view.physicalSize = viewport;
         tester.view.viewPadding = const FakeViewPadding(bottom: 34);
         addTearDown(tester.view.resetViewPadding);
+        addTearDown(tester.view.resetPadding);
         addTearDown(tester.view.resetDevicePixelRatio);
         addTearDown(tester.view.resetPhysicalSize);
         await tester.pumpWidget(
@@ -199,6 +200,105 @@ void main() {
 
     expect(find.byKey(const ValueKey('loginErrorMessage')), findsOneWidget);
     expect(find.text(socialLoginNotConfiguredMessage), findsOneWidget);
+  });
+
+  testWidgets('로그인 오류와 Controller는 창 크기가 바뀌어도 유지된다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 640);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    final container = ProviderContainer(
+      overrides: [
+        useRemoteApiProvider.overrideWithValue(true),
+        authTokenStoreProvider.overrideWithValue(_EmptyAuthTokenStore()),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: LoginPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('loginKakaoButton')));
+    await tester.pumpAndSettle();
+    final controller = container.read(loginControllerProvider.notifier);
+    expect(find.byKey(const ValueKey('loginErrorMessage')), findsOneWidget);
+
+    for (final viewport in [
+      const Size(1000, 800),
+      const Size(812, 375),
+      const Size(320, 640),
+    ]) {
+      tester.view.physicalSize = viewport;
+      await tester.pumpAndSettle();
+      expect(
+        container.read(loginControllerProvider.notifier),
+        same(controller),
+      );
+      expect(find.byKey(const ValueKey('loginErrorMessage')), findsOneWidget);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('loginGoogleButton')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .getBottomRight(find.byKey(const ValueKey('loginGoogleButton')))
+            .dy,
+        lessThanOrEqualTo(viewport.height),
+      );
+      if (viewport.width >= 720) {
+        expect(
+          tester.getTopLeft(find.byKey(const ValueKey('loginKakaoButton'))).dx,
+          greaterThan(
+            tester.getBottomRight(find.bySemanticsLabel('로그인 일러스트')).dx,
+          ),
+        );
+      }
+      expect(tester.takeException(), isNull);
+    }
+  });
+
+  testWidgets('짧은 창에서 큰 글씨 로그인 안내와 버튼까지 스크롤한다', (tester) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(320, 375);
+    tester.view.viewPadding = const FakeViewPadding(top: 24, bottom: 20);
+    tester.view.padding = const FakeViewPadding(top: 24, bottom: 20);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetViewPadding);
+    addTearDown(tester.view.resetPadding);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authSessionControllerProvider.overrideWith(
+            _ExpiredAuthSessionController.new,
+          ),
+        ],
+        child: MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: const LoginPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('loginSessionMessage')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getBottomRight(find.byKey(const ValueKey('loginSessionMessage')))
+          .dy,
+      lessThanOrEqualTo(355),
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('인증 만료 뒤 로그인 화면에 재로그인 안내를 표시한다', (tester) async {

@@ -9,6 +9,8 @@ import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_p
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_watering_cycle_field.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_watering_date_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
+import 'package:commonplant_frontend/shared/widgets/common_form_viewport.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:flutter/material.dart';
 
@@ -53,67 +55,71 @@ class PlantEditScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: Column(
-            children: [
-              CommonNavigationBar(
-                title: '식물 수정',
-                titleStyle: AppTextStyles.size18Medium.copyWith(
-                  color: AppColors.textStrong,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.x20,
-                    AppSpacing.x24,
-                    AppSpacing.x20,
-                    AppSpacing.x24,
+        child: CommonContentWidth(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: CommonFormViewport(
+              child: Column(
+                children: [
+                  CommonNavigationBar(
+                    title: '식물 수정',
+                    titleStyle: AppTextStyles.size18Medium.copyWith(
+                      color: AppColors.textStrong,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      imageField ?? const PlantEditPhotoButton(),
-                      const SizedBox(height: AppSpacing.x32),
-                      PlantNameField(
-                        name: name,
-                        serverErrorMessage: nameErrorMessage,
-                        onChanged: onChanged,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.x20,
+                        AppSpacing.x24,
+                        AppSpacing.x20,
+                        AppSpacing.x24,
                       ),
-                      const SizedBox(height: AppSpacing.x32),
-                      PlantWateringCycleField(
-                        value: wateringCycle,
-                        enabled: wateringCycleEnabled,
-                        helperText: wateringCycleHelperText,
-                        errorText: wateringCycleErrorText,
-                        onChanged: onWateringCycleChanged,
+                      child: Column(
+                        children: [
+                          imageField ?? const PlantEditPhotoButton(),
+                          const SizedBox(height: AppSpacing.x32),
+                          PlantNameField(
+                            name: name,
+                            serverErrorMessage: nameErrorMessage,
+                            onChanged: onChanged,
+                          ),
+                          const SizedBox(height: AppSpacing.x32),
+                          PlantWateringCycleField(
+                            value: wateringCycle,
+                            enabled: wateringCycleEnabled,
+                            helperText: wateringCycleHelperText,
+                            errorText: wateringCycleErrorText,
+                            onChanged: onWateringCycleChanged,
+                          ),
+                          const SizedBox(height: AppSpacing.x32),
+                          PlantWateringDateField(
+                            lastWateredDate: lastWateredDate,
+                            errorText: lastWateredDateErrorMessage,
+                            onTap: onWateringDateTap,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: AppSpacing.x32),
-                      PlantWateringDateField(
-                        lastWateredDate: lastWateredDate,
-                        errorText: lastWateredDateErrorMessage,
-                        onTap: onWateringDateTap,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.x20,
+                      0,
+                      AppSpacing.x20,
+                      AppSpacing.x16,
+                    ),
+                    child: CommonButton(
+                      label: '완료',
+                      isLoading: isSubmitting,
+                      onPressed: canSubmit ? onSubmit : null,
+                    ),
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.x20,
-                  0,
-                  AppSpacing.x20,
-                  AppSpacing.x16,
-                ),
-                child: CommonButton(
-                  label: '완료',
-                  isLoading: isSubmitting,
-                  onPressed: canSubmit ? onSubmit : null,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -162,62 +168,66 @@ class PlantCreateScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: Column(
-            children: [
-              CommonNavigationBar(
-                title: '식물 등록 (2/2)',
-                titleStyle: AppTextStyles.size18Medium.copyWith(
-                  color: AppColors.textStrong,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.x20,
-                    AppSpacing.x24,
-                    AppSpacing.x20,
-                    AppSpacing.x24,
+        child: CommonContentWidth(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: CommonFormViewport(
+              child: Column(
+                children: [
+                  CommonNavigationBar(
+                    title: '식물 등록 (2/2)',
+                    titleStyle: AppTextStyles.size18Medium.copyWith(
+                      color: AppColors.textStrong,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (imageField != null) ...[
-                        Center(child: imageField),
-                        const SizedBox(height: AppSpacing.x32),
-                      ],
-                      PlantPlacePicker(
-                        places: places,
-                        selectedPlaceId: selectedPlaceId,
-                        onPlaceSelected: onPlaceSelected,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.x20,
+                        AppSpacing.x24,
+                        AppSpacing.x20,
+                        AppSpacing.x24,
                       ),
-                      const SizedBox(height: AppSpacing.x32),
-                      PlantWateringCycleField(
-                        value: wateringCycle,
-                        enabled: wateringCycleEnabled,
-                        helperText: wateringCycleHelperText,
-                        errorText: wateringCycleErrorText,
-                        onChanged: onWateringCycleChanged,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (imageField != null) ...[
+                            Center(child: imageField),
+                            const SizedBox(height: AppSpacing.x32),
+                          ],
+                          PlantPlacePicker(
+                            places: places,
+                            selectedPlaceId: selectedPlaceId,
+                            onPlaceSelected: onPlaceSelected,
+                          ),
+                          const SizedBox(height: AppSpacing.x32),
+                          PlantWateringCycleField(
+                            value: wateringCycle,
+                            enabled: wateringCycleEnabled,
+                            helperText: wateringCycleHelperText,
+                            errorText: wateringCycleErrorText,
+                            onChanged: onWateringCycleChanged,
+                          ),
+                          const SizedBox(height: AppSpacing.x32),
+                          PlantWateringDateField(
+                            lastWateredDate: lastWateredDate,
+                            errorText: lastWateredDateErrorMessage,
+                            onTap: onWateringDateTap,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: AppSpacing.x32),
-                      PlantWateringDateField(
-                        lastWateredDate: lastWateredDate,
-                        errorText: lastWateredDateErrorMessage,
-                        onTap: onWateringDateTap,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  PlantFormBottomActions(
+                    isSubmitting: isSubmitting,
+                    onCancel: onCancel,
+                    onSubmit: onSubmit,
+                  ),
+                ],
               ),
-              PlantFormBottomActions(
-                isSubmitting: isSubmitting,
-                onCancel: onCancel,
-                onSubmit: onSubmit,
-              ),
-            ],
+            ),
           ),
         ),
       ),

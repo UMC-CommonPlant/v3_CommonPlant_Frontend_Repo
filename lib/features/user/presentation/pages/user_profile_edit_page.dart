@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/user/domain/entities/user_profile.dart';
@@ -8,7 +9,9 @@ import 'package:commonplant_frontend/features/user/presentation/providers/user_p
 import 'package:commonplant_frontend/features/user/presentation/providers/user_profile_edit_state.dart';
 import 'package:commonplant_frontend/features/user/presentation/widgets/user_profile_name_field.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_form_image_field.dart';
+import 'package:commonplant_frontend/shared/widgets/common_form_viewport.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
@@ -65,70 +68,81 @@ class _UserProfileEditForm extends ConsumerWidget {
         behavior: HitTestBehavior.translucent,
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: SafeArea(
-          child: Column(
-            children: [
-              CommonNavigationBar(
-                title: '회원 정보 수정',
-                titleStyle: AppTextStyles.size18Medium.copyWith(
-                  color: AppColors.textHeadline,
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.x20,
-                    AppSpacing.x24,
-                    AppSpacing.x20,
-                    AppSpacing.x24,
-                  ),
-                  child: Column(
-                    children: [
-                      CommonFormImageField(
-                        isCircular: true,
-                        imageProvider: formState.selectedImage != null
-                            ? MemoryImage(formState.selectedImage!.bytes)
-                            : (user.imgUrl?.trim().isNotEmpty ?? false)
-                            ? NetworkImage(user.imgUrl!)
-                            : null,
-                        isPicking: formState.isPickingImage,
-                        onPick:
-                            formState.isSubmitting || formState.isPickingImage
-                            ? null
-                            : () => _pickImage(context, ref),
-                        onReset:
-                            formState.selectedImage != null &&
-                                !formState.isSubmitting &&
-                                !formState.isPickingImage
-                            ? controller.clearSelectedImage
-                            : null,
-                      ),
-                      const SizedBox(height: AppSpacing.x16),
-                      UserProfileNameField(
-                        name: formState.currentName,
-                        serverErrorMessage: formState.nameErrorMessage,
-                        onChanged: controller.updateName,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.x20,
-                  AppSpacing.x12,
-                  AppSpacing.x20,
+          child: CommonContentWidth(
+            child: CommonFormViewport(
+              minHeight:
+                  AppSizes.navigationBarHeight +
+                  AppSizes.addressOrPlaceFieldHeight +
+                  AppSizes.buttonHeight +
+                  AppSpacing.x12 +
                   AppSpacing.x40,
-                ),
-                child: CommonButton(
-                  label: '수정 완료',
-                  fullWidth: true,
-                  isLoading: formState.isSubmitting,
-                  onPressed: formState.canSubmit
-                      ? () => _submit(context, ref)
-                      : null,
-                ),
+              child: Column(
+                children: [
+                  CommonNavigationBar(
+                    title: '회원 정보 수정',
+                    titleStyle: AppTextStyles.size18Medium.copyWith(
+                      color: AppColors.textHeadline,
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.x20,
+                        AppSpacing.x24,
+                        AppSpacing.x20,
+                        AppSpacing.x24,
+                      ),
+                      child: Column(
+                        children: [
+                          CommonFormImageField(
+                            isCircular: true,
+                            imageProvider: formState.selectedImage != null
+                                ? MemoryImage(formState.selectedImage!.bytes)
+                                : (user.imgUrl?.trim().isNotEmpty ?? false)
+                                ? NetworkImage(user.imgUrl!)
+                                : null,
+                            isPicking: formState.isPickingImage,
+                            onPick:
+                                formState.isSubmitting ||
+                                    formState.isPickingImage
+                                ? null
+                                : () => _pickImage(context, ref),
+                            onReset:
+                                formState.selectedImage != null &&
+                                    !formState.isSubmitting &&
+                                    !formState.isPickingImage
+                                ? controller.clearSelectedImage
+                                : null,
+                          ),
+                          const SizedBox(height: AppSpacing.x16),
+                          UserProfileNameField(
+                            name: formState.currentName,
+                            serverErrorMessage: formState.nameErrorMessage,
+                            onChanged: controller.updateName,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.x20,
+                      AppSpacing.x12,
+                      AppSpacing.x20,
+                      AppSpacing.x40,
+                    ),
+                    child: CommonButton(
+                      label: '수정 완료',
+                      fullWidth: true,
+                      isLoading: formState.isSubmitting,
+                      onPressed: formState.canSubmit
+                          ? () => _submit(context, ref)
+                          : null,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
