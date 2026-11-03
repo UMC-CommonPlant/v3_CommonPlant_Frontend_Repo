@@ -16,6 +16,7 @@ import 'package:commonplant_frontend/features/place/presentation/widgets/place_d
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_exit_dialog.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_plant_list.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
+import 'package:commonplant_frontend/shared/widgets/common_content_width.dart';
 import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
@@ -140,6 +141,7 @@ class PlaceDetailPage extends ConsumerWidget {
         fontWeight: FontWeight.w700,
       ),
       bodyPadding: EdgeInsets.zero,
+      contentMaxWidth: AppSizes.contentMaxWidth,
       floatingActionButton: PlaceDetailFab(
         placeId: placeId,
         canEditPlace: isOwner,
@@ -152,21 +154,44 @@ class PlaceDetailPage extends ConsumerWidget {
       ),
       child: SizedBox(
         width: double.infinity,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: AppSizes.mobileWidth),
-            child: Column(
-              children: [
-                PlaceDetailHeader(
-                  placeId: placeId,
-                  name: detail.name,
-                  address: detail.address,
-                  friends: detail.friends,
-                ),
-                PlacePlantList(placeId: placeId, plants: detail.plants),
-              ],
-            ),
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final expanded =
+                constraints.maxWidth >= AppSizes.expandedLayoutMinWidth;
+            return CommonContentWidth(
+              maxWidth: expanded
+                  ? AppSizes.contentMaxWidth
+                  : AppSizes.mobileWidth,
+              child: Flex(
+                key: const ValueKey('place-detail-layout'),
+                direction: expanded ? Axis.horizontal : Axis.vertical,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flexible(
+                    flex: 0,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: AppSizes.mobileWidth,
+                      ),
+                      child: PlaceDetailHeader(
+                        placeId: placeId,
+                        name: detail.name,
+                        address: detail.address,
+                        friends: detail.friends,
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    flex: expanded ? 1 : 0,
+                    child: PlacePlantList(
+                      placeId: placeId,
+                      plants: detail.plants,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
