@@ -377,7 +377,7 @@ active access-token 요청의 `A003`, `A004`, `A009`는 한 세션에서 한 번
 | #271 | `e15de3f` | Home 친구 요청 배지의 loading·오류·재시도·정상 count UI와 파생 Provider 상태 보존 | 대상 15개·전체 519개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
 | #273 | `8a51642`, `ec34ea8`, `dbff448` | 정확한 plant ID 기반 장소 code resolver·상세 상태와 API mode 식물 검색 fixture 차단 | 관련 40개·전체 531개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
 | #275 | `e507656`, `022e8ba` | 표준 API 오류·field 메시지와 확인된 인증 만료의 세션 종료·로그인 안내 연결 | 전체 547개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
-| #277 | 이 문서의 최종 커밋 | Place 멤버·Friend 쓰기 계약 재검증, backend #150 의존성과 기존 안전 경계 유지 | live OpenAPI·backend main·중복 이슈 확인, `git diff --check` |
+| #277 | `c91f7bb`, `e3bb653`, `0665211` | Place 실제 멤버 ID·팀짱 위임·탈퇴 연결, Friend·멤버 추가/제거 계약은 계속 대기 | format 359개·analyze 통과, 전체 831개 통과·기존 skip 1개. [검증 기록](work-history/place-api-update-277.md) |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.
 

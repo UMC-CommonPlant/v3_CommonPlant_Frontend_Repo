@@ -728,7 +728,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 반영: #243에서 `POST /place/create`의 result 문자열을 place code로 파싱하고 친구 추가 route에 전달한다.
 - 반영: #243에서 `PUT /place/update/{code}`의 result를 typed `PlaceSummary`로 파싱한다.
 - 반영: #245에서 `GET /place/{code}/members`의 result 배열을 `PlaceMember`로 파싱하고 친구 관리 조회·검색에 연결했다. #277은 실제 nanoId·owner 검증과 팀짱 위임·탈퇴를 연결한다. 멤버 추가·제거는 미제공 계약이다.
-- 유지: #277에서 live OpenAPI와 backend main을 다시 확인했으나 멤버·Friend 쓰기 계약은 추가되지 않았다. backend #150 전까지 `receiverId` 같은 필드, 임시 멤버 key, 표시 이름 검색 첫 항목을 새 원격 쓰기 계약으로 사용하지 않는다.
+- 유지: #277에서 Place 멤버 ID·팀짱 위임·탈퇴를 연결했지만 Friend 고유 대상·부분 결과 계약은 여전히 없다. `receiverId` 같은 미제공 필드, 임시 멤버 key, 표시 이름 검색 첫 항목을 새 원격 쓰기 계약으로 사용하지 않는다.
 - 반영: #241에서 `GET /friends/requests`를 typed `FriendInvitation` 목록으로 파싱하고 Home 요청 수와 장소 친구 요청 화면에 연결했다.
 - 반영: #241에서 `POST /friends/accept`, `POST /friends/decline`을 항목별 submit 상태와 목록 invalidate 정책에 연결했다.
 - 반영: `POST /plants`와 `PUT /plants/{plantId}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
