@@ -94,7 +94,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Place | 장소 등록 중 친구 추가 | User 검색, 생성된 place code, 선택 사용자 요청 submit 연결 | 고유 사용자 식별자와 대상별 결과 검증 | `GET /users/{keyword}`, `POST /friends/request`; 동명이인 위험은 별도 등록 | #243 위험 수용 연결 |
 | Place | 장소 수정 | #248 사진 수정 차단·#250 잠금·#253 / PR #263 주소 결과 연결 병합, 취소 시 서버 주소 보존 | key 계약 후 제한 해제, 실제 주소 검색 | imageKey 생략은 삭제 의미, 상세에는 key 미제공 | 기존 주소 수정 유지, 새 주소 검색·사진 있는 장소 수정은 제한 |
 | Place | 장소 상세 | API 장소·owner·멤버·식물 연결, 날씨 API·상태 UI 구현, #309 좌표 없으면 조회 불가 | 실제 장소 좌표 연결·기기 QA와 물주기 액션 | PLACE-07 최종 좌표 계약 필요, 주소 문자열만으로 조회하지 않음 | 날씨 계층·UI 구현 및 공공데이터 실제 응답 검증 완료, 장소 좌표 연결 대기 |
-| Place | 친구 관리 | 실제 멤버·이미지 조회, 닉네임 필터, loading/empty/error/retry 연결 | 멤버 추가·삭제·권한 변경 | `GET /place/{code}/members` 연결, 고유 member id와 변경 endpoint 없음 | #245 조회 전용 연결 |
+| Place | 친구 관리 | 실제 멤버 ID·팀짱·이미지 조회, 닉네임 필터, loading/empty/error/retry 연결 | 멤버 추가·삭제, 팀짱 위임 연결 | `GET /place/{code}/members`의 nanoId·owner 소스 확인, 새 위임 API 제공 | #277 조회 계약 반영, 쓰기는 별도 API 커밋 |
 | Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
 | Plant | 식물 등록 검색 | #273에서 API mode fixture 차단·미연결 안내, API 비사용 검색·empty·선택 유지 | 실제 검색 모델과 loading/empty/error/success | 백엔드 #92의 식물 종 검색 endpoint·DTO 필요 | Blocked |
 | Plant | 식물 등록 | 장소·애칭·날짜와 create submit 연결, #250 잠금·#251 실제 장소·loading/error/empty·재시도·제출 보호 병합 | 학명/이미지·장소 사진 | `GET /place/user`, `POST /plants`; 실제 목록 code만 사용 | #251 / PR #261 병합, 인증 E2E 별도 |
@@ -323,9 +323,9 @@ active access-token 요청의 `A003`, `A004`, `A009`는 한 세션에서 한 번
 
 ## Place 멤버·Friend 식별자 쓰기 #277
 
-2026-08-31 live OpenAPI와 backend main `7d572cb`를 다시 대조했습니다. `GET /place/{code}/members`는 성공 schema 없이 `{ name, image }[]`만 반환하고 멤버 고유 ID·역할, 구성원 나가기, owner의 멤버 제거·권한 변경 endpoint가 없습니다. `POST /friends/request`도 `receiverName[]`을 받아 부분 검색 첫 결과를 사용하며 대상별 결과나 전체 원자성 계약을 제공하지 않습니다.
+2026-11-05 live OpenAPI(22 paths·30 operations)와 backend develop `03ece0e`를 다시 대조했습니다. `GET /place/{code}/members`의 Swagger 성공 schema·예시는 불완전하지만 소스는 `{nanoId,name,image,owner}[]`를 반환합니다. #277은 이 식별자·역할을 검증하고 동명이인·가입 순서를 보존해 조회와 팀짱 표시를 연결합니다([API별 이력](work-history/place-members-contract-277.md)). 새 팀짱 위임·탈퇴 endpoint는 별도 API 커밋으로 연결합니다.
 
-[백엔드 #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)에 멤버와 Friend의 고유 식별자·권한·성공/실패·멱등 계약을 요청했습니다. 답변과 live OpenAPI 반영 전에는 임시 화면 key, 표시 이름, fixture, 목록 첫 항목을 원격 쓰기 값으로 사용하지 않습니다. #245의 API 멤버 조회 전용 UI, #239의 구성원 나가기 숨김, #243의 사용자 승인 아래 수용한 이름 기반 요청 경계를 그대로 유지하며 5번 단계를 완료로 표시하지 않습니다.
+`POST /friends/request`는 여전히 `receiverName[]`을 사용하며 대상별 결과·전체 원자성 계약이 없습니다. [백엔드 #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)의 Friend 고유 ID·부분 결과와 멤버 추가·제거 후속 계약은 남아 있으므로 #277 전체를 완료로 표시하지 않습니다. 임시 화면 key·표시 이름·fixture·목록 첫 항목을 고유 ID 쓰기의 대체값으로 사용하지 않습니다.
 
 ## 완료 기준
 

@@ -21,7 +21,7 @@
 | PLACE-01 | Place | Place 조회/생성/수정/삭제 성공 response body 구조는 무엇인가? | #239 목록·상세, #243 생성 code·수정 결과 반영 | Answered |
 | PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | #239 목록·상세 mapper와 화면 반영 | Done |
 | PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | API 경계는 `code`, 기존 route 모델명은 `id` 유지 | Answered |
-| PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #245 친구 관리 조회 연결, 멤버 변경은 별도 계약 필요 | Answered |
+| PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #277 nanoId·owner 소스 확인, 실제 ID·팀짱 표시 연결 | Answered |
 | PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 숨김 유지, #277은 backend #150 답변 대기 | Blocked |
 | PLACE-06 | Place | 멤버 고유 ID·역할과 owner의 제거·권한 변경 endpoint는 무엇인가? | #245 조회 전용 유지, #277 쓰기 연결 보류 | Blocked |
 | PLACE-07 | Place | 장소 조회에 제공할 x/y 좌표의 최종 필드명·응답 위치·좌표계는 무엇인가? | #302 임시 `xPosition`·`yPosition`, 계약 확정 후 프런트 공공데이터 날씨 연결 | Partial |
@@ -132,11 +132,11 @@
 
 ### PLACE-04. 장소 멤버 목록 response schema
 
-- 현재 근거: 백엔드 Controller는 `List<PlaceDto.getPlaceResUser>`를 `JsonResponse.result`로 반환한다.
-- 프론트 영향: 이름과 프로필 이미지는 연결할 수 있지만 member id, 역할, 가입일은 응답에 없어 삭제·권한 UI에 사용할 수 없다.
-- 확인 질문: 부분 해결됨. 멤버 변경 endpoint와 고유 member id가 필요하면 백엔드 확장이 필요하다.
-- 프론트 반영: #239 상세 화면은 `/place/{code}`에 포함된 동일 멤버 타입을 표시한다. #245는 2026-08-28 동일 source 계약을 재확인하고 친구 관리 조회·검색·이미지와 상태 UI를 연결했다. 변경 endpoint가 없어 API 모드의 추가·삭제는 제공하지 않는다.
-- 답변: 멤버 항목은 `{ name, image }`이며 가입 순서 배열이다.
+- 현재 근거: 2026-11-05 live OpenAPI와 backend `develop` `03ece0e`의 `PlaceDto.getPlaceResUser`·`PlaceServiceImpl.getPlaceMembers`를 확인했다. Swagger 성공 schema·예시는 아직 불완전하다.
+- 프론트 영향: 실제 멤버 ID와 팀짱 여부를 보존할 수 있다. 상세의 `userList`도 동일 DTO이며 가입일 필드는 없다.
+- 확인 질문: 실제 인증 응답 QA는 남아 있다. 조회 계약은 소스와 공개 endpoint 기준으로 확인했다.
+- 프론트 반영: #277에서 멤버 목록 `nanoId`·`owner`를 검증하고 실제 ID·팀짱 표시를 사용한다. 누락·잘못된 타입·중복 ID는 전체 조회 오류로 처리한다. 상세 legacy 표시의 선택 필드를 원격 쓰기 대체값으로 사용하지 않는다.
+- 답변: `JsonResponse.result`는 가입 순서의 `{ nanoId:String, name:String, image:String?, owner:boolean }[]`이다.
 - 상태: Answered
 
 ### PLACE-05. 구성원 장소 나가기 endpoint

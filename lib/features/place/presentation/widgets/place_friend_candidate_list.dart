@@ -88,6 +88,15 @@ class _FriendCandidateTile extends StatelessWidget {
                   ),
                 ),
               ),
+              if (friend.isOwner == true) ...[
+                const SizedBox(width: AppSpacing.x8),
+                Text(
+                  '팀짱',
+                  style: AppTextStyles.size12Medium.copyWith(
+                    color: AppColors.brandStrong,
+                  ),
+                ),
+              ],
               if (onTap != null) ...[
                 const SizedBox(width: AppSpacing.x16),
                 _FriendSelectionIcon(isSelected: isSelected),

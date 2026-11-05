@@ -35,7 +35,12 @@ void main() {
       final dataSource = _ResponsePlaceRemoteDataSource(
         membersResponse: {
           'result': [
-            {'name': 'API 멤버', 'image': 'https://example.com/member.png'},
+            {
+              'nanoId': 'member-id',
+              'name': 'API 멤버',
+              'image': 'https://example.com/member.png',
+              'owner': false,
+            },
           ],
         },
       );
@@ -45,6 +50,8 @@ void main() {
 
       expect(dataSource.requestedMembersCode, 'place-1');
       expect(members.single.name, 'API 멤버');
+      expect(members.single.nanoId, 'member-id');
+      expect(members.single.isOwner, isFalse);
       expect(members.single.imageUrl, 'https://example.com/member.png');
     });
 

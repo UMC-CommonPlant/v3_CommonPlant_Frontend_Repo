@@ -25,7 +25,8 @@
 - OpenAPI 버전: `3.1.0`
 - API title: `Common Plant API Document`
 - 서버 base path: `/api/v1`
-- endpoint inventory: 19 paths, 27 operations
+- 최신 endpoint inventory: 2026-11-05 공개 OpenAPI HTTP 200, 22 paths, 30 operations
+- 최신 소스 대조: backend `develop` `03ece0e`. 아래 과거 날짜의 확인 기록은 당시 계약이며, 현행 계약은 최신 변경 요약을 우선한다. 실제 인증 응답·서버 쓰기는 이번 확인에 포함하지 않았다.
 - 기존 문서 비교 기준: `docs/api-swagger-summary-43` 브랜치의 `docs/api-swagger-reference.md` 확인일 2026-05-20
 - 최초 코드 비교 기준: `feature/api-integration-45` 브랜치의 API 계층. 현재 화면·계층 대조 기준은 PR #276 병합 커밋 `5426768`이다.
 - 백엔드 소스 비교 기준: `UMC-CommonPlant/v3_CommonPlant_Backend_Repo` main `7d572cbcabc81a65926738b2a09e8479d0bd0c79`
@@ -51,6 +52,15 @@
 - Place와 Friend는 백엔드 source의 `JsonResponse.result` 반환 타입을 추가 근거로 사용한다. machine-readable Swagger가 아니라는 점과 실제 인증 응답 smoke가 남았다는 점은 구분한다.
 
 ## Swagger 변경 요약
+
+### 2026-11-05 멤버 식별자와 신규 장소 API
+
+- `GET /place/{code}/members`와 상세 `userList`의 항목은 `{ nanoId, name, image, owner }`이다. 성공 schema와 Swagger 예시는 여전히 불완전하므로 backend `03ece0e`의 `PlaceDto.getPlaceResUser`, `PlaceServiceImpl.getPlaceMembers`, `PlaceFacade.getPlace`를 근거로 사용한다. `owner`는 각 멤버의 팀짱 여부이며 상세 root의 `owner`는 현재 사용자의 권한이다.
+- #277에서 멤버 조회는 실제 `nanoId`와 boolean `owner`를 필수 검증하고 중복 ID·누락·잘못된 타입을 오류로 처리한다. 이름·가입 순번을 원격 쓰기 식별자로 사용하지 않는다. 상세 표시의 기존 선택 필드 호환과 원격 멤버 쓰기에 사용할 목록 검증은 구분한다.
+- 새 `PUT /place/{code}/owner/{targetNanoId}`, `DELETE /place/leave/{code}`를 확인했다. 연결과 검증은 각 API별 커밋으로 기록한다.
+- `GET /place/myGarden`에 식물 목록용 `page=0`, `size=20`이 추가됐다. result는 `{name, placeList, plantList:{items,totalCount,page,size}}`이며 기존 Home 장소 조회는 페이지 대상이 아닌 `placeList`만 사용하므로 호출을 유지한다. size 최대 50, 음수 page는 0이며 식물 전체 페이지 탐색은 별도 범위다.
+- `POST /auth/refresh`는 배포돼 있다. 시작 시 refresh-only 복원은 별도 PR #312에서 다루므로 이 브랜치에는 포함하지 않는다. 서버 logout은 여전히 없다.
+- Friend 고유 대상·대상별 결과, 날씨 좌표, 물주기 주기 저장·조회, Memo API는 이번 명세에도 없다.
 
 ### 2026-08-31 공통 오류와 인증 만료 경계
 
@@ -157,6 +167,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | --- | --- | --- | --- | --- | --- |
 | Auth | POST | `/auth/login` | 로그인 | 불필요 | `LoginSuccessJsonResponse` 또는 `LoginNewUserJsonResponse` |
 | Auth | POST | `/auth/register` | 회원가입 완료 | 불필요 | `RegisterJsonResponse` |
+| Auth | POST | `/auth/refresh` | 토큰 갱신 | refresh token 사용 | `RefreshJsonResponse` (별도 PR #312) |
 | User | GET | `/users` | 내 정보 조회 | 필요 | `UserJsonResponse` |
 | User | PUT | `/users` | 내 정보 수정 | 필요 | `UserJsonResponse` |
 | User | DELETE | `/users` | 회원 탈퇴 | 필요 | `UserDeleteJsonResponse` |
@@ -165,6 +176,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | Place | GET | `/place/user` | 소속 장소 조회 | 필요 | Swagger 없음; source `getPlaceBelongUser[]` |
 | Place | GET | `/place/{code}` | 장소 조회 | 필요 | Swagger 없음; source `getPlaceRes` |
 | Place | GET | `/place/{code}/members` | 장소 멤버 목록 조회 | 필요 | Swagger 없음; source `getPlaceResUser[]` |
+| Place | PUT | `/place/{code}/owner/{targetNanoId}` | 장소 팀짱 변경 | 필요 | Swagger 없음; source result null |
+| Place | DELETE | `/place/leave/{code}` | 장소 탈퇴 | 필요 | Swagger 없음; source result null |
 | Place | POST | `/place/create` | 장소 생성 | 필요 | Swagger 없음; source place code 문자열 |
 | Place | PUT | `/place/update/{code}` | 장소 수정 | 필요 | Swagger 없음; source `updatePlaceRes` |
 | Place | DELETE | `/place/delete/{code}` | 장소 삭제 | 필요 | Swagger 없음; source null |
@@ -319,6 +332,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - `getMainPage` fields:
   - `name`: 현재 사용자 이름
   - `placeList`: `getPlaceListRes[]`
+  - `plantList`: `{items,totalCount,page,size}`. 식물 페이지 query `page` 기본 0, `size` 기본 20·최대 50. `placeList`는 페이지 대상이 아니다.
 - `getPlaceListRes` fields:
   - `image`
   - `code`
@@ -342,7 +356,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - `getPlaceRes` fields:
   - `name`, `code`, `address`, `imgUrl`
   - `owner`: 현재 사용자의 장소 소유자 여부
-  - `userList`: `{ name, image }[]`
+  - `userList`: `{ nanoId, name, image, owner }[]` (2026-11-05 소스 확인)
   - `plantList`: Plant `DetailResponse[]`
 - #239는 위 계약을 별도 `PlaceDetail` 도메인 모델로 파싱하고 API 모드의 fixture 환경값·멤버·식물을 제거한다.
 - Error:
@@ -355,12 +369,11 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - Path parameter:
   - `code`: 장소 코드, required
 - 성공 response 설명은 `멤버 목록 조회 성공`이지만 live Swagger body schema는 없다.
-- 백엔드 source의 result는 가입 순서의 `{ name, image }[]`이다.
+- backend `03ece0e` source의 result는 가입 순서의 `{ nanoId:String, name:String, image:String?, owner:boolean }[]`이다.
 - Error:
   - `403`: 장소 접근 권한 없음
   - `404`: 장소 없음
-- 고유 member id와 역할은 제공되지 않으므로 멤버 변경·권한 UI에는 별도 endpoint 또는 응답 확장이 필요하다.
-- #245는 이름·이미지·가입 순서를 보존하는 typed 목록과 친구 관리 조회 전용 화면을 연결한다.
+- #277은 `nanoId`·`owner`를 검증해 실제 식별자와 팀짱 표시를 연결한다. 동명이인은 별도 항목으로 유지하며 중복 ID와 잘못된 항목을 조용히 제외하지 않는다. 추가·삭제 endpoint는 아직 없다.
 
 #### POST `/place/create`
 
