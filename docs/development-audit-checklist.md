@@ -125,7 +125,7 @@
 - 문서만 변경하는 #247은 `git diff --check`, 로컬 문서 링크, 변경 파일이 Markdown뿐인지 확인합니다.
 - #247 검증 결과: Markdown 37개에서 로컬 링크 138개(heading anchor 3개 포함)를 확인했고 누락은 없습니다. `docs`의 나머지 문서 35개가 모두 인덱스에 연결됐으며, 변경 파일 19개는 모두 Markdown입니다. 보관 문서 7개의 기존 경로를 유지했습니다.
 - 코드 수정은 `fvm dart format --output=none --set-exit-if-changed .`, `fvm flutter analyze`, `fvm flutter test`, `git diff --check`를 통과해야 합니다.
-- 각 이슈·PR에는 `ywkim95`, `bbielo`, MVP milestone과 Project 10을 연결합니다. 진행 중 `In Progress`, PR 생성 후 `In Review`, 병합·완료 후 `Done`으로 갱신합니다.
+- 각 이슈·PR의 기본 assignee는 `ywkim95`만 지정하고 `bbielo`를 자동 추가하지 않습니다. MVP milestone과 Project 10을 연결하고 진행 중 `In Progress`, PR 생성 후 `In Review`, 병합·완료 후 `Done`으로 갱신합니다.
 - 커밋별 변경 범위·검증 결과를 작업 문서와 이슈에 남기고, 병합 후 이 표의 체크와 화면 매트릭스를 갱신합니다.
 
 ## 문서 정리 커밋 이력
