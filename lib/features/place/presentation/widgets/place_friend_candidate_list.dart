@@ -14,6 +14,7 @@ class PlaceFriendCandidateList extends StatelessWidget {
     required this.friends,
     required this.selectedIds,
     required this.onToggle,
+    this.trailingBuilder,
     this.topPadding = AppSpacing.x8,
     this.bottomPadding = AppSpacing.x24,
   });
@@ -21,6 +22,7 @@ class PlaceFriendCandidateList extends StatelessWidget {
   final List<PlaceFriendProfile> friends;
   final Set<String> selectedIds;
   final ValueChanged<PlaceFriendProfile>? onToggle;
+  final Widget? Function(PlaceFriendProfile)? trailingBuilder;
   final double topPadding;
   final double bottomPadding;
 
@@ -42,6 +44,7 @@ class PlaceFriendCandidateList extends StatelessWidget {
           friend: friend,
           isSelected: isSelected,
           onTap: onToggle == null ? null : () => onToggle!(friend),
+          trailing: trailingBuilder?.call(friend),
         );
       },
     );
@@ -53,11 +56,13 @@ class _FriendCandidateTile extends StatelessWidget {
     required this.friend,
     required this.isSelected,
     required this.onTap,
+    this.trailing,
   });
 
   final PlaceFriendProfile friend;
   final bool isSelected;
   final VoidCallback? onTap;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +93,19 @@ class _FriendCandidateTile extends StatelessWidget {
                   ),
                 ),
               ),
+              if (friend.isOwner == true) ...[
+                const SizedBox(width: AppSpacing.x8),
+                Text(
+                  '팀짱',
+                  style: AppTextStyles.size12Medium.copyWith(
+                    color: AppColors.brandStrong,
+                  ),
+                ),
+              ],
+              if (trailing != null) ...[
+                const SizedBox(width: AppSpacing.x8),
+                trailing!,
+              ],
               if (onTap != null) ...[
                 const SizedBox(width: AppSpacing.x16),
                 _FriendSelectionIcon(isSelected: isSelected),

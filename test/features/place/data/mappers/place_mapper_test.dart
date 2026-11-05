@@ -4,15 +4,27 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('placeMembersFromResponse', () {
-    test('result 배열의 가입 순서와 중복 이름을 보존한다', () {
+    test('result 배열의 고유 ID·역할과 가입 순서·동명이인을 보존한다', () {
       final members = placeMembersFromResponse({
         'result': [
-          {'name': '같은 이름', 'image': 'https://example.com/member.png'},
-          {'name': '같은 이름', 'image': null},
+          {
+            'nanoId': 'owner-id',
+            'name': '같은 이름',
+            'image': 'https://example.com/member.png',
+            'owner': true,
+          },
+          {
+            'nanoId': 'member-id',
+            'name': '같은 이름',
+            'image': null,
+            'owner': false,
+          },
         ],
       });
 
       expect(members.map((member) => member.name), ['같은 이름', '같은 이름']);
+      expect(members.map((member) => member.nanoId), ['owner-id', 'member-id']);
+      expect(members.map((member) => member.isOwner), [true, false]);
       expect(members.first.imageUrl, 'https://example.com/member.png');
       expect(members.last.imageUrl, isNull);
     });
@@ -38,6 +50,62 @@ void main() {
       expect(
         () => placeMembersFromResponse({
           'result': [<String, Object?>{}],
+        }),
+        throwsA(isA<ApiException>()),
+      );
+    });
+
+    for (final invalidId in [null, '', '  ', 123, true]) {
+      test('nanoId가 유효한 문자열이 아니면 실패한다: $invalidId', () {
+        expect(
+          () => placeMembersFromResponse({
+            'result': [
+              {'nanoId': invalidId, 'name': '멤버', 'owner': false},
+            ],
+          }),
+          throwsA(isA<ApiException>()),
+        );
+      });
+    }
+
+    for (final invalidOwner in [null, 'true', 'false', 0, 1]) {
+      test('owner가 boolean이 아니면 실패한다: $invalidOwner', () {
+        expect(
+          () => placeMembersFromResponse({
+            'result': [
+              {'nanoId': 'member-id', 'name': '멤버', 'owner': invalidOwner},
+            ],
+          }),
+          throwsA(isA<ApiException>()),
+        );
+      });
+    }
+
+    test('고유 ID가 중복된 항목을 합치거나 부분 성공으로 반환하지 않는다', () {
+      expect(
+        () => placeMembersFromResponse({
+          'result': [
+            {'nanoId': 'same-id', 'name': '먼저 가입', 'owner': true},
+            {'nanoId': 'same-id', 'name': '나중 가입', 'owner': false},
+          ],
+        }),
+        throwsA(
+          isA<ApiException>().having(
+            (error) => error.message,
+            'message',
+            contains('2번째 항목의 nanoId가 중복'),
+          ),
+        ),
+      );
+    });
+
+    test('정상 항목 뒤의 잘못된 멤버도 전체 실패로 반환한다', () {
+      expect(
+        () => placeMembersFromResponse({
+          'result': [
+            {'nanoId': 'member-id', 'name': '정상 멤버', 'owner': true},
+            {'name': 'ID 없는 멤버', 'owner': false},
+          ],
         }),
         throwsA(isA<ApiException>()),
       );
@@ -185,10 +253,26 @@ void main() {
       expect(detail.isOwner, isTrue);
       expect(detail.members.single.name, '커먼맘');
       expect(detail.members.single.imageUrl, 'https://example.com/user.png');
+      expect(detail.members.single.nanoId, isNull);
+      expect(detail.members.single.isOwner, isNull);
       expect(detail.plants.single.id, '1');
       expect(detail.plants.single.scientificNameKo, '몬스테라');
       expect(detail.plants.single.lastWateredDate, '2026-06-29');
       expect(detail.plants.single.description, '창가에서 키우는 식물');
+    });
+
+    test('상세 userList의 새 멤버 ID와 역할도 보존한다', () {
+      final detail = placeDetailFromResponse({
+        'result': {
+          'name': '정원',
+          'userList': [
+            {'nanoId': 'owner-id', 'name': '팀짱', 'owner': true},
+          ],
+        },
+      }, fallbackCode: 'place-code');
+
+      expect(detail.members.single.nanoId, 'owner-id');
+      expect(detail.members.single.isOwner, isTrue);
     });
 
     test('목록이 없는 상세 응답은 빈 멤버와 식물 목록을 사용한다', () {

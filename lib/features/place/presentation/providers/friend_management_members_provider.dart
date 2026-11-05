@@ -1,4 +1,5 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/place/place_repository_provider.dart';
 import 'package:commonplant_frontend/features/place/presentation/fixtures/friend_management_fixture.dart';
@@ -12,15 +13,26 @@ final remoteFriendManagementMembersProvider = FutureProvider.autoDispose
           .watch(placeRepositoryProvider)
           .fetchPlaceMembers(placeCode);
 
-      return List.unmodifiable([
-        for (final (index, member) in members.indexed)
+      final profiles = <PlaceFriendProfile>[];
+      final memberIds = <String>{};
+      for (final member in members) {
+        final nanoId = member.nanoId;
+        if (nanoId == null ||
+            nanoId.trim().isEmpty ||
+            member.isOwner == null ||
+            !memberIds.add(nanoId)) {
+          throw const ApiException(message: '장소 멤버의 식별자와 역할을 확인할 수 없어요');
+        }
+        profiles.add(
           PlaceFriendProfile(
-            // The API has no member ID; this key is only for this read-only list.
-            id: 'member-$index',
+            id: nanoId,
             name: member.name,
             imageUrl: member.imageUrl,
+            isOwner: member.isOwner,
           ),
-      ]);
+        );
+      }
+      return List.unmodifiable(profiles);
     }, retry: (retryCount, error) => null);
 
 final friendManagementMembersProvider = Provider.autoDispose

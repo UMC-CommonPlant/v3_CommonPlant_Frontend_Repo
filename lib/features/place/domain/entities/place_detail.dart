@@ -19,10 +19,17 @@ class PlaceDetail {
 }
 
 class PlaceMember {
-  const PlaceMember({required this.name, this.imageUrl});
+  const PlaceMember({
+    required this.name,
+    this.nanoId,
+    this.imageUrl,
+    this.isOwner,
+  });
 
+  final String? nanoId;
   final String name;
   final String? imageUrl;
+  final bool? isOwner;
 }
 
 class PlacePlant {

@@ -310,7 +310,7 @@ class _AccountRepositories extends Fake
   @override
   Future<List<PlaceMember>> fetchPlaceMembers(String code) async {
     _record('members');
-    return [PlaceMember(name: account)];
+    return [PlaceMember(nanoId: account, name: account, isOwner: true)];
   }
 
   @override

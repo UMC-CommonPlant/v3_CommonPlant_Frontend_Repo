@@ -21,9 +21,9 @@
 | PLACE-01 | Place | Place 조회/생성/수정/삭제 성공 response body 구조는 무엇인가? | #239 목록·상세, #243 생성 code·수정 결과 반영 | Answered |
 | PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | #239 목록·상세 mapper와 화면 반영 | Done |
 | PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | API 경계는 `code`, 기존 route 모델명은 `id` 유지 | Answered |
-| PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #245 친구 관리 조회 연결, 멤버 변경은 별도 계약 필요 | Answered |
-| PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 숨김 유지, #277은 backend #150 답변 대기 | Blocked |
-| PLACE-06 | Place | 멤버 고유 ID·역할과 owner의 제거·권한 변경 endpoint는 무엇인가? | #245 조회 전용 유지, #277 쓰기 연결 보류 | Blocked |
+| PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #277 nanoId·owner 소스 확인, 실제 ID·팀짱 표시 연결 | Answered |
+| PLACE-05 | Place | 구성원의 장소 나가기 endpoint는 무엇인가? | #277 탈퇴·팀짱 자동 위임/마지막 멤버 삭제 안내 연결, 실서버 QA 별도 | Answered |
+| PLACE-06 | Place | 멤버 고유 ID·역할과 owner의 제거·권한 변경 endpoint는 무엇인가? | #277 실제 ID·팀짱 위임 연결, 멤버 추가·제거 계약 대기 | Partial |
 | PLACE-07 | Place | 장소 조회에 제공할 x/y 좌표의 최종 필드명·응답 위치·좌표계는 무엇인가? | #302 임시 `xPosition`·`yPosition`, 계약 확정 후 프런트 공공데이터 날씨 연결 | Partial |
 | PLANT-01 | Plant | 식물에서 소속 장소 code를 조회할 수 있는 계약을 제공하는가? | #273에서 기존 Place 목록·상세의 정확한 plant ID 대조로 code 복원 | Answered |
 | FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | #241 요청 목록·Home 배지 연결 | Answered |
@@ -132,30 +132,30 @@
 
 ### PLACE-04. 장소 멤버 목록 response schema
 
-- 현재 근거: 백엔드 Controller는 `List<PlaceDto.getPlaceResUser>`를 `JsonResponse.result`로 반환한다.
-- 프론트 영향: 이름과 프로필 이미지는 연결할 수 있지만 member id, 역할, 가입일은 응답에 없어 삭제·권한 UI에 사용할 수 없다.
-- 확인 질문: 부분 해결됨. 멤버 변경 endpoint와 고유 member id가 필요하면 백엔드 확장이 필요하다.
-- 프론트 반영: #239 상세 화면은 `/place/{code}`에 포함된 동일 멤버 타입을 표시한다. #245는 2026-08-28 동일 source 계약을 재확인하고 친구 관리 조회·검색·이미지와 상태 UI를 연결했다. 변경 endpoint가 없어 API 모드의 추가·삭제는 제공하지 않는다.
-- 답변: 멤버 항목은 `{ name, image }`이며 가입 순서 배열이다.
+- 현재 근거: 2026-11-05 live OpenAPI와 backend `develop` `03ece0e`의 `PlaceDto.getPlaceResUser`·`PlaceServiceImpl.getPlaceMembers`를 확인했다. Swagger 성공 schema·예시는 아직 불완전하다.
+- 프론트 영향: 실제 멤버 ID와 팀짱 여부를 보존할 수 있다. 상세의 `userList`도 동일 DTO이며 가입일 필드는 없다.
+- 확인 질문: 실제 인증 응답 QA는 남아 있다. 조회 계약은 소스와 공개 endpoint 기준으로 확인했다.
+- 프론트 반영: #277에서 멤버 목록 `nanoId`·`owner`를 검증하고 실제 ID·팀짱 표시를 사용한다. 누락·잘못된 타입·중복 ID는 전체 조회 오류로 처리한다. 상세 legacy 표시의 선택 필드를 원격 쓰기 대체값으로 사용하지 않는다.
+- 답변: `JsonResponse.result`는 가입 순서의 `{ nanoId:String, name:String, image:String?, owner:boolean }[]`이다.
 - 상태: Answered
 
 ### PLACE-05. 구성원 장소 나가기 endpoint
 
-- 현재 근거: 백엔드 `PlaceServiceImpl.deletePlace`는 owner만 허용하고 장소와 식물·메모·Belong을 모두 삭제한다. 구성원 leave endpoint는 Controller에 없다.
-- 프론트 영향: owner 전체 삭제와 구성원 나가기를 같은 action으로 호출하면 구성원은 403이 발생하고 owner는 파괴 범위를 오해할 수 있다.
-- 확인 질문: owner가 아닌 구성원이 Belong만 제거하고 장소에서 나가는 endpoint가 제공되는가?
-- 프론트 반영: #239 API 모드는 owner에게만 전체 삭제 action과 경고를 표시하고 구성원 나가기는 숨긴다.
-- 답변: 현재 제공 endpoint 없음. 2026-08-31 backend [#150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)에 self leave 계약을 요청했다.
-- 상태: Blocked
+- 현재 근거: 2026-11-05 live OpenAPI와 backend `03ece0e`의 Controller·Service에서 `DELETE /place/leave/{code}`를 확인했다.
+- 프론트 영향: 기존 owner 전체 삭제와 별도로 내 소속을 제거할 수 있다.
+- 확인 질문: 계약 확인됨. 실제 인증된 저장·재조회 QA는 남아 있다.
+- 프론트 반영: #277에서 일반 멤버·팀짱의 나가기를 연결하고, 팀짱에게는 자동 위임·혼자일 때 장소 삭제를 안내한다. 전체 삭제 endpoint·경고는 분리한다([API 이력](work-history/place-leave-api-277.md)).
+- 답변: body 없는 인증된 DELETE, 성공 200 result null. 팀짱이면 가입 순 다음 멤버에게 서버가 자동 위임하며 마지막 멤버이면 장소와 식물 등을 삭제한다. 장소 없음 404 `P101`, 비멤버 403 `P103`.
+- 상태: Answered
 
 ### PLACE-06. 멤버 고유 식별자·역할과 owner 관리 endpoint
 
-- 현재 근거: live OpenAPI의 `GET /place/{code}/members`에는 성공 schema가 없고 backend main `7d572cb`의 `getPlaceResUser`는 `name`, `image`만 제공한다. 멤버 제거·역할 변경 Controller도 없다.
-- 프론트 영향: 가입 순서 기반 임시 화면 key는 렌더링에만 쓸 수 있고 특정 멤버의 삭제·권한 변경 payload에는 사용할 수 없다.
-- 확인 질문: 멤버의 안정적인 user ID와 역할은 어떤 필드로 제공하는가? owner가 멤버를 제거하거나 역할을 위임·변경하는 endpoint, 권한·owner 보호·최소 인원·멱등 규칙은 무엇인가?
-- 프론트 반영: #277은 [backend #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150) 답변과 live OpenAPI schema 전까지 #245의 조회 전용 UI와 임시 key 비전송 경계를 유지한다.
-- 답변: 미확인
-- 상태: Blocked
+- 현재 근거: 2026-11-05 live OpenAPI와 backend `03ece0e`에서 `nanoId`·`owner`, `PUT /place/{code}/owner/{targetNanoId}`를 확인했다.
+- 프론트 영향: 실제 멤버 ID로 팀짱 위임을 연결할 수 있다. 멤버 추가·제거 endpoint는 없다.
+- 확인 질문: 멤버 추가·제거와 멱등 정책의 후속 계약은 무엇인가?
+- 프론트 반영: #277은 팀짱에게만 현재 비팀짱 멤버의 위임 액션을 제공하고 제출 직전 권한·대상·세션을 검사한다. 성공 후 관련 조회를 갱신한다([API 이력](work-history/place-owner-api-277.md)).
+- 답변: 현재 팀짱만 위임 가능, 자기 자신·비멤버 금지. 성공 200 result null, 기존 팀짱의 소속 유지. 상세 오류 코드는 API 참고 문서에 기록했다. 실제 인증 쓰기 QA는 남아 있다.
+- 상태: Partial
 
 ### PLACE-07. 장소 조회 좌표 계약
 
@@ -283,6 +283,7 @@
 
 ### TOKEN-01. Refresh token 재발급 API
 
+- 최신 대조: 2026-11-05 공개 OpenAPI 22 paths·30 operations에서도 같은 refresh 계약을 확인했다. PR #312가 develop에 병합돼 #315에도 최신 develop을 동기화했다.
 - 현재 근거: 2026-11-03 [live OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)는 20 paths·28 operations이며 `POST /auth/refresh`를 제공한다. backend develop [`03ece0e`](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/commit/03ece0e466f2f47f72263085f3bfa737b3e1a53c)의 `AuthController`·`AuthRequest.Refresh`·`AuthResponse.RefreshResponse`·`AuthServiceImpl.refresh`와 [PR #165](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/pull/165)를 대조했다. #149·#162의 OPEN 상태는 배포 부재의 근거가 아니다.
 - 확인된 계약: `Authorization` 없이 JSON `{"refreshToken":"..."}`을 보낸다. 성공 wrapper의 `result.accessToken`을 사용하고 `result.refreshToken`은 회전할 때만 반환되므로 생략/null이면 기존 refresh token을 보존한다. JWT 필터는 `/auth/**`에서도 전달된 bearer를 검증하므로 만료 access token을 붙이지 않는다. refresh 값은 필수 비공백 문자열이며 최대 512자다.
 - 오류·회전: JWT 형식·서명 오류는 HTTP 401 `A003`, 만료는 `A004`, REFRESH 타입 불일치·저장값 불일치는 `A012`, 활성 사용자 없음은 HTTP 404 `A006`이다. 회전 시 서버 저장값이 바뀌며 이전 refresh는 불일치로 거절된다. 로그인도 저장 refresh를 교체한다. `AuthServiceImplTest`와 `JwtUtilTest`에서 비회전·회전 저장·불일치·token type 차단을 확인했으며 이번에 백엔드 테스트를 실행한 것은 아니다.

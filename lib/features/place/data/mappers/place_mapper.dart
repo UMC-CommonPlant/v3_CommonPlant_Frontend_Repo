@@ -89,10 +89,22 @@ PlaceDetail placeDetailFromResponse(
   );
 }
 
-PlaceMember placeMemberFromJson(JsonMap json) {
+PlaceMember placeMemberFromJson(JsonMap json, {bool requireIdentity = false}) {
+  final nanoId = json['nanoId'];
+  final owner = json['owner'];
+  if ((nanoId != null || requireIdentity) &&
+      (nanoId is! String || nanoId.trim().isEmpty)) {
+    throw const ApiException(message: '장소 멤버 응답에 유효한 nanoId가 없습니다.');
+  }
+  if ((owner != null || requireIdentity) && owner is! bool) {
+    throw const ApiException(message: '장소 멤버 응답에 유효한 owner가 없습니다.');
+  }
+
   return PlaceMember(
+    nanoId: nanoId as String?,
     name: readRequiredString(json, const ['name'], '장소 멤버 이름'),
     imageUrl: readOptionalString(json, const ['image', 'imgUrl', 'imageUrl']),
+    isOwner: owner as bool?,
   );
 }
 
@@ -104,12 +116,20 @@ List<PlaceMember> placeMembersFromResponse(Object? data) {
     throw const ApiException(message: '장소 멤버 조회 응답이 목록 형식이 아닙니다.');
   }
 
-  return List.unmodifiable([
-    for (final (index, member) in members.indexed)
-      placeMemberFromJson(
-        _requireJsonMap(member, context: '장소 멤버 ${index + 1}번째 항목'),
-      ),
-  ]);
+  final parsedMembers = <PlaceMember>[];
+  final memberIds = <String>{};
+  for (final (index, member) in members.indexed) {
+    final parsed = placeMemberFromJson(
+      _requireJsonMap(member, context: '장소 멤버 ${index + 1}번째 항목'),
+      requireIdentity: true,
+    );
+    if (!memberIds.add(parsed.nanoId!)) {
+      throw ApiException(message: '장소 멤버 ${index + 1}번째 항목의 nanoId가 중복됩니다.');
+    }
+    parsedMembers.add(parsed);
+  }
+
+  return List.unmodifiable(parsedMembers);
 }
 
 PlacePlant placePlantFromJson(JsonMap json) {

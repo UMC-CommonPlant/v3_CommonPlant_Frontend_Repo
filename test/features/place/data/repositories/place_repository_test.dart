@@ -7,6 +7,34 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PlaceRepository', () {
+    test('탈퇴는 별도 endpoint로 위임하고 실패를 보존한다', () async {
+      final dataSource = _LeaveDataSource();
+      final repository = PlaceRepositoryImpl(dataSource);
+      await repository.leavePlace('place-code');
+      expect(dataSource.codes, ['place-code']);
+      dataSource.failure = const ApiException(
+        message: 'not found',
+        statusCode: 404,
+      );
+      await expectLater(
+        repository.leavePlace('place-code'),
+        throwsA(same(dataSource.failure)),
+      );
+    });
+    test('팀짱 위임은 code와 실제 nanoId를 그대로 전달하고 실패를 보존한다', () async {
+      final dataSource = _OwnerDataSource();
+      final repository = PlaceRepositoryImpl(dataSource);
+      await repository.changePlaceOwner(code: 'place', targetNanoId: 'nano-id');
+      expect(dataSource.requests, [(code: 'place', targetNanoId: 'nano-id')]);
+      dataSource.failure = const ApiException(
+        message: 'denied',
+        statusCode: 403,
+      );
+      await expectLater(
+        repository.changePlaceOwner(code: 'place', targetNanoId: 'nano-id'),
+        throwsA(same(dataSource.failure)),
+      );
+    });
     test('소속 장소 목록의 잘못된 항목을 부분 성공으로 반환하지 않는다', () async {
       final repository = PlaceRepositoryImpl(
         _ResponsePlaceRemoteDataSource(
@@ -35,7 +63,12 @@ void main() {
       final dataSource = _ResponsePlaceRemoteDataSource(
         membersResponse: {
           'result': [
-            {'name': 'API 멤버', 'image': 'https://example.com/member.png'},
+            {
+              'nanoId': 'member-id',
+              'name': 'API 멤버',
+              'image': 'https://example.com/member.png',
+              'owner': false,
+            },
           ],
         },
       );
@@ -45,6 +78,8 @@ void main() {
 
       expect(dataSource.requestedMembersCode, 'place-1');
       expect(members.single.name, 'API 멤버');
+      expect(members.single.nanoId, 'member-id');
+      expect(members.single.isOwner, isFalse);
       expect(members.single.imageUrl, 'https://example.com/member.png');
     });
 
@@ -144,6 +179,30 @@ void main() {
       });
     });
   });
+}
+
+class _LeaveDataSource extends Fake implements PlaceRemoteDataSource {
+  final codes = <String>[];
+  Object? failure;
+  @override
+  Future<void> leavePlace(String code) async {
+    codes.add(code);
+    if (failure case final error?) throw error;
+  }
+}
+
+class _OwnerDataSource extends Fake implements PlaceRemoteDataSource {
+  final requests = <({String code, String targetNanoId})>[];
+  Object? failure;
+
+  @override
+  Future<void> changePlaceOwner({
+    required String code,
+    required String targetNanoId,
+  }) async {
+    requests.add((code: code, targetNanoId: targetNanoId));
+    if (failure case final error?) throw error;
+  }
 }
 
 class _ResponsePlaceRemoteDataSource extends Fake

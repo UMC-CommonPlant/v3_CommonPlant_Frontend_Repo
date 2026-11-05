@@ -38,8 +38,8 @@ void main() {
   testWidgets('API 멤버는 fixture 없이 조회 전용으로 표시하고 필터링한다', (tester) async {
     final repository = _MembersRepository(
       members: const [
-        PlaceMember(name: '서버 멤버'),
-        PlaceMember(name: '옥상 친구'),
+        PlaceMember(nanoId: 'owner-id', name: '서버 멤버', isOwner: true),
+        PlaceMember(nanoId: 'member-id', name: '옥상 친구', isOwner: false),
       ],
     );
     await tester.pumpWidget(_remoteApp(repository));
@@ -47,6 +47,7 @@ void main() {
 
     expect(repository.requestedCode, 'place-1');
     expect(find.text('서버 멤버'), findsOneWidget);
+    expect(find.text('팀짱'), findsOneWidget);
     expect(find.text('커먼맘'), findsNothing);
     expect(find.text('확인'), findsOneWidget);
     expect(find.text('완료'), findsNothing);
@@ -79,7 +80,9 @@ void main() {
   testWidgets('API 멤버 조회 실패는 재시도로 복구한다', (tester) async {
     final repository = _MembersRepository(
       failFirst: true,
-      members: const [PlaceMember(name: '복구 멤버')],
+      members: const [
+        PlaceMember(nanoId: 'member-id', name: '복구 멤버', isOwner: false),
+      ],
     );
     await tester.pumpWidget(_remoteApp(repository));
     await tester.pumpAndSettle();
@@ -104,7 +107,13 @@ void main() {
       await tester.pumpWidget(
         _remoteApp(
           _MembersRepository(
-            members: const [PlaceMember(name: '함께 식물을 키우는 이름이 아주 긴 멤버')],
+            members: const [
+              PlaceMember(
+                nanoId: 'member-id',
+                name: '함께 식물을 키우는 이름이 아주 긴 멤버',
+                isOwner: true,
+              ),
+            ],
           ),
         ),
       );
@@ -204,6 +213,15 @@ Widget _remoteApp(PlaceRepository repository) {
 }
 
 class _MembersRepository extends Fake implements PlaceRepository {
+  @override
+  Future<PlaceDetail> fetchPlaceDetail(String code) async => PlaceDetail(
+    code: code,
+    name: '장소',
+    address: '',
+    isOwner: false,
+    members: const [],
+    plants: const [],
+  );
   _MembersRepository({
     this.members = const [],
     this.pending,

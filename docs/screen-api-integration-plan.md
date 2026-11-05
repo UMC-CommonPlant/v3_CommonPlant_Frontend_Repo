@@ -33,7 +33,7 @@
 | 2 | #271 Home 친구 요청 배지 조회 실패 상태 | 현재 `placeInvitationRequestCountProvider` 오류가 0건으로 보이는 동작 재현 | #271 / PR #272에서 완료 |
 | 3 | #273 Plant 소속 장소 code·식물 검색 잔여 동선 | `PLANT-01`, `SEARCH-02` 확인 | Place API의 정확한 plant ID로 Home 진입 code 복원 완료. 검색은 backend #92까지 API mode 차단·미연결 안내 |
 | 4 | #275 공통 API 오류 메시지·토큰 만료 처리 | `ERROR-01~02` 확인, `TOKEN-01~02` endpoint 부재 확인 | 표준 오류·field 메시지와 `A003/A004/A009` 로컬 세션 종료 완료. refresh-only 초기 복원은 배포 계약 확인 후 #311에서 연결. 활성 요청 재전송·서버 logout은 후속 |
-| 5 | #277 Place 멤버·Friend 식별자 기반 쓰기 | `PLACE-05~06`, `FRIEND-05`, 멤버 고유 ID·변경 endpoint, Friend 고유 대상·부분 결과 계약 | backend #150 답변 전 Blocked. 조회 전용·member 나가기 숨김·이름 기반 위험 수용 경계 유지 |
+| 5 | #277 Place 멤버·Friend 식별자 기반 쓰기 | `PLACE-05~06`, `FRIEND-05`, 멤버 고유 ID·변경 endpoint, Friend 고유 대상·부분 결과 계약 | Place ID·팀짱 위임·탈퇴 연결. Friend 고유 대상·부분 결과와 멤버 추가·제거는 backend #150 후속 계약 대기 |
 | 6 | #283 Memo 텍스트 CRUD·목록 상태 API 연결 | backend #50~#55 구현·OpenAPI 동기화와 `MEMO-01`, `MEMO-03` 답변. 이미지 첨부 제외 | backend #50 계약 확인 답변 전 Blocked. 로컬 화면 유지, 추정 DTO·pagination·권한 모델 추가 금지 |
 
 선행 계약이 없는 단계는 편의를 위해 fixture·첫 항목·표시 이름을 원격 값으로 사용하지 않습니다. 답변 대기 중인 사실을 기록하고 다음 단계의 계약 확인을 병행할 수는 있지만, 순서를 완료한 것으로 표시하지 않습니다.
@@ -94,8 +94,8 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Place | 장소 등록 중 친구 추가 | User 검색, 생성된 place code, 선택 사용자 요청 submit 연결 | 고유 사용자 식별자와 대상별 결과 검증 | `GET /users/{keyword}`, `POST /friends/request`; 동명이인 위험은 별도 등록 | #243 위험 수용 연결 |
 | Place | 장소 수정 | #248 사진 수정 차단·#250 잠금·#253 / PR #263 주소 결과 연결 병합, 취소 시 서버 주소 보존 | key 계약 후 제한 해제, 실제 주소 검색 | imageKey 생략은 삭제 의미, 상세에는 key 미제공 | 기존 주소 수정 유지, 새 주소 검색·사진 있는 장소 수정은 제한 |
 | Place | 장소 상세 | API 장소·owner·멤버·식물 연결, 날씨 API·상태 UI 구현, #309 좌표 없으면 조회 불가 | 실제 장소 좌표 연결·기기 QA와 물주기 액션 | PLACE-07 최종 좌표 계약 필요, 주소 문자열만으로 조회하지 않음 | 날씨 계층·UI 구현 및 공공데이터 실제 응답 검증 완료, 장소 좌표 연결 대기 |
-| Place | 친구 관리 | 실제 멤버·이미지 조회, 닉네임 필터, loading/empty/error/retry 연결 | 멤버 추가·삭제·권한 변경 | `GET /place/{code}/members` 연결, 고유 member id와 변경 endpoint 없음 | #245 조회 전용 연결 |
-| Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
+| Place | 친구 관리 | 실제 멤버 ID·팀짱 조회, 검색·상태 UI, 팀짱 위임 확인·제출·재조회 | 멤버 추가·삭제 | `GET /place/{code}/members`, `PUT /place/{code}/owner/{targetNanoId}` | #277 연결, 실제 서버 쓰기 QA 별도 |
+| Place | 장소 나가기·삭제 | 일반 멤버·팀짱 나가기와 owner 전체 삭제 분리, 확인·제출·재시도·홈 이동 | 실제 서버 쓰기·재조회 QA | `DELETE /place/leave/{code}`, owner 전용 `DELETE /place/delete/{code}` | #277 탈퇴 연결, 서버 자동 위임·마지막 멤버 삭제 안내 |
 | Plant | 식물 등록 검색 | #273에서 API mode fixture 차단·미연결 안내, API 비사용 검색·empty·선택 유지 | 실제 검색 모델과 loading/empty/error/success | 백엔드 #92의 식물 종 검색 endpoint·DTO 필요 | Blocked |
 | Plant | 식물 등록 | 장소·애칭·날짜와 create submit 연결, #250 잠금·#251 실제 장소·loading/error/empty·재시도·제출 보호 병합 | 학명/이미지·장소 사진 | `GET /place/user`, `POST /plants`; 실제 목록 code만 사용 | #251 / PR #261 병합, 인증 E2E 별도 |
 | Plant | 식물 수정 | #248 이미지 key 보존·#250 제출 잠금, #252 code 누락 차단, #273 Home 진입 code 복원 | 이미지 선택·삭제 UI | `GET /plants/{id}/edit`, `PUT /plants/{id}?placeCode=...`; route·Plant code 우선, 없으면 Place 상세 plant ID 대조 | 실제 code 복원·미발견 차단 회귀 검증 완료 |
@@ -192,7 +192,7 @@ Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Pr
 - 날씨는 #302의 프런트 직접 조회 결정에 따라 #304 API 계층과 #306 상태 화면을 구현했습니다. #307에서 검증용 격자의 실제 공공데이터 응답을 확인했고, #309에서 좌표 없으면 조회 불가로 정리했습니다. 실제 장소 좌표 연결·기기 QA는 PLACE-07 확정 후 진행합니다.
 - 마지막 물주기 날짜가 있으면 확인 가능한 이력으로 표시하고, 물주기 action은 endpoint가 없어 활성화하지 않습니다.
 - `DELETE /place/delete/{code}`는 owner 전용 전체 삭제이므로 owner에게만 삭제 문구와 영향 범위 경고를 표시합니다.
-- 구성원 leave endpoint가 없어 API 모드의 구성원에게는 동작하지 않는 나가기 action을 노출하지 않습니다.
+- #277은 새 `DELETE /place/leave/{code}`를 일반 멤버와 팀짱의 나가기에 연결합니다. 팀짱은 기존 전체 삭제와 나가기 중 선택하며 자동 위임·마지막 멤버 삭제를 안내합니다([검증 범위](work-history/place-leave-api-277.md)).
 - API 비사용 모드는 Android smoke와 화면 개발을 위해 기존 fixture 흐름을 유지합니다.
 
 ### 장소 좌표·프런트 날씨 조회 방침 #302
@@ -323,9 +323,9 @@ active access-token 요청의 `A003`, `A004`, `A009`는 한 세션에서 한 번
 
 ## Place 멤버·Friend 식별자 쓰기 #277
 
-2026-08-31 live OpenAPI와 backend main `7d572cb`를 다시 대조했습니다. `GET /place/{code}/members`는 성공 schema 없이 `{ name, image }[]`만 반환하고 멤버 고유 ID·역할, 구성원 나가기, owner의 멤버 제거·권한 변경 endpoint가 없습니다. `POST /friends/request`도 `receiverName[]`을 받아 부분 검색 첫 결과를 사용하며 대상별 결과나 전체 원자성 계약을 제공하지 않습니다.
+2026-11-05 live OpenAPI(22 paths·30 operations)와 backend develop `03ece0e`를 다시 대조했습니다. `GET /place/{code}/members`의 Swagger 성공 schema·예시는 불완전하지만 소스는 `{nanoId,name,image,owner}[]`를 반환합니다. #277은 이 식별자·역할을 검증하고 동명이인·가입 순서를 보존해 조회와 팀짱 표시를 연결합니다([API별 이력](work-history/place-members-contract-277.md)). [팀짱 위임](work-history/place-owner-api-277.md)·[탈퇴](work-history/place-leave-api-277.md)도 API별 커밋과 문서로 연결합니다.
 
-[백엔드 #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)에 멤버와 Friend의 고유 식별자·권한·성공/실패·멱등 계약을 요청했습니다. 답변과 live OpenAPI 반영 전에는 임시 화면 key, 표시 이름, fixture, 목록 첫 항목을 원격 쓰기 값으로 사용하지 않습니다. #245의 API 멤버 조회 전용 UI, #239의 구성원 나가기 숨김, #243의 사용자 승인 아래 수용한 이름 기반 요청 경계를 그대로 유지하며 5번 단계를 완료로 표시하지 않습니다.
+`POST /friends/request`는 여전히 `receiverName[]`을 사용하며 대상별 결과·전체 원자성 계약이 없습니다. [백엔드 #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)의 Friend 고유 ID·부분 결과와 멤버 추가·제거 후속 계약은 남아 있으므로 #277 전체를 완료로 표시하지 않습니다. 임시 화면 key·표시 이름·fixture·목록 첫 항목을 고유 ID 쓰기의 대체값으로 사용하지 않습니다.
 
 ## 완료 기준
 
@@ -377,7 +377,7 @@ active access-token 요청의 `A003`, `A004`, `A009`는 한 세션에서 한 번
 | #271 | `e15de3f` | Home 친구 요청 배지의 loading·오류·재시도·정상 count UI와 파생 Provider 상태 보존 | 대상 15개·전체 519개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
 | #273 | `8a51642`, `ec34ea8`, `dbff448` | 정확한 plant ID 기반 장소 code resolver·상세 상태와 API mode 식물 검색 fixture 차단 | 관련 40개·전체 531개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
 | #275 | `e507656`, `022e8ba` | 표준 API 오류·field 메시지와 확인된 인증 만료의 세션 종료·로그인 안내 연결 | 전체 547개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
-| #277 | 이 문서의 최종 커밋 | Place 멤버·Friend 쓰기 계약 재검증, backend #150 의존성과 기존 안전 경계 유지 | live OpenAPI·backend main·중복 이슈 확인, `git diff --check` |
+| #277 | `c91f7bb`, `e3bb653`, `0665211` | Place 실제 멤버 ID·팀짱 위임·탈퇴 연결, Friend·멤버 추가/제거 계약은 계속 대기 | format 359개·analyze 통과, 전체 831개 통과·기존 skip 1개. [검증 기록](work-history/place-api-update-277.md) |
 
 문서 이력만 갱신하는 커밋은 자기 자신의 해시를 생략할 수 있습니다.
 

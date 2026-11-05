@@ -1,3 +1,5 @@
+import 'package:commonplant_frontend/core/theme/app_colors.dart';
+import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_friend_profile.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_candidate_list.dart';
 import 'package:commonplant_frontend/features/place/presentation/widgets/place_friend_search_status_view.dart';
@@ -12,6 +14,8 @@ class FriendManagementMembersView extends StatelessWidget {
     required this.selectedIds,
     required this.onToggle,
     required this.onRetry,
+    this.onTransfer,
+    this.isTransferring = false,
   });
 
   final AsyncValue<List<PlaceFriendProfile>> members;
@@ -19,6 +23,8 @@ class FriendManagementMembersView extends StatelessWidget {
   final Set<String> selectedIds;
   final ValueChanged<PlaceFriendProfile>? onToggle;
   final VoidCallback onRetry;
+  final ValueChanged<PlaceFriendProfile>? onTransfer;
+  final bool isTransferring;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +42,23 @@ class FriendManagementMembersView extends StatelessWidget {
           selectedIds: selectedIds,
           onToggle: onToggle,
           topPadding: 0,
+          trailingBuilder: onTransfer == null
+              ? null
+              : (friend) => friend.isOwner == false
+                    ? TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.brandStrong,
+                          textStyle: AppTextStyles.size12Medium,
+                        ),
+                        onPressed: isTransferring
+                            ? null
+                            : () => onTransfer!(friend),
+                        child: Text(
+                          '팀짱 위임',
+                          semanticsLabel: '${friend.name}에게 팀짱 위임',
+                        ),
+                      )
+                    : null,
         );
       },
       error: (error, stackTrace) => PlaceFriendSearchStatusView(

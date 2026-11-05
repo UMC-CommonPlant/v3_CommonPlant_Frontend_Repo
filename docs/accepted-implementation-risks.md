@@ -50,20 +50,27 @@
 2026-08-28 #245는 미확정 항목을 별도로 기록하면서 조회 가능한 화면부터 연결하는
 기준으로 진행했습니다. 쓰기 동작을 추정하지 않고 실제 조회 결과만 사용합니다.
 
-2026-08-31 #277 재검증에서도 멤버 ID·역할과 변경 endpoint는 제공되지 않았습니다.
-[backend #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)이
-live 계약을 제공할 때까지 조회 전용과 구성원 나가기 숨김을 유지합니다.
+2026-11-05 #277 작업 브랜치는 공개 OpenAPI와 backend `develop` `03ece0e`를
+대조해 멤버 `nanoId`·`owner`, 팀짱 위임, 장소 나가기를 연결했습니다.
+[멤버 조회](work-history/place-members-contract-277.md),
+[팀짱 위임](work-history/place-owner-api-277.md),
+[장소 나가기](work-history/place-leave-api-277.md)의 API별 기록을 따릅니다.
+멤버 제거 endpoint와 Friend 고유 대상·부분 결과는 여전히 별도 계약이 필요합니다.
+인증된 실제 서버 응답과 실기기 QA는 아직 검증하지 않았습니다.
 
 | ID | 상태 | 위험과 영향 | 현재 구현·완화 | 해소 조건 |
 | --- | --- | --- | --- | --- |
-| MEMBER-RISK-01 | `Accepted` | 응답에 멤버 고유 ID와 역할이 없어 항목을 지속적으로 식별하거나 삭제·권한 변경 대상으로 사용할 수 없습니다. | 가입 순서별 임시 화면 키로 동명이인을 구분하되 API payload에는 사용하지 않습니다. 조회 전용 안내를 표시하고 선택·삭제 액션을 노출하지 않습니다. | 서버가 멤버 ID·역할과 변경 endpoint를 제공하면 별도 작업에서 연결합니다. |
-| MEMBER-RISK-02 | `Accepted` | live Swagger에 성공 schema가 없고 인증 smoke가 없어 source와 배포 계약이 다른지 확인하지 못했습니다. | backend main `7d572cb`를 근거로 strict result 배열을 파싱하고 오류 시 fixture 대신 실패·재시도를 표시합니다. | machine-readable schema와 인증된 dev 조회 검증이 확보되면 해소합니다. |
+| MEMBER-RISK-01 | `Resolved` | 멤버 ID·역할 부재로 권한 변경 대상을 식별할 수 없던 위험입니다. | backend `03ece0e`의 `nanoId`·`owner`를 보존하고 실제 ID로만 위임합니다. 누락·타입 오류·중복 ID는 실패로 처리하며 임시 키를 전송하지 않습니다. 멤버 제거는 미연결입니다. | #277에서 조회 계약과 위임 경계를 연결했습니다. 실제 배포 일치 여부는 MEMBER-RISK-02로 계속 추적합니다. |
+| MEMBER-RISK-02 | `Accepted` | live Swagger에 성공 schema가 없고 인증 smoke가 없어 source와 배포 계약이 다른지 확인하지 못했습니다. | 공개 명세의 경로와 backend `03ece0e`의 DTO·Service를 대조합니다. strict result 배열과 ID·역할을 검증하고 오류 시 fixture 대신 실패·재시도를 표시합니다. | machine-readable schema와 인증된 dev 조회·위임·나가기 및 실기기 검증이 확보되면 해소합니다. |
 
 - 관련 이슈: #245 `[Feature] 친구 관리 멤버 목록 API 연결`
 - 관련 PR: [#246](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/246)
 - 구현 커밋: `b090581`, `8e46fd8`
 - 후속 이슈: #277, backend #150
 - 관련 확인 항목: `PLACE-04`~`06`, `TESTENV-01`~`05`
+- #277 작업 브랜치 연결 API: `GET /place/{code}/members`,
+  `PUT /place/{code}/owner/{targetNanoId}`, `DELETE /place/leave/{code}`.
+  실제 서버·실기기 검증 결과와 자동 테스트 결과는 각 API 기록에서 구분합니다.
 
 ## Plant 소속 장소 code 조회
 

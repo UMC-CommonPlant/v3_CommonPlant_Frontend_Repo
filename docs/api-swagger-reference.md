@@ -26,7 +26,8 @@
 - OpenAPI 버전: `3.1.0`
 - API title: `Common Plant API Document`
 - 서버 base path: `/api/v1`
-- endpoint inventory: 20 paths, 28 operations (2026-11-03, refresh 추가. 이전 날짜별 수치는 당시 확인 기록)
+- 최신 endpoint inventory: 2026-11-05 공개 OpenAPI HTTP 200, 22 paths, 30 operations
+- 최신 소스 대조: backend `develop` `03ece0e`. 아래 과거 날짜의 확인 기록은 당시 계약이며, 현행 계약은 최신 변경 요약을 우선한다. 실제 인증 응답·서버 쓰기는 이번 확인에 포함하지 않았다.
 - 기존 문서 비교 기준: `docs/api-swagger-summary-43` 브랜치의 `docs/api-swagger-reference.md` 확인일 2026-05-20
 - 최초 코드 비교 기준: `feature/api-integration-45` 브랜치의 API 계층. 현재 화면·계층 대조 기준은 PR #276 병합 커밋 `5426768`이다.
 - 백엔드 소스 비교 기준: `UMC-CommonPlant/v3_CommonPlant_Backend_Repo` main `7d572cbcabc81a65926738b2a09e8479d0bd0c79`
@@ -52,6 +53,15 @@
 - Place와 Friend는 백엔드 source의 `JsonResponse.result` 반환 타입을 추가 근거로 사용한다. machine-readable Swagger가 아니라는 점과 실제 인증 응답 smoke가 남았다는 점은 구분한다.
 
 ## Swagger 변경 요약
+
+### 2026-11-05 멤버 식별자와 신규 장소 API
+
+- `GET /place/{code}/members`와 상세 `userList`의 항목은 `{ nanoId, name, image, owner }`이다. 성공 schema와 Swagger 예시는 여전히 불완전하므로 backend `03ece0e`의 `PlaceDto.getPlaceResUser`, `PlaceServiceImpl.getPlaceMembers`, `PlaceFacade.getPlace`를 근거로 사용한다. `owner`는 각 멤버의 팀짱 여부이며 상세 root의 `owner`는 현재 사용자의 권한이다.
+- #277에서 멤버 조회는 실제 `nanoId`와 boolean `owner`를 필수 검증하고 중복 ID·누락·잘못된 타입을 오류로 처리한다. 이름·가입 순번을 원격 쓰기 식별자로 사용하지 않는다. 상세 표시의 기존 선택 필드 호환과 원격 멤버 쓰기에 사용할 목록 검증은 구분한다.
+- 새 `PUT /place/{code}/owner/{targetNanoId}`, `DELETE /place/leave/{code}`를 확인했다. 연결과 검증은 각 API별 커밋으로 기록한다.
+- `GET /place/myGarden`에 식물 목록용 `page=0`, `size=20`이 추가됐다. result는 `{name, placeList, plantList:{items,totalCount,page,size}}`이며 기존 Home 장소 조회는 페이지 대상이 아닌 `placeList`만 사용하므로 호출을 유지한다. size 최대 50, 음수 page는 0이며 식물 전체 페이지 탐색은 별도 범위다.
+- `POST /auth/refresh`는 배포돼 있다. 시작 시 refresh-only 복원은 PR #312로 develop에 병합됐으며 최신 develop 동기화로 이 브랜치에도 반영됐다. 서버 logout은 여전히 없다.
+- Friend 고유 대상·대상별 결과, 날씨 좌표, 물주기 주기 저장·조회, Memo API는 이번 명세에도 없다.
 
 ### 2026-11-03 초기 refresh-only 복원 계약 #311
 
@@ -168,6 +178,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | --- | --- | --- | --- | --- | --- |
 | Auth | POST | `/auth/login` | 로그인 | 불필요 | `LoginSuccessJsonResponse` 또는 `LoginNewUserJsonResponse` |
 | Auth | POST | `/auth/register` | 회원가입 완료 | 불필요 | `RegisterJsonResponse` |
+| Auth | POST | `/auth/refresh` | 토큰 갱신 | refresh token 사용 | `RefreshJsonResponse` (#311 / PR #312 병합) |
 | User | GET | `/users` | 내 정보 조회 | 필요 | `UserJsonResponse` |
 | User | PUT | `/users` | 내 정보 수정 | 필요 | `UserJsonResponse` |
 | User | DELETE | `/users` | 회원 탈퇴 | 필요 | `UserDeleteJsonResponse` |
@@ -176,6 +187,8 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | Place | GET | `/place/user` | 소속 장소 조회 | 필요 | Swagger 없음; source `getPlaceBelongUser[]` |
 | Place | GET | `/place/{code}` | 장소 조회 | 필요 | Swagger 없음; source `getPlaceRes` |
 | Place | GET | `/place/{code}/members` | 장소 멤버 목록 조회 | 필요 | Swagger 없음; source `getPlaceResUser[]` |
+| Place | PUT | `/place/{code}/owner/{targetNanoId}` | 장소 팀짱 변경 | 필요 | Swagger 없음; source result null |
+| Place | DELETE | `/place/leave/{code}` | 장소 탈퇴 | 필요 | Swagger 없음; source result null |
 | Place | POST | `/place/create` | 장소 생성 | 필요 | Swagger 없음; source place code 문자열 |
 | Place | PUT | `/place/update/{code}` | 장소 수정 | 필요 | Swagger 없음; source `updatePlaceRes` |
 | Place | DELETE | `/place/delete/{code}` | 장소 삭제 | 필요 | Swagger 없음; source null |
@@ -330,6 +343,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - `getMainPage` fields:
   - `name`: 현재 사용자 이름
   - `placeList`: `getPlaceListRes[]`
+  - `plantList`: `{items,totalCount,page,size}`. 식물 페이지 query `page` 기본 0, `size` 기본 20·최대 50. `placeList`는 페이지 대상이 아니다.
 - `getPlaceListRes` fields:
   - `image`
   - `code`
@@ -353,7 +367,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - `getPlaceRes` fields:
   - `name`, `code`, `address`, `imgUrl`
   - `owner`: 현재 사용자의 장소 소유자 여부
-  - `userList`: `{ name, image }[]`
+  - `userList`: `{ nanoId, name, image, owner }[]` (2026-11-05 소스 확인)
   - `plantList`: Plant `DetailResponse[]`
 - #239는 위 계약을 별도 `PlaceDetail` 도메인 모델로 파싱하고 API 모드의 fixture 환경값·멤버·식물을 제거한다.
 - Error:
@@ -366,12 +380,11 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - Path parameter:
   - `code`: 장소 코드, required
 - 성공 response 설명은 `멤버 목록 조회 성공`이지만 live Swagger body schema는 없다.
-- 백엔드 source의 result는 가입 순서의 `{ name, image }[]`이다.
+- backend `03ece0e` source의 result는 가입 순서의 `{ nanoId:String, name:String, image:String?, owner:boolean }[]`이다.
 - Error:
   - `403`: 장소 접근 권한 없음
   - `404`: 장소 없음
-- 고유 member id와 역할은 제공되지 않으므로 멤버 변경·권한 UI에는 별도 endpoint 또는 응답 확장이 필요하다.
-- #245는 이름·이미지·가입 순서를 보존하는 typed 목록과 친구 관리 조회 전용 화면을 연결한다.
+- #277은 `nanoId`·`owner`를 검증해 실제 식별자와 팀짱 표시를 연결한다. 동명이인은 별도 항목으로 유지하며 중복 ID와 잘못된 항목을 조용히 제외하지 않는다. 추가·삭제 endpoint는 아직 없다.
 
 #### POST `/place/create`
 
@@ -421,6 +434,20 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - Error:
   - `403`: 장소 접근 권한 없음
   - `404`: 장소 없음
+
+#### PUT `/place/{code}/owner/{targetNanoId}`
+
+- 인증된 현재 팀짱이 다른 현재 멤버에게 팀짱 권한을 위임한다. body·query 없이 두 path segment를 인코딩해 전송한다.
+- 성공 HTTP 200, 공통 wrapper의 `result: null`. 기존 팀짱의 소속은 유지된다.
+- 오류: 404 `P101` 장소 없음, 403 `P103` 멤버 아님, `P110` 팀짱 아님, `P111` 자기 자신 위임.
+- #277은 친구 관리의 비팀짱 멤버에 확인창·제출 잠금을 연결한다. 최신 권한·대상을 확인하고 성공 후 상세·요약·멤버·소유/소속 목록을 재조회한다([검증 범위](work-history/place-owner-api-277.md)).
+
+#### DELETE `/place/leave/{code}`
+
+- 인증된 장소 멤버의 탈퇴. body·query 없이 인코딩한 code를 전송한다. 성공 HTTP 200, result null.
+- 일반 멤버는 소속 제거, 팀짱은 가입 순 다음 멤버에게 서버가 자동 위임 후 소속 제거, 마지막 멤버이면 장소·식물·소속·장소 이미지를 삭제한다. 클라이언트 선행 위임 요청은 필요 없다.
+- 오류: 404 `P101` 장소 없음, 403 `P103` 멤버 아님.
+- #277은 일반 멤버·팀짱의 나가기를 기존 전체 삭제와 구분한다. 확인·중복 제출·실패 재시도·관련 조회 갱신과 성공 시 홈 이동을 연결했다([검증 범위](work-history/place-leave-api-277.md)).
 
 ### Friend
 
@@ -640,7 +667,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | 장소 친구 요청 | `/places/invitations` | `GET /friends/requests` | #241에서 `requests[]` typed mapper와 화면 상태 연결 |
 | 장소 친구 요청 | `/places/invitations` | `POST /friends/accept`, `POST /friends/decline` | #241에서 요청 PK submit·목록 갱신 연결 |
 | 장소 상세 | `/places/:placeId` | `GET /place/{code}` | #239에서 장소·owner·멤버·식물 실데이터 연결 |
-| 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members` | #245 실제 멤버·이미지 조회와 필터·상태 UI 연결, 변경 endpoint는 없음 |
+| 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members`, `PUT /place/{code}/owner/{targetNanoId}` | #277 실제 ID·팀짱 표시·위임 확인/제출/재조회 연결 |
 | 장소 수정 | `/places/:placeId/edit` | `PUT /place/update/{code}` | #243에서 수정 result를 typed 장소 요약으로 연결, image key 조회는 별도 확인 필요 |
 | 식물 등록 정보 입력 | `/plants/new/details` | `POST /plants` | #229 submit 연결, #251 실제 장소 code·상태·선택·제출 보호 병합 |
 | 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}`, `GET /place/user`, `GET /place/{code}` | #231 상세 연결, #273에서 route code가 없을 때 정확한 plant ID로 소속 code 복원 |
@@ -672,7 +699,7 @@ refresh는 2026-11-03 `POST /auth/refresh` 배포를 확인했다. 아직 Swagge
 | Image 업로드/조회/수정/삭제 성공 응답 body 구조 | 여전히 schema 없음 | 남음 |
 | `PUT /place/update/{code}` multipart 여부 | `multipart/form-data`로 변경 | 해소 |
 | multipart 요청 JSON part content type | Auth/User/Plant는 `application/json` 명시, Place create/update는 encoding 미표기 | 일부 남음 |
-| 장소 멤버 목록 API | source에서 `{ name, image }[]` 확인, 쓰기 endpoint 없음 | 표시 계약 해소, #277은 backend #150 전까지 고유 id·역할·변경 API Blocked |
+| 장소 멤버 목록 API | backend `03ece0e`에서 `{nanoId,name,image,owner}[]`, 위임·탈퇴 endpoint 확인 | #277 조회·위임·탈퇴 연결, 멤버 추가·제거와 실서버 QA 남음 |
 | Place create/update required와 validation | `name`, `address` required와 `name` maxLength 확인 | 일부 해소 |
 | Plant create/update validation과 nullable 정책 | 문자열 maxLength와 date format 확인 | 일부 해소 |
 | 에러 응답 body 구조와 code/message 필드명 | live 401 응답과 backend `ErrorResponse` source 대조 | #275 typed 파싱·field 오류·민감 value 폐기 반영, 인증 쓰기 smoke 남음 |
@@ -711,8 +738,8 @@ refresh는 2026-11-03 `POST /auth/refresh` 배포를 확인했다. 아직 Swagge
 - 후속 결정(#302 → #304 → #306 → #309): 장소 좌표를 받아 프런트엔드가 공공데이터포털 초단기실황·초단기예보를 조회한다. 현재 기온·습도 + 날씨 아이콘으로 결정했으며, API 조회·시도별 5초 제한·총 3회·취소 처리를 준비했다. `xPosition`·`yPosition`은 여전히 문서상 임시 명칭이며 Swagger에서 확인된 필드가 아니다. #306에서 기온·습도·아이콘과 동일 위치 재호출 UI를 연결했다. #309 사용자 결정으로 장소 주소에 대응하는 격자가 없으면 조회 불가를 안내하고 요청하지 않는다. 판교역 기본값은 제거했다. 백엔드 최종 계약 확정 후 DTO·좌표 변환을 연결한다. [변경 지점과 재검증](work-history/place-weather-unavailable-309.md#백엔드-확정-후-변경할-영역)을 참고한다. 판교역 실제 API 확인과 남은 기기 QA는 [#307 기록](work-history/place-weather-fallback-307.md)을 따른다. [조회 방침](screen-api-integration-plan.md#장소-좌표프런트-날씨-조회-방침-302), [구현 기록](work-history/place-weather-api-304.md)을 참고한다.
 - 반영: #243에서 `POST /place/create`의 result 문자열을 place code로 파싱하고 친구 추가 route에 전달한다.
 - 반영: #243에서 `PUT /place/update/{code}`의 result를 typed `PlaceSummary`로 파싱한다.
-- 반영: #245에서 `GET /place/{code}/members`의 result 배열을 `PlaceMember`로 파싱하고 친구 관리 조회·검색에 연결했다. API 모드는 임시 렌더링 키를 사용자 ID로 사용하지 않고 멤버 변경을 제공하지 않는다.
-- 유지: #277에서 live OpenAPI와 backend main을 다시 확인했으나 멤버·Friend 쓰기 계약은 추가되지 않았다. backend #150 전까지 `receiverId` 같은 필드, 임시 멤버 key, 표시 이름 검색 첫 항목을 새 원격 쓰기 계약으로 사용하지 않는다.
+- 반영: #245에서 `GET /place/{code}/members`의 result 배열을 `PlaceMember`로 파싱하고 친구 관리 조회·검색에 연결했다. #277은 실제 nanoId·owner 검증과 팀짱 위임·탈퇴를 연결한다. 멤버 추가·제거는 미제공 계약이다.
+- 유지: #277에서 Place 멤버 ID·팀짱 위임·탈퇴를 연결했지만 Friend 고유 대상·부분 결과 계약은 여전히 없다. `receiverId` 같은 미제공 필드, 임시 멤버 key, 표시 이름 검색 첫 항목을 새 원격 쓰기 계약으로 사용하지 않는다.
 - 반영: #241에서 `GET /friends/requests`를 typed `FriendInvitation` 목록으로 파싱하고 Home 요청 수와 장소 친구 요청 화면에 연결했다.
 - 반영: #241에서 `POST /friends/accept`, `POST /friends/decline`을 항목별 submit 상태와 목록 invalidate 정책에 연결했다.
 - 반영: `POST /plants`와 `PUT /plants/{plantId}`는 optional `image` part를 datasource/repository 경계에서 전달할 수 있도록 보강했다.
@@ -755,7 +782,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 | --- | --- | --- |
 | Auth | 로그인 실제 응답 `isNewUser`와 OpenAPI schema `newUser` 불일치, Apple verifier 누락 | #285 호환 파싱 적용, backend #152 배포 전 Apple 실제 로그인 Blocked |
 | 공통 Multipart | JSON part의 `Content-Type: application/json` 필요 여부 | Auth/Place/Plant/User multipart 전송 정책 정합성 |
-| Place | 멤버 ID·역할, self leave, owner 멤버 관리 endpoint와 권한·오류 | #277은 backend #150 전까지 조회 전용·member 나가기 숨김 유지 |
+| Place | 멤버 추가·제거와 상세 schema, 실제 인증 응답 QA | #277에서 실제 ID·팀짱 위임·탈퇴 연결, 미제공 관리 계약은 backend #150 후속 |
 | Friend | 고유 대상 request, 사용자 검색 정책, 다중 대상 원자성·부분 결과·멱등 | #277은 backend #150 전까지 이름 기반 위험 수용 경계를 확장하지 않음 |
 | Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물은 #295 직접 multipart 연결, 독립 Image schema와 Memo 계약은 남음 |
 | Error | live/backend source와 dev 배포의 실제 인증 쓰기 오류 일치 여부 | #275 공통 사용자 메시지와 field error 매핑 완료, 원격 validation smoke 보류 |
@@ -771,7 +798,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 소셜 SDK 연결은 #285에서 완료했고 #293에서 코드·설정·자동 테스트를 보완한다. 실제 provider credential·네이티브 설정과 Apple backend
 #152는 외부 준비 항목으로 분리한다. 실제 주소 검색과 이미지 파일 선택·key 조회는 여전히
 별도 준비가 필요하다. Memo 텍스트 CRUD는 backend #50 계약 답변·구현·live OpenAPI 동기화를,
-Place 멤버 변경·나가기와 Friend 고유 대상·부분 결과는 backend #150을 선행 조건으로 둔다.
+Place 멤버 ID·팀짱 위임·탈퇴는 #277에서 연결했고, 멤버 추가·제거와 Friend 고유 대상·부분 결과는 backend #150 후속 계약을 기다린다.
 식물 검색은 백엔드 #92 전까지 API mode에서 비활성화한다. 이미 수용한 Friend 이름 오매칭과
 Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 결함을 자동으로 수용한 것으로
 해석하지 않는다.
