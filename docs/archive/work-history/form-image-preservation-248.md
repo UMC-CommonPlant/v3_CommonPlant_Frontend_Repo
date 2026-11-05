@@ -8,7 +8,7 @@
 - 작업일: 2026-08-28
 - 기준 `develop`: `f1331b2e850bea19793c708c183417b1554bc172` (문서 PR #257 병합)
 - 브랜치: `fix/form-image-preservation-248`
-- 참고: [개발 감사 체크리스트](../development-audit-checklist.md), [Swagger 참고](../api-swagger-reference.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [폼 검증](../form-validation-error-guide.md), [공용 위젯](../shared-widget-guide.md), [테스트](../testing-guide.md), [Git](../git-workflow.md) 가이드
+- 참고: [개발 감사 체크리스트](../plans/development-audit-checklist.md), [Swagger 참고](../../api-swagger-reference.md), [Feature](../../feature-development-guide.md), [상태관리](../../state-management-guide.md), [폼 검증](../../form-validation-error-guide.md), [공용 위젯](../../shared-widget-guide.md), [테스트](../../testing-guide.md), [Git](../../git-workflow.md) 가이드
 
 ## 확인한 계약과 구현
 
@@ -29,7 +29,7 @@ Place 조회의 `imgUrl`은 [PlaceFacade](https://github.com/UMC-CommonPlant/v3_
 
 ## 남은 제한과 위험
 
-- **사진이 있는 장소의 수정은 임시 제한됩니다.** 백엔드가 기존 key 조회 또는 명시적 이미지 유지 계약을 제공하면 [IMAGE-04](../backend-api-open-questions.md#image-04-이미지-key-생명주기)를 갱신하고 별도 이슈에서 제한을 해제합니다.
+- **사진이 있는 장소의 수정은 임시 제한됩니다.** 백엔드가 기존 key 조회 또는 명시적 이미지 유지 계약을 제공하면 [IMAGE-04](../../backend-api-open-questions.md#image-04-이미지-key-생명주기)를 갱신하고 별도 이슈에서 제한을 해제합니다.
 - 사진 표시 URL과 저장 key는 다른 값입니다. 임의 key 추정, URL 재다운로드 후 재업로드, 의도하지 않은 삭제로 우회하지 않습니다.
 - 조회 스냅샷 이후 다른 클라이언트가 사진을 바꾸는 동시 수정은 원자적으로 보호되지 않습니다. 특히 사진이 없던 조회 뒤 다른 클라이언트가 사진을 추가하면 null/생략 update의 삭제 의미와 충돌할 수 있습니다. 조건부 수정·버전 확인 또는 명시적 유지 동작은 백엔드 계약 확인이 필요합니다.
 - 실제 인증 dev 요청, 원격 사진 삭제·교체 검증은 실행하지 않았습니다. source와 배포 상태의 정합성은 인증 smoke 준비 후 검증합니다.

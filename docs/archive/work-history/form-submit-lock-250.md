@@ -9,7 +9,7 @@
 - 기준 `develop`: `b15cdd7b9b73aa5892dbc6e0cddb86fa23c5f2be` (사용자 PR #259 병합)
 - 브랜치: `fix/form-submit-lock-250`
 - 상태: 사용자 병합 완료(`bc6e68ddbdc80acb0b923a06798cdaf8926e7a0d`), 이슈 종료·감사 체크 완료. 아래 검증은 #250 당시 결과이며 후속 #251과 구분합니다.
-- 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [폼 검증](../form-validation-error-guide.md), [공용 위젯](../shared-widget-guide.md), [라우팅](../routing-guide.md), [테스트](../testing-guide.md), [Git](../git-workflow.md)
+- 참고: [README](../../../README.md), [감사 체크리스트](../plans/development-audit-checklist.md), [Feature](../../feature-development-guide.md), [상태관리](../../state-management-guide.md), [폼 검증](../../form-validation-error-guide.md), [공용 위젯](../../shared-widget-guide.md), [라우팅](../../routing-guide.md), [테스트](../../testing-guide.md), [Git](../../git-workflow.md)
 
 열린 이슈의 중복을 확인하고 기존 #250을 재사용했습니다. #249 종료와 PR #259 병합·Project `Done`을 확인한 뒤 최신 `develop`에서 분기했습니다. 미사용 공용 위젯 5개는 보존하며, 디자인·route·API endpoint·DTO·배포·CI 설정은 변경하지 않습니다.
 
@@ -34,14 +34,14 @@ Controller 회귀 13개를 추가했습니다. 화면에서는 5개 흐름을 Re
 
 | 대상 | 검증 내용 | 증거 |
 | --- | --- | --- |
-| Place Controller | 생성·수정 × 성공·실패, 이름·주소·삭제, 최초 payload와 수정값 재시도 | [test](../../test/features/place/presentation/providers/place_form_controller_test.dart) |
-| Plant Controller | 생성·수정 × 성공·실패, 이름·날짜·장소, 최초 payload와 수정값 재시도 | [test](../../test/features/plant/presentation/providers/plant_form_controller_test.dart) |
-| User Controller | 중복 차단, 첫 이름 반영, 실패 후 새 이름 재시도 | [test](../../test/features/user/presentation/providers/user_profile_edit_controller_test.dart) |
-| Profile Setup Controller | 닉네임·사진·약관 변경, 실패 복구, 세션 대기 전 이름 캡처 | [test](../../test/features/login/presentation/providers/profile_setup_controller_test.dart) |
-| Place 화면 | 수정 중 입력·이전 버튼 콜백 재전달, 요청 1회와 홈 이동 | [test](../../test/features/place/presentation/pages/place_form_page_test.dart) |
-| Plant 화면 | 생성 중 장소 변경·수정 중 이름 변경, 중복 차단과 실패 후 잠금 해제 | [test](../../test/features/plant/presentation/pages/plant_form_page_test.dart) |
-| User 화면 | 이름 변경 중 잠금, 오류 표시, 수정값 재시도와 프로필 이동 | [test](../../test/features/user/presentation/pages/user_profile_edit_page_test.dart) |
-| 가입 프로필 화면 | 닉네임 변경 중 잠금, 실패 후 수정값 재시도, 인증 전환·홈 이동 | [test](../../test/features/login/presentation/pages/profile_setup_submit_test.dart) |
+| Place Controller | 생성·수정 × 성공·실패, 이름·주소·삭제, 최초 payload와 수정값 재시도 | [test](../../../test/features/place/presentation/providers/place_form_controller_test.dart) |
+| Plant Controller | 생성·수정 × 성공·실패, 이름·날짜·장소, 최초 payload와 수정값 재시도 | [test](../../../test/features/plant/presentation/providers/plant_form_controller_test.dart) |
+| User Controller | 중복 차단, 첫 이름 반영, 실패 후 새 이름 재시도 | [test](../../../test/features/user/presentation/providers/user_profile_edit_controller_test.dart) |
+| Profile Setup Controller | 닉네임·사진·약관 변경, 실패 복구, 세션 대기 전 이름 캡처 | [test](../../../test/features/login/presentation/providers/profile_setup_controller_test.dart) |
+| Place 화면 | 수정 중 입력·이전 버튼 콜백 재전달, 요청 1회와 홈 이동 | [test](../../../test/features/place/presentation/pages/place_form_page_test.dart) |
+| Plant 화면 | 생성 중 장소 변경·수정 중 이름 변경, 중복 차단과 실패 후 잠금 해제 | [test](../../../test/features/plant/presentation/pages/plant_form_page_test.dart) |
+| User 화면 | 이름 변경 중 잠금, 오류 표시, 수정값 재시도와 프로필 이동 | [test](../../../test/features/user/presentation/pages/user_profile_edit_page_test.dart) |
+| 가입 프로필 화면 | 닉네임 변경 중 잠금, 실패 후 수정값 재시도, 인증 전환·홈 이동 | [test](../../../test/features/login/presentation/pages/profile_setup_submit_test.dart) |
 
 - 관련 대상 테스트: 71개 통과(Controller 40개, 화면 31개)
 - `fvm dart format --output=none --set-exit-if-changed .`: 305개 파일, 변경 0개

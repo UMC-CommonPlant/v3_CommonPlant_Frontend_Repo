@@ -9,7 +9,7 @@
 - 기준 `develop`: `ebf6dc41e5f959b9f9f8ba2c772d5de790cc7d7a` (사용자 PR #261 병합)
 - 브랜치: `fix/plant-edit-place-code-252`
 - 상태: 2026-08-29 사용자 PR #262 병합 완료(`5fc01405a91bc715a5a87ce8e40c2e8c58815714`). 이슈는 Closed, 이슈·PR은 Project 10의 `Done`, category `Plant`, priority `high`입니다.
-- 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [폼 검증](../form-validation-error-guide.md), [라우팅](../routing-guide.md), [퍼블리싱](../screen-publishing-rules.md), [Figma 매핑](../figma-frame-map.md), [공용 위젯](../shared-widget-guide.md), [테스트](../testing-guide.md), [Git](../git-workflow.md), [Swagger](../api-swagger-reference.md)
+- 참고: [README](../../../README.md), [감사 체크리스트](../plans/development-audit-checklist.md), [Feature](../../feature-development-guide.md), [상태관리](../../state-management-guide.md), [폼 검증](../../form-validation-error-guide.md), [라우팅](../../routing-guide.md), [퍼블리싱](../../screen-publishing-rules.md), [Figma 매핑](../../figma-frame-map.md), [공용 위젯](../../shared-widget-guide.md), [테스트](../../testing-guide.md), [Git](../../git-workflow.md), [Swagger](../../api-swagger-reference.md)
 
 열린 이슈 중복을 확인하고 기존 #252를 재사용했습니다. #251 종료와 PR #261 병합·Project `Done`을 확인한 뒤 최신 `develop`에서 분기했습니다. 시작 당시 상위 #226의 완료 하위 이슈는 15/20이었고, #252 병합·종료 뒤 16/20으로 갱신됐습니다. 미사용 공용 위젯과 #248 이미지 보호·#249 세션 격리·#250 제출 잠금·#251 등록 장소 검증을 유지합니다.
 
@@ -24,7 +24,7 @@
 - `DetailResponse`에는 placeName이 있지만 장소 code와 nickname은 없습니다. 같은 장소명·학명으로 식별자를 복원하지 않습니다.
 - 현재 장소 상세→식물 상세→수정 route는 실제 장소 code를 `placeId` query로 전달합니다. route 이름·API endpoint·DTO·repository 계약은 그대로 사용합니다.
 
-위 재확인은 Plant query·schema 범위이며 backend main의 새 커밋이나 실제 인증 응답을 재검증한 것은 아닙니다. code 조회 확장은 [PLANT-01](../backend-api-open-questions.md#plant-01-식물에서-소속-장소-code-조회)로 분리합니다.
+위 재확인은 Plant query·schema 범위이며 backend main의 새 커밋이나 실제 인증 응답을 재검증한 것은 아닙니다. code 조회 확장은 [PLANT-01](../../backend-api-open-questions.md#plant-01-식물에서-소속-장소-code-조회)로 분리합니다.
 
 ## 수정 동작
 
@@ -48,8 +48,8 @@ Controller 10개·widget/router 9개, 총 19개 회귀 테스트를 추가했습
 
 | 테스트 | 검증 범위 |
 | --- | --- |
-| [Controller 회귀](../../test/features/plant/presentation/providers/plant_edit_place_code_test.dart) | code 3종 누락, 공백 정규화·payload, 성공 후 원본 조회 4종 갱신·다른 캐시 유지, 실패·재시도·중복 제출, 늦은 계정 응답 2종, 성공 후 조회 실패, 로컬 수정 |
-| [화면·라우트 회귀](../../test/app/router/plant_edit_place_code_flow_test.dart) | 실제 production Plant route builder, code 누락 5사례의 홈 안내, 상세→수정→상세→수정 3개 viewport, 날짜·애칭 재조회, 실패 시 초안 유지·재시도 성공 후 이동 |
+| [Controller 회귀](../../../test/features/plant/presentation/providers/plant_edit_place_code_test.dart) | code 3종 누락, 공백 정규화·payload, 성공 후 원본 조회 4종 갱신·다른 캐시 유지, 실패·재시도·중복 제출, 늦은 계정 응답 2종, 성공 후 조회 실패, 로컬 수정 |
+| [화면·라우트 회귀](../../../test/app/router/plant_edit_place_code_flow_test.dart) | 실제 production Plant route builder, code 누락 5사례의 홈 안내, 상세→수정→상세→수정 3개 viewport, 날짜·애칭 재조회, 실패 시 초안 유지·재시도 성공 후 이동 |
 
 - Viewport: Reference `375×812`, Compact width `320×640`, Short height `375×667`, DPR 1
 - 신규 Controller·기존 Plant Form 대상: 40개 통과

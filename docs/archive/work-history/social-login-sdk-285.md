@@ -11,7 +11,7 @@
 - 상태: 로컬 구현·검증 완료. 이슈와 PR은 Project 10의 category `User`, priority `high`,
   병합 완료 status `Done`, 담당자 `ywkim95`·`bbielo`, milestone
   `v1.0.0 - MVP (핵심 기능 개발)`을 사용합니다.
-- 참고: [소셜 로그인](../social-login-integration-guide.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [라우팅](../routing-guide.md), [퍼블리싱](../screen-publishing-rules.md), [테스트](../testing-guide.md), [Swagger](../api-swagger-reference.md), [백엔드 질문](../backend-api-open-questions.md), [Git](../git-workflow.md) 가이드
+- 참고: [소셜 로그인](../../social-login-integration-guide.md), [Feature](../../feature-development-guide.md), [상태관리](../../state-management-guide.md), [라우팅](../../routing-guide.md), [퍼블리싱](../../screen-publishing-rules.md), [테스트](../../testing-guide.md), [Swagger](../../api-swagger-reference.md), [백엔드 질문](../../backend-api-open-questions.md), [Git](../../git-workflow.md) 가이드
 
 ## 확인한 계약
 
@@ -80,7 +80,7 @@ token 선택을 확인하는 한 가지 주입 경계로만 사용합니다.
 
 ## 남은 제한
 
-2026-09-07 현재 검증과 iPhone 제한 보완은 [#293 이력](social-login-verification-293.md)을 봅니다. 아래 범위·검증 수는 #285 당시 기록입니다.
+2026-09-07 현재 검증과 iPhone 제한 보완은 [#293 이력](../../work-history/social-login-verification-293.md)을 봅니다. 아래 범위·검증 수는 #285 당시 기록입니다.
 
 
 - 실제 Kakao native app key, Google client ID와 provider console 등록은 승인된 값을 받아야

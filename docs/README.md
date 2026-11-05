@@ -1,14 +1,17 @@
 # 문서 인덱스
 
-문서 분류 기준일: 2026-09-07, `develop` PR #292 병합 및 #293 소셜 로그인 검증 반영.
+문서 분류 기준일: 2026-11-05, develop `0a72bf0`의 구현·미완료 검증·후속 계약을 기준으로 정리했다.
+작업 전 저장소 [README](../README.md)와 [에이전트 지침](../AGENTS.md)을 먼저 확인한다.
 
-작업 전 저장소 [README](../README.md)와 [에이전트 지침](../AGENTS.md)을 먼저 확인합니다. 현재 코드를 기준으로 판단하며, 완료되어 대체된 계획은 Git 이력과 기존 이슈·PR에서 확인합니다.
+## 먼저 찾을 곳
 
-## 지금 볼 문서
-
-- 완료된 감사 #248~#256: [개발 감사·개선 체크리스트](development-audit-checklist.md)
-- 다음 개발 순서와 화면별 API 상태: [화면·모델·API 실연동 전환 계획](screen-api-integration-plan.md#후속-개발-실행-순서-267)
-- 외부 답변이나 팀 결정이 필요한 항목: [후속 결정 체크리스트](follow-up-decision-checklist.md)
+| 목적 | 진입점 |
+| --- | --- |
+| 현재 개발 범위·화면/API 상태 | [화면·모델·API 연결 계획](screen-api-integration-plan.md) |
+| 진행 중인 QA·서버 연동·스토어 준비 | [진행 중 작업 기록](work-history/README.md) |
+| 확인된 API와 미확정 계약 | [Swagger 참고](api-swagger-reference.md), [백엔드 질문](backend-api-open-questions.md) |
+| 외부 결정·준비 조건과 수용한 위험 | [후속 결정](follow-up-decision-checklist.md), [위험 등록부](accepted-implementation-risks.md) |
+| 완료된 계획·구현·검증 이력 | [문서 아카이브](archive/README.md) |
 
 ## 현행 작업 가이드
 
@@ -17,78 +20,35 @@
 | Feature 구조·DTO·repository | [Feature 작업 가이드](feature-development-guide.md) |
 | Provider·Controller·비동기 상태 | [상태관리 기준](state-management-guide.md) |
 | route·인증 redirect | [라우팅 가이드](routing-guide.md) |
-| 소셜 로그인·신규 사용자 분기·SDK 설정 | [소셜 로그인 연동 가이드](social-login-integration-guide.md) |
-| Figma 화면 구현·반응형 | [퍼블리싱 규칙](screen-publishing-rules.md), [Figma 프레임 매핑](figma-frame-map.md) |
-| 색·폰트·spacing·radius | [디자인 토큰 규칙](design-token-rules.md) |
-| 공용 UI·소유권·미사용 위젯 보존 | [공용 위젯 가이드](shared-widget-guide.md) |
-| 이미지·아이콘 파일 | [Asset·icon 규칙](asset-icon-rules.md) |
-| 입력 검증·제출 오류 | [폼 검증·에러 메시지 가이드](form-validation-error-guide.md) |
+| 소셜 로그인·가입 분기·SDK 설정 | [소셜 로그인 가이드](social-login-integration-guide.md) |
+| Figma 화면 구현·반응형 | [퍼블리싱 규칙](screen-publishing-rules.md), [프레임 매핑](figma-frame-map.md) |
+| 색·폰트·spacing·radius | [디자인 토큰](design-token-rules.md) |
+| 공용 UI·소유권·미사용 위젯 보존 | [공용 위젯](shared-widget-guide.md) |
+| 이미지·아이콘 | [Asset·icon 규칙](asset-icon-rules.md) |
+| 입력 검증·제출 오류 | [폼 가이드](form-validation-error-guide.md) |
 | unit·widget·golden·integration test | [테스트 가이드](testing-guide.md) |
 | 이슈·브랜치·커밋·PR·Project | [Git 작업 규칙](git-workflow.md) |
-| 배포·스토어·릴리즈 정책 | [릴리즈 가이드](release-workflow.md) — #215 준비 점검 재개, 실제 배포는 외부 조건 충족 후 |
+| 배포·스토어·릴리즈 정책 | [릴리즈 가이드](release-workflow.md) |
 
-## 실행 계획·계약·결정
+## 현행 계획·계약
 
-| 문서 | 용도 |
+| 문서 | 계속 관리하는 내용 |
 | --- | --- |
-| [개발 감사·개선 체크리스트](development-audit-checklist.md) | 문서 정리와 우선 수정할 문제, 개별 이슈, 완료 기준 |
-| [화면·모델·API 실연동 전환 계획](screen-api-integration-plan.md) | 병합된 연결 범위와 미완료 입력·상태·API 동선 구분 |
-| [API Swagger 참고](api-swagger-reference.md) | 확인된 endpoint·request·response와 백엔드 source 근거 |
-| [백엔드 API 질문](backend-api-open-questions.md) | 계약 미확정 항목과 확인된 답변, 프론트 반영 상태 |
-| [구현 허용 위험 등록부](accepted-implementation-risks.md) | 사용자가 수용한 위험과 중단·해소 조건. 새 회귀 버그를 자동 수용하지 않음 |
-| [후속 결정 체크리스트](follow-up-decision-checklist.md) | 팀 결정·외부 승인·백엔드 준비가 필요한 항목 |
-| [품질·테스트 후속 계획](quality-testing-follow-up-plan.md) | QA·golden·smoke 결정 이력과 남은 품질 항목 |
-| [원격 integration 준비 계약](remote-integration-test-readiness.md) | 인증·데이터 격리·cleanup·Environment 승인 gate |
-| [소셜 로그인 연동 가이드](social-login-integration-guide.md) | `isNewUser` 가입 분기, provider token, iPhone 전용 Apple 노출과 SDK 설정 |
+| [화면·API 연결 계획](screen-api-integration-plan.md) | 현재 구현과 남은 입력·상태·서버 연동 범위 |
+| [API Swagger 참고](api-swagger-reference.md) | 확인 날짜별 endpoint·request·response와 소스 근거 |
+| [백엔드 API 질문](backend-api-open-questions.md) | 계약 미확정 항목·답변·프런트 반영 상태 |
+| [위험 등록부](accepted-implementation-risks.md) | 수용한 위험과 중단·해소 조건 |
+| [후속 결정](follow-up-decision-checklist.md) | 팀 결정·외부 승인·백엔드 준비 조건 |
+| [품질·테스트 계획](quality-testing-follow-up-plan.md) | 현재 QA profile·golden·smoke 기준과 미완료 원격 검증 |
+| [원격 integration 준비 계약](remote-integration-test-readiness.md) | 인증·데이터 격리·cleanup·Environment 승인 조건 |
 
-## 기능별 작업 이력
+## 보관 구조와 갱신 기준
 
-과거 커밋의 검증 결과는 해당 시점에만 적용합니다. 현재 연결 상태는 화면 매트릭스, 다음 작업은 개발 감사 체크리스트에서 확인합니다.
-
-| 작업 | 이력 |
-| --- | --- |
-| 앱 시작 refresh-only 토큰 갱신 #311 | [배포 계약·초기 복원·검증 경계](work-history/startup-token-refresh-311.md) |
-| 스토어 계정·배포 준비 #215 | [계정·서명 재점검과 후속 순서](work-history/store-readiness-215.md) |
-| 장소 좌표 없는 날씨 조회 차단 #309 | [조회 조건·불가 안내·후속 계약](work-history/place-weather-unavailable-309.md) |
-| 장소 날씨 화면·백엔드 연결 경계 #306 | [단계별 구현 계획과 변경 표](work-history/place-weather-ui-306.md) |
-| Plant 생성·수정 #229 | [Plant Form](work-history/plant-form-api-state-229.md) |
-| Plant 상세 #231 | [Plant Detail](work-history/plant-detail-api-view-231.md) |
-| Home 사용자 #232 | [Home User](work-history/home-user-api-state-232.md) |
-| User 프로필 #237 | [User Profile](work-history/user-profile-flow-237.md) |
-| Place 목록·상세 #239 | [Place List·Detail](work-history/place-list-detail-api-239.md) |
-| Friend 수신 요청 #241 | [Friend Invitations](work-history/friend-invitations-api-241.md) |
-| Place 폼 결과 #243 | [Place Form Result](work-history/place-form-result-flow-243.md) |
-| Place 멤버 조회 #245 | [Place Members](work-history/place-members-api-245.md) |
-| Place·Plant 이미지 보존 #248 | [Form Image Preservation](work-history/form-image-preservation-248.md) |
-| 계정별 캐시·진행 중 요청 격리 #249 | [Session Cache Isolation](work-history/session-cache-isolation-249.md) |
-| 입력 변경 중 제출 잠금 #250 | [Form Submit Lock](work-history/form-submit-lock-250.md) |
-| 원격 식물 등록 장소 상태 #251 | [Remote Plant Places](work-history/remote-plant-places-251.md) |
-| 식물 수정 장소 코드 검증 #252 | [Plant Edit Place Code](work-history/plant-edit-place-code-252.md) |
-| 장소 주소 선택 결과 연결 #253 | [Place Address Result](work-history/place-address-result-253.md) |
-| API 목록 항목 타입 검증 #254 | [API List Item Validation](work-history/api-list-item-validation-254.md) |
-| 비활성 공용 입력 clear 차단 #255 | [Disabled Text Field Clear](work-history/disabled-text-field-clear-255.md) |
-| 수정 정보 Provider 전달 단순화 #256 | [Form Edit Provider Flow](work-history/form-edit-provider-flow-256.md) |
-| 후속 개발 순서·보류 범위 #267 | [Follow-up Development Roadmap](work-history/follow-up-development-roadmap-267.md) |
-| 소셜 로그인 검증·누락 보완 #293 | [Social Login Verification](work-history/social-login-verification-293.md) |
-| 소셜 로그인 SDK·가입 분기 #285 | [Social Login SDK](work-history/social-login-sdk-285.md) |
-| 온보딩·토큰 갱신 정책 #287 | [Onboarding·Refresh Policy](work-history/onboarding-refresh-policy-287.md) |
-| 온보딩 로컬 완료 상태 #289 | [Onboarding Local State](work-history/onboarding-local-state-289.md) |
-| 메인 탭 라우팅·모션 #291 | [Main Tab Routing·Motion](work-history/main-tab-routing-motion-291.md) |
-
-Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 작업 이력](screen-api-integration-plan.md#작업-이력), 문서 정리 #247은 [개발 감사 체크리스트](development-audit-checklist.md)에서 확인합니다.
-
-## 갱신 기준
-
-- 작업 규칙은 현행 가이드, 구현 진척은 매트릭스·체크리스트, 커밋 증거는 작업 이력에 기록합니다.
-- 완료된 계획을 다시 활성화하지 않습니다. 남은 문제는 현재 코드에서 재현하고 별도 이슈로 추적합니다.
-- 문서를 추가하거나 제거할 때 이 인덱스를 갱신하고 기존 링크를 검증합니다.
-- 완료되어 현행 문서로 대체된 계획은 저장소에 중복 보관하지 않고 Git 이력과 기존 이슈·PR에서 조회합니다.
-
-- [폼 사진 선택·미리보기·교체 #295](work-history/form-image-selection-295.md): multipart 연결, 자동 검증과 실기기 QA 제한
-
-- [이미지 업로드 방식 정정 #297](work-history/image-upload-url-297.md): Swagger 직접 multipart, URL 발급 대기 철회
-
-- [식물 생성·수정 물주기 주기 #299](work-history/plant-watering-cycle-299.md): 필수 입력, null 초기값, 로컬 보관과 원격 미지원 경계
-
-- [공공데이터 초단기 날씨 조회 준비 #304](work-history/place-weather-api-304.md): 실황·예보 API와 5초·3회·취소 구현. 화면 구현 완료, 실제 장소 좌표·기기 QA 후속.
-- [판교역 검증 및 정책 철회 이력 #307](work-history/place-weather-fallback-307.md): 실제 공공데이터 응답 검증·예보 기준시각 수정. 기본 위치 정책은 #309에서 철회.
+- `docs/`: 현재 적용하는 가이드·계획·계약을 유지한다.
+- `docs/work-history/`: 진행 중이거나 후속 연동·QA의 상세 실행 지침이 남은 기록을 유지한다.
+- `docs/archive/plans/`: 완료되거나 현행 문서로 대체된 계획을 보관한다.
+- `docs/archive/work-history/`: 구현·검증이 끝난 범위의 작업 이력을 보관한다.
+- 이슈가 닫혔거나 코드가 병합돼도 실제 서버·실기기 QA가 완료됐다고 판단하지 않는다.
+  미확정 계약·재개 지침의 상세 원본은 현재 위치에 남기고, 보관 문서에도 당시 한계를 보존한다.
+- 문서를 이동할 때 이 인덱스·하위 인덱스·참조 링크와 heading anchor를 함께 확인한다.
+  보관본을 현재 정책의 단일 근거로 사용하거나 완료 계획을 다시 활성화하지 않는다.

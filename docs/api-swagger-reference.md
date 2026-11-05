@@ -97,13 +97,13 @@
 
 - `PUT /plants/{plantId}`의 query `placeCode`는 required이다. `PlantSummary`, `DetailResponse`, `EditInfoResponse`에는 장소 code가 없으며 상세의 `placeName`으로 code를 추정할 수 없다.
 - #252는 기존 장소 상세→식물 상세→수정 route의 `placeId`에 담긴 실제 code를 보존·정규화해 전송한다. null·빈 값·공백이면 원격 수정 없이 성공 처리하지 않고 기존 홈에서 장소를 통해 재진입하도록 안내한다.
-- #273에서 [PLANT-01](backend-api-open-questions.md#plant-01-식물에서-소속-장소-code-조회)을 기존 Place 조회 계약으로 해결했다. direct field가 추가되기 전까지 순차 장소 상세 조회 비용은 [위험 등록부](accepted-implementation-risks.md#plant-소속-장소-code-조회)에 기록한다. 수정 성공 후 관련 목록·상세·편집 정보 갱신은 #252에서 검증했다([작업 이력](work-history/plant-edit-place-code-252.md)).
+- #273에서 [PLANT-01](backend-api-open-questions.md#plant-01-식물에서-소속-장소-code-조회)을 기존 Place 조회 계약으로 해결했다. direct field가 추가되기 전까지 순차 장소 상세 조회 비용은 [위험 등록부](accepted-implementation-risks.md#plant-소속-장소-code-조회)에 기록한다. 수정 성공 후 관련 목록·상세·편집 정보 갱신은 #252에서 검증했다([작업 이력](archive/work-history/plant-edit-place-code-252.md)).
 
 ### 2026-08-28 감사 — 이미지 수정 계약과 프론트 누락
 
 - Place/Plant의 `imageKey` 생략/null은 기존 이미지 삭제를 뜻한다. 새 파일 없이 유지하려면 기존 key를 보내야 한다.
 - 감사 당시 Plant edit 응답의 key가 Form 상태로 전달되지 않았고 Place Form도 key를 누락했다. #248에서 Plant key 보존과 미확인 key 차단, Place 사진 수정 요청 차단을 구현했다. 이는 새 endpoint 변경이 아니라 기존 계약 누락의 수정이다.
-- 연결 PR의 병합 상태와 실제 남은 화면 동선은 [화면·API 매트릭스](screen-api-integration-plan.md), 수정 순서는 [개발 감사 체크리스트](development-audit-checklist.md)에서 관리한다.
+- 연결 PR의 병합 상태와 실제 남은 화면 동선은 [화면·API 매트릭스](screen-api-integration-plan.md), 당시 감사 수정은 [완료 기록](archive/plans/development-audit-checklist.md)에서 확인한다.
 
 ### 2026-08-28 장소 멤버 조회 연결
 
@@ -440,14 +440,14 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 인증된 현재 팀짱이 다른 현재 멤버에게 팀짱 권한을 위임한다. body·query 없이 두 path segment를 인코딩해 전송한다.
 - 성공 HTTP 200, 공통 wrapper의 `result: null`. 기존 팀짱의 소속은 유지된다.
 - 오류: 404 `P101` 장소 없음, 403 `P103` 멤버 아님, `P110` 팀짱 아님, `P111` 자기 자신 위임.
-- #277은 친구 관리의 비팀짱 멤버에 확인창·제출 잠금을 연결한다. 최신 권한·대상을 확인하고 성공 후 상세·요약·멤버·소유/소속 목록을 재조회한다([검증 범위](work-history/place-owner-api-277.md)).
+- #277은 친구 관리의 비팀짱 멤버에 확인창·제출 잠금을 연결한다. 최신 권한·대상을 확인하고 성공 후 상세·요약·멤버·소유/소속 목록을 재조회한다([검증 범위](archive/work-history/place-owner-api-277.md)).
 
 #### DELETE `/place/leave/{code}`
 
 - 인증된 장소 멤버의 탈퇴. body·query 없이 인코딩한 code를 전송한다. 성공 HTTP 200, result null.
 - 일반 멤버는 소속 제거, 팀짱은 가입 순 다음 멤버에게 서버가 자동 위임 후 소속 제거, 마지막 멤버이면 장소·식물·소속·장소 이미지를 삭제한다. 클라이언트 선행 위임 요청은 필요 없다.
 - 오류: 404 `P101` 장소 없음, 403 `P103` 멤버 아님.
-- #277은 일반 멤버·팀짱의 나가기를 기존 전체 삭제와 구분한다. 확인·중복 제출·실패 재시도·관련 조회 갱신과 성공 시 홈 이동을 연결했다([검증 범위](work-history/place-leave-api-277.md)).
+- #277은 일반 멤버·팀짱의 나가기를 기존 전체 삭제와 구분한다. 확인·중복 제출·실패 재시도·관련 조회 갱신과 성공 시 홈 이동을 연결했다([검증 범위](archive/work-history/place-leave-api-277.md)).
 
 ### Friend
 
@@ -735,7 +735,7 @@ refresh는 2026-11-03 `POST /auth/refresh` 배포를 확인했다. 아직 Swagge
 - 반영: #239에서 `GET /place/myGarden`의 `result.placeList`와 대표 이미지를 Home 장소 카드에 연결했다.
 - 반영: #239에서 `GET /place/{code}`를 `PlaceDetail`로 파싱하고 owner·멤버·식물·이미지·날짜를 상세 화면에 연결했다.
 - 반영: #239 remote 상세에서는 서버가 주지 않는 햇빛·습도와 fixture 멤버·식물을 표시하지 않는다.
-- 후속 결정(#302 → #304 → #306 → #309): 장소 좌표를 받아 프런트엔드가 공공데이터포털 초단기실황·초단기예보를 조회한다. 현재 기온·습도 + 날씨 아이콘으로 결정했으며, API 조회·시도별 5초 제한·총 3회·취소 처리를 준비했다. `xPosition`·`yPosition`은 여전히 문서상 임시 명칭이며 Swagger에서 확인된 필드가 아니다. #306에서 기온·습도·아이콘과 동일 위치 재호출 UI를 연결했다. #309 사용자 결정으로 장소 주소에 대응하는 격자가 없으면 조회 불가를 안내하고 요청하지 않는다. 판교역 기본값은 제거했다. 백엔드 최종 계약 확정 후 DTO·좌표 변환을 연결한다. [변경 지점과 재검증](work-history/place-weather-unavailable-309.md#백엔드-확정-후-변경할-영역)을 참고한다. 판교역 실제 API 확인과 남은 기기 QA는 [#307 기록](work-history/place-weather-fallback-307.md)을 따른다. [조회 방침](screen-api-integration-plan.md#장소-좌표프런트-날씨-조회-방침-302), [구현 기록](work-history/place-weather-api-304.md)을 참고한다.
+- 후속 결정(#302 → #304 → #306 → #309): 장소 좌표를 받아 프런트엔드가 공공데이터포털 초단기실황·초단기예보를 조회한다. 현재 기온·습도 + 날씨 아이콘으로 결정했으며, API 조회·시도별 5초 제한·총 3회·취소 처리를 준비했다. `xPosition`·`yPosition`은 여전히 문서상 임시 명칭이며 Swagger에서 확인된 필드가 아니다. #306에서 기온·습도·아이콘과 동일 위치 재호출 UI를 연결했다. #309 사용자 결정으로 장소 주소에 대응하는 격자가 없으면 조회 불가를 안내하고 요청하지 않는다. 판교역 기본값은 제거했다. 백엔드 최종 계약 확정 후 DTO·좌표 변환을 연결한다. [변경 지점과 재검증](work-history/place-weather-unavailable-309.md#백엔드-확정-후-변경할-영역)을 참고한다. 판교역 실제 API 확인과 남은 기기 QA는 [#307 기록](archive/work-history/place-weather-fallback-307.md)을 따른다. [조회 방침](screen-api-integration-plan.md#장소-좌표프런트-날씨-조회-방침-302), [구현 기록](archive/work-history/place-weather-api-304.md)을 참고한다.
 - 반영: #243에서 `POST /place/create`의 result 문자열을 place code로 파싱하고 친구 추가 route에 전달한다.
 - 반영: #243에서 `PUT /place/update/{code}`의 result를 typed `PlaceSummary`로 파싱한다.
 - 반영: #245에서 `GET /place/{code}/members`의 result 배열을 `PlaceMember`로 파싱하고 친구 관리 조회·검색에 연결했다. #277은 실제 nanoId·owner 검증과 팀짱 위임·탈퇴를 연결한다. 멤버 추가·제거는 미제공 계약이다.
@@ -763,7 +763,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 
 근거: [dev OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)의 두 update schema와 backend `7d572cb`의 [PlaceServiceImpl](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/blob/7d572cbcabc81a65926738b2a09e8479d0bd0c79/src/main/java/com/commonplant/garden/place/service/PlaceServiceImpl.java), [PlantServiceImpl](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/blob/7d572cbcabc81a65926738b2a09e8479d0bd0c79/src/main/java/com/commonplant/garden/plant/service/PlantServiceImpl.java)의 `resolveUpdatedImageKey`를 대조했다. 실제 원격 삭제 요청은 실행하지 않았다.
 
-[#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 Plant Form의 초기 key·URL을 보존하고 이름·날짜 수정 요청에 key를 전달한다. URL이 있지만 key가 없으면 요청을 차단한다. Place는 key를 조회할 수 없어 사진이 있는 장소의 수정 요청을 차단·안내하며 사진이 없는 장소는 기존 수정 동작을 유지한다. key 확보와 동시 수정의 조건부 보호 계약은 [IMAGE-04](backend-api-open-questions.md#image-04-이미지-key-생명주기)로 남기고, [작업 이력](work-history/form-image-preservation-248.md)에 제한을 기록한다. URL에서 key를 추측하지 않는다.
+[#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 Plant Form의 초기 key·URL을 보존하고 이름·날짜 수정 요청에 key를 전달한다. URL이 있지만 key가 없으면 요청을 차단한다. Place는 key를 조회할 수 없어 사진이 있는 장소의 수정 요청을 차단·안내하며 사진이 없는 장소는 기존 수정 동작을 유지한다. key 확보와 동시 수정의 조건부 보호 계약은 [IMAGE-04](backend-api-open-questions.md#image-04-이미지-key-생명주기)로 남기고, [작업 이력](archive/work-history/form-image-preservation-248.md)에 제한을 기록한다. URL에서 key를 추측하지 않는다.
 
 독립형 Image API(`/s3/images`)는 response schema가 없어 화면에서 반환된 image key/url을 확정적으로 읽을 수 없다. 따라서 프로필, 장소, 식물, 메모 화면에서 `/s3/images` 업로드 결과를 `imageKey`, `imgUrl`, `imageUrl`로 임의 매핑하지 않는다.
 
@@ -820,4 +820,4 @@ Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 �
 
 ## 이미지 업로드 방식 정정 #297
 
-사용자의 최신 설명은 Swagger API 주소로 파일을 직접 전송하는 방식이다. 별도 URL 발급 요청은 없으며, #295의 도메인 multipart 전송을 유지한다. #297에서 두었던 URL 발급 API 대기 조건은 철회한다. [경로·전송 형식과 검증 경계](work-history/image-upload-url-297.md)를 참고한다.
+사용자의 최신 설명은 Swagger API 주소로 파일을 직접 전송하는 방식이다. 별도 URL 발급 요청은 없으며, #295의 도메인 multipart 전송을 유지한다. #297에서 두었던 URL 발급 API 대기 조건은 철회한다. [경로·전송 형식과 검증 경계](archive/work-history/image-upload-url-297.md)를 참고한다.

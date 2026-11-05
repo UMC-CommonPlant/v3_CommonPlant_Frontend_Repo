@@ -9,7 +9,7 @@
 - 기준 `develop`: `f723825da89cb7988fb49a02e745f229edd4c176` (사용자 PR #264 병합)
 - 브랜치: `fix/disabled-text-field-clear-255`
 - 상태: 2026-08-30 사용자 PR #265 병합 완료(`894dd5f7b0bfe7e1e3de0d295115480b1f2753cb`). 이슈는 Closed, 이슈·PR은 Project 10의 `Done`, category `Story`, priority `medium`입니다.
-- 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [화면·API 계획](../screen-api-integration-plan.md), [공용 위젯](../shared-widget-guide.md), [디자인 토큰](../design-token-rules.md), [테스트](../testing-guide.md), [Git](../git-workflow.md)
+- 참고: [README](../../../README.md), [감사 체크리스트](../plans/development-audit-checklist.md), [화면·API 계획](../../screen-api-integration-plan.md), [공용 위젯](../../shared-widget-guide.md), [디자인 토큰](../../design-token-rules.md), [테스트](../../testing-guide.md), [Git](../../git-workflow.md)
 
 clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #255를 재사용했습니다. 작업 시작 시 #254는 Closed이고 이슈·PR #264의 Project 상태는 Done, 상위 #226은 18/20 완료였습니다. #255 병합·종료 뒤 상위 #226은 19/20으로 갱신됐습니다. 이번 후속 문서 변경에서 #255의 병합 전 표기를 정정했습니다.
 
@@ -34,9 +34,9 @@ clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #2
 
 | 테스트 | 검증 범위 |
 | --- | --- |
-| [CommonTextField](../../test/shared/widgets/common_text_field_test.dart) | 신규 1개: 활성 강제 focus 장식에서 clear가 값을 비우고 `onChanged('')`를 한 번 호출 |
-| [CommonTextField](../../test/shared/widgets/common_text_field_test.dart) | 신규 1개: `enabled: false`와 강제 focus 장식에서 입력 비활성·clear 미노출·값·콜백 보존 |
-| [CommonTextField](../../test/shared/widgets/common_text_field_test.dart) | 신규 1개: disabled state와 강제 focus 장식에서 입력 비활성·clear 미노출·값·콜백 보존 |
+| [CommonTextField](../../../test/shared/widgets/common_text_field_test.dart) | 신규 1개: 활성 강제 focus 장식에서 clear가 값을 비우고 `onChanged('')`를 한 번 호출 |
+| [CommonTextField](../../../test/shared/widgets/common_text_field_test.dart) | 신규 1개: `enabled: false`와 강제 focus 장식에서 입력 비활성·clear 미노출·값·콜백 보존 |
+| [CommonTextField](../../../test/shared/widgets/common_text_field_test.dart) | 신규 1개: disabled state와 강제 focus 장식에서 입력 비활성·clear 미노출·값·콜백 보존 |
 
 - 공용 위젯 대상 테스트: 5개 통과
 - `fvm dart format --output=none --set-exit-if-changed .`: 309개 파일, 변경 0개

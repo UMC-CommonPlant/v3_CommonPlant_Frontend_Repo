@@ -8,7 +8,7 @@
 - 기준 `develop`: `5fc01405a91bc715a5a87ce8e40c2e8c58815714` (사용자 PR #262 병합)
 - 브랜치: `fix/place-address-result-253`
 - 상태: [PR #263](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/263) 사용자 병합 완료(`ded4fe2`). 이슈는 Closed, 이슈·PR의 Project 10 상태는 `Done`입니다. category `Place`, priority `medium`, Issue Type `Bug`, 담당자 `ywkim95`·`bbielo`, milestone `v1.0.0 - MVP (핵심 기능 개발)`을 유지했습니다.
-- 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [화면·API 계획](../screen-api-integration-plan.md), [Feature](../feature-development-guide.md), [라우팅](../routing-guide.md), [상태관리](../state-management-guide.md), [폼 검증](../form-validation-error-guide.md), [공용 위젯](../shared-widget-guide.md), [디자인 토큰](../design-token-rules.md), [퍼블리싱](../screen-publishing-rules.md), [Figma 매핑](../figma-frame-map.md), [테스트](../testing-guide.md), [Git](../git-workflow.md)
+- 참고: [README](../../../README.md), [감사 체크리스트](../plans/development-audit-checklist.md), [화면·API 계획](../../screen-api-integration-plan.md), [Feature](../../feature-development-guide.md), [라우팅](../../routing-guide.md), [상태관리](../../state-management-guide.md), [폼 검증](../../form-validation-error-guide.md), [공용 위젯](../../shared-widget-guide.md), [디자인 토큰](../../design-token-rules.md), [퍼블리싱](../../screen-publishing-rules.md), [Figma 매핑](../../figma-frame-map.md), [테스트](../../testing-guide.md), [Git](../../git-workflow.md)
 
 clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #253을 재사용했습니다. 작업 시작 당시 #252는 Closed이고 이슈·PR #262의 Project 상태는 Done, 상위 #226은 16/20 완료였습니다. #253 병합 후 이슈·PR #263은 Done이며 상위 #226은 17/20 완료입니다. 이 문서 변경에서 #252의 병합 전 표기를 정정했습니다.
 
@@ -35,11 +35,11 @@ clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #2
 
 | 테스트 | 검증 범위 |
 | --- | --- |
-| [장소 route 흐름](../../test/app/router/place_route_flow_test.dart) | 신규 15개: 로컬 생성·수정 선택/취소, 실제 production 생성·수정·검색 route builder와 요청 DTO, API 기본 미연결·샘플 거부, 계정 세션 전환, 화면만 폐기된 경우, 제출 중 재선택·성공/실패·재시도 |
-| [주소 검색 Page](../../test/features/place/presentation/pages/address_search_page_test.dart) | 신규 4개: 3개 viewport의 API 미연결 안내·fixture 미노출, 로컬 empty. 기존 선택 테스트에서 주소·출처 반환 확인 |
-| [주소 검색 Controller](../../test/features/place/presentation/providers/address_search_controller_test.dart) | 신규 1개: API 초기화와 검색어 변경에서 fixture 결과 미노출 |
-| [장소 Form Controller](../../test/features/place/presentation/providers/place_form_controller_test.dart) | 신규 5개: 모드별 fixture 허용/거부, 취소·빈 주소 상태 보존, 폐기된 Provider 결과 차단. 기존 생성·수정 성공/실패 잠금 4개와 사진 보호 1개에 비동기 주소 선택 적용 |
-| [인증 액션 격리](../../test/features/login/presentation/providers/session_action_isolation_test.dart) | 신규 1개: 메모리 token store와 실제 Auth Controller로 A→B 전환 후 A 선택 결과 차단 |
+| [장소 route 흐름](../../../test/app/router/place_route_flow_test.dart) | 신규 15개: 로컬 생성·수정 선택/취소, 실제 production 생성·수정·검색 route builder와 요청 DTO, API 기본 미연결·샘플 거부, 계정 세션 전환, 화면만 폐기된 경우, 제출 중 재선택·성공/실패·재시도 |
+| [주소 검색 Page](../../../test/features/place/presentation/pages/address_search_page_test.dart) | 신규 4개: 3개 viewport의 API 미연결 안내·fixture 미노출, 로컬 empty. 기존 선택 테스트에서 주소·출처 반환 확인 |
+| [주소 검색 Controller](../../../test/features/place/presentation/providers/address_search_controller_test.dart) | 신규 1개: API 초기화와 검색어 변경에서 fixture 결과 미노출 |
+| [장소 Form Controller](../../../test/features/place/presentation/providers/place_form_controller_test.dart) | 신규 5개: 모드별 fixture 허용/거부, 취소·빈 주소 상태 보존, 폐기된 Provider 결과 차단. 기존 생성·수정 성공/실패 잠금 4개와 사진 보호 1개에 비동기 주소 선택 적용 |
+| [인증 액션 격리](../../../test/features/login/presentation/providers/session_action_isolation_test.dart) | 신규 1개: 메모리 token store와 실제 Auth Controller로 A→B 전환 후 A 선택 결과 차단 |
 
 - Viewport: Reference `375×812`, Compact width `320×640`, Short height `375×667`, DPR 1
 - 위 5개 파일 대상 테스트: 57개 통과

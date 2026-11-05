@@ -1,6 +1,6 @@
 # 후속 개발 순서와 보류 범위 정리 이력
 
-> 2026-11-05 최신 상태: #277 작업 브랜치에서 [멤버 ID·역할 조회](place-members-contract-277.md), [팀짱 위임](place-owner-api-277.md), [장소 나가기](place-leave-api-277.md)를 API별로 연결했다. Place 멤버 제거와 Friend 고유 대상·부분 결과 계약은 여전히 후속 범위이며 실제 인증 서버·실기기 QA는 미완료다. 아래 개발 순서와 보류 항목은 2026-08-30 당시 결정 이력이고, 현행 순서는 [화면·API 계획](../screen-api-integration-plan.md)을 따른다.
+> 2026-11-05 최신 상태: #277 작업 브랜치에서 [멤버 ID·역할 조회](place-members-contract-277.md), [팀짱 위임](place-owner-api-277.md), [장소 나가기](place-leave-api-277.md)를 API별로 연결했다. Place 멤버 제거와 Friend 고유 대상·부분 결과 계약은 여전히 후속 범위이며 실제 인증 서버·실기기 QA는 미완료다. 아래 개발 순서와 보류 항목은 2026-08-30 당시 결정 이력이고, 현행 순서는 [화면·API 계획](../../screen-api-integration-plan.md)을 따른다.
 
 ## 작업 기준
 
@@ -9,7 +9,7 @@
 - 기준 `develop`: `011ef7db1affb9b50fc241222b5f9408bc5eb5f5` (사용자 PR #266 병합)
 - 브랜치: `docs/follow-up-development-roadmap-267`
 - 상태: 문서 정리·로컬 검증 완료, PR 생성 후 사용자 병합 대기. Project 10의 category `Story`, priority `medium`, Issue Type `Task`, 담당자 `ywkim95`·`bbielo`, milestone `v1.0.0 - MVP (핵심 기능 개발)`을 사용합니다.
-- 참고: [README](../../README.md), [문서 인덱스](../README.md), [감사 체크리스트](../development-audit-checklist.md), [화면·API 계획](../screen-api-integration-plan.md), [후속 결정](../follow-up-decision-checklist.md), [백엔드 질문](../backend-api-open-questions.md), [Git](../git-workflow.md)
+- 참고: [README](../../../README.md), [문서 인덱스](../../README.md), [감사 체크리스트](../plans/development-audit-checklist.md), [화면·API 계획](../../screen-api-integration-plan.md), [후속 결정](../../follow-up-decision-checklist.md), [백엔드 질문](../../backend-api-open-questions.md), [Git](../../git-workflow.md)
 
 clean 작업 트리와 `origin/develop`, 열린 이슈 중복을 확인했습니다. PR #266과 #256은 병합·Closed·Project `Done`, 상위 Epic #226은 하위 이슈 20/20 완료·Closed·`Done`이었습니다. 기존 열린 이슈는 스토어 계정 준비 #215 하나이며 사용자 결정에 따라 계속 `Backlog`로 보류합니다.
 

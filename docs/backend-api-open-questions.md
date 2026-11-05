@@ -8,7 +8,7 @@
 - 백엔드 답변 또는 배포 기준과 일치하는 백엔드 Controller·DTO·Service 근거를 확인하면 `답변`과 `프론트 반영` 칸을 갱신한다.
 - Swagger가 갱신되면 `docs/api-swagger-reference.md`의 최신 명세와 이 문서를 함께 갱신한다.
 - 구현은 이 문서의 질문이 `Answered`가 된 뒤 별도 이슈에서 진행한다.
-- 일부 계약이 확인됐거나 사용자가 위험을 수용한 경우에는 확인된 범위와 남은 위험을 분리한다. 알려진 프론트 회귀 문제는 [개발 감사 체크리스트](development-audit-checklist.md)에서 추적하며 백엔드 질문으로만 남기지 않는다.
+- 일부 계약이 확인됐거나 사용자가 위험을 수용한 경우에는 확인된 범위와 남은 위험을 분리한다. 완료된 프론트 감사 수정은 [보관 기록](archive/plans/development-audit-checklist.md)에서 확인한다. 새 회귀는 별도 이슈와 [현행 실행 계획](screen-api-integration-plan.md)에서 추적하며 백엔드 질문으로만 남기지 않는다.
 
 ## 질문 요약
 
@@ -144,7 +144,7 @@
 - 현재 근거: 2026-11-05 live OpenAPI와 backend `03ece0e`의 Controller·Service에서 `DELETE /place/leave/{code}`를 확인했다.
 - 프론트 영향: 기존 owner 전체 삭제와 별도로 내 소속을 제거할 수 있다.
 - 확인 질문: 계약 확인됨. 실제 인증된 저장·재조회 QA는 남아 있다.
-- 프론트 반영: #277에서 일반 멤버·팀짱의 나가기를 연결하고, 팀짱에게는 자동 위임·혼자일 때 장소 삭제를 안내한다. 전체 삭제 endpoint·경고는 분리한다([API 이력](work-history/place-leave-api-277.md)).
+- 프론트 반영: #277에서 일반 멤버·팀짱의 나가기를 연결하고, 팀짱에게는 자동 위임·혼자일 때 장소 삭제를 안내한다. 전체 삭제 endpoint·경고는 분리한다([API 이력](archive/work-history/place-leave-api-277.md)).
 - 답변: body 없는 인증된 DELETE, 성공 200 result null. 팀짱이면 가입 순 다음 멤버에게 서버가 자동 위임하며 마지막 멤버이면 장소와 식물 등을 삭제한다. 장소 없음 404 `P101`, 비멤버 403 `P103`.
 - 상태: Answered
 
@@ -153,7 +153,7 @@
 - 현재 근거: 2026-11-05 live OpenAPI와 backend `03ece0e`에서 `nanoId`·`owner`, `PUT /place/{code}/owner/{targetNanoId}`를 확인했다.
 - 프론트 영향: 실제 멤버 ID로 팀짱 위임을 연결할 수 있다. 멤버 추가·제거 endpoint는 없다.
 - 확인 질문: 멤버 추가·제거와 멱등 정책의 후속 계약은 무엇인가?
-- 프론트 반영: #277은 팀짱에게만 현재 비팀짱 멤버의 위임 액션을 제공하고 제출 직전 권한·대상·세션을 검사한다. 성공 후 관련 조회를 갱신한다([API 이력](work-history/place-owner-api-277.md)).
+- 프론트 반영: #277은 팀짱에게만 현재 비팀짱 멤버의 위임 액션을 제공하고 제출 직전 권한·대상·세션을 검사한다. 성공 후 관련 조회를 갱신한다([API 이력](archive/work-history/place-owner-api-277.md)).
 - 답변: 현재 팀짱만 위임 가능, 자기 자신·비멤버 금지. 성공 200 result null, 기존 팀짱의 소속 유지. 상세 오류 코드는 API 참고 문서에 기록했다. 실제 인증 쓰기 QA는 남아 있다.
 - 상태: Partial
 
@@ -242,7 +242,7 @@
 
 - 최신 사용자 정정에 따라 별도 URL 발급이 아니라 Swagger의 API 주소로 직접 multipart 전송한다.
 - #295의 가입·회원정보·Plant·Place 도메인 JSON + optional `image` 전송은 live Swagger와 일치하므로 유지한다. 독립 `/s3/images` 선업로드 전환은 필요하지 않다.
-- #297의 URL 발급 API 미구현 차단 조건은 철회했다. [정정 근거](work-history/image-upload-url-297.md)
+- #297의 URL 발급 API 미구현 차단 조건은 철회했다. [정정 근거](archive/work-history/image-upload-url-297.md)
 - Memo 계약과 실제 계정의 서버 저장 QA는 각각 기존 이슈에 남긴다.
 - 상태: Answered (직접 전송 방식 확인, 실기기 저장 검증 완료를 뜻하지 않음)
 
@@ -259,7 +259,7 @@
 - 프론트 영향: 이미지 선택기가 없어도 텍스트 수정 요청에서 기존 key를 잃으면 이미지가 삭제될 수 있다. Plant edit 응답은 key를 제공하지만 Place 상세에는 `imgUrl`만 있다.
 - 확인 질문: Place의 기존 image key를 안전하게 조회하는 계약은 무엇인가? 조회 이후 다른 클라이언트가 사진을 변경한 경우의 조건부 수정·명시적 유지 동작은 어떻게 보장하는가? User·Memo와 독립 `/s3/images`의 생명주기 정책은 별도 확인이 필요하다.
 - 프론트 반영: [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 Plant의 초기 key를 상태와 요청에 보존하고 URL만 있는 불완전 정보는 차단한다. Place는 기존 사진 URL을 폼까지 전달하고 사진이 있으면 수정 API를 호출하지 않는다. 사진 없는 장소·fixture 수정은 유지하며 URL에서 key를 추측하지 않는다. 원격 삭제 검증은 실행하지 않았다.
-- #295에서 새 파일을 선택한 Place/Plant 교체를 허용했다. 미선택 상태에서는 위 보존 차단을 유지한다. User는 파일 생략 시 서버가 기존 사진을 유지한다. Place의 사진 미교체 수정과 동시 수정 보호는 key 조회 또는 명시적 유지 계약 확인이 필요하다. [작업 이력](work-history/form-image-preservation-248.md)에 현재 제한과 검증을 기록했다.
+- #295에서 새 파일을 선택한 Place/Plant 교체를 허용했다. 미선택 상태에서는 위 보존 차단을 유지한다. User는 파일 생략 시 서버가 기존 사진을 유지한다. Place의 사진 미교체 수정과 동시 수정 보호는 key 조회 또는 명시적 유지 계약 확인이 필요하다. [작업 이력](archive/work-history/form-image-preservation-248.md)에 현재 제한과 검증을 기록했다.
 - 상태: Partial
 
 ## Error

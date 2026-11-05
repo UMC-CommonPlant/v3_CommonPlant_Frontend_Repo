@@ -7,7 +7,7 @@
 - 작업일: 2026-09-03
 - 기준 `develop`: `8092783` (PR #290 병합)
 - 브랜치: `feature/main-tab-routing-motion-291`
-- 참고: [라우팅](../routing-guide.md), [Figma 매핑](../figma-frame-map.md), [디자인 토큰](../design-token-rules.md), [공용 위젯](../shared-widget-guide.md), [테스트](../testing-guide.md)
+- 참고: [라우팅](../../routing-guide.md), [Figma 매핑](../../figma-frame-map.md), [디자인 토큰](../../design-token-rules.md), [공용 위젯](../../shared-widget-guide.md), [테스트](../../testing-guide.md)
 
 ## 구현 범위
 

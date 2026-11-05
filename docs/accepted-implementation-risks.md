@@ -52,9 +52,9 @@
 
 2026-11-05 #277 작업 브랜치는 공개 OpenAPI와 backend `develop` `03ece0e`를
 대조해 멤버 `nanoId`·`owner`, 팀짱 위임, 장소 나가기를 연결했습니다.
-[멤버 조회](work-history/place-members-contract-277.md),
-[팀짱 위임](work-history/place-owner-api-277.md),
-[장소 나가기](work-history/place-leave-api-277.md)의 API별 기록을 따릅니다.
+[멤버 조회](archive/work-history/place-members-contract-277.md),
+[팀짱 위임](archive/work-history/place-owner-api-277.md),
+[장소 나가기](archive/work-history/place-leave-api-277.md)의 API별 기록을 따릅니다.
 멤버 제거 endpoint와 Friend 고유 대상·부분 결과는 여전히 별도 계약이 필요합니다.
 인증된 실제 서버 응답과 실기기 QA는 아직 검증하지 않았습니다.
 

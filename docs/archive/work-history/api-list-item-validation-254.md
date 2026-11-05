@@ -8,7 +8,7 @@
 - 기준 `develop`: `ded4fe265bb1e47f6b1301ea9a7e83484a590672` (사용자 PR #263 병합)
 - 브랜치: `fix/api-list-item-validation-254`
 - 상태: [PR #264](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/264) 사용자 병합 완료(`f723825`). 이슈는 Closed, 이슈·PR의 Project 10 상태는 `Done`입니다. category `Story`, priority `medium`, Issue Type `Bug`, 담당자 `ywkim95`·`bbielo`, milestone `v1.0.0 - MVP (핵심 기능 개발)`을 유지했습니다.
-- 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [화면·API 계획](../screen-api-integration-plan.md), [Feature](../feature-development-guide.md), [테스트](../testing-guide.md), [Git](../git-workflow.md)
+- 참고: [README](../../../README.md), [감사 체크리스트](../plans/development-audit-checklist.md), [화면·API 계획](../../screen-api-integration-plan.md), [Feature](../../feature-development-guide.md), [테스트](../../testing-guide.md), [Git](../../git-workflow.md)
 
 clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #254를 재사용했습니다. 작업 시작 시 #253은 Closed이고 이슈·PR #263의 Project 상태는 Done, 상위 #226은 17/20 완료였습니다. #254 병합 후 이슈·PR #264는 Done이며 상위 #226은 18/20 완료입니다. 이번 문서 변경에서 #253의 병합 전 표기를 정정했습니다.
 
@@ -33,10 +33,10 @@ clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #2
 
 | 테스트 | 검증 범위 |
 | --- | --- |
-| [공용 응답 파서](../../test/core/network/api_response_parser_test.dart) | 신규 3개: 정상 빈 목록, 전체 비정상 목록의 첫 위치 오류, nested wrapper 일부 비정상 목록의 두 번째 위치 오류. 기존 `result.content.items` 호환성 유지 |
-| [Plant mapper](../../test/features/plant/data/mappers/plant_mapper_test.dart) | 신규 1개: 정상 Plant와 비-Map 항목이 섞인 응답을 부분 성공으로 반환하지 않음 |
-| [Place repository](../../test/features/place/data/repositories/place_repository_test.dart) | 신규 1개: 사용자 장소 목록의 일부 비정상 응답이 repository 오류로 전달됨 |
-| [User repository](../../test/features/user/data/repositories/user_repository_test.dart) | 신규 1개: 사용자 검색의 전체 비정상 응답이 정상 empty로 바뀌지 않음 |
+| [공용 응답 파서](../../../test/core/network/api_response_parser_test.dart) | 신규 3개: 정상 빈 목록, 전체 비정상 목록의 첫 위치 오류, nested wrapper 일부 비정상 목록의 두 번째 위치 오류. 기존 `result.content.items` 호환성 유지 |
+| [Plant mapper](../../../test/features/plant/data/mappers/plant_mapper_test.dart) | 신규 1개: 정상 Plant와 비-Map 항목이 섞인 응답을 부분 성공으로 반환하지 않음 |
+| [Place repository](../../../test/features/place/data/repositories/place_repository_test.dart) | 신규 1개: 사용자 장소 목록의 일부 비정상 응답이 repository 오류로 전달됨 |
+| [User repository](../../../test/features/user/data/repositories/user_repository_test.dart) | 신규 1개: 사용자 검색의 전체 비정상 응답이 정상 empty로 바뀌지 않음 |
 
 - 관련 공용·Plant·Place·User·Friend 테스트 7개 파일: 39개 통과
 - `fvm dart format --output=none --set-exit-if-changed .`: 309개 파일, 변경 0개

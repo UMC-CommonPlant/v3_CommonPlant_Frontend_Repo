@@ -48,7 +48,7 @@ backend develop [`03ece0e`](https://github.com/UMC-CommonPlant/v3_CommonPlant_Ba
 - HTTP 401 `A003`·`A004`·`A012`, HTTP 404 `A006`은 각각 JWT 오류·만료·refresh 불일치·
   활성 사용자 부재 계약입니다. 원요청 자동 재전송과 서버 로그아웃은 이번 범위 밖입니다.
 - TTL은 #162 본문·Swagger·현재 서버 설정이 서로 다릅니다. 클라이언트에 기간이나
-  회전 시점을 고정하지 않으며 [TOKEN-01](../backend-api-open-questions.md#token-01-refresh-token-재발급-api)에 차이를 남깁니다.
+  회전 시점을 고정하지 않으며 [TOKEN-01](../../backend-api-open-questions.md#token-01-refresh-token-재발급-api)에 차이를 남깁니다.
 
 이번 배포 명세·소스 확인은 실제 계정 token 갱신이나 실기기 재실행 성공을 뜻하지 않습니다.
 자동 검증 결과는 [#311 작업 기록](startup-token-refresh-311.md)에서 별도로 관리합니다.
