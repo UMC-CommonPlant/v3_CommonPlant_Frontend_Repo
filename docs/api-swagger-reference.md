@@ -103,7 +103,7 @@
 
 - Place/Plant의 `imageKey` 생략/null은 기존 이미지 삭제를 뜻한다. 새 파일 없이 유지하려면 기존 key를 보내야 한다.
 - 감사 당시 Plant edit 응답의 key가 Form 상태로 전달되지 않았고 Place Form도 key를 누락했다. #248에서 Plant key 보존과 미확인 key 차단, Place 사진 수정 요청 차단을 구현했다. 이는 새 endpoint 변경이 아니라 기존 계약 누락의 수정이다.
-- 연결 PR의 병합 상태와 실제 남은 화면 동선은 [화면·API 매트릭스](screen-api-integration-plan.md), 수정 순서는 [개발 감사 체크리스트](archive/plans/development-audit-checklist.md)에서 관리한다.
+- 연결 PR의 병합 상태와 실제 남은 화면 동선은 [화면·API 매트릭스](screen-api-integration-plan.md), 당시 감사 수정은 [완료 기록](archive/plans/development-audit-checklist.md)에서 확인한다.
 
 ### 2026-08-28 장소 멤버 조회 연결
 

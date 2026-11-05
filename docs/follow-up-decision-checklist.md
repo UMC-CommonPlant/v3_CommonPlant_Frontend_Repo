@@ -1,6 +1,6 @@
 # 후속 결정 체크리스트
 
-이 문서는 팀 결정·외부 승인·백엔드 답변이 필요한 항목을 관리한다. 즉시 수정할 동작 문제와 실행 순서는 [개발 감사·개선 체크리스트](archive/plans/development-audit-checklist.md), 화면 연결 상태는 [화면·API 매트릭스](screen-api-integration-plan.md)에서 관리한다. 아래 미결정 항목을 현재 최우선 작업으로 해석하지 않는다.
+이 문서는 팀 결정·외부 승인·백엔드 답변이 필요한 항목을 관리한다. 현재 실행 순서와 화면 연결 상태는 [화면·API 계획](screen-api-integration-plan.md)에서 관리한다. 완료된 감사 수정은 [보관 기록](archive/plans/development-audit-checklist.md)에서 확인한다. 아래 미결정 항목을 현재 최우선 작업으로 해석하지 않는다.
 
 ## 관리 기준
 

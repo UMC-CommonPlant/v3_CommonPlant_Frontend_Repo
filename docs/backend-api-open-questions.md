@@ -8,7 +8,7 @@
 - 백엔드 답변 또는 배포 기준과 일치하는 백엔드 Controller·DTO·Service 근거를 확인하면 `답변`과 `프론트 반영` 칸을 갱신한다.
 - Swagger가 갱신되면 `docs/api-swagger-reference.md`의 최신 명세와 이 문서를 함께 갱신한다.
 - 구현은 이 문서의 질문이 `Answered`가 된 뒤 별도 이슈에서 진행한다.
-- 일부 계약이 확인됐거나 사용자가 위험을 수용한 경우에는 확인된 범위와 남은 위험을 분리한다. 알려진 프론트 회귀 문제는 [개발 감사 체크리스트](archive/plans/development-audit-checklist.md)에서 추적하며 백엔드 질문으로만 남기지 않는다.
+- 일부 계약이 확인됐거나 사용자가 위험을 수용한 경우에는 확인된 범위와 남은 위험을 분리한다. 완료된 프론트 감사 수정은 [보관 기록](archive/plans/development-audit-checklist.md)에서 확인한다. 새 회귀는 별도 이슈와 [현행 실행 계획](screen-api-integration-plan.md)에서 추적하며 백엔드 질문으로만 남기지 않는다.
 
 ## 질문 요약
 
