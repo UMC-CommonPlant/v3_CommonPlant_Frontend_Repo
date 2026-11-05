@@ -22,8 +22,8 @@
 | PLACE-02 | Place | `/place/myGarden`, `/place/user`, `/place/{code}`의 wrapper와 필드명은 무엇인가? | #239 목록·상세 mapper와 화면 반영 | Done |
 | PLACE-03 | Place | `placeCode`, `placeId`, `code` 중 화면/요청에서 표준으로 쓸 식별자는 무엇인가? | API 경계는 `code`, 기존 route 모델명은 `id` 유지 | Answered |
 | PLACE-04 | Place | `GET /place/{code}/members` 성공 response schema는 무엇인가? | #277 nanoId·owner 소스 확인, 실제 ID·팀짱 표시 연결 | Answered |
-| PLACE-05 | Place | owner가 아닌 구성원의 장소 나가기 endpoint는 무엇인가? | #239 숨김 유지, #277은 backend #150 답변 대기 | Blocked |
-| PLACE-06 | Place | 멤버 고유 ID·역할과 owner의 제거·권한 변경 endpoint는 무엇인가? | #245 조회 전용 유지, #277 쓰기 연결 보류 | Blocked |
+| PLACE-05 | Place | 구성원의 장소 나가기 endpoint는 무엇인가? | #277 탈퇴·팀짱 자동 위임/마지막 멤버 삭제 안내 연결, 실서버 QA 별도 | Answered |
+| PLACE-06 | Place | 멤버 고유 ID·역할과 owner의 제거·권한 변경 endpoint는 무엇인가? | #277 실제 ID·팀짱 위임 연결, 멤버 추가·제거 계약 대기 | Partial |
 | PLACE-07 | Place | 장소 조회에 제공할 x/y 좌표의 최종 필드명·응답 위치·좌표계는 무엇인가? | #302 임시 `xPosition`·`yPosition`, 계약 확정 후 프런트 공공데이터 날씨 연결 | Partial |
 | PLANT-01 | Plant | 식물에서 소속 장소 code를 조회할 수 있는 계약을 제공하는가? | #273에서 기존 Place 목록·상세의 정확한 plant ID 대조로 code 복원 | Answered |
 | FRIEND-01 | Friend | `GET /friends/requests` response schema는 무엇인가? | #241 요청 목록·Home 배지 연결 | Answered |
@@ -37,7 +37,7 @@
 | IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | #248 Plant key 보존·Place 사진 수정 차단 구현, Place key 조회·동시 수정 보호 계약 필요 | Partial |
 | ERROR-01 | Error | 에러 response body의 공통 `code`, `message` 필드명은 무엇인가? | #275 표준 오류·field error 파싱 반영 | Answered |
 | ERROR-02 | Error | 도메인별 에러 코드 표준과 의미는 무엇인가? | #275 HTTP 범주·확인 코드 매핑, 미확인 코드는 안전 fallback | Answered |
-| TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | refresh-only 상태는 갱신 우선이 목표이나 backend #149 전까지 현재의 부분 token 삭제 유지 | Blocked |
+| TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | endpoint 제공 확인, 시작 시 refresh-only 복원은 별도 PR #312 | Answered |
 | TOKEN-02 | Token | 로그아웃 API와 서버 token invalidation 정책이 있는가? | 현재 우선순위 제외, 기존 로컬 token·세션 제거 유지 | Open |
 | SEARCH-01 | 검색 | 주소 검색 API를 백엔드가 제공하는가? | 장소 등록 주소 검색 실데이터 보류 | Open |
 | SEARCH-02 | 검색 | 식물 학명/추천 검색 API를 백엔드가 제공하는가? | 백엔드 #92 대기, #273에서 API mode fixture 차단 | Blocked |
@@ -141,12 +141,12 @@
 
 ### PLACE-05. 구성원 장소 나가기 endpoint
 
-- 현재 근거: 백엔드 `PlaceServiceImpl.deletePlace`는 owner만 허용하고 장소와 식물·메모·Belong을 모두 삭제한다. 구성원 leave endpoint는 Controller에 없다.
-- 프론트 영향: owner 전체 삭제와 구성원 나가기를 같은 action으로 호출하면 구성원은 403이 발생하고 owner는 파괴 범위를 오해할 수 있다.
-- 확인 질문: owner가 아닌 구성원이 Belong만 제거하고 장소에서 나가는 endpoint가 제공되는가?
-- 프론트 반영: #239 API 모드는 owner에게만 전체 삭제 action과 경고를 표시하고 구성원 나가기는 숨긴다.
-- 답변: 현재 제공 endpoint 없음. 2026-08-31 backend [#150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)에 self leave 계약을 요청했다.
-- 상태: Blocked
+- 현재 근거: 2026-11-05 live OpenAPI와 backend `03ece0e`의 Controller·Service에서 `DELETE /place/leave/{code}`를 확인했다.
+- 프론트 영향: 기존 owner 전체 삭제와 별도로 내 소속을 제거할 수 있다.
+- 확인 질문: 계약 확인됨. 실제 인증된 저장·재조회 QA는 남아 있다.
+- 프론트 반영: #277에서 일반 멤버·팀짱의 나가기를 연결하고, 팀짱에게는 자동 위임·혼자일 때 장소 삭제를 안내한다. 전체 삭제 endpoint·경고는 분리한다([API 이력](work-history/place-leave-api-277.md)).
+- 답변: body 없는 인증된 DELETE, 성공 200 result null. 팀짱이면 가입 순 다음 멤버에게 서버가 자동 위임하며 마지막 멤버이면 장소와 식물 등을 삭제한다. 장소 없음 404 `P101`, 비멤버 403 `P103`.
+- 상태: Answered
 
 ### PLACE-06. 멤버 고유 식별자·역할과 owner 관리 endpoint
 
@@ -283,12 +283,12 @@
 
 ### TOKEN-01. Refresh token 재발급 API
 
-- 현재 근거: 2026-09-03 live OpenAPI 19 paths·27 operations에는 `/auth/login`, `/auth/register`만 있고 backend main `f67ee6c`의 `AuthController`·`AuthService`에도 refresh token 재발급 endpoint가 없다. backend 내부에는 refresh token 저장·발급 코드가 있으나 호출 계약은 제공되지 않는다.
-- 프론트 영향: access token 만료와 access token 없이 refresh token만 남은 앱 시작 상태에서 자동 복구 흐름을 구현할 수 없다.
-- 확인 질문: refresh token으로 access token을 재발급하는 endpoint, request, response는 무엇인가?
-- 프론트 반영: #287에서 refresh token만 있으면 삭제보다 갱신을 우선하는 목표 정책을 확정했다. 다만 endpoint가 없는 현재 코드는 #275의 부분 token 삭제와 `A003`, `A004`, `A009` 세션 종료를 유지한다. API 계약 후 single-flight 갱신, token 원자적 교체, 원요청 최대 1회 재시도를 별도 구현한다.
-- 답변: backend [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)에 endpoint·rotation·오류 코드·single-flight 계약을 요청했다.
-- 상태: Blocked
+- 현재 근거: 2026-11-05 live OpenAPI와 backend `develop` `03ece0e`에서 `POST /auth/refresh` 및 `RefreshJsonResponse`를 확인했다.
+- 프론트 영향: access token 없이 refresh token만 남은 시작 상태를 복원할 수 있다.
+- 확인 질문: endpoint 계약 확인됨. TTL·다중 기기 정책과 실제 인증된 갱신 검증은 별도 범위다.
+- 프론트 반영: #311·PR #312에서 시작 시 refresh-only 복원을 구현했다. PR이 아직 열려 있으므로 현재 develop 기반 #277 브랜치에는 코드를 중복 포함하지 않는다. 런타임 401 자동 갱신·원요청 재전송은 별도 후속이다.
+- 답변: JSON `{refreshToken}` 요청, bearer 미첨부. 성공 result의 accessToken 필수, refreshToken 생략/null이면 기존 값 유지, 새 값이면 교체한다. 상세는 [별도 PR #312](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/312)를 따른다.
+- 상태: Answered
 
 ### TOKEN-02. 로그아웃 API와 token invalidation
 

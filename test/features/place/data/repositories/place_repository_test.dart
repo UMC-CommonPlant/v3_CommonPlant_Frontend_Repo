@@ -7,6 +7,20 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PlaceRepository', () {
+    test('탈퇴는 별도 endpoint로 위임하고 실패를 보존한다', () async {
+      final dataSource = _LeaveDataSource();
+      final repository = PlaceRepositoryImpl(dataSource);
+      await repository.leavePlace('place-code');
+      expect(dataSource.codes, ['place-code']);
+      dataSource.failure = const ApiException(
+        message: 'not found',
+        statusCode: 404,
+      );
+      await expectLater(
+        repository.leavePlace('place-code'),
+        throwsA(same(dataSource.failure)),
+      );
+    });
     test('팀짱 위임은 code와 실제 nanoId를 그대로 전달하고 실패를 보존한다', () async {
       final dataSource = _OwnerDataSource();
       final repository = PlaceRepositoryImpl(dataSource);
@@ -165,6 +179,16 @@ void main() {
       });
     });
   });
+}
+
+class _LeaveDataSource extends Fake implements PlaceRemoteDataSource {
+  final codes = <String>[];
+  Object? failure;
+  @override
+  Future<void> leavePlace(String code) async {
+    codes.add(code);
+    if (failure case final error?) throw error;
+  }
 }
 
 class _OwnerDataSource extends Fake implements PlaceRemoteDataSource {

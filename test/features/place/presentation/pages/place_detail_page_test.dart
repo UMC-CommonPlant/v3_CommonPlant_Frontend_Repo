@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/features/place/domain/entities/place_detail.dart';
 import 'package:commonplant_frontend/features/place/domain/repositories/place_repository.dart';
@@ -8,6 +9,7 @@ import 'package:commonplant_frontend/features/place/place_repository_provider.da
 import 'package:commonplant_frontend/features/place/presentation/models/place_detail_role.dart';
 import 'package:commonplant_frontend/features/place/presentation/pages/place_detail_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -226,7 +228,7 @@ void main() {
     await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
     await tester.pumpAndSettle();
 
-    expect(find.text('장소 나가기'), findsNothing);
+    expect(find.text('장소 나가기'), findsOneWidget);
     expect(find.text('장소 삭제하기'), findsNothing);
   });
 
@@ -317,7 +319,97 @@ void main() {
     expect(find.text('홈'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final isOwner in [false, true]) {
+    testWidgets('remote $isOwner 탈퇴는 삭제와 구분하며 서버 성공 후 홈으로 이동한다', (
+      tester,
+    ) async {
+      configureTestViewport(tester, TestViewports.compactWidth);
+      final repository = _DeletablePlaceRepository(_detail(isOwner));
+      await tester.pumpWidget(_remotePlaceDetailApp(repository));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
+      await tester.pumpAndSettle();
+      expect(find.text('장소 삭제하기'), isOwner ? findsOneWidget : findsNothing);
+      await tester.tap(find.text('장소 나가기'));
+      await tester.pumpAndSettle();
+      expect(find.text('장소를 나가시겠어요?'), findsOneWidget);
+      final policy = find.text('팀짱은 자동 위임돼요.\n혼자면 장소·식물도 삭제돼요.');
+      expect(policy, findsOneWidget);
+      expect(
+        tester.renderObject<RenderParagraph>(policy).didExceedMaxLines,
+        isFalse,
+      );
+      await tester.tap(find.text('취소'));
+      await tester.pumpAndSettle();
+      expect(repository.leaveCalls, 0);
+      await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('장소 나가기'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('나가기'));
+      await tester.pumpAndSettle();
+      expect(repository.leaveCalls, 1);
+      expect(repository.latestLeaveCode, 'remote-place');
+      expect(repository.deleteCalls, 0);
+      expect(find.text('홈'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('탈퇴 실패는 상세를 유지하고 오류 안내 뒤 재시도한다', (tester) async {
+    final repository = _DeletablePlaceRepository(_detail(false))
+      ..failLeave = true;
+    await tester.pumpWidget(_remotePlaceDetailApp(repository));
+    await tester.pumpAndSettle();
+    Future<void> leave() async {
+      await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('장소 나가기'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('나가기'));
+      await tester.pumpAndSettle();
+    }
+
+    await leave();
+    expect(find.text('장소 나가기에 실패했어요'), findsOneWidget);
+    expect(find.text('홈'), findsNothing);
+    repository.failLeave = false;
+    await leave();
+    expect(repository.leaveCalls, 2);
+    expect(find.text('홈'), findsOneWidget);
+  });
+
+  testWidgets('확인 전 계정 전환은 이전 탈퇴 확인을 무효화한다', (tester) async {
+    final repository = _DeletablePlaceRepository(_detail(false));
+    await tester.pumpWidget(_remotePlaceDetailApp(repository));
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(PlaceDetailPage)),
+    );
+    await tester.tap(find.bySemanticsLabel('장소 상세 메뉴'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('장소 나가기'));
+    await tester.pumpAndSettle();
+    container.read(userDataSessionProvider.notifier).end();
+    container.read(userDataSessionProvider.notifier).start();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('나가기'));
+    await tester.pumpAndSettle();
+    expect(repository.leaveCalls, 0);
+    expect(repository.deleteCalls, 0);
+    expect(tester.takeException(), isNull);
+  });
 }
+
+PlaceDetail _detail(bool isOwner) => PlaceDetail(
+  code: 'remote-place',
+  name: '정원',
+  address: '',
+  isOwner: isOwner,
+  members: const [],
+  plants: const [],
+);
 
 Widget _remotePlaceDetailApp(PlaceRepository repository) {
   final router = GoRouter(
@@ -392,6 +484,16 @@ class _DeletablePlaceRepository extends Fake implements PlaceRepository {
   final PlaceDetail detail;
   int deleteCalls = 0;
   String? latestDeleteCode;
+  int leaveCalls = 0;
+  String? latestLeaveCode;
+  bool failLeave = false;
+
+  @override
+  Future<void> leavePlace(String code) async {
+    leaveCalls++;
+    latestLeaveCode = code;
+    if (failLeave) throw StateError('leave failed');
+  }
 
   @override
   Future<PlaceDetail> fetchPlaceDetail(String code) async {

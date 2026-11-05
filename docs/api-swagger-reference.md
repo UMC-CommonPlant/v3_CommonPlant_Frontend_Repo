@@ -44,7 +44,7 @@
 
 - Swagger 전역 security는 `bearerAuth`이다.
 - Header 형식은 `Authorization: Bearer <JWT>`로 해석한다.
-- `/auth/login`, `/auth/register`는 `security: []`로 인증 제외되어 있다.
+- `/auth/login`, `/auth/register`, `/auth/refresh`는 `security: []`로 인증 제외되어 있다. refresh는 JSON의 refreshToken을 검증하며 별도 PR #312 범위다.
 - `/users`, `/users/{keyword}`는 operation에 bearer 인증이 명시되어 있다.
 - 그 외 operation은 별도 security가 없으므로 전역 bearer 인증이 상속되는 것으로 본다.
 - Auth, User, Plant 일부 API는 `timeStamp`, `success`, `status`, `message`, `result` 형태의 JSON response wrapper schema가 추가되었다.
@@ -431,6 +431,13 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 오류: 404 `P101` 장소 없음, 403 `P103` 멤버 아님, `P110` 팀짱 아님, `P111` 자기 자신 위임.
 - #277은 친구 관리의 비팀짱 멤버에 확인창·제출 잠금을 연결한다. 최신 권한·대상을 확인하고 성공 후 상세·요약·멤버·소유/소속 목록을 재조회한다([검증 범위](work-history/place-owner-api-277.md)).
 
+#### DELETE `/place/leave/{code}`
+
+- 인증된 장소 멤버의 탈퇴. body·query 없이 인코딩한 code를 전송한다. 성공 HTTP 200, result null.
+- 일반 멤버는 소속 제거, 팀짱은 가입 순 다음 멤버에게 서버가 자동 위임 후 소속 제거, 마지막 멤버이면 장소·식물·소속·장소 이미지를 삭제한다. 클라이언트 선행 위임 요청은 필요 없다.
+- 오류: 404 `P101` 장소 없음, 403 `P103` 멤버 아님.
+- #277은 일반 멤버·팀짱의 나가기를 기존 전체 삭제와 구분한다. 확인·중복 제출·실패 재시도·관련 조회 갱신과 성공 시 홈 이동을 연결했다([검증 범위](work-history/place-leave-api-277.md)).
+
 ### Friend
 
 #### GET `/friends/requests`
@@ -649,7 +656,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | 장소 친구 요청 | `/places/invitations` | `GET /friends/requests` | #241에서 `requests[]` typed mapper와 화면 상태 연결 |
 | 장소 친구 요청 | `/places/invitations` | `POST /friends/accept`, `POST /friends/decline` | #241에서 요청 PK submit·목록 갱신 연결 |
 | 장소 상세 | `/places/:placeId` | `GET /place/{code}` | #239에서 장소·owner·멤버·식물 실데이터 연결 |
-| 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members` | #245 실제 멤버·이미지 조회와 필터·상태 UI 연결, 변경 endpoint는 없음 |
+| 친구 관리 | `/places/:placeId/friends` | `GET /place/{code}/members`, `PUT /place/{code}/owner/{targetNanoId}` | #277 실제 ID·팀짱 표시·위임 확인/제출/재조회 연결 |
 | 장소 수정 | `/places/:placeId/edit` | `PUT /place/update/{code}` | #243에서 수정 result를 typed 장소 요약으로 연결, image key 조회는 별도 확인 필요 |
 | 식물 등록 정보 입력 | `/plants/new/details` | `POST /plants` | #229 submit 연결, #251 실제 장소 code·상태·선택·제출 보호 병합 |
 | 식물 상세 | `/plants/:plantId` | `GET /plants/{plantId}`, `GET /place/user`, `GET /place/{code}` | #231 상세 연결, #273에서 route code가 없을 때 정확한 plant ID로 소속 code 복원 |
@@ -662,7 +669,6 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 식물 학명/추천 검색 API
 - 메모 생성, 목록, 수정, 삭제 API
 - 로그아웃 API
-- refresh token 재발급 API
 
 2026-09-01 live OpenAPI는 여전히 19개 path이며 Memo path/schema는 0개다. backend #50~#55에는 `/plants/{plantUuid}/memos` 생성·조회·수정·삭제 계획이 있지만 구현과 OpenAPI가 아니며 content 200/500자, image 생략 시 유지/삭제, 작성자·권한, pagination, 성공 wrapper가 확정되지 않았다. #283은 [backend #50 계약 확인](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50#issuecomment-5488630254) 답변 전까지 이를 프론트 DTO 근거로 사용하지 않는다.
 
@@ -682,12 +688,12 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | Image 업로드/조회/수정/삭제 성공 응답 body 구조 | 여전히 schema 없음 | 남음 |
 | `PUT /place/update/{code}` multipart 여부 | `multipart/form-data`로 변경 | 해소 |
 | multipart 요청 JSON part content type | Auth/User/Plant는 `application/json` 명시, Place create/update는 encoding 미표기 | 일부 남음 |
-| 장소 멤버 목록 API | source에서 `{ name, image }[]` 확인, 쓰기 endpoint 없음 | 표시 계약 해소, #277은 backend #150 전까지 고유 id·역할·변경 API Blocked |
+| 장소 멤버 목록 API | backend `03ece0e`에서 `{nanoId,name,image,owner}[]`, 위임·탈퇴 endpoint 확인 | #277 조회·위임·탈퇴 연결, 멤버 추가·제거와 실서버 QA 남음 |
 | Place create/update required와 validation | `name`, `address` required와 `name` maxLength 확인 | 일부 해소 |
 | Plant create/update validation과 nullable 정책 | 문자열 maxLength와 date format 확인 | 일부 해소 |
 | 에러 응답 body 구조와 code/message 필드명 | live 401 응답과 backend `ErrorResponse` source 대조 | #275 typed 파싱·field 오류·민감 value 폐기 반영, 인증 쓰기 smoke 남음 |
 | 공통 에러 코드 체계 | backend 도메인 error enum 대조, `A006` 중복 확인 | #275 HTTP 범주·확인 코드만 매핑, 미확인 code는 안전 fallback |
-| refresh token 재발급 API | 없음 | 남음 |
+| refresh token 재발급 API | `POST /auth/refresh`, RefreshJsonResponse 제공 | 시작 시 refresh-only 복원은 별도 PR #312, develop 미반영 |
 | 로그아웃 API | 없음 | 남음 |
 | pagination 응답 구조와 total count | `PlantPageContent`에 `items`, `totalCount`, `page`, `size` 추가 | 해소 |
 | 이미지 key 저장 주체와 업로드 후 반환 값 | Place/Plant 도메인 수정의 유지·교체·삭제 계약은 확인, 독립 Image 응답과 Place key 조회는 미확정 | #248 key 보존·안전 차단 구현, 계약 일부 미확정 |
@@ -699,7 +705,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 - 반영: `ApiResponseParser`가 공통 wrapper의 `result.content.items` 목록을 읽도록 보강했다.
 - 반영: #275에서 표준 오류의 status·code·traceId·field reason을 `ApiException`으로 파싱하고 rejected `value`를 폐기한다. 주요 폼과 변경 action은 안전한 범주 메시지를 사용한다.
-- 반영: active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·데이터 세션을 종료하고 로그인 만료 안내로 연결한다. #287은 refresh-only 상태의 갱신 우선 원칙만 확정했으며 endpoint 제공 전까지 현재 부분 token 삭제를 유지한다. 서버 로그아웃은 우선순위에서 제외한다.
+- 반영: active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·데이터 세션을 종료하고 로그인 만료 안내로 연결한다. #287의 refresh-only 갱신 우선 정책은 별도 PR #312에서 구현했으며 이 브랜치의 develop 기준에는 미반영이다. 서버 로그아웃은 우선순위에서 제외한다.
 - 반영: Plant 목록 mapper가 Swagger `PlantSummary`의 `plantId`, `nickname`, `representativeImageUrl`을 화면 모델로 매핑한다.
 - 반영: `CreatePlantRequest.placeId`를 `placeCode` 문자열로 변경했다.
 - 반영: `GET /plants/{plantId}`와 `GET /plants/{plantId}/edit` 호출에서 `placeId` query parameter를 제거했다.
@@ -721,7 +727,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 후속 결정(#302 → #304 → #306 → #309): 장소 좌표를 받아 프런트엔드가 공공데이터포털 초단기실황·초단기예보를 조회한다. 현재 기온·습도 + 날씨 아이콘으로 결정했으며, API 조회·시도별 5초 제한·총 3회·취소 처리를 준비했다. `xPosition`·`yPosition`은 여전히 문서상 임시 명칭이며 Swagger에서 확인된 필드가 아니다. #306에서 기온·습도·아이콘과 동일 위치 재호출 UI를 연결했다. #309 사용자 결정으로 장소 주소에 대응하는 격자가 없으면 조회 불가를 안내하고 요청하지 않는다. 판교역 기본값은 제거했다. 백엔드 최종 계약 확정 후 DTO·좌표 변환을 연결한다. [변경 지점과 재검증](work-history/place-weather-unavailable-309.md#백엔드-확정-후-변경할-영역)을 참고한다. 판교역 실제 API 확인과 남은 기기 QA는 [#307 기록](work-history/place-weather-fallback-307.md)을 따른다. [조회 방침](screen-api-integration-plan.md#장소-좌표프런트-날씨-조회-방침-302), [구현 기록](work-history/place-weather-api-304.md)을 참고한다.
 - 반영: #243에서 `POST /place/create`의 result 문자열을 place code로 파싱하고 친구 추가 route에 전달한다.
 - 반영: #243에서 `PUT /place/update/{code}`의 result를 typed `PlaceSummary`로 파싱한다.
-- 반영: #245에서 `GET /place/{code}/members`의 result 배열을 `PlaceMember`로 파싱하고 친구 관리 조회·검색에 연결했다. API 모드는 임시 렌더링 키를 사용자 ID로 사용하지 않고 멤버 변경을 제공하지 않는다.
+- 반영: #245에서 `GET /place/{code}/members`의 result 배열을 `PlaceMember`로 파싱하고 친구 관리 조회·검색에 연결했다. #277은 실제 nanoId·owner 검증과 팀짱 위임·탈퇴를 연결한다. 멤버 추가·제거는 미제공 계약이다.
 - 유지: #277에서 live OpenAPI와 backend main을 다시 확인했으나 멤버·Friend 쓰기 계약은 추가되지 않았다. backend #150 전까지 `receiverId` 같은 필드, 임시 멤버 key, 표시 이름 검색 첫 항목을 새 원격 쓰기 계약으로 사용하지 않는다.
 - 반영: #241에서 `GET /friends/requests`를 typed `FriendInvitation` 목록으로 파싱하고 Home 요청 수와 장소 친구 요청 화면에 연결했다.
 - 반영: #241에서 `POST /friends/accept`, `POST /friends/decline`을 항목별 submit 상태와 목록 invalidate 정책에 연결했다.
@@ -765,11 +771,11 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 | --- | --- | --- |
 | Auth | 로그인 실제 응답 `isNewUser`와 OpenAPI schema `newUser` 불일치, Apple verifier 누락 | #285 호환 파싱 적용, backend #152 배포 전 Apple 실제 로그인 Blocked |
 | 공통 Multipart | JSON part의 `Content-Type: application/json` 필요 여부 | Auth/Place/Plant/User multipart 전송 정책 정합성 |
-| Place | 멤버 ID·역할, self leave, owner 멤버 관리 endpoint와 권한·오류 | #277은 backend #150 전까지 조회 전용·member 나가기 숨김 유지 |
+| Place | 멤버 추가·제거와 상세 schema, 실제 인증 응답 QA | #277에서 실제 ID·팀짱 위임·탈퇴 연결, 미제공 관리 계약은 backend #150 후속 |
 | Friend | 고유 대상 request, 사용자 검색 정책, 다중 대상 원자성·부분 결과·멱등 | #277은 backend #150 전까지 이름 기반 위험 수용 경계를 확장하지 않음 |
 | Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물은 #295 직접 multipart 연결, 독립 Image schema와 Memo 계약은 남음 |
 | Error | live/backend source와 dev 배포의 실제 인증 쓰기 오류 일치 여부 | #275 공통 사용자 메시지와 field error 매핑 완료, 원격 validation smoke 보류 |
-| Token | refresh token 재발급, 로그아웃 API 제공 여부 | #287 refresh-only 갱신 우선 원칙, backend #149 전까지 현재 종료 동작 유지·서버 logout 제외 |
+| Token | TTL·다중 기기·인증된 실제 갱신 검증 | refresh endpoint 제공, 시작 시 복원은 별도 PR #312, 서버 logout 우선순위 제외 |
 | 검색 | 주소 검색, 식물 검색 API 제공 여부와 사용자 검색 매칭 정책 | 주소 검색은 보류, 식물 검색은 백엔드 #92 대기 중이며 API mode fixture 차단 |
 | Memo | backend #50~#55의 메모 CRUD, 작성자·권한·pagination·오류와 이미지 생략 정책 | #283 계약 확인과 live OpenAPI 동기화 전 텍스트 CRUD 연결 Blocked, 이미지 별도 보류 |
 | 환경 | dev URL은 확인, staging/prod full base URL과 API versioning 정책은 미확정 | dev 로컬 실행 가능, release 검증 보류 |
@@ -781,7 +787,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 소셜 SDK 연결은 #285에서 완료했고 #293에서 코드·설정·자동 테스트를 보완한다. 실제 provider credential·네이티브 설정과 Apple backend
 #152는 외부 준비 항목으로 분리한다. 실제 주소 검색과 이미지 파일 선택·key 조회는 여전히
 별도 준비가 필요하다. Memo 텍스트 CRUD는 backend #50 계약 답변·구현·live OpenAPI 동기화를,
-Place 멤버 변경·나가기와 Friend 고유 대상·부분 결과는 backend #150을 선행 조건으로 둔다.
+Place 멤버 ID·팀짱 위임·탈퇴는 #277에서 연결했고, 멤버 추가·제거와 Friend 고유 대상·부분 결과는 backend #150 후속 계약을 기다린다.
 식물 검색은 백엔드 #92 전까지 API mode에서 비활성화한다. 이미 수용한 Friend 이름 오매칭과
 Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 결함을 자동으로 수용한 것으로
 해석하지 않는다.

@@ -96,4 +96,9 @@ class PlaceRepositoryImpl implements PlaceRepository {
   Future<void> deletePlace(String code) {
     return _remoteDataSource.deletePlace(code);
   }
+
+  @override
+  Future<void> leavePlace(String code) {
+    return _remoteDataSource.leavePlace(code);
+  }
 }

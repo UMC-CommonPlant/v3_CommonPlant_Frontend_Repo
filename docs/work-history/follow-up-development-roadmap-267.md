@@ -1,5 +1,7 @@
 # 후속 개발 순서와 보류 범위 정리 이력
 
+> 2026-11-05 최신 상태: #277 작업 브랜치에서 [멤버 ID·역할 조회](place-members-contract-277.md), [팀짱 위임](place-owner-api-277.md), [장소 나가기](place-leave-api-277.md)를 API별로 연결했다. Place 멤버 제거와 Friend 고유 대상·부분 결과 계약은 여전히 후속 범위이며 실제 인증 서버·실기기 QA는 미완료다. 아래 개발 순서와 보류 항목은 2026-08-30 당시 결정 이력이고, 현행 순서는 [화면·API 계획](../screen-api-integration-plan.md)을 따른다.
+
 ## 작업 기준
 
 - 이슈: [#267](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/267)

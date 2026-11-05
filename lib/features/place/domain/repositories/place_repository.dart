@@ -33,4 +33,6 @@ abstract interface class PlaceRepository {
   });
 
   Future<void> deletePlace(String code);
+
+  Future<void> leavePlace(String code);
 }

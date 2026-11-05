@@ -30,6 +30,8 @@ abstract interface class PlaceRemoteDataSource {
   });
 
   Future<void> deletePlace(String code);
+
+  Future<void> leavePlace(String code);
 }
 
 class DioPlaceRemoteDataSource implements PlaceRemoteDataSource {
@@ -148,6 +150,15 @@ class DioPlaceRemoteDataSource implements PlaceRemoteDataSource {
   Future<void> deletePlace(String code) async {
     try {
       await _dio.delete<Object?>('/place/delete/$code');
+    } on DioException catch (error) {
+      throw ApiException.fromDio(error);
+    }
+  }
+
+  @override
+  Future<void> leavePlace(String code) async {
+    try {
+      await _dio.delete<Object?>('/place/leave/${Uri.encodeComponent(code)}');
     } on DioException catch (error) {
       throw ApiException.fromDio(error);
     }

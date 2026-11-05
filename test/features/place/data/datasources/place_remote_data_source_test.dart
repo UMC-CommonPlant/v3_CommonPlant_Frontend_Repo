@@ -9,6 +9,25 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PlaceRemoteDataSource', () {
+    test('장소 탈퇴는 code를 인코딩한 DELETE이며 body·query가 없다', () async {
+      final adapter = _CapturingAdapter(responseBody: '{"result":null}');
+      await DioPlaceRemoteDataSource(_dioWith(adapter)).leavePlace('place/A B');
+      expect(adapter.latestOptions.method, 'DELETE');
+      expect(adapter.latestOptions.path, '/place/leave/place%2FA%20B');
+      expect(adapter.latestOptions.data, isNull);
+      expect(adapter.latestOptions.queryParameters, isEmpty);
+    });
+    for (final status in [403, 404]) {
+      test('장소 탈퇴의 $status 응답을 API 실패로 전달한다', () async {
+        final adapter = _CapturingAdapter(statusCode: status);
+        await expectLater(
+          DioPlaceRemoteDataSource(_dioWith(adapter)).leavePlace('place'),
+          throwsA(
+            isA<ApiException>().having((e) => e.statusCode, 'status', status),
+          ),
+        );
+      });
+    }
     test('팀짱 위임은 실제 code·nanoId를 인코딩한 PUT이며 body가 없다', () async {
       final adapter = _CapturingAdapter(responseBody: '{"result":null}');
       final dataSource = DioPlaceRemoteDataSource(_dioWith(adapter));

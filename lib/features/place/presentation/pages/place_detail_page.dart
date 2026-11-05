@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
@@ -35,13 +36,21 @@ class PlaceDetailPage extends ConsumerWidget {
     required PlaceRemovalMode mode,
   }) {
     final isExiting = ref.read(placeExitControllerProvider).isSubmitting;
+    final session = ref.read(userDataSessionProvider);
 
     unawaited(
       showPlaceExitDialog(
         context: context,
         isExiting: isExiting,
         mode: mode,
-        onConfirm: () => _handleExitConfirmed(context, ref),
+        showLeavePolicy: ref.read(useRemoteApiProvider),
+        onConfirm: () {
+          if (!context.mounted ||
+              !identical(ref.read(userDataSessionProvider), session)) {
+            return;
+          }
+          unawaited(_handleExitResult(context, ref, mode));
+        },
       ),
     );
   }
@@ -93,17 +102,19 @@ class PlaceDetailPage extends ConsumerWidget {
     );
   }
 
-  void _handleExitConfirmed(BuildContext context, WidgetRef ref) {
-    Navigator.of(context).pop();
-    unawaited(_handleExitResult(context, ref));
-  }
+  Future<void> _handleExitResult(
+    BuildContext context,
+    WidgetRef ref,
+    PlaceRemovalMode mode,
+  ) async {
+    final session = ref.read(userDataSessionProvider);
+    final controller = ref.read(placeExitControllerProvider.notifier);
+    final didExit = await (mode == PlaceRemovalMode.leave
+        ? controller.leave(placeId)
+        : controller.exit(placeId));
 
-  Future<void> _handleExitResult(BuildContext context, WidgetRef ref) async {
-    final didExit = await ref
-        .read(placeExitControllerProvider.notifier)
-        .exit(placeId);
-
-    if (!context.mounted) {
+    if (!context.mounted ||
+        !identical(ref.read(userDataSessionProvider), session)) {
       return;
     }
 
@@ -128,8 +139,8 @@ class PlaceDetailPage extends ConsumerWidget {
   ) {
     final usesRemoteApi = ref.watch(useRemoteApiProvider);
     final isOwner = detail.role == PlaceDetailRole.leader;
-    final canRemove = !usesRemoteApi || isOwner;
-    final removalMode = usesRemoteApi
+    final isExiting = ref.watch(placeExitControllerProvider).isSubmitting;
+    final removalMode = usesRemoteApi && isOwner
         ? PlaceRemovalMode.delete
         : PlaceRemovalMode.leave;
 
@@ -146,8 +157,11 @@ class PlaceDetailPage extends ConsumerWidget {
         removalLabel: removalMode == PlaceRemovalMode.delete
             ? '장소 삭제하기'
             : '장소 나가기',
-        onRemove: canRemove
+        onRemove: !isExiting
             ? () => _showExitDialog(context, ref, mode: removalMode)
+            : null,
+        onLeave: usesRemoteApi && isOwner && !isExiting
+            ? () => _showExitDialog(context, ref, mode: PlaceRemovalMode.leave)
             : null,
       ),
       child: SizedBox(
