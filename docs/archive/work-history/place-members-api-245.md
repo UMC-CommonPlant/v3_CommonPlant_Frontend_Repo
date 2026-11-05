@@ -49,6 +49,6 @@
 | `1611fd0` | API·위험·매트릭스와 전체 검증 기록 | format 294개, analyze, 전체 test 362개 통과·기존 skip 1개 |
 | `4815274` | PR #246·Project In Review 연결 기록(당시 상태) | `git diff --check` |
 
-2026-08-28 문서 정리 #247에서 PR #246의 병합을 확인했습니다. 후속 회귀 수정은 [개발 감사 체크리스트](../development-audit-checklist.md)에서 별도로 추적합니다.
+2026-08-28 문서 정리 #247에서 PR #246의 병합을 확인했습니다. 후속 회귀 수정은 [개발 감사 체크리스트](../plans/development-audit-checklist.md)에서 별도로 추적합니다.
 
 작업 이력만 갱신하는 마지막 문서 커밋은 자기 자신의 해시를 생략할 수 있습니다.

@@ -9,7 +9,7 @@
 - 기준 `develop`: `bc6e68ddbdc80acb0b923a06798cdaf8926e7a0d` (사용자 PR #260 병합)
 - 브랜치: `fix/remote-plant-places-251`
 - 상태: 2026-08-29(KST) 사용자 PR #261 병합 완료(`ebf6dc41e5f959b9f9f8ba2c772d5de790cc7d7a`). 이슈는 종료, 이슈·PR은 Project 10의 `Done`, category `Plant`, priority `high`입니다.
-- 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [폼 검증](../form-validation-error-guide.md), [퍼블리싱](../screen-publishing-rules.md), [Figma 매핑](../figma-frame-map.md), [공용 위젯](../shared-widget-guide.md), [디자인 토큰](../design-token-rules.md), [라우팅](../routing-guide.md), [테스트](../testing-guide.md), [QA 기준](../quality-testing-follow-up-plan.md), [Git](../git-workflow.md), [Swagger 계약](../api-swagger-reference.md)
+- 참고: [README](../../../README.md), [감사 체크리스트](../plans/development-audit-checklist.md), [Feature](../../feature-development-guide.md), [상태관리](../../state-management-guide.md), [폼 검증](../../form-validation-error-guide.md), [퍼블리싱](../../screen-publishing-rules.md), [Figma 매핑](../../figma-frame-map.md), [공용 위젯](../../shared-widget-guide.md), [디자인 토큰](../../design-token-rules.md), [라우팅](../../routing-guide.md), [테스트](../../testing-guide.md), [QA 기준](../../quality-testing-follow-up-plan.md), [Git](../../git-workflow.md), [Swagger 계약](../../api-swagger-reference.md)
 
 열린 이슈 중복을 확인하고 기존 #251을 재사용했습니다. #250 종료와 PR #260 병합·Project `Done`을 확인한 뒤 최신 `develop`에서 분기했습니다. 상위 #226의 완료 하위 이슈는 작업 시작 시 14/20, #251 병합 후 15/20입니다. 미사용 공용 위젯은 보존하고, 이 작업에서 #252~#256·배포·CI·외부 정책은 변경하지 않았습니다. 후속 수정은 [#252 이력](plant-edit-place-code-252.md)에서 관리합니다.
 
@@ -37,8 +37,8 @@
 
 | 테스트 | 검증 범위 |
 | --- | --- |
-| [Controller 회귀](../../test/features/plant/presentation/providers/plant_registration_state_test.dart) | loading/error/empty 차단, 실제 code·이름·날짜 전송, 실제 source 재시도, 재조회 직후 제출, 목록 교체·초안 보존, 늦은 계정 응답, 제출 중 재조회, API 비사용 fixture |
-| [화면 회귀](../../test/features/plant/presentation/pages/plant_registration_state_page_test.dart) | 4개 viewport의 로딩→오류→실제 재시도→선택·등록·홈 이동과 빈 목록 안내, 이전 버튼 콜백 차단, B 계정 로딩·실패 중 A 장소 비노출 |
+| [Controller 회귀](../../../test/features/plant/presentation/providers/plant_registration_state_test.dart) | loading/error/empty 차단, 실제 code·이름·날짜 전송, 실제 source 재시도, 재조회 직후 제출, 목록 교체·초안 보존, 늦은 계정 응답, 제출 중 재조회, API 비사용 fixture |
+| [화면 회귀](../../../test/features/plant/presentation/pages/plant_registration_state_page_test.dart) | 4개 viewport의 로딩→오류→실제 재시도→선택·등록·홈 이동과 빈 목록 안내, 이전 버튼 콜백 차단, B 계정 로딩·실패 중 A 장소 비노출 |
 
 - Viewport: Reference `375×812`, Compact width `320×640`, Short height `375×667`, Wide `430×932`, DPR 1
 - `fvm dart format --output=none --set-exit-if-changed .`: 307개 파일, 변경 0개

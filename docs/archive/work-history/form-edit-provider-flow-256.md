@@ -9,7 +9,7 @@
 - 기준 `develop`: `894dd5f7b0bfe7e1e3de0d295115480b1f2753cb` (사용자 PR #265 병합)
 - 브랜치: `refactor/form-edit-provider-flow-256`
 - 상태: 2026-08-30 사용자 PR #266 병합 완료(`011ef7db1affb9b50fc241222b5f9408bc5eb5f5`). 이슈·PR은 Project 10의 `Done`, category `Plant`, priority `low`이며 상위 Epic #226은 하위 이슈 20/20 완료로 종료됐습니다.
-- 참고: [README](../../README.md), [감사 체크리스트](../development-audit-checklist.md), [화면·API 계획](../screen-api-integration-plan.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [테스트](../testing-guide.md), [Git](../git-workflow.md)
+- 참고: [README](../../../README.md), [감사 체크리스트](../plans/development-audit-checklist.md), [화면·API 계획](../../screen-api-integration-plan.md), [Feature](../../feature-development-guide.md), [상태관리](../../state-management-guide.md), [테스트](../../testing-guide.md), [Git](../../git-workflow.md)
 
 clean 작업 트리와 원격 `develop`, 이슈 중복을 확인하고 기존 #256을 재사용했습니다. 작업 시작 시 #255는 Closed이고 이슈·PR #265의 Project 상태는 Done, 상위 #226은 19/20 완료였습니다. 이번 문서 변경에서 #255의 병합 전 표기를 정정했습니다.
 
@@ -34,11 +34,11 @@ Place 원본 repository 위임과 실패 후 재조회 회귀 2개를 추가하�
 
 | 테스트 | 검증 범위 |
 | --- | --- |
-| [Plant 폼 정보](../../test/features/plant/presentation/providers/plant_form_edit_provider_test.dart) | API 비사용 fixture, 원본 override의 원격 성공·빈 정보, 원본 repository 위임 |
-| [Place 폼 정보](../../test/features/place/presentation/providers/place_form_edit_provider_test.dart) | API 비사용 fixture, 원본 summary override의 변환·빈 정보 |
-| [Place 원본 조회](../../test/features/place/presentation/providers/place_detail_remote_provider_test.dart) | route code를 사용한 `placeSummaryProvider`의 repository 위임 신규 1개 |
-| [Place Form Controller](../../test/features/place/presentation/providers/place_form_controller_test.dart) | 원격 조회 실패 뒤 원본 summary만 무효화해 2번째 조회로 ready 복구 신규 1개 |
-| [세션·기존 보호](../../test/features/login/presentation/providers/session_cache_isolation_test.dart) | 공개 폼 상태의 계정별 재조회, Plant·Place 제출 잠금·이미지·장소 code와 화면 상태 회귀 |
+| [Plant 폼 정보](../../../test/features/plant/presentation/providers/plant_form_edit_provider_test.dart) | API 비사용 fixture, 원본 override의 원격 성공·빈 정보, 원본 repository 위임 |
+| [Place 폼 정보](../../../test/features/place/presentation/providers/place_form_edit_provider_test.dart) | API 비사용 fixture, 원본 summary override의 변환·빈 정보 |
+| [Place 원본 조회](../../../test/features/place/presentation/providers/place_detail_remote_provider_test.dart) | route code를 사용한 `placeSummaryProvider`의 repository 위임 신규 1개 |
+| [Place Form Controller](../../../test/features/place/presentation/providers/place_form_controller_test.dart) | 원격 조회 실패 뒤 원본 summary만 무효화해 2번째 조회로 ready 복구 신규 1개 |
+| [세션·기존 보호](../../../test/features/login/presentation/providers/session_cache_isolation_test.dart) | 공개 폼 상태의 계정별 재조회, Plant·Place 제출 잠금·이미지·장소 code와 화면 상태 회귀 |
 
 - 관련 Provider·Controller·화면 대상 테스트: 통과
 - `fvm dart format --output=none --set-exit-if-changed .`: 309개 파일, 변경 0개

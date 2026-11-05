@@ -151,25 +151,25 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 프로필·Place·Plant 폼, 친구 선택·처리 상태, 알림 설정과 로컬 추가 데이터도 API 모드에서 초기화합니다. 늦은 변경 응답은 현재 세션을 확인한 뒤에만 상태·캐시·이동 결과를 반영하며, 탈퇴 응답으로 새 계정을 로그아웃시키지 않습니다. API 비사용 fixture는 유지합니다.
 
-검증은 fake repository·token store·Dio adapter와 widget test로 수행했습니다. 서버에 이미 전달된 변경의 취소·롤백, OS 저장소 장애, 실제 인증 E2E는 [작업 이력의 제한](work-history/session-cache-isolation-249.md#남은-제한과-위험)과 구분합니다. 중복 제출은 [#250 별도 이력](work-history/form-submit-lock-250.md), 원격 식물 등록의 fixture 혼입은 [#251 이력](work-history/remote-plant-places-251.md), code 없는 수정의 거짓 성공은 [#252 이력](work-history/plant-edit-place-code-252.md)에서 보완합니다. #253 주소 선택 결과에도 같은 세션·폼 수명 검증을 적용했고 #254 목록 항목 검증과 #255 비활성 입력 clear 차단은 병합됐습니다. #256은 이 세션 경계를 유지하면서 수정 정보의 중간 원격 Provider를 제거했습니다.
+검증은 fake repository·token store·Dio adapter와 widget test로 수행했습니다. 서버에 이미 전달된 변경의 취소·롤백, OS 저장소 장애, 실제 인증 E2E는 [작업 이력의 제한](archive/work-history/session-cache-isolation-249.md#남은-제한과-위험)과 구분합니다. 중복 제출은 [#250 별도 이력](archive/work-history/form-submit-lock-250.md), 원격 식물 등록의 fixture 혼입은 [#251 이력](archive/work-history/remote-plant-places-251.md), code 없는 수정의 거짓 성공은 [#252 이력](archive/work-history/plant-edit-place-code-252.md)에서 보완합니다. #253 주소 선택 결과에도 같은 세션·폼 수명 검증을 적용했고 #254 목록 항목 검증과 #255 비활성 입력 clear 차단은 병합됐습니다. #256은 이 세션 경계를 유지하면서 수정 정보의 중간 원격 Provider를 제거했습니다.
 
 ## 목록 응답 검증 #254
 
 공용 목록 파서는 direct 목록과 확인된 nested wrapper, 정상 빈 배열을 유지합니다. 비-Map 항목이 하나라도 있으면 해당 항목을 버려 빈 목록이나 부분 성공으로 바꾸지 않고 context와 위치가 포함된 `ApiException`을 반환합니다. 이 오류는 기존 repository·Provider의 오류 경계로 전달되며 화면에서 정상 empty 상태로 취급하지 않습니다.
 
-검증은 fake 응답과 실제 Plant mapper, Place·User repository를 사용했습니다. 항목 내부 필드의 유효성은 각 도메인 mapper 책임으로 유지하고 범용 파서 프레임워크·codegen·새 패키지는 도입하지 않았습니다. 실제 인증 서버의 비정상 응답과 원격 E2E는 [#254 작업 이력](work-history/api-list-item-validation-254.md)의 남은 범위로 구분합니다.
+검증은 fake 응답과 실제 Plant mapper, Place·User repository를 사용했습니다. 항목 내부 필드의 유효성은 각 도메인 mapper 책임으로 유지하고 범용 파서 프레임워크·codegen·새 패키지는 도입하지 않았습니다. 실제 인증 서버의 비정상 응답과 원격 E2E는 [#254 작업 이력](archive/work-history/api-list-item-validation-254.md)의 남은 범위로 구분합니다.
 
 ## 공용 입력 비활성 경계 #255
 
 `CommonTextField`의 clear는 validation을 반영한 실제 enabled 상태를 따릅니다. `forceFocusedDecoration`은 line·counter 같은 장식만 유지하며 `enabled: false` 또는 disabled state를 입력 가능 상태로 바꾸지 않습니다. 비활성 필드는 clear를 표시하거나 실행하지 않아 값과 `onChanged`를 보존하고, 활성 clear·trailing·counter public API는 유지합니다.
 
-검증은 공용 위젯에서 활성 clear와 두 비활성 경계를 직접 탭·상태로 확인했습니다. `CommonSearchTextField`와 `CommonAddressOrPlaceField`의 별도 삭제 정책, 화면 Controller, API payload는 변경하지 않았으며 실제 Android/iOS 입력·접근성 smoke는 [#255 작업 이력](work-history/disabled-text-field-clear-255.md)의 남은 범위로 구분합니다.
+검증은 공용 위젯에서 활성 clear와 두 비활성 경계를 직접 탭·상태로 확인했습니다. `CommonSearchTextField`와 `CommonAddressOrPlaceField`의 별도 삭제 정책, 화면 Controller, API payload는 변경하지 않았으며 실제 Android/iOS 입력·접근성 smoke는 [#255 작업 이력](archive/work-history/disabled-text-field-clear-255.md)의 남은 범위로 구분합니다.
 
 ## 수정 정보 Provider 경계 #256
 
 Plant·Place 수정 폼은 API 비사용 fixture 분기와 공개 폼 진입 Provider를 유지합니다. API 모드에서는 Plant의 `remotePlantEditInfoProvider`, Place의 `placeSummaryProvider`가 실제 fetch·오류·재시도를 소유하고, 폼 진입 Provider가 원본 `AsyncValue`를 nullable 수정 정보로 순수 변환합니다. 같은 상태를 `.future`로 다시 포장하던 중간 원격 Provider 두 개는 제거했습니다.
 
-Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Provider override, repository 위임, 빈 정보·오류 복구와 기존 loading/error/notFound, 계정 전환·제출 잠금 회귀를 함께 확인했습니다. API endpoint·요청 횟수·DTO·repository·화면은 변경하지 않았으며 실제 인증 API와 플랫폼 수동 smoke는 [#256 작업 이력](work-history/form-edit-provider-flow-256.md)의 남은 범위로 구분합니다.
+Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Provider override, repository 위임, 빈 정보·오류 복구와 기존 loading/error/notFound, 계정 전환·제출 잠금 회귀를 함께 확인했습니다. API endpoint·요청 횟수·DTO·repository·화면은 변경하지 않았으며 실제 인증 API와 플랫폼 수동 smoke는 [#256 작업 이력](archive/work-history/form-edit-provider-flow-256.md)의 남은 범위로 구분합니다.
 
 ## User 프로필 수직 슬라이스
 
@@ -192,7 +192,7 @@ Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Pr
 - 날씨는 #302의 프런트 직접 조회 결정에 따라 #304 API 계층과 #306 상태 화면을 구현했습니다. #307에서 검증용 격자의 실제 공공데이터 응답을 확인했고, #309에서 좌표 없으면 조회 불가로 정리했습니다. 실제 장소 좌표 연결·기기 QA는 PLACE-07 확정 후 진행합니다.
 - 마지막 물주기 날짜가 있으면 확인 가능한 이력으로 표시하고, 물주기 action은 endpoint가 없어 활성화하지 않습니다.
 - `DELETE /place/delete/{code}`는 owner 전용 전체 삭제이므로 owner에게만 삭제 문구와 영향 범위 경고를 표시합니다.
-- #277은 새 `DELETE /place/leave/{code}`를 일반 멤버와 팀짱의 나가기에 연결합니다. 팀짱은 기존 전체 삭제와 나가기 중 선택하며 자동 위임·마지막 멤버 삭제를 안내합니다([검증 범위](work-history/place-leave-api-277.md)).
+- #277은 새 `DELETE /place/leave/{code}`를 일반 멤버와 팀짱의 나가기에 연결합니다. 팀짱은 기존 전체 삭제와 나가기 중 선택하며 자동 위임·마지막 멤버 삭제를 안내합니다([검증 범위](archive/work-history/place-leave-api-277.md)).
 - API 비사용 모드는 Android smoke와 화면 개발을 위해 기존 fixture 흐름을 유지합니다.
 
 ### 장소 좌표·프런트 날씨 조회 방침 #302
@@ -216,7 +216,7 @@ Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Pr
 
 #306은 기온·습도·날씨 아이콘/이름, 관측·예보 시각, 기상청 출처와 상태를 기존 헤더에 표시하며, #309에서 좌표 없는 준비 상태를 조회 불가로 변경했습니다. 실패한 **동일 날씨 위치에 재호출 아이콘**을 표시하고 원본 loading을 확인해 빠른 연속 탭도 차단합니다. 큰 글씨에서는 제목 아래로 날씨 영역을 옮기며 모든 상태가 같은 영역을 사용합니다. 실제 장소 좌표 연결, 갱신/캐시 정책과 기기 QA는 후속입니다. 주소가 있어도 대응 좌표가 없으면 조회 불가 상태입니다. [수정할 파일·계약·재검증 표](work-history/place-weather-unavailable-309.md#백엔드-확정-후-변경할-영역)를 따릅니다.
 
-인증키는 `COMMONPLANT_WEATHER_SERVICE_KEY`로 주입하며 CommonPlant 인증 토큰을 사용하지 않는 전용 Dio를 사용합니다. 고정 위치 정책을 철회한 #309와 별도로, #307 당시 판교역 격자를 검증 입력으로 사용한 실제 API 확인 결과는 [#307 검증 기록](work-history/place-weather-fallback-307.md)을 따릅니다. 실제 장소 좌표 및 휴대폰 화면의 연동 QA는 별도로 남아 있습니다. 자세한 설정·공식 계약 근거는 [작업 이력](work-history/place-weather-api-304.md), 백엔드 확인 항목은 [PLACE-07](backend-api-open-questions.md#place-07-장소-조회-좌표-계약)을 따릅니다.
+인증키는 `COMMONPLANT_WEATHER_SERVICE_KEY`로 주입하며 CommonPlant 인증 토큰을 사용하지 않는 전용 Dio를 사용합니다. 고정 위치 정책을 철회한 #309와 별도로, #307 당시 판교역 격자를 검증 입력으로 사용한 실제 API 확인 결과는 [#307 검증 기록](archive/work-history/place-weather-fallback-307.md)을 따릅니다. 실제 장소 좌표 및 휴대폰 화면의 연동 QA는 별도로 남아 있습니다. 자세한 설정·공식 계약 근거는 [작업 이력](archive/work-history/place-weather-api-304.md), 백엔드 확인 항목은 [PLACE-07](backend-api-open-questions.md#place-07-장소-조회-좌표-계약)을 따릅니다.
 
 ## Place 생성·수정 결과 수직 슬라이스
 
@@ -236,7 +236,7 @@ Controller의 조회 재시도는 원본 하나만 무효화합니다. 원본 Pr
   호출하고 전송 중 중복 submit과 실패 재시도를 처리합니다.
 - 이름 기반 오초대와 일괄 요청의 부분 성공 위험은
   `docs/accepted-implementation-risks.md`에 수용 상태와 중단 조건을 기록합니다.
-- 실제 주소 검색 adapter는 미연결이며 이미지 선택은 #295에서 도메인 multipart에 연결했습니다. 주소 선택 결과 전달은 #253에서 구현·검증했지만 API 모드의 실제 검색은 미연결입니다. 샘플 결과를 원격 폼에 반영하지 않고 기존 주소를 보존합니다([검증·제한](work-history/place-address-result-253.md)). #248의 사진 보존 가드는 유지하며 #295에서 새 사진 파일을 명시적으로 선택한 교체만 허용합니다. 파일 미선택 정보 수정은 key 조회 계약 확보가 필요합니다.
+- 실제 주소 검색 adapter는 미연결이며 이미지 선택은 #295에서 도메인 multipart에 연결했습니다. 주소 선택 결과 전달은 #253에서 구현·검증했지만 API 모드의 실제 검색은 미연결입니다. 샘플 결과를 원격 폼에 반영하지 않고 기존 주소를 보존합니다([검증·제한](archive/work-history/place-address-result-253.md)). #248의 사진 보존 가드는 유지하며 #295에서 새 사진 파일을 명시적으로 선택한 교체만 허용합니다. 파일 미선택 정보 수정은 key 조회 계약 확보가 필요합니다.
 
 ## Friend 수신 요청 수직 슬라이스
 
@@ -319,11 +319,11 @@ pagination/result wrapper를 추가하지 않습니다. 현재 API 비사용 로
 
 dev 401 응답과 backend main의 `ErrorResponse`·도메인 error enum을 대조해 공통 오류 경계를 확정했습니다. `ApiException`은 status·code·traceId와 validation field reason을 분리하고 rejected value를 폐기합니다. 주요 생성·수정·삭제 Controller는 raw 서버 상세 대신 HTTP·전송 범주의 안전한 메시지를 사용하며 Place·Plant·User·가입 프로필 폼은 확인된 field error를 입력에 연결합니다.
 
-active access-token 요청의 `A003`, `A004`, `A009`는 한 세션에서 한 번만 만료를 알리고 현재 인증·데이터 세션과 로컬 token을 정리합니다. 라우터는 로그인으로 이동하고 만료 이유를 표시하며, 계정 전환 뒤 늦은 이전 응답은 새 세션을 종료하지 않습니다. 2026-11-03에는 live OpenAPI와 backend develop `03ece0e`에서 `/auth/refresh` 배포를 확인해 #311의 시작 시 refresh-only 복원에 연결했습니다. 활성 요청의 자동 갱신·원요청 재전송과 서버 invalidation은 여전히 별도 범위입니다. [초기 복원 계약·검증 기록](work-history/startup-token-refresh-311.md)을 참고합니다.
+active access-token 요청의 `A003`, `A004`, `A009`는 한 세션에서 한 번만 만료를 알리고 현재 인증·데이터 세션과 로컬 token을 정리합니다. 라우터는 로그인으로 이동하고 만료 이유를 표시하며, 계정 전환 뒤 늦은 이전 응답은 새 세션을 종료하지 않습니다. 2026-11-03에는 live OpenAPI와 backend develop `03ece0e`에서 `/auth/refresh` 배포를 확인해 #311의 시작 시 refresh-only 복원에 연결했습니다. 활성 요청의 자동 갱신·원요청 재전송과 서버 invalidation은 여전히 별도 범위입니다. [초기 복원 계약·검증 기록](archive/work-history/startup-token-refresh-311.md)을 참고합니다.
 
 ## Place 멤버·Friend 식별자 쓰기 #277
 
-2026-11-05 live OpenAPI(22 paths·30 operations)와 backend develop `03ece0e`를 다시 대조했습니다. `GET /place/{code}/members`의 Swagger 성공 schema·예시는 불완전하지만 소스는 `{nanoId,name,image,owner}[]`를 반환합니다. #277은 이 식별자·역할을 검증하고 동명이인·가입 순서를 보존해 조회와 팀짱 표시를 연결합니다([API별 이력](work-history/place-members-contract-277.md)). [팀짱 위임](work-history/place-owner-api-277.md)·[탈퇴](work-history/place-leave-api-277.md)도 API별 커밋과 문서로 연결합니다.
+2026-11-05 live OpenAPI(22 paths·30 operations)와 backend develop `03ece0e`를 다시 대조했습니다. `GET /place/{code}/members`의 Swagger 성공 schema·예시는 불완전하지만 소스는 `{nanoId,name,image,owner}[]`를 반환합니다. #277은 이 식별자·역할을 검증하고 동명이인·가입 순서를 보존해 조회와 팀짱 표시를 연결합니다([API별 이력](archive/work-history/place-members-contract-277.md)). [팀짱 위임](archive/work-history/place-owner-api-277.md)·[탈퇴](archive/work-history/place-leave-api-277.md)도 API별 커밋과 문서로 연결합니다.
 
 `POST /friends/request`는 여전히 `receiverName[]`을 사용하며 대상별 결과·전체 원자성 계약이 없습니다. [백엔드 #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150)의 Friend 고유 ID·부분 결과와 멤버 추가·제거 후속 계약은 남아 있으므로 #277 전체를 완료로 표시하지 않습니다. 임시 화면 key·표시 이름·fixture·목록 첫 항목을 고유 ID 쓰기의 대체값으로 사용하지 않습니다.
 
@@ -363,17 +363,17 @@ active access-token 요청의 `A003`, `A004`, `A009`는 한 세션에서 한 번
 | #245 | `8e46fd8` | 조회 Provider·검색 상태와 친구 관리 API 화면 | 관련 test 28개, analyze |
 | #245 | `1611fd0` | 최신 API·위험·매트릭스와 전체 검증 기록 | format 294개, analyze, 전체 test 362개·기존 skip 1개 |
 | #245 | - | PR #246·Project In Review 연결 기록 | `git diff --check` |
-| #247 | - | PR #246 병합 확인(`2a01bab`), API 연결과 미완료 동선·감사 이슈 분리 | [문서 정리 이력](development-audit-checklist.md) |
-| #248 | `7aee5e8`, `cda0aa2` | Plant 이미지 key 보존·불완전 정보 차단, Place 사진 수정 요청 차단과 회귀 테스트 | [이미지 보존 이력](work-history/form-image-preservation-248.md), 전체 376개 통과·기존 skip 1개 |
-| #249 | `59c7d7d`, `a3e9711` | PR #258 병합 확인(`a630c66`), 인증·토큰 저장과 사용자별 캐시·늦은 후처리 격리 | [계정 격리 이력](work-history/session-cache-isolation-249.md), 전체 410개 통과·기존 skip 1개 |
-| #250 | `2103498`, `8ff9cf5` | PR #259 병합 확인(`b15cdd7`), Place·Plant·User·가입 프로필 입력 중 제출 잠금과 회귀 테스트 | [제출 잠금 이력](work-history/form-submit-lock-250.md), 전체 436개 통과·기존 skip 1개 |
-| #251 | `8e08457`, `d0ce294` | PR #260 병합 확인(`bc6e68d`), 원격 식물 등록의 실제 장소·비동기 상태·재시도·제출 보호 | [원격 장소 이력](work-history/remote-plant-places-251.md), 전체 457개 통과·기존 skip 1개 |
-| #252 | `464b9b3`, `4dcb910` | PR #261 병합 확인(`ebf6dc4`), 식물 수정 code 누락 차단·성공 후 관련 캐시 갱신과 route 회귀 | [수정 장소 코드 이력](work-history/plant-edit-place-code-252.md), 전체 476개 통과·기존 skip 1개 |
-| #253 | `d54d3e4`, `e3a5797` | 주소 결과·출처·폼 연결과 세션·화면 수명 보호, API fixture 차단, PR #263 병합 완료(`ded4fe2`) | [주소 연결 이력](work-history/place-address-result-253.md), 전체 502개 통과·기존 skip 1개, PR #263 CI 503개 통과 |
-| #254 | `6cae790`, `74a1426` | 공용 목록의 비-Map 항목을 위치가 드러나는 오류로 처리하고 빈 목록·부분 성공 은폐 차단, PR #264 병합 완료(`f723825`) | [목록 검증 이력](work-history/api-list-item-validation-254.md), 대상 39개·전체 508개 통과·기존 skip 1개, PR #264 CI 509개 통과 |
-| #255 | `008bbc6`, `20e2acc` | PR #264 병합 확인(`f723825`), 비활성 `CommonTextField` clear 미노출·실행 차단과 활성 clear 보존, PR #265 병합 완료(`894dd5f`) | [비활성 입력 이력](work-history/disabled-text-field-clear-255.md), 전체 511개·기존 skip 1개, PR #265 CI 512개 통과 |
-| #256 | `63b96b2`, `dd21e26` | PR #265 병합 확인(`894dd5f`), Plant·Place 중간 원격 수정 정보 Provider 제거와 원본 조회·재시도·override 경계 유지, PR #266 병합 완료(`011ef7d`) | [Provider 단순화 이력](work-history/form-edit-provider-flow-256.md), 전체 513개·기존 skip 1개, PR #266 CI 514개 통과 |
-| #267 | 이 문서의 최종 커밋 | Epic #226 완료 상태, 실행 6단계와 사용자 보류 5개 범위 정리 | [후속 로드맵 이력](work-history/follow-up-development-roadmap-267.md), 문서 링크·인덱스·diff 검사 |
+| #247 | - | PR #246 병합 확인(`2a01bab`), API 연결과 미완료 동선·감사 이슈 분리 | [문서 정리 이력](archive/plans/development-audit-checklist.md) |
+| #248 | `7aee5e8`, `cda0aa2` | Plant 이미지 key 보존·불완전 정보 차단, Place 사진 수정 요청 차단과 회귀 테스트 | [이미지 보존 이력](archive/work-history/form-image-preservation-248.md), 전체 376개 통과·기존 skip 1개 |
+| #249 | `59c7d7d`, `a3e9711` | PR #258 병합 확인(`a630c66`), 인증·토큰 저장과 사용자별 캐시·늦은 후처리 격리 | [계정 격리 이력](archive/work-history/session-cache-isolation-249.md), 전체 410개 통과·기존 skip 1개 |
+| #250 | `2103498`, `8ff9cf5` | PR #259 병합 확인(`b15cdd7`), Place·Plant·User·가입 프로필 입력 중 제출 잠금과 회귀 테스트 | [제출 잠금 이력](archive/work-history/form-submit-lock-250.md), 전체 436개 통과·기존 skip 1개 |
+| #251 | `8e08457`, `d0ce294` | PR #260 병합 확인(`bc6e68d`), 원격 식물 등록의 실제 장소·비동기 상태·재시도·제출 보호 | [원격 장소 이력](archive/work-history/remote-plant-places-251.md), 전체 457개 통과·기존 skip 1개 |
+| #252 | `464b9b3`, `4dcb910` | PR #261 병합 확인(`ebf6dc4`), 식물 수정 code 누락 차단·성공 후 관련 캐시 갱신과 route 회귀 | [수정 장소 코드 이력](archive/work-history/plant-edit-place-code-252.md), 전체 476개 통과·기존 skip 1개 |
+| #253 | `d54d3e4`, `e3a5797` | 주소 결과·출처·폼 연결과 세션·화면 수명 보호, API fixture 차단, PR #263 병합 완료(`ded4fe2`) | [주소 연결 이력](archive/work-history/place-address-result-253.md), 전체 502개 통과·기존 skip 1개, PR #263 CI 503개 통과 |
+| #254 | `6cae790`, `74a1426` | 공용 목록의 비-Map 항목을 위치가 드러나는 오류로 처리하고 빈 목록·부분 성공 은폐 차단, PR #264 병합 완료(`f723825`) | [목록 검증 이력](archive/work-history/api-list-item-validation-254.md), 대상 39개·전체 508개 통과·기존 skip 1개, PR #264 CI 509개 통과 |
+| #255 | `008bbc6`, `20e2acc` | PR #264 병합 확인(`f723825`), 비활성 `CommonTextField` clear 미노출·실행 차단과 활성 clear 보존, PR #265 병합 완료(`894dd5f`) | [비활성 입력 이력](archive/work-history/disabled-text-field-clear-255.md), 전체 511개·기존 skip 1개, PR #265 CI 512개 통과 |
+| #256 | `63b96b2`, `dd21e26` | PR #265 병합 확인(`894dd5f`), Plant·Place 중간 원격 수정 정보 Provider 제거와 원본 조회·재시도·override 경계 유지, PR #266 병합 완료(`011ef7d`) | [Provider 단순화 이력](archive/work-history/form-edit-provider-flow-256.md), 전체 513개·기존 skip 1개, PR #266 CI 514개 통과 |
+| #267 | 이 문서의 최종 커밋 | Epic #226 완료 상태, 실행 6단계와 사용자 보류 5개 범위 정리 | [후속 로드맵 이력](archive/work-history/follow-up-development-roadmap-267.md), 문서 링크·인덱스·diff 검사 |
 | #271 | `e15de3f` | Home 친구 요청 배지의 loading·오류·재시도·정상 count UI와 파생 Provider 상태 보존 | 대상 15개·전체 519개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
 | #273 | `8a51642`, `ec34ea8`, `dbff448` | 정확한 plant ID 기반 장소 code resolver·상세 상태와 API mode 식물 검색 fixture 차단 | 관련 40개·전체 531개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |
 | #275 | `e507656`, `022e8ba` | 표준 API 오류·field 메시지와 확인된 인증 만료의 세션 종료·로그인 안내 연결 | 전체 547개 통과, 기존 non-Linux golden skip 1개, analyze·format·diff 검사 |

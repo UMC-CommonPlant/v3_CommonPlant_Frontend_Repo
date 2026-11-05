@@ -100,7 +100,7 @@ API 모드의 사용자별 조회·변경은 활성 `userDataSessionProvider`가
 - token 읽기·저장·삭제 지연은 메모리 저장소, 전송 경계는 fake Dio adapter로 검증합니다. 서버 요청 취소나 OS secure storage 영속 삭제를 검증한 것으로 해석하지 않습니다.
 - API 비사용 fixture와 기존 route 회귀 테스트는 유지합니다.
 
-#249의 [작업 이력](work-history/session-cache-isolation-249.md)에 세션·네트워크·화면별 회귀 테스트를 연결합니다.
+#249의 [작업 이력](archive/work-history/session-cache-isolation-249.md)에 세션·네트워크·화면별 회귀 테스트를 연결합니다.
 
 ### 소셜 로그인 회귀 테스트
 
@@ -119,7 +119,7 @@ Apple 기기 판별 channel은 mock으로 iPhone·iPad·실패를 확인하고 �
 - widget test에서는 입력 변경 뒤에도 disabled/loading이 유지되는지 확인하고, 이전 프레임의 버튼 콜백을 다시 전달해 Controller 경계도 검사합니다. 성공 이동과 오류 표시·재시도를 함께 확인합니다.
 - 로딩 indicator가 계속 도는 동안 `pumpAndSettle`로 대기하지 않습니다. 필요한 프레임만 `pump`하고, fake 응답을 완료한 후 화면 전환을 기다립니다.
 
-[#250 작업 이력](work-history/form-submit-lock-250.md)에 대상 Controller와 Reference·Compact width·Short height 화면 검증을 기록합니다. 실제 원격 쓰기나 서버 멱등성 검증은 포함하지 않습니다.
+[#250 작업 이력](archive/work-history/form-submit-lock-250.md)에 대상 Controller와 Reference·Compact width·Short height 화면 검증을 기록합니다. 실제 원격 쓰기나 서버 멱등성 검증은 포함하지 않습니다.
 
 ## Unit test 기준
 
@@ -146,7 +146,7 @@ UI가 없어도 검증 가능한 로직은 widget test로 우회하지 않습니
 
 원격 조회를 폼이나 화면용 타입으로 변환하는 Provider를 단순화할 때는 실제 fetch를 소유한 원본 Provider와 순수 변환 진입점을 분리해 검증합니다. 변환 테스트는 원본 family instance를 override해 success·빈 정보·loading/error 전달을 확인하고, 원본 테스트는 repository 위임과 route 식별자 전달을 확인합니다. 재시도는 원본 조회 횟수가 한 번만 늘고 화면 상태가 failure에서 ready로 복구되는지 검사합니다.
 
-중간 Provider 이름을 테스트 편의를 위해 유지하지 않습니다. 공개 화면 진입점, 실제 fetch 원본, Controller 상태를 기준으로 테스트하고 API 비사용 fixture·계정 전환·제출 잠금 회귀도 함께 실행합니다([#256 이력](work-history/form-edit-provider-flow-256.md)).
+중간 Provider 이름을 테스트 편의를 위해 유지하지 않습니다. 공개 화면 진입점, 실제 fetch 원본, Controller 상태를 기준으로 테스트하고 API 비사용 fixture·계정 전환·제출 잠금 회귀도 함께 실행합니다([#256 이력](archive/work-history/form-edit-provider-flow-256.md)).
 
 ## SVG asset 회귀 테스트
 

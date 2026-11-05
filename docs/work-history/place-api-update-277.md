@@ -10,9 +10,9 @@
 
 | 커밋 | API | 구현·검증 범위 |
 | --- | --- | --- |
-| `c91f7bb` | `GET /place/{code}/members` | 실제 nanoId·owner 검증, 중복/누락 차단, 팀짱 표시. [기록](place-members-contract-277.md), 관련 테스트 55개 통과 |
-| `e3bb653` | `PUT /place/{code}/owner/{targetNanoId}` | 현재 팀짱·멤버 확인, 확인창·제출 잠금·관련 조회 갱신. [기록](place-owner-api-277.md), 관련 테스트 52개 및 보강 후 화면 테스트 8개 통과 |
-| `0665211` | `DELETE /place/leave/{code}` | 나가기/전체 삭제 분리, 서버 자동 위임·마지막 멤버 삭제 안내, 세션·캐시 경계. [기록](place-leave-api-277.md), 관련 테스트 49개 및 캐시 보강 후 28개 통과 |
+| `c91f7bb` | `GET /place/{code}/members` | 실제 nanoId·owner 검증, 중복/누락 차단, 팀짱 표시. [기록](../archive/work-history/place-members-contract-277.md), 관련 테스트 55개 통과 |
+| `e3bb653` | `PUT /place/{code}/owner/{targetNanoId}` | 현재 팀짱·멤버 확인, 확인창·제출 잠금·관련 조회 갱신. [기록](../archive/work-history/place-owner-api-277.md), 관련 테스트 52개 및 보강 후 화면 테스트 8개 통과 |
+| `0665211` | `DELETE /place/leave/{code}` | 나가기/전체 삭제 분리, 서버 자동 위임·마지막 멤버 삭제 안내, 세션·캐시 경계. [기록](../archive/work-history/place-leave-api-277.md), 관련 테스트 49개 및 캐시 보강 후 28개 통과 |
 
 ## 순차 품질 검사
 

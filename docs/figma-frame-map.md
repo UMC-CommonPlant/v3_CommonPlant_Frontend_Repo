@@ -67,8 +67,8 @@
 
 2026-11-05 #277의 멤버 역할·위임·나가기 설명은 업데이트된 API 계약과 작업 브랜치의
 화면 동작을 반영한다. Figma 파일·프레임·node-id를 수정하거나 새 상태 프레임을
-확인한 기록은 아니다. 계약과 검증 범위는 [멤버 조회](work-history/place-members-contract-277.md),
-[팀짱 위임](work-history/place-owner-api-277.md), [장소 나가기](work-history/place-leave-api-277.md)를 따른다.
+확인한 기록은 아니다. 계약과 검증 범위는 [멤버 조회](archive/work-history/place-members-contract-277.md),
+[팀짱 위임](archive/work-history/place-owner-api-277.md), [장소 나가기](archive/work-history/place-leave-api-277.md)를 따른다.
 
 ## 메인 하단 탭 구현 경계
 

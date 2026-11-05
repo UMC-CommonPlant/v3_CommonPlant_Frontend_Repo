@@ -9,7 +9,7 @@
 - 기준 `develop`: `a630c66e3facb52f2a0f83d0f1aaa834c0cab7f0` (사용자 PR #258 병합)
 - 브랜치: `fix/session-cache-isolation-249`
 - 상태: 사용자 병합 완료(2026-08-28). #250 시작 시 이슈 종료와 Project `Done`을 확인하고 감사 체크리스트를 완료 처리했습니다.
-- 참고: [README](../../README.md), [개발 감사 체크리스트](../development-audit-checklist.md), [Feature](../feature-development-guide.md), [상태관리](../state-management-guide.md), [라우팅](../routing-guide.md), [폼 검증](../form-validation-error-guide.md), [테스트](../testing-guide.md), [Git](../git-workflow.md)
+- 참고: [README](../../../README.md), [개발 감사 체크리스트](../plans/development-audit-checklist.md), [Feature](../../feature-development-guide.md), [상태관리](../../state-management-guide.md), [라우팅](../../routing-guide.md), [폼 검증](../../form-validation-error-guide.md), [테스트](../../testing-guide.md), [Git](../../git-workflow.md)
 
 기존 #249가 같은 범위를 다뤄 새 이슈를 중복 생성하지 않았습니다. #248과 PR #258의 종료·병합 및 Project `Done`을 확인한 뒤 최신 `develop`에서 분기했습니다. 미사용 공용 위젯, 새 UI 디자인, API 계약, 배포·CI 설정은 변경하지 않습니다.
 
@@ -48,13 +48,13 @@
 
 | 추가 회귀 | 개수 | 증거 |
 | --- | --- | --- |
-| 조회 캐시·비인증 요청·A→B·늦은 응답 | 4 | [cache test](../../test/features/login/presentation/providers/session_cache_isolation_test.dart) |
-| 프로필·장소/식물 생성·삭제·친구 처리·탈퇴의 늦은 결과 | 10 | [action test](../../test/features/login/presentation/providers/session_action_isolation_test.dart) |
-| API 초안 초기화와 fixture 보존 | 2 | [draft test](../../test/features/login/presentation/providers/session_draft_isolation_test.dart) |
-| 프로필 loading/error/retry에서 A 정보 숨김 | 1 | [profile widget test](../../test/features/user/presentation/pages/user_profile_session_test.dart) |
+| 조회 캐시·비인증 요청·A→B·늦은 응답 | 4 | [cache test](../../../test/features/login/presentation/providers/session_cache_isolation_test.dart) |
+| 프로필·장소/식물 생성·삭제·친구 처리·탈퇴의 늦은 결과 | 10 | [action test](../../../test/features/login/presentation/providers/session_action_isolation_test.dart) |
+| API 초안 초기화와 fixture 보존 | 2 | [draft test](../../../test/features/login/presentation/providers/session_draft_isolation_test.dart) |
+| 프로필 loading/error/retry에서 A 정보 숨김 | 1 | [profile widget test](../../../test/features/user/presentation/pages/user_profile_session_test.dart) |
 | 세션 복원·삭제, 지연 로그인·회원가입 | 7 | Auth session·Login·Profile Setup Controller test |
-| token 읽기·Dio 전송·응답 취소·읽기 오류 | 4 | [network test](../../test/core/network/user_data_session_network_test.dart) |
-| 오래된 token 저장 차단·저장/삭제 순서·실패 후 큐 복구 | 6 | [writer test](../../test/core/network/auth_token_writer_test.dart), [auth repository test](../../test/features/login/data/repositories/auth_repository_test.dart) |
+| token 읽기·Dio 전송·응답 취소·읽기 오류 | 4 | [network test](../../../test/core/network/user_data_session_network_test.dart) |
+| 오래된 token 저장 차단·저장/삭제 순서·실패 후 큐 복구 | 6 | [writer test](../../../test/core/network/auth_token_writer_test.dart), [auth repository test](../../../test/features/login/data/repositories/auth_repository_test.dart) |
 
 - `fvm dart format --output=none --set-exit-if-changed .`: 303개 파일, 변경 0개
 - `fvm flutter analyze`: 문제 없음

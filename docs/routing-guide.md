@@ -65,7 +65,7 @@ Figma 파일 `Common Plant 복제`의 `phase 0` 페이지를 기준으로 프레
 
 Place 상세/수정/친구 관리는 `placeId`를 path에 포함합니다. Plant 상세/수정/Memo 플로우는 `plantId` 중심으로 둡니다. 식물 등록은 Figma상 먼저 식물을 검색하고 다음 단계에서 장소를 고르는 흐름이므로 `/plants/new/*` 아래에 둡니다.
 
-Plant 상세·수정의 optional query `placeId`는 장소 상세에서 전달받은 실제 장소 code입니다. route 이름은 유지하며, 원격 수정 Controller는 공백을 제거한 code를 필수로 확인해 API의 `placeCode` query로 전송합니다. #252에서 null·빈 값·공백은 기존 상태 화면과 홈→장소→식물 재진입 안내로 처리합니다. 현재 Plant 조회 응답에는 code가 없어 장소명이나 fixture로 복원하지 않습니다. API 비사용 모드의 code 없는 로컬 수정은 유지합니다([검증·제한](work-history/plant-edit-place-code-252.md)).
+Plant 상세·수정의 optional query `placeId`는 장소 상세에서 전달받은 실제 장소 code입니다. route 이름은 유지하며, 원격 수정 Controller는 공백을 제거한 code를 필수로 확인해 API의 `placeCode` query로 전송합니다. #252에서 null·빈 값·공백은 기존 상태 화면과 홈→장소→식물 재진입 안내로 처리합니다. 현재 Plant 조회 응답에는 code가 없어 장소명이나 fixture로 복원하지 않습니다. API 비사용 모드의 code 없는 로컬 수정은 유지합니다([검증·제한](archive/work-history/plant-edit-place-code-252.md)).
 
 장소 생성 뒤 친구 추가 화면으로 이동할 때는
 `/places/new/friends?placeCode={생성된 code}`를 사용합니다. `placeCode`는 route
@@ -260,7 +260,7 @@ flowchart LR
 
 장소 생성·수정은 기존 `/places/new/address-search`를 `push<AddressSearchResult>`로 열고 선택 시 같은 모델을 `pop` 결과로 받습니다. 뒤로 가기·취소는 `null`이며, 표시용 제목이 아닌 `address`를 폼에 반영합니다. route path나 query는 추가하지 않습니다.
 
-`AddressSearchResult.source`는 `fixture`와 `searchService`를 구분합니다. API 모드의 기본 검색은 아직 미연결 안내만 표시하며 fixture 결과를 반환하지 않습니다. 폼 Controller에서도 API 모드의 fixture·빈 주소를 거부합니다. 화면은 `context.mounted`, Controller는 검색 시작 시 Ref·사용자 데이터 세션을 확인하므로 폐기된 폼이나 이전 계정의 결과는 무시합니다. [#253 검증·제한](work-history/place-address-result-253.md)을 참고하며 실제 검색 서비스 연결 완료를 뜻하지 않습니다.
+`AddressSearchResult.source`는 `fixture`와 `searchService`를 구분합니다. API 모드의 기본 검색은 아직 미연결 안내만 표시하며 fixture 결과를 반환하지 않습니다. 폼 Controller에서도 API 모드의 fixture·빈 주소를 거부합니다. 화면은 `context.mounted`, Controller는 검색 시작 시 Ref·사용자 데이터 세션을 확인하므로 폐기된 폼이나 이전 계정의 결과는 무시합니다. [#253 검증·제한](archive/work-history/place-address-result-253.md)을 참고하며 실제 검색 서비스 연결 완료를 뜻하지 않습니다.
 
 ## 새 라우트 추가 체크리스트
 

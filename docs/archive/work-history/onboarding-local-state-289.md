@@ -7,7 +7,7 @@
 - 작업일: 2026-09-03
 - 기준 `develop`: `03ba27d` (PR #288 병합)
 - 브랜치: `feature/onboarding-local-state-289`
-- 참고: [라우팅](../routing-guide.md), [상태관리](../state-management-guide.md), [테스트](../testing-guide.md), [정책 #287](onboarding-refresh-policy-287.md)
+- 참고: [라우팅](../../routing-guide.md), [상태관리](../../state-management-guide.md), [테스트](../../testing-guide.md), [정책 #287](onboarding-refresh-policy-287.md)
 
 ## 구현 범위
 

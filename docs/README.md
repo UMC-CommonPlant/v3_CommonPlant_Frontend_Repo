@@ -6,7 +6,7 @@
 
 ## 지금 볼 문서
 
-- 완료된 감사 #248~#256: [개발 감사·개선 체크리스트](development-audit-checklist.md)
+- 완료된 감사 #248~#256: [개발 감사·개선 체크리스트](archive/plans/development-audit-checklist.md)
 - 다음 개발 순서와 화면별 API 상태: [화면·모델·API 실연동 전환 계획](screen-api-integration-plan.md#후속-개발-실행-순서-267)
 - 외부 답변이나 팀 결정이 필요한 항목: [후속 결정 체크리스트](follow-up-decision-checklist.md)
 
@@ -31,7 +31,7 @@
 
 | 문서 | 용도 |
 | --- | --- |
-| [개발 감사·개선 체크리스트](development-audit-checklist.md) | 문서 정리와 우선 수정할 문제, 개별 이슈, 완료 기준 |
+| [개발 감사·개선 체크리스트](archive/plans/development-audit-checklist.md) | 문서 정리와 우선 수정할 문제, 개별 이슈, 완료 기준 |
 | [화면·모델·API 실연동 전환 계획](screen-api-integration-plan.md) | 병합된 연결 범위와 미완료 입력·상태·API 동선 구분 |
 | [API Swagger 참고](api-swagger-reference.md) | 확인된 endpoint·request·response와 백엔드 source 근거 |
 | [백엔드 API 질문](backend-api-open-questions.md) | 계약 미확정 항목과 확인된 답변, 프론트 반영 상태 |
@@ -47,35 +47,35 @@
 
 | 작업 | 이력 |
 | --- | --- |
-| 앱 시작 refresh-only 토큰 갱신 #311 | [배포 계약·초기 복원·검증 경계](work-history/startup-token-refresh-311.md) |
+| 앱 시작 refresh-only 토큰 갱신 #311 | [배포 계약·초기 복원·검증 경계](archive/work-history/startup-token-refresh-311.md) |
 | 스토어 계정·배포 준비 #215 | [계정·서명 재점검과 후속 순서](work-history/store-readiness-215.md) |
 | 장소 좌표 없는 날씨 조회 차단 #309 | [조회 조건·불가 안내·후속 계약](work-history/place-weather-unavailable-309.md) |
 | 장소 날씨 화면·백엔드 연결 경계 #306 | [단계별 구현 계획과 변경 표](work-history/place-weather-ui-306.md) |
-| Plant 생성·수정 #229 | [Plant Form](work-history/plant-form-api-state-229.md) |
-| Plant 상세 #231 | [Plant Detail](work-history/plant-detail-api-view-231.md) |
-| Home 사용자 #232 | [Home User](work-history/home-user-api-state-232.md) |
-| User 프로필 #237 | [User Profile](work-history/user-profile-flow-237.md) |
-| Place 목록·상세 #239 | [Place List·Detail](work-history/place-list-detail-api-239.md) |
-| Friend 수신 요청 #241 | [Friend Invitations](work-history/friend-invitations-api-241.md) |
-| Place 폼 결과 #243 | [Place Form Result](work-history/place-form-result-flow-243.md) |
-| Place 멤버 조회 #245 | [Place Members](work-history/place-members-api-245.md) |
-| Place·Plant 이미지 보존 #248 | [Form Image Preservation](work-history/form-image-preservation-248.md) |
-| 계정별 캐시·진행 중 요청 격리 #249 | [Session Cache Isolation](work-history/session-cache-isolation-249.md) |
-| 입력 변경 중 제출 잠금 #250 | [Form Submit Lock](work-history/form-submit-lock-250.md) |
-| 원격 식물 등록 장소 상태 #251 | [Remote Plant Places](work-history/remote-plant-places-251.md) |
-| 식물 수정 장소 코드 검증 #252 | [Plant Edit Place Code](work-history/plant-edit-place-code-252.md) |
-| 장소 주소 선택 결과 연결 #253 | [Place Address Result](work-history/place-address-result-253.md) |
-| API 목록 항목 타입 검증 #254 | [API List Item Validation](work-history/api-list-item-validation-254.md) |
-| 비활성 공용 입력 clear 차단 #255 | [Disabled Text Field Clear](work-history/disabled-text-field-clear-255.md) |
-| 수정 정보 Provider 전달 단순화 #256 | [Form Edit Provider Flow](work-history/form-edit-provider-flow-256.md) |
-| 후속 개발 순서·보류 범위 #267 | [Follow-up Development Roadmap](work-history/follow-up-development-roadmap-267.md) |
+| Plant 생성·수정 #229 | [Plant Form](archive/work-history/plant-form-api-state-229.md) |
+| Plant 상세 #231 | [Plant Detail](archive/work-history/plant-detail-api-view-231.md) |
+| Home 사용자 #232 | [Home User](archive/work-history/home-user-api-state-232.md) |
+| User 프로필 #237 | [User Profile](archive/work-history/user-profile-flow-237.md) |
+| Place 목록·상세 #239 | [Place List·Detail](archive/work-history/place-list-detail-api-239.md) |
+| Friend 수신 요청 #241 | [Friend Invitations](archive/work-history/friend-invitations-api-241.md) |
+| Place 폼 결과 #243 | [Place Form Result](archive/work-history/place-form-result-flow-243.md) |
+| Place 멤버 조회 #245 | [Place Members](archive/work-history/place-members-api-245.md) |
+| Place·Plant 이미지 보존 #248 | [Form Image Preservation](archive/work-history/form-image-preservation-248.md) |
+| 계정별 캐시·진행 중 요청 격리 #249 | [Session Cache Isolation](archive/work-history/session-cache-isolation-249.md) |
+| 입력 변경 중 제출 잠금 #250 | [Form Submit Lock](archive/work-history/form-submit-lock-250.md) |
+| 원격 식물 등록 장소 상태 #251 | [Remote Plant Places](archive/work-history/remote-plant-places-251.md) |
+| 식물 수정 장소 코드 검증 #252 | [Plant Edit Place Code](archive/work-history/plant-edit-place-code-252.md) |
+| 장소 주소 선택 결과 연결 #253 | [Place Address Result](archive/work-history/place-address-result-253.md) |
+| API 목록 항목 타입 검증 #254 | [API List Item Validation](archive/work-history/api-list-item-validation-254.md) |
+| 비활성 공용 입력 clear 차단 #255 | [Disabled Text Field Clear](archive/work-history/disabled-text-field-clear-255.md) |
+| 수정 정보 Provider 전달 단순화 #256 | [Form Edit Provider Flow](archive/work-history/form-edit-provider-flow-256.md) |
+| 후속 개발 순서·보류 범위 #267 | [Follow-up Development Roadmap](archive/work-history/follow-up-development-roadmap-267.md) |
 | 소셜 로그인 검증·누락 보완 #293 | [Social Login Verification](work-history/social-login-verification-293.md) |
-| 소셜 로그인 SDK·가입 분기 #285 | [Social Login SDK](work-history/social-login-sdk-285.md) |
-| 온보딩·토큰 갱신 정책 #287 | [Onboarding·Refresh Policy](work-history/onboarding-refresh-policy-287.md) |
-| 온보딩 로컬 완료 상태 #289 | [Onboarding Local State](work-history/onboarding-local-state-289.md) |
-| 메인 탭 라우팅·모션 #291 | [Main Tab Routing·Motion](work-history/main-tab-routing-motion-291.md) |
+| 소셜 로그인 SDK·가입 분기 #285 | [Social Login SDK](archive/work-history/social-login-sdk-285.md) |
+| 온보딩·토큰 갱신 정책 #287 | [Onboarding·Refresh Policy](archive/work-history/onboarding-refresh-policy-287.md) |
+| 온보딩 로컬 완료 상태 #289 | [Onboarding Local State](archive/work-history/onboarding-local-state-289.md) |
+| 메인 탭 라우팅·모션 #291 | [Main Tab Routing·Motion](archive/work-history/main-tab-routing-motion-291.md) |
 
-Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 작업 이력](screen-api-integration-plan.md#작업-이력), 문서 정리 #247은 [개발 감사 체크리스트](development-audit-checklist.md)에서 확인합니다.
+Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 작업 이력](screen-api-integration-plan.md#작업-이력), 문서 정리 #247은 [개발 감사 체크리스트](archive/plans/development-audit-checklist.md)에서 확인합니다.
 
 ## 갱신 기준
 
@@ -86,9 +86,9 @@ Auth #227 등 중앙 계획에 남긴 이력은 [화면·API 전환 계획의 �
 
 - [폼 사진 선택·미리보기·교체 #295](work-history/form-image-selection-295.md): multipart 연결, 자동 검증과 실기기 QA 제한
 
-- [이미지 업로드 방식 정정 #297](work-history/image-upload-url-297.md): Swagger 직접 multipart, URL 발급 대기 철회
+- [이미지 업로드 방식 정정 #297](archive/work-history/image-upload-url-297.md): Swagger 직접 multipart, URL 발급 대기 철회
 
 - [식물 생성·수정 물주기 주기 #299](work-history/plant-watering-cycle-299.md): 필수 입력, null 초기값, 로컬 보관과 원격 미지원 경계
 
-- [공공데이터 초단기 날씨 조회 준비 #304](work-history/place-weather-api-304.md): 실황·예보 API와 5초·3회·취소 구현. 화면 구현 완료, 실제 장소 좌표·기기 QA 후속.
-- [판교역 검증 및 정책 철회 이력 #307](work-history/place-weather-fallback-307.md): 실제 공공데이터 응답 검증·예보 기준시각 수정. 기본 위치 정책은 #309에서 철회.
+- [공공데이터 초단기 날씨 조회 준비 #304](archive/work-history/place-weather-api-304.md): 실황·예보 API와 5초·3회·취소 구현. 화면 구현 완료, 실제 장소 좌표·기기 QA 후속.
+- [판교역 검증 및 정책 철회 이력 #307](archive/work-history/place-weather-fallback-307.md): 실제 공공데이터 응답 검증·예보 기준시각 수정. 기본 위치 정책은 #309에서 철회.
