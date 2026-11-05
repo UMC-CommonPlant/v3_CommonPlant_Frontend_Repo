@@ -250,7 +250,7 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 2. #271 / PR #272에서 Home 친구 요청 배지의 loading·조회 실패·정상 0건·성공 수와 오류 재시도를 연결했습니다.
 3. #273 / PR #274에서 기존 Place API의 정확한 plant ID 대조로 Plant 소속 장소 code를 복원했습니다. 식물 검색 API는 백엔드 #92 완료 전까지 API 모드 fixture를 차단하고 미연결 안내를 유지합니다.
 4. #275 / PR #276에서 표준 API 오류와 필드 오류를 안전하게 매핑하고, 확인된 access token 오류 `A003`·`A004`·`A009`는 현재 세션을 종료해 로그인 안내로 연결했습니다. #287은 refresh-only 상태의 갱신 우선 원칙을 정했지만 backend #149 계약 전까지 요청을 추정하지 않으며, 서버 로그아웃 연동은 우선순위에서 제외합니다.
-5. #277은 2026-11-05 갱신된 Swagger와 backend `03ece0e`를 대조해 Place 멤버의 실제 `nanoId`·팀짱 여부 조회를 연결합니다([이력](docs/work-history/place-members-contract-277.md)). 새 팀짱 위임·탈퇴 API는 API별 커밋으로 이어서 연결합니다. Friend 고유 대상·부분 결과와 멤버 추가·제거는 [백엔드 #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150) 후속 계약이 필요합니다.
+5. #277은 2026-11-05 갱신된 Swagger와 backend `03ece0e`를 대조해 Place 멤버의 실제 `nanoId`·팀짱 여부 조회와 [팀짱 위임](docs/work-history/place-owner-api-277.md)을 연결합니다. 장소 탈퇴는 별도 API 커밋으로 이어서 연결합니다. Friend 고유 대상·부분 결과와 멤버 추가·제거는 [백엔드 #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150) 후속 계약이 필요합니다.
 6. #279 / PR #280에서 UX-02의 inline 상태·Snackbar·Dialog 기준을 확정하고, 반복 Snackbar만 최소 helper로 통일했습니다. 단일 목적지 삭제 결과와 전달용 getter는 제거하고 실제 분기·재사용이 있는 상태와 result는 유지했습니다.
 7. #281 / PR #282에서 현재 PR 본문 기준을 단일 기본 template으로 고정했습니다. 유형별 template과 metadata 자동화는 실제 반복 요구가 생기기 전까지 추가하지 않습니다.
 8. #283에서 Memo 텍스트 CRUD 계약을 재확인했습니다. live OpenAPI에는 Memo path/schema가 없고 backend #50~#55의 초안도 본문 길이·이미지 유지·작성자·pagination 계약이 충돌하거나 빠져 있어 [백엔드 #50 계약 확인](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50#issuecomment-5488630254) 답변 전까지 로컬 화면을 유지합니다.

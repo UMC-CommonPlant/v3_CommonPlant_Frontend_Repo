@@ -13,6 +13,11 @@ abstract interface class PlaceRepository {
 
   Future<List<PlaceMember>> fetchPlaceMembers(String code);
 
+  Future<void> changePlaceOwner({
+    required String code,
+    required String targetNanoId,
+  });
+
   Future<String> createPlace({
     MultipartFile? image,
     required String name,

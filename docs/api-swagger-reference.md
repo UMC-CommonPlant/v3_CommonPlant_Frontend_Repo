@@ -424,6 +424,13 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
   - `403`: 장소 접근 권한 없음
   - `404`: 장소 없음
 
+#### PUT `/place/{code}/owner/{targetNanoId}`
+
+- 인증된 현재 팀짱이 다른 현재 멤버에게 팀짱 권한을 위임한다. body·query 없이 두 path segment를 인코딩해 전송한다.
+- 성공 HTTP 200, 공통 wrapper의 `result: null`. 기존 팀짱의 소속은 유지된다.
+- 오류: 404 `P101` 장소 없음, 403 `P103` 멤버 아님, `P110` 팀짱 아님, `P111` 자기 자신 위임.
+- #277은 친구 관리의 비팀짱 멤버에 확인창·제출 잠금을 연결한다. 최신 권한·대상을 확인하고 성공 후 상세·요약·멤버·소유/소속 목록을 재조회한다([검증 범위](work-history/place-owner-api-277.md)).
+
 ### Friend
 
 #### GET `/friends/requests`

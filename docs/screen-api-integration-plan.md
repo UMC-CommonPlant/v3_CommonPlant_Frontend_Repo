@@ -94,7 +94,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 | Place | 장소 등록 중 친구 추가 | User 검색, 생성된 place code, 선택 사용자 요청 submit 연결 | 고유 사용자 식별자와 대상별 결과 검증 | `GET /users/{keyword}`, `POST /friends/request`; 동명이인 위험은 별도 등록 | #243 위험 수용 연결 |
 | Place | 장소 수정 | #248 사진 수정 차단·#250 잠금·#253 / PR #263 주소 결과 연결 병합, 취소 시 서버 주소 보존 | key 계약 후 제한 해제, 실제 주소 검색 | imageKey 생략은 삭제 의미, 상세에는 key 미제공 | 기존 주소 수정 유지, 새 주소 검색·사진 있는 장소 수정은 제한 |
 | Place | 장소 상세 | API 장소·owner·멤버·식물 연결, 날씨 API·상태 UI 구현, #309 좌표 없으면 조회 불가 | 실제 장소 좌표 연결·기기 QA와 물주기 액션 | PLACE-07 최종 좌표 계약 필요, 주소 문자열만으로 조회하지 않음 | 날씨 계층·UI 구현 및 공공데이터 실제 응답 검증 완료, 장소 좌표 연결 대기 |
-| Place | 친구 관리 | 실제 멤버 ID·팀짱·이미지 조회, 닉네임 필터, loading/empty/error/retry 연결 | 멤버 추가·삭제, 팀짱 위임 연결 | `GET /place/{code}/members`의 nanoId·owner 소스 확인, 새 위임 API 제공 | #277 조회 계약 반영, 쓰기는 별도 API 커밋 |
+| Place | 친구 관리 | 실제 멤버 ID·팀짱 조회, 검색·상태 UI, 팀짱 위임 확인·제출·재조회 | 멤버 추가·삭제 | `GET /place/{code}/members`, `PUT /place/{code}/owner/{targetNanoId}` | #277 연결, 실제 서버 쓰기 QA 별도 |
 | Place | 장소 나가기·삭제 | API 모드는 owner 삭제만 노출 | 구성원 나가기 | delete는 owner 전용 전체 삭제, leave endpoint 없음 | 삭제 #239, 나가기 Blocked |
 | Plant | 식물 등록 검색 | #273에서 API mode fixture 차단·미연결 안내, API 비사용 검색·empty·선택 유지 | 실제 검색 모델과 loading/empty/error/success | 백엔드 #92의 식물 종 검색 endpoint·DTO 필요 | Blocked |
 | Plant | 식물 등록 | 장소·애칭·날짜와 create submit 연결, #250 잠금·#251 실제 장소·loading/error/empty·재시도·제출 보호 병합 | 학명/이미지·장소 사진 | `GET /place/user`, `POST /plants`; 실제 목록 code만 사용 | #251 / PR #261 병합, 인증 E2E 별도 |

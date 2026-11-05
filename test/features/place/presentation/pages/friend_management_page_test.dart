@@ -213,6 +213,15 @@ Widget _remoteApp(PlaceRepository repository) {
 }
 
 class _MembersRepository extends Fake implements PlaceRepository {
+  @override
+  Future<PlaceDetail> fetchPlaceDetail(String code) async => PlaceDetail(
+    code: code,
+    name: '장소',
+    address: '',
+    isOwner: false,
+    members: const [],
+    plants: const [],
+  );
   _MembersRepository({
     this.members = const [],
     this.pending,

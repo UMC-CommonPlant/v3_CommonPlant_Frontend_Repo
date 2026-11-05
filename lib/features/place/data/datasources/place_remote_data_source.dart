@@ -13,6 +13,11 @@ abstract interface class PlaceRemoteDataSource {
 
   Future<Object?> getPlaceMembers(String code);
 
+  Future<void> changePlaceOwner({
+    required String code,
+    required String targetNanoId,
+  });
+
   Future<Object?> createPlace(
     CreatePlaceRequest request, {
     MultipartFile? image,
@@ -73,6 +78,20 @@ class DioPlaceRemoteDataSource implements PlaceRemoteDataSource {
       );
 
       return response.data;
+    } on DioException catch (error) {
+      throw ApiException.fromDio(error);
+    }
+  }
+
+  @override
+  Future<void> changePlaceOwner({
+    required String code,
+    required String targetNanoId,
+  }) async {
+    try {
+      await _dio.put<Object?>(
+        '/place/${Uri.encodeComponent(code)}/owner/${Uri.encodeComponent(targetNanoId)}',
+      );
     } on DioException catch (error) {
       throw ApiException.fromDio(error);
     }

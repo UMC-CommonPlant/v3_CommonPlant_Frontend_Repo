@@ -47,6 +47,17 @@ class PlaceRepositoryImpl implements PlaceRepository {
   }
 
   @override
+  Future<void> changePlaceOwner({
+    required String code,
+    required String targetNanoId,
+  }) {
+    return _remoteDataSource.changePlaceOwner(
+      code: code,
+      targetNanoId: targetNanoId,
+    );
+  }
+
+  @override
   Future<String> createPlace({
     required String name,
     required String address,

@@ -150,12 +150,12 @@
 
 ### PLACE-06. 멤버 고유 식별자·역할과 owner 관리 endpoint
 
-- 현재 근거: live OpenAPI의 `GET /place/{code}/members`에는 성공 schema가 없고 backend main `7d572cb`의 `getPlaceResUser`는 `name`, `image`만 제공한다. 멤버 제거·역할 변경 Controller도 없다.
-- 프론트 영향: 가입 순서 기반 임시 화면 key는 렌더링에만 쓸 수 있고 특정 멤버의 삭제·권한 변경 payload에는 사용할 수 없다.
-- 확인 질문: 멤버의 안정적인 user ID와 역할은 어떤 필드로 제공하는가? owner가 멤버를 제거하거나 역할을 위임·변경하는 endpoint, 권한·owner 보호·최소 인원·멱등 규칙은 무엇인가?
-- 프론트 반영: #277은 [backend #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150) 답변과 live OpenAPI schema 전까지 #245의 조회 전용 UI와 임시 key 비전송 경계를 유지한다.
-- 답변: 미확인
-- 상태: Blocked
+- 현재 근거: 2026-11-05 live OpenAPI와 backend `03ece0e`에서 `nanoId`·`owner`, `PUT /place/{code}/owner/{targetNanoId}`를 확인했다.
+- 프론트 영향: 실제 멤버 ID로 팀짱 위임을 연결할 수 있다. 멤버 추가·제거 endpoint는 없다.
+- 확인 질문: 멤버 추가·제거와 멱등 정책의 후속 계약은 무엇인가?
+- 프론트 반영: #277은 팀짱에게만 현재 비팀짱 멤버의 위임 액션을 제공하고 제출 직전 권한·대상·세션을 검사한다. 성공 후 관련 조회를 갱신한다([API 이력](work-history/place-owner-api-277.md)).
+- 답변: 현재 팀짱만 위임 가능, 자기 자신·비멤버 금지. 성공 200 result null, 기존 팀짱의 소속 유지. 상세 오류 코드는 API 참고 문서에 기록했다. 실제 인증 쓰기 QA는 남아 있다.
+- 상태: Partial
 
 ### PLACE-07. 장소 조회 좌표 계약
 

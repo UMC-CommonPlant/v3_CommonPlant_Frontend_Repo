@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/features/place/data/datasources/place_remote_data_source.dart';
 import 'package:commonplant_frontend/features/place/data/dtos/place_requests.dart';
 import 'package:dio/dio.dart';
@@ -8,6 +9,36 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PlaceRemoteDataSource', () {
+    test('팀짱 위임은 실제 code·nanoId를 인코딩한 PUT이며 body가 없다', () async {
+      final adapter = _CapturingAdapter(responseBody: '{"result":null}');
+      final dataSource = DioPlaceRemoteDataSource(_dioWith(adapter));
+
+      await dataSource.changePlaceOwner(
+        code: 'place/A B',
+        targetNanoId: 'nano/A B',
+      );
+
+      expect(adapter.latestOptions.method, 'PUT');
+      expect(
+        adapter.latestOptions.path,
+        '/place/place%2FA%20B/owner/nano%2FA%20B',
+      );
+      expect(adapter.latestOptions.data, isNull);
+      expect(adapter.latestOptions.queryParameters, isEmpty);
+    });
+
+    for (final status in [403, 404]) {
+      test('팀짱 위임의 $status 응답을 API 실패로 전달한다', () async {
+        final adapter = _CapturingAdapter(statusCode: status);
+        final dataSource = DioPlaceRemoteDataSource(_dioWith(adapter));
+        await expectLater(
+          dataSource.changePlaceOwner(code: 'place', targetNanoId: 'member'),
+          throwsA(
+            isA<ApiException>().having((e) => e.statusCode, 'status', status),
+          ),
+        );
+      });
+    }
     test('장소 멤버는 code를 인코딩한 GET path로 조회하고 응답을 보존한다', () async {
       final adapter = _CapturingAdapter(responseBody: '{"result":[]}');
       final dataSource = DioPlaceRemoteDataSource(_dioWith(adapter));
@@ -105,9 +136,10 @@ Dio _dioWith(HttpClientAdapter adapter) {
 }
 
 class _CapturingAdapter implements HttpClientAdapter {
-  _CapturingAdapter({this.responseBody = '{}'});
+  _CapturingAdapter({this.responseBody = '{}', this.statusCode = 200});
 
   final String responseBody;
+  final int statusCode;
   late RequestOptions latestOptions;
   late String latestBody;
 
@@ -127,7 +159,7 @@ class _CapturingAdapter implements HttpClientAdapter {
 
     return ResponseBody.fromString(
       responseBody,
-      200,
+      statusCode,
       headers: {
         Headers.contentTypeHeader: [Headers.jsonContentType],
       },
