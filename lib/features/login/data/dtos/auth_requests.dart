@@ -9,6 +9,16 @@ class LoginRequest {
   }
 }
 
+class RefreshRequest {
+  const RefreshRequest({required this.refreshToken});
+
+  final String refreshToken;
+
+  Map<String, Object?> toJson() {
+    return {'refreshToken': refreshToken};
+  }
+}
+
 class RegisterRequest {
   const RegisterRequest({
     required this.signupToken,

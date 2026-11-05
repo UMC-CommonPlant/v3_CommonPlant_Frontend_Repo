@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:commonplant_frontend/core/network/api_exception.dart';
+import 'package:commonplant_frontend/core/network/auth_interceptor.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:dio/dio.dart';
 
@@ -14,6 +15,23 @@ class AuthRemoteDataSource {
       final response = await _dio.post<Object?>(
         '/auth/login',
         data: request.toJson(),
+      );
+
+      return response.data;
+    } on DioException catch (error) {
+      throw ApiException.fromDio(error);
+    }
+  }
+
+  Future<Object?> refresh(RefreshRequest request) async {
+    try {
+      final response = await _dio.post<Object?>(
+        '/auth/refresh',
+        data: request.toJson(),
+        options: Options(
+          contentType: Headers.jsonContentType,
+          extra: const {skipAccessTokenExtraKey: true},
+        ),
       );
 
       return response.data;

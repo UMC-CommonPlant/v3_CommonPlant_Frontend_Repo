@@ -4,6 +4,8 @@ import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:dio/dio.dart';
 
+const String skipAccessTokenExtraKey = 'commonplant.skipAccessToken';
+
 class AuthInterceptor extends Interceptor {
   AuthInterceptor(
     this._tokenStore, {
@@ -29,7 +31,13 @@ class AuthInterceptor extends Interceptor {
     }
 
     try {
-      final accessToken = attachAccessToken
+      final skipAccessToken = options.extra[skipAccessTokenExtraKey] == true;
+      if (skipAccessToken) {
+        options.headers.removeWhere(
+          (key, value) => key.toLowerCase() == 'authorization',
+        );
+      }
+      final accessToken = attachAccessToken && !skipAccessToken
           ? await _tokenStore.readAccessToken()
           : null;
       if (!isCurrentSession()) {
@@ -63,6 +71,7 @@ class AuthInterceptor extends Interceptor {
 
     final apiError = ApiException.fromDio(err);
     if (attachAccessToken &&
+        err.requestOptions.extra[skipAccessTokenExtraKey] != true &&
         !_expirationNotified &&
         apiError.requiresReauthentication &&
         onSessionExpired != null) {

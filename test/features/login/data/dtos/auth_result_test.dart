@@ -3,6 +3,55 @@ import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('refreshAuthResultFromJson', () {
+    test('새 accessToken과 회전한 refreshToken을 엄격 문자열로 읽는다', () {
+      final result = refreshAuthResultFromJson({
+        'result': {
+          'accessToken': ' new-access ',
+          'refreshToken': ' new-refresh ',
+        },
+      }, existingRefreshToken: 'existing-refresh');
+
+      expect(result.accessToken, 'new-access');
+      expect(result.refreshToken, 'new-refresh');
+    });
+
+    for (final hasNullToken in [false, true]) {
+      test('refreshToken이 ${hasNullToken ? 'null이면' : '없으면'} 기존 값을 유지한다', () {
+        final result = refreshAuthResultFromJson({
+          'accessToken': 'new-access',
+          if (hasNullToken) 'refreshToken': null,
+        }, existingRefreshToken: 'existing-refresh');
+
+        expect(result.accessToken, 'new-access');
+        expect(result.refreshToken, 'existing-refresh');
+      });
+    }
+
+    for (final invalid in <Object?>[null, '', '   ', 123, true, [], {}]) {
+      test('잘못된 accessToken $invalid 갱신 응답을 거절한다', () {
+        expect(
+          () => refreshAuthResultFromJson({
+            'result': {'accessToken': invalid},
+          }, existingRefreshToken: 'existing-refresh'),
+          throwsA(isA<ApiException>()),
+        );
+      });
+    }
+
+    for (final invalid in <Object?>['', '   ', 123, true, [], {}]) {
+      test('잘못된 refreshToken $invalid 값을 기존 값으로 대체하지 않는다', () {
+        expect(
+          () => refreshAuthResultFromJson({
+            'accessToken': 'new-access',
+            'refreshToken': invalid,
+          }, existingRefreshToken: 'existing-refresh'),
+          throwsA(isA<ApiException>()),
+        );
+      });
+    }
+  });
+
   group('loginAuthResultFromJson', () {
     test('isNewUser=false 실제 응답을 인증 완료 결과로 매핑한다', () {
       final result = loginAuthResultFromJson({

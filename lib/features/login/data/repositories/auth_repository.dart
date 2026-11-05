@@ -37,6 +37,27 @@ class AuthRepository {
     return result;
   }
 
+  Future<AuthenticatedResult> refresh(RefreshRequest request) async {
+    final attempt = _tokenWriter.beginAttempt();
+    try {
+      final data = await _remoteDataSource.refresh(request);
+      final result = refreshAuthResultFromJson(
+        jsonObjectFromResponse(data, context: '인증 갱신'),
+        existingRefreshToken: request.refreshToken,
+      );
+
+      await _saveIfAuthenticated(result, attempt);
+      _tokenWriter.checkCurrentAttempt(attempt);
+
+      return result;
+    } catch (_) {
+      // 새 로그인·로그아웃이 시작됐다면 그 시도의 토큰을 지우지 않는다.
+      _tokenWriter.checkCurrentAttempt(attempt);
+      await _tokenWriter.clear();
+      rethrow;
+    }
+  }
+
   Future<AuthResult> register(
     RegisterRequest request, {
     MultipartFile? image,

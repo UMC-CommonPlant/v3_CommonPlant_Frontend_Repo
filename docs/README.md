@@ -47,6 +47,7 @@
 
 | 작업 | 이력 |
 | --- | --- |
+| 앱 시작 refresh-only 토큰 갱신 #311 | [배포 계약·초기 복원·검증 경계](work-history/startup-token-refresh-311.md) |
 | 스토어 계정·배포 준비 #215 | [계정·서명 재점검과 후속 순서](work-history/store-readiness-215.md) |
 | 장소 좌표 없는 날씨 조회 차단 #309 | [조회 조건·불가 안내·후속 계약](work-history/place-weather-unavailable-309.md) |
 | 장소 날씨 화면·백엔드 연결 경계 #306 | [단계별 구현 계획과 변경 표](work-history/place-weather-ui-306.md) |

@@ -2,6 +2,12 @@ import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('RefreshRequest는 refreshToken만 JSON으로 전송한다', () {
+    const request = RefreshRequest(refreshToken: 'existing-refresh');
+
+    expect(request.toJson(), {'refreshToken': 'existing-refresh'});
+  });
+
   group('RegisterRequest', () {
     test('Swagger 회원가입 JSON 필드만 직렬화한다', () {
       const request = RegisterRequest(

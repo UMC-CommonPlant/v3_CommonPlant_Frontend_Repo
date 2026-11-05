@@ -1,11 +1,16 @@
 import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
+import 'package:commonplant_frontend/core/network/api_exception.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
+import 'package:commonplant_frontend/features/login/data/datasources/auth_remote_data_source.dart';
+import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
+import 'package:commonplant_frontend/features/login/data/repositories/auth_repository.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_state.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -58,16 +63,190 @@ void main() {
     expect(tokenStore.accessToken, isNull);
   });
 
-  test('refreshToken만 있으면 재발급을 추정하지 않고 현재 로그인 경로를 유지한다', () async {
-    final store = _MemoryAuthTokenStore(refreshToken: 'refresh-only');
-    final container = _remoteContainer(store);
+  for (final rotated in [false, true]) {
+    test('refresh-only 갱신 후 token을 저장하고 세션을 시작한다 (회전 $rotated)', () async {
+      final store = _MemoryAuthTokenStore(refreshToken: 'refresh-only');
+      final source = _RefreshRemoteDataSource(
+        response: {
+          'result': {
+            'accessToken': 'new-access',
+            if (rotated) 'refreshToken': 'rotated-refresh',
+          },
+        },
+      );
+      final container = _remoteContainer(store, source: source);
+      addTearDown(container.dispose);
+
+      final session = await container.read(
+        authSessionControllerProvider.future,
+      );
+
+      expect(source.requests.single.refreshToken, 'refresh-only');
+      expect(store.accessToken, 'new-access');
+      expect(store.refreshToken, rotated ? 'rotated-refresh' : 'refresh-only');
+      expect(store.saveCalls, 1);
+      expect(store.clearCalls, 0);
+      expect(session.isAuthenticated, isTrue);
+      expect(container.read(userDataSessionProvider).isActive, isTrue);
+    });
+  }
+
+  test('refresh 응답과 token 저장이 끝날 때까지 checking과 비활성 데이터를 유지한다', () async {
+    final response = Completer<Object?>();
+    final saving = Completer<void>();
+    final store = _MemoryAuthTokenStore(
+      refreshToken: 'refresh-only',
+      saveBarrier: saving,
+    );
+    final source = _RefreshRemoteDataSource(responseBarrier: response);
+    final container = _remoteContainer(store, source: source);
     addTearDown(container.dispose);
+    final startup = container.read(authSessionControllerProvider.future);
+    await source.started.future;
+    expect(container.read(authSessionControllerProvider).isLoading, isTrue);
+    expect(container.read(userDataSessionProvider).isActive, isFalse);
+    expect(store.clearCalls, 0);
+
+    response.complete({
+      'result': {'accessToken': 'new-access'},
+    });
+    await store.saveStarted.future;
+    expect(container.read(authSessionControllerProvider).isLoading, isTrue);
+    expect(container.read(userDataSessionProvider).isActive, isFalse);
+    saving.complete();
+
+    expect((await startup).isAuthenticated, isTrue);
+    expect(container.read(userDataSessionProvider).isActive, isTrue);
+  });
+
+  for (final error in [
+    const ApiException(message: 'expired', statusCode: 401, code: 'A004'),
+    const ApiException(message: 'mismatch', statusCode: 401, code: 'A012'),
+    const ApiException(message: 'network', kind: ApiFailureKind.network),
+  ]) {
+    test('refresh 실패는 한 번만 요청하고 token 정리 후 로그인으로 복귀한다 ($error)', () async {
+      final store = _MemoryAuthTokenStore(refreshToken: 'refresh-only');
+      final source = _RefreshRemoteDataSource(error: error);
+      final container = _remoteContainer(store, source: source);
+      addTearDown(container.dispose);
+
+      final session = await container.read(
+        authSessionControllerProvider.future,
+      );
+
+      expect(session.isUnauthenticated, isTrue);
+      expect(source.requests, hasLength(1));
+      expect(store.clearCalls, 1);
+      expect(store.saveCalls, 0);
+      expect(store.accessToken, isNull);
+      expect(store.refreshToken, isNull);
+      expect(container.read(userDataSessionProvider).isActive, isFalse);
+    });
+  }
+
+  test('잘못된 refresh 응답도 인증하지 않고 부분 token을 삭제한다', () async {
+    final store = _MemoryAuthTokenStore(refreshToken: 'refresh-only');
+    final container = _remoteContainer(
+      store,
+      source: _RefreshRemoteDataSource(
+        response: {
+          'result': {'accessToken': 123},
+        },
+      ),
+    );
+    addTearDown(container.dispose);
+
     final session = await container.read(authSessionControllerProvider.future);
+
+    expect(session.isUnauthenticated, isTrue);
+    expect(store.saveCalls, 0);
+    expect(store.clearCalls, 1);
+  });
+
+  test('refresh token 저장 실패는 남은 token을 삭제하고 인증하지 않는다', () async {
+    final store = _MemoryAuthTokenStore(
+      refreshToken: 'refresh-only',
+      saveError: StateError('storage error'),
+    );
+    final container = _remoteContainer(
+      store,
+      source: _RefreshRemoteDataSource(),
+    );
+    addTearDown(container.dispose);
+
+    final session = await container.read(authSessionControllerProvider.future);
+
     expect(session.isUnauthenticated, isTrue);
     expect(store.clearCalls, 1);
     expect(store.accessToken, isNull);
     expect(store.refreshToken, isNull);
     expect(container.read(userDataSessionProvider).isActive, isFalse);
+  });
+
+  for (final failure in [false, true]) {
+    test('로그아웃 뒤 도착한 refresh 결과는 새 계정 세션을 바꾸지 않는다 (실패 $failure)', () async {
+      final response = Completer<Object?>();
+      final source = _RefreshRemoteDataSource(responseBarrier: response);
+      final store = _MemoryAuthTokenStore(refreshToken: 'A-refresh');
+      final container = _remoteContainer(store, source: source);
+      addTearDown(container.dispose);
+      container.read(authSessionControllerProvider.future).ignore();
+      await source.started.future;
+      final controller = container.read(authSessionControllerProvider.notifier);
+      await controller.clearSession();
+      await store.saveTokens(
+        accessToken: 'B-access',
+        refreshToken: 'B-refresh',
+      );
+      controller.applyAuthResult(
+        const AuthenticatedResult(
+          accessToken: 'B-access',
+          refreshToken: 'B-refresh',
+        ),
+      );
+      final sessionB = container.read(userDataSessionProvider);
+
+      if (failure) {
+        response.completeError(const ApiException(message: 'expired'));
+      } else {
+        response.complete({
+          'result': {'accessToken': 'A-access'},
+        });
+      }
+      await container.pump();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(container.read(userDataSessionProvider), same(sessionB));
+      expect(
+        container
+            .read(authSessionControllerProvider)
+            .requireValue
+            .isAuthenticated,
+        isTrue,
+      );
+      expect(store.accessToken, 'B-access');
+      expect(store.refreshToken, 'B-refresh');
+      expect(store.saveCalls, 1);
+      expect(store.clearCalls, 1);
+    });
+  }
+
+  test('폐기된 앱 세션의 refresh 응답은 token을 저장하지 않는다', () async {
+    final response = Completer<Object?>();
+    final source = _RefreshRemoteDataSource(responseBarrier: response);
+    final store = _MemoryAuthTokenStore(refreshToken: 'refresh-only');
+    final container = _remoteContainer(store, source: source);
+    container.read(authSessionControllerProvider.future).ignore();
+    await source.started.future;
+    container.dispose();
+
+    response.complete({
+      'result': {'accessToken': 'new-access'},
+    });
+    await Future<void>.delayed(Duration.zero);
+
+    expect(store.saveCalls, 0);
+    expect(store.clearCalls, 0);
   });
 
   test('신규 사용자 로그인 결과에서 회원가입 진행 정보를 보존한다', () async {
@@ -279,11 +458,17 @@ void main() {
   });
 }
 
-ProviderContainer _remoteContainer(AuthTokenStore tokenStore) {
+ProviderContainer _remoteContainer(
+  AuthTokenStore tokenStore, {
+  AuthRemoteDataSource? source,
+}) {
   return ProviderContainer(
     overrides: [
       useRemoteApiProvider.overrideWithValue(true),
       authTokenStoreProvider.overrideWithValue(tokenStore),
+      authRemoteDataSourceProvider.overrideWithValue(
+        source ?? _RefreshRemoteDataSource(),
+      ),
     ],
   );
 }
@@ -295,11 +480,17 @@ class _MemoryAuthTokenStore implements AuthTokenStore {
     this.clearBarrier,
     this.accessBarrier,
     this.clearError,
+    this.saveBarrier,
+    this.saveError,
   });
 
   String? accessToken;
   String? refreshToken;
   int clearCalls = 0;
+  int saveCalls = 0;
+  final saveStarted = Completer<void>();
+  final Completer<void>? saveBarrier;
+  final Object? saveError;
   final Completer<void>? clearBarrier;
   final Completer<String?>? accessBarrier;
   final Object? clearError;
@@ -325,7 +516,35 @@ class _MemoryAuthTokenStore implements AuthTokenStore {
     required String accessToken,
     required String refreshToken,
   }) async {
+    saveCalls++;
+    if (!saveStarted.isCompleted) saveStarted.complete();
+    await saveBarrier?.future;
     this.accessToken = accessToken;
+    if (saveError != null) throw saveError!;
     this.refreshToken = refreshToken;
+  }
+}
+
+class _RefreshRemoteDataSource extends AuthRemoteDataSource {
+  _RefreshRemoteDataSource({
+    this.response = const {
+      'result': {'accessToken': 'new-access'},
+    },
+    this.responseBarrier,
+    this.error,
+  }) : super(Dio());
+
+  final Object? response;
+  final Completer<Object?>? responseBarrier;
+  final Object? error;
+  final started = Completer<void>();
+  final requests = <RefreshRequest>[];
+
+  @override
+  Future<Object?> refresh(RefreshRequest request) async {
+    requests.add(request);
+    if (!started.isCompleted) started.complete();
+    if (error != null) throw error!;
+    return responseBarrier?.future ?? response;
   }
 }
