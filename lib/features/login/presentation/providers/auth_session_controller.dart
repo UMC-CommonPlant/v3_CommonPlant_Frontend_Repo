@@ -2,7 +2,9 @@ import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:commonplant_frontend/core/network/auth_token_writer.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
+import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
+import 'package:commonplant_frontend/features/login/data/repositories/auth_repository.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,10 +29,33 @@ class AuthSessionController extends AsyncNotifier<AuthSessionState> {
     if (!isCurrentUserDataSession(buildRef, initialSession)) {
       return state.value ?? const AuthSessionState.unauthenticated();
     }
-    final hasAccessToken = accessToken != null && accessToken.isNotEmpty;
-    final hasRefreshToken = refreshToken != null && refreshToken.isNotEmpty;
+    final hasAccessToken = accessToken != null && accessToken.trim().isNotEmpty;
+    final hasRefreshToken =
+        refreshToken != null && refreshToken.trim().isNotEmpty;
 
     if (hasAccessToken && hasRefreshToken) {
+      ref.read(userDataSessionProvider.notifier).start();
+      return const AuthSessionState.authenticated();
+    }
+
+    if (hasRefreshToken) {
+      try {
+        await ref
+            .read(authRepositoryProvider)
+            .refresh(RefreshRequest(refreshToken: refreshToken.trim()));
+      } catch (_) {
+        // Repository가 현재 인증 시도의 실패만 정리한다. 새 로그인은 지우지 않는다.
+        if (!buildRef.mounted) return const AuthSessionState.unauthenticated();
+        if (!isCurrentUserDataSession(buildRef, initialSession)) {
+          return state.value ?? const AuthSessionState.unauthenticated();
+        }
+        return const AuthSessionState.unauthenticated();
+      }
+
+      if (!buildRef.mounted) return const AuthSessionState.unauthenticated();
+      if (!isCurrentUserDataSession(buildRef, initialSession)) {
+        return state.value ?? const AuthSessionState.unauthenticated();
+      }
       ref.read(userDataSessionProvider.notifier).start();
       return const AuthSessionState.authenticated();
     }
@@ -81,7 +106,7 @@ class AuthSessionController extends AsyncNotifier<AuthSessionState> {
       return;
     }
 
-    // refresh 계약이 없으므로 현재 세션을 즉시 닫고 재로그인을 안내한다.
+    // 시작 시 refresh-only 복원과 별개로, 활성 요청의 자동 재전송은 하지 않는다.
     ref.read(userDataSessionProvider.notifier).end();
     state = const AsyncData(
       AuthSessionState.unauthenticated(reason: AuthSessionEndReason.expired),

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:commonplant_frontend/core/network/api_client.dart';
+import 'package:commonplant_frontend/core/network/auth_interceptor.dart';
 import 'package:commonplant_frontend/core/network/auth_session_expiration.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
@@ -11,6 +12,56 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('활성 세션의 갱신 요청은 기존 Authorization과 token 읽기를 제외한다', () async {
+    final store = _TokenStore()..readError = StateError('token read forbidden');
+    final container = _container(store);
+    container.read(userDataSessionProvider.notifier).start();
+    final adapter = _RecordingAdapter();
+    final dio = container.read(dioProvider)..httpClientAdapter = adapter;
+    dio.options.headers['authorization'] = 'Bearer old-access';
+
+    await dio.post<Object?>(
+      '/auth/refresh',
+      options: Options(
+        headers: {'Authorization': 'Bearer request-access'},
+        extra: const {skipAccessTokenExtraKey: true},
+      ),
+    );
+
+    expect(store.readCalls, 0);
+    expect(
+      adapter.requests.single.headers.keys.map((key) => key.toLowerCase()),
+      isNot(contains('authorization')),
+    );
+  });
+
+  test('갱신 오류는 자동 만료에서 제외하고 다음 일반 요청은 만료를 알린다', () async {
+    final expiredSessions = <UserDataSession>[];
+    final container = _container(
+      _TokenStore(),
+      onSessionExpired: (session) async => expiredSessions.add(session),
+    );
+    container.read(userDataSessionProvider.notifier).start();
+    final activeSession = container.read(userDataSessionProvider);
+    final dio = container.read(dioProvider)
+      ..httpClientAdapter = _RecordingAdapter(
+        responseFactory: () => _errorResponse(statusCode: 401, code: 'A004'),
+      );
+
+    await expectLater(
+      dio.post<Object?>(
+        '/auth/refresh',
+        options: Options(extra: const {skipAccessTokenExtraKey: true}),
+      ),
+      throwsA(isA<DioException>()),
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(expiredSessions, isEmpty);
+    await expectLater(dio.get<Object?>('/users'), throwsA(isA<DioException>()));
+    await Future<void>.delayed(Duration.zero);
+    expect(expiredSessions, [same(activeSession)]);
+  });
+
   test('인증 전 요청에는 저장된 이전 access token을 첨부하지 않는다', () async {
     final store = _TokenStore();
     final container = _container(store);

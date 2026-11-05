@@ -9,7 +9,8 @@
 
 ## 현재 판정
 
-- 기준일: 2026-08-23
+- 최초 기준일: 2026-08-23
+- 인증 계약 재확인: 2026-11-03, live OpenAPI 20 paths·28 operations / backend develop `03ece0e`
 - 추적 이슈: #220
 - dev API 문서 상태: Ready
 - 인증·데이터 준비 상태: Blocked
@@ -23,11 +24,11 @@
 | 영역 | 확인된 사실 | 판정 |
 | --- | --- | --- |
 | dev 환경 | `https://commonplant-dev.okbear.dev/api/v1`과 OpenAPI JSON에 접근 가능 | Ready |
-| endpoint inventory | OpenAPI 19개 path에 test, seed, fixture, cleanup 전용 endpoint가 없음 | Blocked 조건 유지 |
+| endpoint inventory | 2026-11-03 OpenAPI 20개 path에도 test, seed, fixture, cleanup 전용 endpoint가 없음 | Blocked 조건 유지 |
 | 로그인 | `POST /auth/login`은 Google/Kakao/Apple SDK token을 요구 | CI 인증 방식 미확정 |
 | 회원가입 | 신규 사용자 `signupToken`은 10분 동안만 유효 | 장기 fixture 생성 수단으로 사용 불가 |
-| token lifecycle | access token 재발급과 logout endpoint가 Swagger에 없음 | 만료·폐기 대응 미확정 |
-| 앱 인증 계층 | Auth repository, secure token store, bearer interceptor는 구현됨 | data 계층 준비 |
+| token lifecycle | `POST /auth/refresh` 배포 확인. access 필수·refresh 선택 회전, TTL 설명/설정 불일치·테스트 인증·폐기 정책 미확정, logout 미제공 | 만료·폐기 대응 미확정 |
+| 앱 인증 계층 | Auth repository, secure token store, bearer interceptor는 구현됨 | data 계층 준비. #311 초기 refresh-only 복원 자동 검증은 실계정 재발급 검증과 별개 |
 | 앱 화면 연결 | #227·#285에서 SDK → login repository → 프로필·register → 인증 router 연결 완료, #293에서 fake 기반 전체 흐름 검증 | 실제 기기·설정·계정 검증 대기 |
 | 데이터 API | Place/Plant 삭제 endpoint는 있으나 Place 성공 schema와 multipart 일부가 미확정 | CRUD pilot 보류 |
 | Memo | OpenAPI inventory에 Memo endpoint가 없음 | Memo E2E 불가 |

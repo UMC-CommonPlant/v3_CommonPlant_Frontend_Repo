@@ -202,11 +202,18 @@ API 비사용 화면 확인 모드는 원격 인증 gate를 적용하지 않는�
 
 active access-token 요청에서 확인된 `A003`, `A004`, `A009`가 오면 #275의 세션 Controller가 현재 사용자 데이터 세션을 먼저 닫고 `unauthenticated(expired)`로 전환합니다. 라우터는 기존 정책으로 `/login`에 이동하고 로그인 화면은 만료 이유를 안내합니다. 이전 계정의 늦은 오류는 현재 세션을 바꾸지 않습니다.
 
-`TOKEN-01`은 backend #149에서 답변 대기 중입니다. API가 제공되면 access token 없이
-refresh token만 남은 초기 상태에서 곧바로 로그인으로 보내지 않고 갱신을 먼저 시도합니다.
-현재는 endpoint가 없어 기존처럼 부분 token을 삭제하고 `unauthenticated`로 전환합니다.
-서버 로그아웃과 invalidation(`TOKEN-02`)은 현재 우선순위에서 제외하며, 기존 로컬
-로그아웃·clear 동작은 바꾸지 않습니다.
+`TOKEN-01`은 2026-11-03 live OpenAPI와 backend develop `03ece0e`에서
+`POST /auth/refresh` 배포를 확인했습니다. #311은 API 모드 앱 시작에 access token 없이
+refresh token만 남으면 갱신을 먼저 시도합니다. 갱신·token 저장이 끝나기 전에는 인증
+확인 상태와 비활성 사용자 데이터 세션을 유지하고 로그인 redirect를 확정하지 않습니다. 앱 루트는 온보딩 저장값 확인 및 온보딩 완료 후 인증 복원 중에 진행 표시만 보여 보호 화면의 조회 오류와 작업 버튼을 노출하지 않습니다. 미완료 온보딩은 기존 우선 노출을 유지합니다. 성공하면 기존 redirect target을
+보존해 인증 상태를 복원하고, 실패하면 token과 사용자 데이터 세션을 정리한 뒤 로그인으로
+이동합니다. 늦은 갱신 결과가 로그아웃·새 로그인 이후 세션을 복원하지 않게 합니다.
+
+갱신은 bearer 없이 JSON body로 refresh token을 전달합니다. 새 access token은 필수이고
+refresh token이 생략/null이면 기존 refresh를 유지합니다. 자동 401 갱신·원요청 재시도와
+서버 로그아웃·invalidation(`TOKEN-02`)은 이번 범위 밖이며 기존 로컬 로그아웃을 유지합니다.
+서버 TTL 문서·설정이 충돌하므로 라우터에서 만료·회전 시점을 추정하지 않습니다.
+계약과 검증 경계는 [TOKEN-01](backend-api-open-questions.md#token-01-refresh-token-재발급-api)을 따릅니다.
 
 #249부터 로그아웃·탈퇴 성공 시 저장소 삭제 완료를 기다리기 전에 인증 상태와 사용자 데이터 세션을 닫습니다. 기존 redirect 규칙은 그대로 사용하며, 느린 token 삭제 완료나 이전 계정의 요청 결과가 새 인증 상태를 변경하지 않도록 Controller에서 검사합니다. 데이터 수명은 [상태관리의 세션 격리 기준](state-management-guide.md#사용자-데이터-세션-격리)을 따릅니다.
 

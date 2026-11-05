@@ -164,7 +164,7 @@ tool/
 - 앱 version과 build number는 `pubspec.yaml`의 `X.Y.Z+N`을 단일 원본으로 사용하고 release 브랜치에서 수동 증가합니다. store 이력 확인 전에는 CI 실행 번호로 덮어쓰지 않습니다.
 - Production 제출은 내부 테스트에서 검증한 동일 artifact를 승격하고, 심사 제출과 사용자 공개를 분리해 실행자 외 승인을 받습니다. 최초 MVP 출시는 Android/iOS 모두 수동 공개하며 unattended full rollout은 사용하지 않습니다.
 - 현재 API 모델은 수기 DTO·mapper로 구현되어 있습니다. `freezed`·`json_serializable` 도입은 미적용 제안이며, 별도 이슈에서 필요성과 생성 규칙을 정하기 전까지 현행 방식을 따릅니다.
-- 인증 토큰은 `flutter_secure_storage`에 보관합니다. #249에서 계정별 데이터 세션과 토큰 저장·삭제 순서를 분리해 이전 계정의 조회·후처리가 새 계정에 섞이지 않도록 구현했습니다. #287의 refresh-only 복원 정책은 API 제공 뒤 #311·PR #312에서 구현했으며 아직 develop 미병합입니다. 이번 #277 브랜치에는 중복 포함하지 않고, 서버 로그아웃 연동은 우선순위에서 제외합니다. [작업 이력](docs/work-history/session-cache-isolation-249.md)에서 현재 검증 범위와 제한을 확인합니다.
+- 인증 토큰은 `flutter_secure_storage`에 보관합니다. #249에서 계정별 데이터 세션과 토큰 저장·삭제 순서를 분리해 이전 계정의 조회·후처리가 새 계정에 섞이지 않도록 구현했습니다. #287의 refresh-only 갱신 우선 정책은 배포된 `/auth/refresh` 계약을 확인해 #311에서 앱 시작 복원에 연결했습니다. 갱신 성공 시 token 쌍 저장 뒤 세션을 시작하며, 활성 요청의 자동 재전송과 서버 로그아웃 연동은 별도 후속입니다. [작업 이력](docs/work-history/session-cache-isolation-249.md)에서 현재 검증 범위와 제한을 확인합니다.
 - 백엔드 에러 코드는 아직 미정이므로, 확정 전까지는 공통 에러 타입으로 감쌀 수 있는 구조를 우선합니다.
 - Golden test는 `OnboardingPage`의 `375×812`, DPR 1 pilot과 Ubuntu canonical baseline을 기준으로 사용합니다.
 - Integration test는 remote API를 사용하지 않는 온보딩 완료 → 소셜 선택 → 로컬 프로필·약관 → Home → 장소 친구 요청 이동을 Android smoke pilot으로 사용합니다. dev API URL은 준비됐지만 [remote integration test 준비 계약](docs/remote-integration-test-readiness.md)의 인증, 데이터 격리, cleanup, secret 승인 gate가 충족되기 전까지 end-to-end 범위는 `Blocked`입니다.
@@ -249,13 +249,13 @@ GitHub Actions에서 Flutter `3.35.7` 기준으로 아래 작업을 실행합니
 1. #267 / PR #268에서 #256·Epic #226의 병합 완료 상태와 아래 실행·보류 범위를 문서에 동기화했습니다.
 2. #271 / PR #272에서 Home 친구 요청 배지의 loading·조회 실패·정상 0건·성공 수와 오류 재시도를 연결했습니다.
 3. #273 / PR #274에서 기존 Place API의 정확한 plant ID 대조로 Plant 소속 장소 code를 복원했습니다. 식물 검색 API는 백엔드 #92 완료 전까지 API 모드 fixture를 차단하고 미연결 안내를 유지합니다.
-4. #275 / PR #276에서 표준 API 오류와 필드 오류를 안전하게 매핑하고, 확인된 access token 오류 `A003`·`A004`·`A009`는 현재 세션을 종료해 로그인 안내로 연결했습니다. #287은 refresh-only 상태의 갱신 우선 원칙을 정했지만 backend #149 계약 전까지 요청을 추정하지 않으며, 서버 로그아웃 연동은 우선순위에서 제외합니다.
+4. #275 / PR #276에서 표준 API 오류와 필드 오류를 안전하게 매핑하고, 확인된 access token 오류 `A003`·`A004`·`A009`는 현재 세션을 종료해 로그인 안내로 연결했습니다. #311은 배포 계약을 확인해 앱 시작의 refresh-only 복원을 연결합니다. 활성 요청의 자동 갱신·재전송과 서버 로그아웃은 이번 범위에 포함하지 않습니다.
 5. #277은 2026-11-05 갱신된 Swagger와 backend `03ece0e`를 대조해 Place 멤버의 실제 `nanoId`·팀짱 여부 조회와 [팀짱 위임](docs/work-history/place-owner-api-277.md)을 연결합니다. [장소 탈퇴](docs/work-history/place-leave-api-277.md)도 별도 API 커밋으로 연결합니다. 실제 서버 쓰기·재조회 QA는 아직 남아 있습니다. Friend 고유 대상·부분 결과와 멤버 추가·제거는 [백엔드 #150](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/150) 후속 계약이 필요합니다.
 6. #279 / PR #280에서 UX-02의 inline 상태·Snackbar·Dialog 기준을 확정하고, 반복 Snackbar만 최소 helper로 통일했습니다. 단일 목적지 삭제 결과와 전달용 getter는 제거하고 실제 분기·재사용이 있는 상태와 result는 유지했습니다.
 7. #281 / PR #282에서 현재 PR 본문 기준을 단일 기본 template으로 고정했습니다. 유형별 template과 metadata 자동화는 실제 반복 요구가 생기기 전까지 추가하지 않습니다.
 8. #283에서 Memo 텍스트 CRUD 계약을 재확인했습니다. live OpenAPI에는 Memo path/schema가 없고 backend #50~#55의 초안도 본문 길이·이미지 유지·작성자·pagination 계약이 충돌하거나 빠져 있어 [백엔드 #50 계약 확인](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/50#issuecomment-5488630254) 답변 전까지 로컬 화면을 유지합니다.
 9. #285 / PR #286에서 Kakao access token, Google ID token, iOS 전용 Apple identity token을 `/auth/login`에 전달하고 실제 `isNewUser` 값으로 가입 완료 흐름을 분기했습니다. Apple 서버 검증은 [백엔드 #152](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/152) 배포 전까지 완료로 표시하지 않습니다.
-10. #287 / PR #288에서 온보딩 최초 노출과 refresh token만 남은 초기 세션 정책을 정리했습니다. refresh API가 없어 자동 갱신 구현은 계속 대기합니다.
+10. #287 / PR #288에서 온보딩 최초 노출과 refresh token만 남은 초기 세션 정책을 정리했습니다. #311에서 배포된 refresh API를 초기 복원에 연결했습니다. [작업 기록](docs/work-history/startup-token-refresh-311.md)에서 자동 테스트와 실제 계정 QA 경계를 구분합니다.
 11. #289 / PR #290에서 온보딩 완료 여부를 로컬에 저장하고 앱 시작 redirect에 연결했습니다.
 12. #291 / PR #292에서 정원·마이 하단 탭을 단순 Shell로 통합하고, 정보·이야기·캘린더에는 구현 예정 안내를 연결하며 짧은 popup·FAB motion을 통일했습니다.
 13. #293에서 소셜 로그인 응답 검증·카카오 네이티브 취소·iPhone 전용 Apple 접근·로그인 후 목적지 보존·Android release 인터넷 권한을 보완합니다. 실기기와 자동 테스트 결과는 [검증 기록](docs/work-history/social-login-verification-293.md)에서 구분합니다.

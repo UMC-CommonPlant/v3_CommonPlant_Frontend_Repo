@@ -70,6 +70,20 @@ AuthenticatedResult registerAuthResultFromJson(JsonMap json) {
   );
 }
 
+AuthenticatedResult refreshAuthResultFromJson(
+  JsonMap json, {
+  required String existingRefreshToken,
+}) {
+  final object = unwrapJsonObject(json, context: 'Auth refresh');
+
+  return AuthenticatedResult(
+    accessToken: _readAuthToken(object, 'accessToken'),
+    refreshToken: object['refreshToken'] == null
+        ? existingRefreshToken
+        : _readAuthToken(object, 'refreshToken'),
+  );
+}
+
 String _readAuthToken(JsonMap object, String key) {
   final value = object[key];
   if (value is! String || value.trim().isEmpty) {

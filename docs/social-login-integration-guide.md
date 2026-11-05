@@ -72,6 +72,28 @@ live OpenAPI schema에는 `newUser`가 남아 있지만 실제 확인한 응답�
 잘못돼도 `newUser`로 대체하지 않고 실패 처리한다. 내부 상태는 `SignupRequiredResult`와 `AuthenticatedResult` 타입으로
 이미 분리되므로 동일 의미의 boolean을 다시 보존하지 않는다.
 
+## 앱 시작 refresh-only 복원 #311
+
+2026-11-03 [live OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json) 20 paths·28 operations와
+backend develop `03ece0e`·[PR #165](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/pull/165)에서
+`POST /auth/refresh` 배포를 확인했다. API 모드 앱 시작에 access token 없이 refresh token만
+남으면 #287에서 정한 갱신 우선 정책을 적용한다.
+
+- `Authorization` 없이 JSON `{"refreshToken":"..."}`을 보낸다. 만료 access bearer를 붙이면
+  JWT 필터가 refresh 처리 전에 거절하므로 일반 인증 요청과 구분한다.
+- 성공 wrapper의 `result.accessToken`은 비공백 문자열이어야 한다. `result.refreshToken`이
+  생략/null이면 기존 refresh를 유지하고 새 값이 있으면 교체한다.
+- 갱신·저장 중에는 인증 확인 상태를 유지한다. 성공 후 현재 인증 시도만 복원하며,
+  실패하면 token과 사용자 데이터 세션을 정리해 로그인으로 이동한다.
+- JWT 오류 `A003`, 만료 `A004`, refresh 타입·저장값 불일치 `A012`는 HTTP 401이다.
+  활성 사용자가 없으면 HTTP 404 `A006`이다. 서버 TTL 근거가 충돌하므로 앱에서 기간이나
+  회전 시점을 하드코딩하지 않는다.
+
+이번 연결은 초기 refresh-only 상태에 한정한다. 활성 access-token 오류의 기존 세션 종료,
+자동 401 갱신·원요청 재시도와 서버 로그아웃의 후속 범위는 [TOKEN-01](backend-api-open-questions.md#token-01-refresh-token-재발급-api)을 따른다.
+명세·소스 확인과 자동 테스트는 실제 계정 갱신·휴대폰 재실행 검증과 구분한다.
+Apple 확인·검증은 사용자 요청으로 보류하며 Kakao·Google 또는 초기 세션 복원의 조건으로 삼지 않는다.
+
 ## Provider별 전달 token
 
 | Provider | 노출 플랫폼 | SDK에서 읽는 값 | `/auth/login.provider` | 백엔드 상태 |

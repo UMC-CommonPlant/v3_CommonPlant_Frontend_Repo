@@ -37,7 +37,7 @@
 | IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | #248 Plant key 보존·Place 사진 수정 차단 구현, Place key 조회·동시 수정 보호 계약 필요 | Partial |
 | ERROR-01 | Error | 에러 response body의 공통 `code`, `message` 필드명은 무엇인가? | #275 표준 오류·field error 파싱 반영 | Answered |
 | ERROR-02 | Error | 도메인별 에러 코드 표준과 의미는 무엇인가? | #275 HTTP 범주·확인 코드 매핑, 미확인 코드는 안전 fallback | Answered |
-| TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | endpoint 제공 확인, 시작 시 refresh-only 복원은 별도 PR #312 | Answered |
+| TOKEN-01 | Token | refresh token 재발급 API가 제공되는가? | API 배포 확인, #311 초기 refresh-only 복원 연결. TTL·동시 갱신 후속 | Partial |
 | TOKEN-02 | Token | 로그아웃 API와 서버 token invalidation 정책이 있는가? | 현재 우선순위 제외, 기존 로컬 token·세션 제거 유지 | Open |
 | SEARCH-01 | 검색 | 주소 검색 API를 백엔드가 제공하는가? | 장소 등록 주소 검색 실데이터 보류 | Open |
 | SEARCH-02 | 검색 | 식물 학명/추천 검색 API를 백엔드가 제공하는가? | 백엔드 #92 대기, #273에서 API mode fixture 차단 | Blocked |
@@ -283,12 +283,14 @@
 
 ### TOKEN-01. Refresh token 재발급 API
 
-- 현재 근거: 2026-11-05 live OpenAPI와 backend `develop` `03ece0e`에서 `POST /auth/refresh` 및 `RefreshJsonResponse`를 확인했다.
-- 프론트 영향: access token 없이 refresh token만 남은 시작 상태를 복원할 수 있다.
-- 확인 질문: endpoint 계약 확인됨. TTL·다중 기기 정책과 실제 인증된 갱신 검증은 별도 범위다.
-- 프론트 반영: #311·PR #312에서 시작 시 refresh-only 복원을 구현했다. PR이 아직 열려 있으므로 현재 develop 기반 #277 브랜치에는 코드를 중복 포함하지 않는다. 런타임 401 자동 갱신·원요청 재전송은 별도 후속이다.
-- 답변: JSON `{refreshToken}` 요청, bearer 미첨부. 성공 result의 accessToken 필수, refreshToken 생략/null이면 기존 값 유지, 새 값이면 교체한다. 상세는 [별도 PR #312](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/pull/312)를 따른다.
-- 상태: Answered
+- 최신 대조: 2026-11-05 공개 OpenAPI 22 paths·30 operations에서도 같은 refresh 계약을 확인했다. PR #312가 develop에 병합돼 #315에도 최신 develop을 동기화했다.
+- 현재 근거: 2026-11-03 [live OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)는 20 paths·28 operations이며 `POST /auth/refresh`를 제공한다. backend develop [`03ece0e`](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/commit/03ece0e466f2f47f72263085f3bfa737b3e1a53c)의 `AuthController`·`AuthRequest.Refresh`·`AuthResponse.RefreshResponse`·`AuthServiceImpl.refresh`와 [PR #165](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/pull/165)를 대조했다. #149·#162의 OPEN 상태는 배포 부재의 근거가 아니다.
+- 확인된 계약: `Authorization` 없이 JSON `{"refreshToken":"..."}`을 보낸다. 성공 wrapper의 `result.accessToken`을 사용하고 `result.refreshToken`은 회전할 때만 반환되므로 생략/null이면 기존 refresh token을 보존한다. JWT 필터는 `/auth/**`에서도 전달된 bearer를 검증하므로 만료 access token을 붙이지 않는다. refresh 값은 필수 비공백 문자열이며 최대 512자다.
+- 오류·회전: JWT 형식·서명 오류는 HTTP 401 `A003`, 만료는 `A004`, REFRESH 타입 불일치·저장값 불일치는 `A012`, 활성 사용자 없음은 HTTP 404 `A006`이다. 회전 시 서버 저장값이 바뀌며 이전 refresh는 불일치로 거절된다. 로그인도 저장 refresh를 교체한다. `AuthServiceImplTest`와 `JwtUtilTest`에서 비회전·회전 저장·불일치·token type 차단을 확인했으며 이번에 백엔드 테스트를 실행한 것은 아니다.
+- 프론트 반영: #287의 확정 정책에 따라 #311에서 API 모드 앱 시작의 refresh-only 상태를 갱신한 뒤 token 저장·인증 복원에 연결한다. 활성 access-token 요청의 `A003`, `A004`, `A009` 세션 종료는 유지하며 자동 401 갱신·원요청 재시도와 서버 로그아웃은 이번 범위에 넣지 않는다. 실제 계정 갱신·실기기 재실행은 별도 검증이다.
+- 남은 질문: TTL은 #162 본문 임계 7일, Swagger 전체 7일·임계 1일, 현재 서버 설정 전체 30일·임계 3일로 충돌한다. 클라이언트에 TTL·회전 시점을 하드코딩하지 않는다. 동시 401·원요청 재시도와 서버 폐기 범위는 [#149](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/issues/149)의 후속 계약으로 남긴다.
+- 과거 근거: 2026-09-03 live OpenAPI 19 paths·27 operations와 backend main `f67ee6c`에는 refresh endpoint가 없어 당시에는 부분 token을 삭제했다. 이 기록을 현재 배포 상태로 해석하지 않는다.
+- 상태: Partial (초기 복원 계약 확인, TTL 정합성·자동 재시도 후속)
 
 ### TOKEN-02. 로그아웃 API와 token invalidation
 
@@ -372,7 +374,7 @@ TESTENV 질문의 상세 수용 조건과 단계별 도입 범위는 `docs/remot
 
 ### TESTENV-02. 테스트 token lifecycle
 
-- 현재 근거: 로그인은 access/refresh token을 반환하지만 Swagger에는 refresh 재발급과 logout endpoint가 없다.
+- 현재 근거: 2026-11-03 live OpenAPI와 backend develop `03ece0e`에 `/auth/refresh`가 배포됐다. 다만 TTL 설명·설정 불일치와 CI 인증 bootstrap·테스트 token 폐기 정책은 남아 있고 logout endpoint는 없다.
 - 프론트 영향: token 만료가 앱 실패인지 환경 실패인지 구분할 수 없고 장기 고정 token은 재현성이 없다.
 - 확인 질문: 테스트 token의 TTL, 갱신 또는 재발급, 폐기 방법과 관련 오류 코드는 무엇인가?
 - 프론트 반영: 답변 후 probe timeout, 만료 판정, 재시도 금지 범위를 정한다.

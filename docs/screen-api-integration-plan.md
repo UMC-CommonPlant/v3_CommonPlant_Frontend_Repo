@@ -32,7 +32,7 @@
 | 1 | #267 완료 상태·후속 범위 문서 동기화 | PR #266 병합·Epic #226 20/20 확인 | #267 / PR #268에서 완료 |
 | 2 | #271 Home 친구 요청 배지 조회 실패 상태 | 현재 `placeInvitationRequestCountProvider` 오류가 0건으로 보이는 동작 재현 | #271 / PR #272에서 완료 |
 | 3 | #273 Plant 소속 장소 code·식물 검색 잔여 동선 | `PLANT-01`, `SEARCH-02` 확인 | Place API의 정확한 plant ID로 Home 진입 code 복원 완료. 검색은 backend #92까지 API mode 차단·미연결 안내 |
-| 4 | #275 공통 API 오류 메시지·토큰 만료 처리 | `ERROR-01~02` 확인, `TOKEN-01~02` endpoint 부재 확인 | 표준 오류·field 메시지와 `A003/A004/A009` 로컬 세션 종료 완료. refresh·서버 logout은 backend #149 대기 |
+| 4 | #275 공통 API 오류 메시지·토큰 만료 처리 | `ERROR-01~02` 확인, `TOKEN-01~02` endpoint 부재 확인 | 표준 오류·field 메시지와 `A003/A004/A009` 로컬 세션 종료 완료. refresh-only 초기 복원은 배포 계약 확인 후 #311에서 연결. 활성 요청 재전송·서버 logout은 후속 |
 | 5 | #277 Place 멤버·Friend 식별자 기반 쓰기 | `PLACE-05~06`, `FRIEND-05`, 멤버 고유 ID·변경 endpoint, Friend 고유 대상·부분 결과 계약 | Place ID·팀짱 위임·탈퇴 연결. Friend 고유 대상·부분 결과와 멤버 추가·제거는 backend #150 후속 계약 대기 |
 | 6 | #283 Memo 텍스트 CRUD·목록 상태 API 연결 | backend #50~#55 구현·OpenAPI 동기화와 `MEMO-01`, `MEMO-03` 답변. 이미지 첨부 제외 | backend #50 계약 확인 답변 전 Blocked. 로컬 화면 유지, 추정 DTO·pagination·권한 모델 추가 금지 |
 
@@ -137,8 +137,8 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 - 신규 사용자는 `signupToken`, 추천 이름, 추천 이미지 URL을 세션에 보존하고 프로필·약관 화면으로 이동합니다.
 - 약관 동의 후 프로필 이름과 `signupToken`으로 `/auth/register`를 호출하고 인증 세션으로 전환합니다.
 - 프로필 샘플 이미지는 로컬 UI 상태이므로 서버 multipart 이미지로 임의 전송하지 않습니다. 실제 파일 선택 결과가 준비될 때 optional image 경계에 연결합니다.
-- API 모드는 secure storage의 access/refresh token 쌍으로 세션을 복원합니다. #287은 access token 없이 refresh token만 있으면 갱신을 먼저 시도하는 목표를 확정했지만, 현재는 endpoint가 없어 부분 token 삭제를 유지합니다.
-- #275에서 active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·데이터 세션을 종료하고 로그인 만료 안내로 연결합니다. refresh endpoint가 없으므로 자동 갱신·원요청 재시도는 하지 않으며 backend #149에서 계약을 추적합니다. 서버 로그아웃 연동은 현재 우선순위에서 제외합니다.
+- API 모드는 secure storage의 access/refresh token 쌍으로 세션을 복원합니다. #287의 정책에 따라 #311은 access token 없이 refresh token만 있으면 `/auth/refresh`를 먼저 시도합니다. 성공한 token 쌍을 저장한 뒤 세션을 시작하며 실패하면 부분 token을 삭제하고 로그인으로 이동합니다. 새 refresh token이 생략되면 기존 값을 보존합니다.
+- #275에서 active access-token 요청의 `A003`, `A004`, `A009`는 현재 인증·데이터 세션을 종료하고 로그인 만료 안내로 연결합니다. 앱 시작 refresh-only 복원과 별개로 활성 요청의 자동 갱신·원요청 재시도는 구현하지 않으며 동시 401 처리는 후속입니다. 서버 로그아웃 연동은 현재 우선순위에서 제외합니다.
 - 온보딩은 #287에서 비보안 로컬 완료 값을 사용하기로 했습니다. 값이 없으면 온보딩, 있으면 인증 복원으로 진입합니다. 앱 삭제·재설치 중 OS 백업이 복원된 경우의 재노출 여부는 별도 후속 결정으로 남깁니다.
 - #289는 `SharedPreferencesAsync` 저장소와 Controller를 연결했습니다. `시작하기` 성공 후에만 완료 처리하고, 실패 시 현재 화면에서 재시도합니다. 최초 보호 route의 redirect는 온보딩과 로그인을 지나서도 보존합니다.
 - #249에서 로그인·회원가입 결과마다 사용자 데이터 세션을 교체합니다. 늦은 SDK·API 결과는 이전 세션에 반영하지 않으며 token 저장·삭제는 같은 큐에서 순서대로 처리합니다.
@@ -319,7 +319,7 @@ pagination/result wrapper를 추가하지 않습니다. 현재 API 비사용 로
 
 dev 401 응답과 backend main의 `ErrorResponse`·도메인 error enum을 대조해 공통 오류 경계를 확정했습니다. `ApiException`은 status·code·traceId와 validation field reason을 분리하고 rejected value를 폐기합니다. 주요 생성·수정·삭제 Controller는 raw 서버 상세 대신 HTTP·전송 범주의 안전한 메시지를 사용하며 Place·Plant·User·가입 프로필 폼은 확인된 field error를 입력에 연결합니다.
 
-active access-token 요청의 `A003`, `A004`, `A009`는 한 세션에서 한 번만 만료를 알리고 현재 인증·데이터 세션과 로컬 token을 정리합니다. 라우터는 로그인으로 이동하고 만료 이유를 표시하며, 계정 전환 뒤 늦은 이전 응답은 새 세션을 종료하지 않습니다. live OpenAPI와 backend Controller에 refresh·logout endpoint가 없어 자동 갱신·원요청 재시도·서버 invalidation은 구현하지 않았고 backend #149로 분리했습니다.
+active access-token 요청의 `A003`, `A004`, `A009`는 한 세션에서 한 번만 만료를 알리고 현재 인증·데이터 세션과 로컬 token을 정리합니다. 라우터는 로그인으로 이동하고 만료 이유를 표시하며, 계정 전환 뒤 늦은 이전 응답은 새 세션을 종료하지 않습니다. 2026-11-03에는 live OpenAPI와 backend develop `03ece0e`에서 `/auth/refresh` 배포를 확인해 #311의 시작 시 refresh-only 복원에 연결했습니다. 활성 요청의 자동 갱신·원요청 재전송과 서버 invalidation은 여전히 별도 범위입니다. [초기 복원 계약·검증 기록](work-history/startup-token-refresh-311.md)을 참고합니다.
 
 ## Place 멤버·Friend 식별자 쓰기 #277
 
