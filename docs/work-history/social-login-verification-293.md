@@ -1,5 +1,7 @@
 # 소셜 로그인 검증과 누락 보완 #293
 
+후속 실제 카카오 인증과 사진 검증 결과는 [카카오 로컬 QA](kakao-local-qa-293.md)에 기록한다. 아래 11월 14일 기록은 키를 주입하기 전의 실행이다.
+
 ## 2026-11-14 재개 범위와 검증 계획
 
 - 기준: 최신 `develop` `3bb7955`. 원본 저장소의 개인 iOS signing 변경과 날씨 키는 건드리지 않는다.
@@ -15,7 +17,7 @@
 
 Apple 로그인 확인은 사용자 요청으로 계속 보류한다. 무인 원격 E2E 준비 계약도 이번 수동 QA와 별도다.
 
-## 2026-11-14 현재 확인 결과
+## 2026-11-14 키 주입 전 확인 결과
 
 - Kakao 앱 키·Google server/iOS client ID가 로컬 설정 파일·셸에 없고 Android Kakao Gradle property와 iOS callback URL Types도 준비되지 않았다. 키·개인 token·날씨 설정값을 읽거나 기록하지 않았다.
 - [live OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)는 22 paths·30 operations다. backend develop은 `03ece0e466f2f47f72263085f3bfa737b3e1a53c`로 11월 5일 확인 기록과 동일하다. 현재 `/auth/login`은 Kakao access token·Google ID token을 요구하며 프런트 gateway와 일치한다. 이 확인은 실제 인증 성공 응답을 받은 것이 아니다.
