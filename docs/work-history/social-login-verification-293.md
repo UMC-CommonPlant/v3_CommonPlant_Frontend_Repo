@@ -15,6 +15,45 @@
 
 Apple 로그인 확인은 사용자 요청으로 계속 보류한다. 무인 원격 E2E 준비 계약도 이번 수동 QA와 별도다.
 
+## 2026-11-14 현재 확인 결과
+
+- Kakao 앱 키·Google server/iOS client ID가 로컬 설정 파일·셸에 없고 Android Kakao Gradle property와 iOS callback URL Types도 준비되지 않았다. 키·개인 token·날씨 설정값을 읽거나 기록하지 않았다.
+- [live OpenAPI](https://commonplant-dev.okbear.dev/api/v1/api-docs/json)는 22 paths·30 operations다. backend develop은 `03ece0e466f2f47f72263085f3bfa737b3e1a53c`로 11월 5일 확인 기록과 동일하다. 현재 `/auth/login`은 Kakao access token·Google ID token을 요구하며 프런트 gateway와 일치한다. 이 확인은 실제 인증 성공 응답을 받은 것이 아니다.
+- #311 / PR #312의 앱 시작 refresh-only 복원은 이미 병합됐다. 아래 9월 기록의 `#149 전까지 Blocked`는 당시 결과이며 현행 재개 조건이 아니다. 실제 계정의 재발급·앱 재실행은 계속 미검증이고 자동 401 갱신·원요청 재시도는 별도 후속이다.
+- 물주기 주기, 장소 날씨의 확인된 좌표, Friend 고유 대상·부분 결과, 멤버 추가·제거, Memo·식물 검색은 새로 연결할 계약이 확인되지 않았다. 관련 [백엔드 질문](../backend-api-open-questions.md)과 [화면/API 계획](../screen-api-integration-plan.md)을 따른다.
+
+### 이번 실행 결과와 남은 조건
+
+| 구분 | 2026-11-14 실행·결과 | 완료로 계산하지 않는 범위 |
+| --- | --- | --- |
+| 자동 회귀 | `fvm flutter test test/features/login test/app/router/social_login_flow_test.dart test/app/router/auth_route_redirect_test.dart test/core/network/auth_token_writer_test.dart`: **216개 통과** | 실제 provider SDK 인증, dev 서버 로그인, OS 저장소 영속성 |
+| Android 실행 | `Medium_Phone_API_36.1`, Android 16, 1080×2400·420 dpi 에뮬레이터. `fvm flutter run -d emulator-5554 --dart-define-from-file=env/social-login.example.json`으로 API 모드 Debug 빌드·설치·실행 성공 | Android 실기기·배포용 signing·작은 화면 전체 QA |
+| 온보딩·비인증 재실행 | `시작하기` → 로그인 화면, 앱 강제 종료·재실행 후 온보딩 대신 로그인 화면 확인 | 로그인 token 복원 |
+| Kakao 버튼 | 직접 탭 후 `소셜 로그인 설정이 아직 준비되지 않았어요` 표시, 로그인 화면 유지 | SDK 계정 선택·인증 성공·서버 `/auth/login` 성공 |
+| Google 버튼 | 앱 재실행으로 이전 오류를 지운 뒤 직접 탭해 같은 설정 안내와 로그인 화면 유지 확인 | SDK 계정 선택·인증 성공·서버 `/auth/login` 성공 |
+| 실제 계정·휴대폰 | Kakao·Google 로그인 성공 **미검증** | 가입·로그인·서버 조회·사진 업로드·앱 종료 후 인증 복원 |
+| 문서 | `git diff --check`와 변경 문서의 상대 링크·anchor 확인 | 앱 코드 변경은 없으며 전체 Flutter 품질 게이트 재실행 결과로 표기하지 않음 |
+
+Android 첫 실행은 호스트에서 선택된 JDK 25.0.3과 빌드 도구의 호환 문제로 실패했다. 사용자 전역 설정을 바꾸지 않고 임시 Flutter 설정 디렉터리의 JDK 17로 재실행해 빌드·설치·앱 표시까지 확인했다. 앱 소스나 Gradle 버전은 변경하지 않았다.
+
+현재 설정이 없는 상태의 안내를 검증했으며 인증 요청의 실제 네트워크 trace는 수집하지 않았다. SDK 이전 설정 검사와 미설정 시 API 호출 차단은 코드·자동 테스트 근거다. 이번에 완료한 **실계정 소셜 로그인 시나리오는 0건**이며 #293은 계속 열어 둔다. 새 키를 만들거나 예제에 임의의 값을 넣지 않는다. 기존 [SDK 설정 가이드](../social-login-integration-guide.md#실기기-재개)에 따라 로컬 설정과 provider console 등록을 준비한 뒤 실제 계정 인증부터 재개한다.
+
+### 다음 수동 QA 순서
+
+| 순서 | 실제 사용자 흐름 | 통과 기준 |
+| --- | --- | --- |
+| 1 | provider 설정·테스트 계정 준비 → API 모드로 휴대폰 실행 | Kakao/Google SDK 인증 화면이 열리고 callback으로 앱 복귀. API 비사용 로컬 프로필 이동은 인증 증거에서 제외 |
+| 2 | 기존 계정 로그인 → Home → 내 정보 조회 | `/auth/login` 기존 사용자 응답, token 저장, 인증된 사용자 정보 일치. Home 화면 이동만으로 성공 판정하지 않음 |
+| 3 | 앱 완전 종료·재실행 → 로컬 로그아웃·같은 계정 재로그인 | hot reload/restart 없이 세션 복원·사용자 정보 재조회, 로그아웃 후 보호 화면 접근 차단 |
+| 4 | 신규 테스트 계정 → 프로필·약관 → 가입 완료 → 재로그인 | 신규 응답에서 가입 전 로그인 token 미저장, 가입 완료 후 Home·사용자 조회, 다음 로그인은 기존 사용자 분기 |
+| 5 | 프로필·회원 정보·Place·Plant의 사진 선택 → 저장 → 재조회·재실행 | 실제 앨범 권한·취소·교체, 서버 multipart 성공, 새 GET과 앱 재실행 후 이미지 유지 (#295) |
+| 6 | Place·Plant 생성·수정·조회 → 멤버 조회·팀짱 위임·탈퇴 | 테스트 소유 데이터로 서버 재조회·권한·화면 갱신 확인. 다른 테스트 계정이 필요한 위임·탈퇴는 별도 데이터로 검증 (#277) |
+| 7 | 화면별 휴대폰 UI/UX | 작은 폭·짧은 높이·기준·넓은 화면, 키보드·뒤로가기·로딩·빈 상태·오류·재시도·사진 권한 거절 확인. 기준 profile은 [테스트 가이드](../testing-guide.md#qa-viewport와-디바이스-기준) 사용 |
+
+Kakao·Google 각각 인증 취소·빠른 연속 탭·실패 후 재시도를 확인한다. 실제 신규 QA는 provider별로 준비된 계정을 사용하며 기존 계정 탈퇴·DB 삭제로 신규 분기를 만들지 않는다. 서버는 [Kakao 이메일 미제공을 거절](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/blob/03ece0e466f2f47f72263085f3bfa737b3e1a53c/src/main/java/com/commonplant/garden/auth/service/social/KakaoTokenVerifier.java#L56)하고 같은 이메일의 다른 provider 신규 가입을 충돌로 처리하므로 신규 가입 QA에는 서로 다른 이메일을 사용한다([AuthServiceImpl](https://github.com/UMC-CommonPlant/v3_CommonPlant_Backend_Repo/blob/03ece0e466f2f47f72263085f3bfa737b3e1a53c/src/main/java/com/commonplant/garden/auth/service/AuthServiceImpl.java#L49)).
+
+로그인 설정을 준비하는 동안 API 비사용 모드의 화면 배치·입력·뒤로가기 검증은 독립적으로 진행할 수 있다. 실제 서버 QA와 별도 결과로 남긴다. Apple·iPad 전용 최적화·폐기된 폴더블 배치 변경을 이 순서의 선행 조건으로 삼지 않는다.
+
 ## 2026-09-07 기준과 판정
 
 - 이슈: [#293](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/293)
@@ -111,7 +150,9 @@ JSON을 확인했다. 인증 토큰이나 개인 계정 데이터는 조회·수
 포함돼 Java 컴파일이 실패했다. Flutter 명령을 단독 순차 실행하자 소스 우회 없이 통과했다.
 위 빌드는 소셜 설정값 없이 수행했으므로 provider console·callback 인증 성공을 뜻하지 않는다.
 
-## 사용자가 준비할 내용과 실행 순서
+## 2026-09-07 당시 준비·실행 지침
+
+아래는 당시 지침을 보존한 것이다. 현재 실행은 상단 2026-11-14 순서를 따른다. Apple은 보류하며 refresh-only 복원은 #311 구현 완료·실계정 검증 대기 상태다.
 
 1. iPhone 또는 Android를 연결·잠금 해제한다. iPhone은 개발자 모드·컴퓨터 신뢰와 Xcode
    signing을, Android는 USB 디버깅을 준비하고 `fvm flutter devices`에 ID가 표시되는지 확인한다.

@@ -216,9 +216,9 @@ provider SDK 차이는 gateway 한 곳에만 둔다. 화면별 SDK service, prov
 - Kakao·Google 각각 가짜 응답으로 신규 → 가입 완료 → 재로그인 → 새 ProviderContainer 복원
 - 실제 LoginPage·Controller·Repository·DTO·router를 함께 검증하되 SDK·HTTP·저장소는 fake 사용
 
-실제 계정을 사용하는 인증 E2E는 credential, provider console, Apple backend #152와
-테스트 계정 정책이 준비된 뒤 별도 검증한다. 로컬 fake SDK test 통과를 실제 소셜 로그인
-완료로 표현하지 않는다.
+Kakao·Google의 실제 인증은 해당 provider 설정·연결 기기·테스트 계정이 준비된 뒤
+검증한다. Apple 확인은 사용자 요청으로 보류하며 다른 provider QA의 선행 조건으로 삼지
+않는다. 로컬 fake SDK test 통과를 실제 소셜 로그인 완료로 표현하지 않는다.
 
 ## 실기기 재개
 
@@ -262,5 +262,8 @@ Personal Team은 Sign in with Apple capability를 지원하지 않는다([Apple 
 | Profile / Release | `Runner/Runner.entitlements` | `YES` |
 
 Info.plist의 `CommonPlantAppleSignInEnabled`가 빌드 설정을 받아 네이티브 판별에 사용된다. Debug iPhone에서도 Apple 버튼과 SDK 접근을 막으며 카카오·구글 흐름은 유지한다. `fvm flutter run --debug` 또는 Xcode Run의 Debug configuration으로 실행한다.
+
+아래 Apple 설정 변경은 향후 사용자가 Apple 검증 재개를 요청한 경우에만 참고한다. 현재는
+보류를 유지하며 Debug·Profile·Release 설정을 변경하지 않는다.
 
 실제 Apple SDK 검증은 지원되는 유료 Developer Program 팀·App ID·provisioning이 필요하다. 유료 팀에서 Debug Apple 검증이 필요하면 로컬 Build Settings의 Debug entitlement를 `Runner/Runner.entitlements`, `COMMONPLANT_APPLE_SIGN_IN_ENABLED`를 `YES`로 함께 변경한다. 백엔드 #152 검증 의존성은 여전히 남는다. Personal Team 선택 상태에서 Xcode의 All/Release 화면은 Apple capability 제한을 계속 표시할 수 있으므로 실제 Run configuration을 Debug로 확인한다.
