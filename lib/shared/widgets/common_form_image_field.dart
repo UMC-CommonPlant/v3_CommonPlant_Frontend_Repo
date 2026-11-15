@@ -1,5 +1,8 @@
+import 'package:commonplant_frontend/core/config/image_upload_limits.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
+import 'package:commonplant_frontend/core/theme/app_spacing.dart';
+import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/shared/widgets/common_circle_image_box.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_image_add_button.dart';
 import 'package:flutter/material.dart';
@@ -52,6 +55,14 @@ class CommonFormImageField extends StatelessWidget {
                 ),
             ],
           ),
+        ),
+        const SizedBox(height: AppSpacing.x8),
+        Text(
+          '사진은 최대 ${imageMaxSizeMb}MB까지 업로드할 수 있어요.',
+          style: AppTextStyles.size12Medium.copyWith(
+            color: AppColors.textStrong,
+          ),
+          textAlign: TextAlign.center,
         ),
         if (onReset != null)
           TextButton(onPressed: onReset, child: const Text('선택 취소')),

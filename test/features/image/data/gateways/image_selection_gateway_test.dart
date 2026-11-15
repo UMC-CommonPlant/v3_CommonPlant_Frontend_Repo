@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:commonplant_frontend/core/config/image_upload_limits.dart';
 import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

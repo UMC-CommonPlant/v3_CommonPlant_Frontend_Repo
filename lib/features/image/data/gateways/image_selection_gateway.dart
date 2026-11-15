@@ -1,12 +1,12 @@
 import 'dart:ui' as ui;
 
+import 'package:commonplant_frontend/core/config/image_upload_limits.dart';
 import 'package:commonplant_frontend/features/image/data/models/selected_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-const imageMaxSizeBytes = 10 * 1024 * 1024;
 const imageSelectionFailureMessage = '사진을 불러오지 못했어요. 다시 선택해 주세요.';
 
 final imageSelectionGatewayProvider = Provider(
@@ -53,11 +53,15 @@ class ImageSelectionGateway {
   Future<SelectedImage> readImage(XFile file) async {
     final length = await file.length();
     if (length == 0 || length > imageMaxSizeBytes) {
-      throw const ImageSelectionException('10MB 이하의 사진을 선택해 주세요.');
+      throw const ImageSelectionException(
+        '${imageMaxSizeMb}MB 이하의 사진을 선택해 주세요.',
+      );
     }
     final bytes = await file.readAsBytes();
     if (bytes.isEmpty || bytes.length > imageMaxSizeBytes) {
-      throw const ImageSelectionException('10MB 이하의 사진을 선택해 주세요.');
+      throw const ImageSelectionException(
+        '${imageMaxSizeMb}MB 이하의 사진을 선택해 주세요.',
+      );
     }
     // 확장자나 OS가 제공한 MIME만으로 파일 형식을 신뢰하지 않는다.
     final type = _contentType(bytes);
