@@ -136,6 +136,7 @@ class _HomeGardenTabItem extends StatelessWidget {
                 isSelected ? AppIconAssets.plantSelected : AppIconAssets.plant,
                 width: AppSizes.iconMedium,
                 height: AppSizes.iconMedium,
+                color: isSelected ? null : AppColors.iconInactive,
               ),
             ),
           ),
