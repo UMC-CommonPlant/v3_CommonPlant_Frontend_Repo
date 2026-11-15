@@ -110,3 +110,10 @@ UI 피드백 보완 전 실행은 `COMMONPLANT_USE_API`를 주입하지 않은 �
 당시 업로드용 URL 발급 방식으로 해석했으나, 최신 사용자 정정과 Swagger 재확인으로 API 주소에 직접 multipart 전송하는 방식임을 확인했다. 기존 구현을 유지하며 URL 발급 API 대기는 철회한다. [#297 정정 기록](../archive/work-history/image-upload-url-297.md)을 따른다.
 
 최종 ID 반영 후 `plutil -lint`, `git diff --check`, `fvm flutter build ios --debug --no-codesign`을 통과했고 생성 앱의 CFBundleIdentifier가 `com.commonplant.umc`임을 확인했다. Dart 소스 변경은 없다.
+
+## 업로드 용량 안내 #325
+
+사진을 선택하기 전에 최대 10MB 제한을 알 수 있도록 공통 사진 입력 바로 아래에 안내를 표시한다. 가입 프로필, 프로필 수정, 장소·식물의 등록·수정이 같은 입력을 사용한다.
+
+1. 표시와 검증에서 같은 사진 용량 상수를 사용하고, 사진 선택 전부터 안내를 표시한다.
+2. 기존 폼 테스트로 안내 노출과 사진 선택·교체·취소를 확인한다. FVM 포맷·정적 분석·전체 테스트와 diff 검사를 실행한다.
