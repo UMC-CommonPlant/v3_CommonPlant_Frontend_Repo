@@ -6,7 +6,7 @@ class ImageRemoteDataSource {
 
   final Dio _dio;
 
-  Future<Object?> getDownloadUrlRaw(String key) async {
+  Future<Object?> getImage(String key) async {
     try {
       final response = await _dio.get<Object?>(
         '/s3/images',
@@ -19,27 +19,35 @@ class ImageRemoteDataSource {
     }
   }
 
-  Future<void> uploadImages(List<MultipartFile> images) async {
+  Future<Object?> uploadImages(List<MultipartFile> images) async {
+    if (images.isEmpty || images.length > 5) {
+      throw const ApiException(message: '이미지는 1장 이상 5장 이하로 선택해 주세요.');
+    }
+
     try {
-      await _dio.post<Object?>(
+      final response = await _dio.post<Object?>(
         '/s3/images',
-        data: FormData.fromMap({'images': images}),
+        data: FormData.fromMap({'images': images}, ListFormat.multi),
       );
+
+      return response.data;
     } on DioException catch (error) {
       throw ApiException.fromDio(error);
     }
   }
 
-  Future<void> updateImage({
+  Future<Object?> updateImage({
     required String key,
     required MultipartFile image,
   }) async {
     try {
-      await _dio.put<Object?>(
+      final response = await _dio.put<Object?>(
         '/s3/images',
         queryParameters: {'key': key},
         data: FormData.fromMap({'image': image}),
       );
+
+      return response.data;
     } on DioException catch (error) {
       throw ApiException.fromDio(error);
     }

@@ -31,9 +31,9 @@
 | FRIEND-03 | Friend | `sendFriendReq.receiverName`은 display name인가, 고유 user id인가? | #243에서 위험 수용 후 연결, 고유 ID 전환 필요 | Answered |
 | FRIEND-04 | Friend | `friendDecisionReq.friendId`는 요청 id인가, 사용자 id인가? | 요청 PK 사용 확인, 수락·거절 연결 가능 | Answered |
 | FRIEND-05 | Friend | 고유 대상 요청과 다중 대상 원자성·부분 결과 계약은 무엇인가? | #277 고유 ID payload·대상별 상태 연결 보류 | Blocked |
-| IMAGE-01 | Image | `/s3/images` upload/download/update/delete 성공 response schema는 무엇인가? | image key/url mapper 보류 | Open |
+| IMAGE-01 | Image | `/s3/images`의 성공 본문을 Swagger에도 제공하는가? | #323에서 소스 기반으로 파싱. Swagger schema와 실제 응답 확인 남음 | Partial |
 | IMAGE-02 | Image | 화면 이미지는 `/s3/images` 선업로드 방식인가, 도메인 multipart 직접 전송 방식인가? | #297 Swagger 직접 multipart 재확인, URL 발급 대기 철회 | Answered |
-| IMAGE-03 | Image | Garage 공개 URL 응답 필드와 wrapper 구조는 무엇인가? | #295 폼은 도메인 URL 표시, 독립 endpoint schema 확인 남음 | Partial |
+| IMAGE-03 | Image | Garage 공개 URL 응답 필드와 wrapper 구조는 무엇인가? | #323에서 `result.imageUrl`을 검증해 반환 | Answered |
 | IMAGE-04 | Image | 이미지 key 저장, 교체, 삭제 책임은 어느 API가 갖는가? | #248 Plant key 보존·Place 사진 수정 차단 구현, Place key 조회·동시 수정 보호 계약 필요 | Partial |
 | ERROR-01 | Error | 에러 response body의 공통 `code`, `message` 필드명은 무엇인가? | #275 표준 오류·field error 파싱 반영 | Answered |
 | ERROR-02 | Error | 도메인별 에러 코드 표준과 의미는 무엇인가? | #275 HTTP 범주·확인 코드 매핑, 미확인 코드는 안전 fallback | Answered |
@@ -231,12 +231,9 @@
 
 ### IMAGE-01. `/s3/images` 성공 response schema
 
-- 현재 근거: Image upload/download/update/delete 모두 성공 response body schema가 없다.
-- 프론트 영향: upload 결과에서 image key/url을 읽는 mapper를 만들 수 없다.
-- 확인 질문: 각 API의 성공 response wrapper와 `result` 필드는 무엇인가?
-- 프론트 반영: 답변 전까지 ImageRepository는 raw 또는 void 경계를 유지한다.
-- 답변: 미확인
-- 상태: Open
+- 2026-11-15 dev OpenAPI의 성공 응답에는 본문 schema가 없다. 백엔드 `03ece0e`의 `S3Controller`와 `S3Response`에서 조회·교체의 `result`가 `ImageInfo`, 업로드의 `result.images`가 `ImageInfo[]`, 삭제의 `result`가 `null`임을 확인했다.
+- #323은 조회·업로드·교체 결과를 `ImageRepository`에서 파싱한다. Swagger의 schema 보강과 실제 계정 응답 검증이 남아 있다.
+- 상태: Partial
 
 ### IMAGE-02. 도메인 이미지 업로드 흐름
 
@@ -248,14 +245,14 @@
 
 ### IMAGE-03. Garage 공개 URL 응답
 
-- 2026-09-07 dev OpenAPI는 `GET /s3/images`를 만료 없는 Garage 공개 URL 조회로 설명한다. presigned URL이라는 이전 설명은 더 이상 현재 기준이 아니다.
-- 도메인 조회 응답의 URL을 직접 표시하고 실패 시 기본 placeholder를 사용한다. 독립 endpoint 성공 schema는 live OpenAPI에 없으므로 raw 경계를 유지한다.
-- 상태: Partial (폼 URL 표시 연결, 독립 endpoint schema 동기화 남음)
+- Dev OpenAPI는 `GET /s3/images`를 만료 없는 Garage 공개 URL 조회로 설명한다. `GarageImageService`는 조회의 `result.imageUrl`에만 공개 URL을 채운다. 업로드와 교체는 반환된 key로 조회한다.
+- #323에서 조회 응답의 URL을 확인한다. 폼 화면은 도메인 조회 응답의 URL을 사용한다.
+- 상태: Answered
 
 ### IMAGE-04. 이미지 key 생명주기
 
 - 현재 근거: 2026-08-28 dev OpenAPI의 `updatePlaceReq.imageKey`와 `UpdateRequest.imageKey`, backend `7d572cb`의 `PlaceServiceImpl`·`PlantServiceImpl` 수정 로직을 대조했다. 자세한 근거는 [Swagger 참고](api-swagger-reference.md#image-화면-연결-판단)에 있다.
-- 답변: Place/Plant 도메인 수정 API는 새 파일이 있으면 교체하고, 파일이 없으면 기존 key와 같은 값일 때 유지한다. key 생략/null은 기존 이미지 삭제를 뜻하며, 다른 key는 허용하지 않는다. 이는 독립 `/s3/images` 응답 계약이 확인됐다는 의미가 아니다.
+- 답변: Place/Plant 도메인 수정 API는 새 파일이 있으면 교체하고, 파일이 없으면 기존 key와 같은 값일 때 유지한다. key 생략/null은 기존 이미지 삭제를 뜻하며, 다른 key는 허용하지 않는다.
 - 프론트 영향: 이미지 선택기가 없어도 텍스트 수정 요청에서 기존 key를 잃으면 이미지가 삭제될 수 있다. Plant edit 응답은 key를 제공하지만 Place 상세에는 `imgUrl`만 있다.
 - 확인 질문: Place의 기존 image key를 안전하게 조회하는 계약은 무엇인가? 조회 이후 다른 클라이언트가 사진을 변경한 경우의 조건부 수정·명시적 유지 동작은 어떻게 보장하는가? User·Memo와 독립 `/s3/images`의 생명주기 정책은 별도 확인이 필요하다.
 - 프론트 반영: [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 Plant의 초기 key를 상태와 요청에 보존하고 URL만 있는 불완전 정보는 차단한다. Place는 기존 사진 URL을 폼까지 전달하고 사진이 있으면 수정 API를 호출하지 않는다. 사진 없는 장소·fixture 수정은 유지하며 URL에서 key를 추측하지 않는다. 원격 삭제 검증은 실행하지 않았다.
