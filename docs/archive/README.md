@@ -25,6 +25,7 @@
 
 - [Home 사용자 실데이터 상태 연결 이력](work-history/home-user-api-state-232.md)
 - [User 프로필 화면·API 연결 이력](work-history/user-profile-flow-237.md)
+- [알림 스위치 비율 수정 #331](work-history/notification-switch-proportion-331.md)
 - [계정별 캐시·진행 중 요청 격리 이력](work-history/session-cache-isolation-249.md)
 - [소셜 로그인 SDK와 가입 분기 연결 이력](work-history/social-login-sdk-285.md)
 - [온보딩·토큰 갱신 정책 문서화 #287](work-history/onboarding-refresh-policy-287.md)
