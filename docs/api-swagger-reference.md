@@ -26,7 +26,7 @@
 - OpenAPI 버전: `3.1.0`
 - API title: `Common Plant API Document`
 - 서버 base path: `/api/v1`
-- 최신 endpoint inventory: 2026-11-05 공개 OpenAPI HTTP 200, 22 paths, 30 operations
+- 최신 endpoint inventory: 2026-11-15 공개 OpenAPI HTTP 200, 22 paths, 30 operations. 2026-11-05 기록과 수치가 같다.
 - 최신 소스 대조: backend `develop` `03ece0e`. 아래 과거 날짜의 확인 기록은 당시 계약이며, 현행 계약은 최신 변경 요약을 우선한다. 실제 인증 응답·서버 쓰기는 이번 확인에 포함하지 않았다.
 - 기존 문서 비교 기준: `docs/api-swagger-summary-43` 브랜치의 `docs/api-swagger-reference.md` 확인일 2026-05-20
 - 최초 코드 비교 기준: `feature/api-integration-45` 브랜치의 API 계층. 현재 화면·계층 대조 기준은 PR #276 병합 커밋 `5426768`이다.
@@ -50,9 +50,16 @@
 - 그 외 operation은 별도 security가 없으므로 전역 bearer 인증이 상속되는 것으로 본다.
 - Auth, User, Plant 일부 API는 `timeStamp`, `success`, `status`, `message`, `result` 형태의 JSON response wrapper schema가 추가되었다.
 - Place, Image, Friend API는 live OpenAPI에 여전히 성공 response body schema가 없거나 `OK` 수준의 설명만 있다.
-- Place와 Friend는 백엔드 source의 `JsonResponse.result` 반환 타입을 추가 근거로 사용한다. machine-readable Swagger가 아니라는 점과 실제 인증 응답 smoke가 남았다는 점은 구분한다.
+- Place, Image, Friend는 백엔드 소스의 `JsonResponse.result` 반환 타입을 추가 근거로 사용한다. machine-readable Swagger가 아니라는 점과 실제 인증 응답 smoke가 남았다는 점은 구분한다.
 
 ## Swagger 변경 요약
+
+### 2026-11-15 배포 명세 대조 #323
+
+- 토큰 갱신, 장소 멤버 식별자, 팀짱 위임과 탈퇴는 `develop`의 PR #312·#315에 반영됐다.
+- Garage 이미지 조회·업로드·교체 응답은 백엔드 소스의 `result` 구조에 맞춰 파싱한다. 업로드·교체는 저장된 key를 돌려주며 공개 URL은 이미지 조회에서 받는다.
+- 프로필 수정의 `user` JSON에는 `name`과 `introduction`만 보낸다. 프로필 사진 변경은 선택 파일 part `image`로 전송한다.
+- 검증 근거와 추가 계약이 필요한 항목은 [작업 기록](work-history/swagger-contract-sync-323.md)에 정리했다.
 
 ### 2026-11-05 멤버 식별자와 신규 장소 API
 
@@ -202,10 +209,10 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 | Plant | PUT | `/plants/{plantId}` | 식물 수정 | 필요 | `EditInfoJsonResponse` |
 | Plant | DELETE | `/plants/{plantId}` | 식물 삭제 | 필요 | `DeleteJsonResponse` |
 | Plant | GET | `/plants/{plantId}/edit` | 식물 수정 정보 조회 | 필요 | `EditInfoJsonResponse` |
-| Image | GET | `/s3/images` | 이미지 다운로드 URL 조회 | 필요 | 없음 |
-| Image | POST | `/s3/images` | 이미지 다중 업로드 | 필요 | 없음 |
-| Image | PUT | `/s3/images` | 이미지 수정 | 필요 | 없음 |
-| Image | DELETE | `/s3/images` | 이미지 삭제 | 필요 | 없음 |
+| Image | GET | `/s3/images` | 공개 이미지 URL 조회 | 필요 | Swagger 성공 본문 미기재. 소스 `result.imageUrl`과 메타데이터 |
+| Image | POST | `/s3/images` | 이미지 다중 업로드 | 필요 | Swagger 성공 본문 미기재. 소스 `result.images[]` |
+| Image | PUT | `/s3/images` | 이미지 수정 | 필요 | Swagger 성공 본문 미기재. 소스 `result`에 새 key와 메타데이터 |
+| Image | DELETE | `/s3/images` | 이미지 삭제 | 필요 | Swagger 성공 본문 미기재. 소스 `result: null` |
 
 ## 도메인별 최신 명세
 
@@ -307,7 +314,6 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - `UserUpdateRequest` fields:
   - `name`: 1~20자, 한글/영문/공백 허용
   - `introduction`: 200자 이내
-  - `imgUrl`: 기존 프로필 이미지 URL
 - 성공 response: `UserJsonResponse.result` -> `UserResponse`
 - Error:
   - `401`: `A003`, `A004`
@@ -602,14 +608,16 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 ### Image
 
+Swagger는 성공 본문 schema를 제공하지 않는다. 백엔드 `03ece0e`의 `S3Controller`, `S3Response.ImageInfo`, `GarageImageService`에 따르면 이미지 메타데이터는 `key`, `contentType`, `sizeBytes`, 선택적 `placeId`·`imageUrl`로 구성된다.
+
 #295는 최신 도메인 service와 대조하여 폼의 직접 multipart 파일 전송을 연결했다. [사진 선택 작업 기록](work-history/form-image-selection-295.md)에 보존·교체 조건과 실기기 미검증 항목을 정리했다.
 
 #### GET `/s3/images`
 
-- 이미지 key로 만료 없는 Garage 공개 URL을 조회한다(2026-09-07 dev OpenAPI 재확인).
+- 이미지 key로 만료 없는 Garage 공개 URL을 조회한다.
 - Query parameter:
   - `key`: 이미지 key, required
-- 성공 response body schema는 없다.
+- 성공 응답의 `result`는 `imageUrl`을 포함하는 `ImageInfo`다.
 - Error:
   - `401`: 인증 실패
   - `404`: 이미지 없음
@@ -622,7 +630,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 - 업로드 개수는 1개 이상 5개 이하이다.
 - 허용 타입은 `jpeg`, `png`, `webp`이다.
 - 파일당 최대 크기는 10MB이다.
-- 성공 response body schema는 없다.
+- 성공 응답의 `result.images[]`가 업로드 순서대로 `ImageInfo`를 담는다. 공개 URL은 조회 API에서 받는다.
 - Error:
   - `400`: 이미지 개수/파일 형식/크기 오류
 
@@ -636,7 +644,7 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
   - `image`: binary, required
 - 허용 타입은 `jpeg`, `png`, `webp`이다.
 - 파일당 최대 크기는 10MB이다.
-- 성공 response body schema는 없다.
+- 성공 응답의 `result`는 교체 후 새 key를 가진 `ImageInfo`다. 공개 URL은 새 key로 조회한다.
 - Error:
   - `400`: 이미지 파일 형식/크기 오류
   - `401`: 인증 실패
@@ -644,10 +652,10 @@ TEST-02-B의 backend/frontend/CI 준비 조건과 첫 read-only probe 범위는 
 
 #### DELETE `/s3/images`
 
-- 이미지 key에 해당하는 S3 객체와 이미지 메타데이터를 삭제한다.
+- 이미지 key에 해당하는 Garage 객체와 이미지 메타데이터를 삭제한다.
 - Query parameter:
   - `key`: 이미지 key, required
-- 성공 response body schema는 없다.
+- 성공 응답의 `result`는 `null`이다.
 - Error:
   - `401`: 인증 실패
   - `404`: 이미지 없음
@@ -746,7 +754,7 @@ refresh는 2026-11-03 `POST /auth/refresh` 배포를 확인했다. 아직 Swagge
 - 반영: #285에서 Auth login DTO는 실제 응답 `isNewUser`로 분기하고 `newUser`는 배포
   호환 입력으로만 허용한다. #293은 JSON bool과 비어 있지 않은 문자열 token을 검증한다. 결과 타입과 중복되는 boolean은 보존하지 않는다.
 - 반영: #243에서 Friend 신규 요청을 화면 submit까지 연결했다. 표시 이름 중복 오매칭과 대상별 결과 미검증 위험은 `docs/accepted-implementation-risks.md`에서 수용 상태로 추적한다.
-- 반영: Image 업로드/조회/수정/삭제 endpoint는 response schema가 없으므로 raw 또는 void 경계로 datasource/repository만 추가했다.
+- 반영: #323에서 독립 이미지 조회·업로드·교체 응답을 `ImageRepository`의 `ImageInfo`로 변환한다. 삭제는 완료 여부만 사용한다.
 
 ### Image 화면 연결 판단
 
@@ -765,14 +773,13 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 
 [#248](https://github.com/UMC-CommonPlant/v3_CommonPlant_Frontend_Repo/issues/248)에서 Plant Form의 초기 key·URL을 보존하고 이름·날짜 수정 요청에 key를 전달한다. URL이 있지만 key가 없으면 요청을 차단한다. Place는 key를 조회할 수 없어 사진이 있는 장소의 수정 요청을 차단·안내하며 사진이 없는 장소는 기존 수정 동작을 유지한다. key 확보와 동시 수정의 조건부 보호 계약은 [IMAGE-04](backend-api-open-questions.md#image-04-이미지-key-생명주기)로 남기고, [작업 이력](archive/work-history/form-image-preservation-248.md)에 제한을 기록한다. URL에서 key를 추측하지 않는다.
 
-독립형 Image API(`/s3/images`)는 response schema가 없어 화면에서 반환된 image key/url을 확정적으로 읽을 수 없다. 따라서 프로필, 장소, 식물, 메모 화면에서 `/s3/images` 업로드 결과를 `imageKey`, `imgUrl`, `imageUrl`로 임의 매핑하지 않는다.
+프로필·장소·식물 화면은 각 도메인의 multipart 요청으로 이미지를 전송하고 도메인 응답의 URL을 사용한다. 독립 이미지 API에서 반환된 key와 공개 URL은 `ImageRepository`에서 받을 수 있다.
 
 현재 구현과 남은 범위:
 
 - #295가 기존 회원가입 multipart와 도메인 repository 경계에 파일을 연결했다. 2026-09-07 backend `f67ee6c`에서도 같은 유지/교체 조건을 재확인했다. 새 파일이 있으면 key 미조회 상태의 Place/Plant 교체도 허용한다. 파일이 없으면 위 #248의 보존 차단을 유지한다.
 - 실제 기기 앨범·권한·서버 저장 QA는 자동 테스트와 구분한다. [검증 기록](work-history/form-image-selection-295.md)을 참고한다.
 - 메모 화면은 아직 Memo API가 없어 로컬 사진 상태만 유지한다.
-- `/s3/images` 다운로드 URL 조회는 성공 response의 URL 필드 또는 wrapper 구조가 확정된 뒤 화면 fallback 정책과 함께 연결한다.
 
 ## 백엔드에 다시 확인해야 할 부분
 
@@ -784,7 +791,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 | 공통 Multipart | JSON part의 `Content-Type: application/json` 필요 여부 | Auth/Place/Plant/User multipart 전송 정책 정합성 |
 | Place | 멤버 추가·제거와 상세 schema, 실제 인증 응답 QA | #277에서 실제 ID·팀짱 위임·탈퇴 연결, 미제공 관리 계약은 backend #150 후속 |
 | Friend | 고유 대상 request, 사용자 검색 정책, 다중 대상 원자성·부분 결과·멱등 | #277은 backend #150 전까지 이름 기반 위험 수용 경계를 확장하지 않음 |
-| Image | `/s3/images` 성공 response, image key/url 필드, 업로드 흐름 | 프로필/장소/식물은 #295 직접 multipart 연결, 독립 Image schema와 Memo 계약은 남음 |
+| Image | `/s3/images` 성공 응답의 Swagger schema와 실제 응답, 장소 이미지 key 조회·동시 수정 보호 | #323에서 소스 기반으로 응답 파싱. 실제 계정 QA와 장소 이미지 보존 계약은 후속 |
 | Error | live/backend source와 dev 배포의 실제 인증 쓰기 오류 일치 여부 | #275 공통 사용자 메시지와 field error 매핑 완료, 원격 validation smoke 보류 |
 | Token | TTL 근거 불일치, 동시 갱신·원요청 재시도·서버 폐기 정책 | #311 초기 refresh-only 복원은 연결, 자동 401 재시도·서버 logout 제외 |
 | 검색 | 주소 검색, 식물 검색 API 제공 여부와 사용자 검색 매칭 정책 | 주소 검색은 보류, 식물 검색은 백엔드 #92 대기 중이며 API mode fixture 차단 |
@@ -796,8 +803,7 @@ Place/Plant 수정 요청의 `imageKey`는 단순 optional 장식 필드가 아�
 초기 Auth·Home·Plant·User·Place·Friend 연결과 감사 회귀 수정 PR은 병합됐다. 현행 우선순위와 미완료 동선은 [화면·API 매트릭스](screen-api-integration-plan.md)를 따른다.
 
 소셜 SDK 연결은 #285에서 완료했고 #293에서 코드·설정·자동 테스트를 보완한다. 실제 provider credential·네이티브 설정과 Apple backend
-#152는 외부 준비 항목으로 분리한다. 실제 주소 검색과 이미지 파일 선택·key 조회는 여전히
-별도 준비가 필요하다. Memo 텍스트 CRUD는 backend #50 계약 답변·구현·live OpenAPI 동기화를,
+#152는 외부 준비 항목으로 분리한다. 실제 주소 검색과 장소 대표 이미지 key 조회는 별도 계약이 필요하다. Memo 텍스트 CRUD는 backend #50 계약 답변·구현·live OpenAPI 동기화를,
 Place 멤버 ID·팀짱 위임·탈퇴는 #277에서 연결했고, 멤버 추가·제거와 Friend 고유 대상·부분 결과는 backend #150 후속 계약을 기다린다.
 식물 검색은 백엔드 #92 전까지 API mode에서 비활성화한다. 이미 수용한 Friend 이름 오매칭과
 Plant 장소 조회 비용은 위험 등록부로 추적하고, 새 프론트 결함을 자동으로 수용한 것으로
