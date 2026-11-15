@@ -16,6 +16,7 @@ abstract final class AppColorPrimitives {
   static const grayGray3 = Color(0xFFC8C8C8); // Gray/Gray 3
   static const grayGray4 = Color(0xFF999999); // Gray/Gray 4
   static const grayGray5 = Color(0xFF787878); // Gray/Gray 5
+  static const grayHint = Color(0xFF707070);
   static const grayGray6 = Color(0xFF404040); // Gray/Gray 6
   static const grayWhite = Color(0xFFFFFFFF); // Gray/White
 
@@ -68,6 +69,7 @@ abstract final class AppColors {
   static const textHeadline = AppColorPrimitives.grayBlackTextHeadline;
   static const textStrong = AppColorPrimitives.grayGray6;
   static const textBody = AppColorPrimitives.grayGray5;
+  static const textHint = AppColorPrimitives.grayHint;
   static const textSecondary = AppColorPrimitives.lightLabelSecondary;
   static const textTertiary = AppColorPrimitives.lightLabelTertiary;
   static const textDisabled = AppColorPrimitives.grayGray3;

@@ -59,9 +59,7 @@ class CommonFormImageField extends StatelessWidget {
         const SizedBox(height: AppSpacing.x8),
         Text(
           '사진은 최대 ${imageMaxSizeMb}MB까지 업로드할 수 있어요.',
-          style: AppTextStyles.size12Medium.copyWith(
-            color: AppColors.textStrong,
-          ),
+          style: AppTextStyles.size12Medium.copyWith(color: AppColors.textHint),
           textAlign: TextAlign.center,
         ),
         if (onReset != null)
