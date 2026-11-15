@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_detail_view_data.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_care_summary.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_content_width.dart';
@@ -25,6 +26,76 @@ void main() {
     expect(find.text('거실 정원'), findsOneWidget);
     expect(find.text('몬테'), findsOneWidget);
     expect(find.text('Monstera deliciosa'), findsOneWidget);
+    expect(find.byTooltip('식물 사진 확대'), findsNothing);
+  });
+
+  testWidgets('대표 사진을 원본 비율로 열고 확대하거나 닫을 수 있다', (tester) async {
+    await tester.pumpWidget(
+      _buildRouterApp(
+        const PlantDetailContentWidth(
+          child: PlantHero(
+            placeName: '거실 정원',
+            name: '몬테',
+            species: 'Monstera deliciosa',
+            imageAsset: AppImageAssets.plantEditMonstera,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byTooltip('식물 사진 확대'));
+    await tester.pumpAndSettle();
+
+    final viewer = find.byType(InteractiveViewer);
+    final photo = find.descendant(of: viewer, matching: find.byType(Image));
+    expect(tester.widget<Image>(photo).fit, BoxFit.contain);
+    final initialWidth = tester.getRect(photo).width;
+    final center = tester.getCenter(viewer);
+    final first = await tester.startGesture(center - const Offset(25, 0));
+    final second = await tester.startGesture(center + const Offset(25, 0));
+    await first.moveTo(center - const Offset(65, 0));
+    await second.moveTo(center + const Offset(65, 0));
+    await first.moveTo(center - const Offset(100, 0));
+    await second.moveTo(center + const Offset(100, 0));
+    await tester.pump();
+    expect(tester.getRect(photo).width, greaterThan(initialWidth));
+    await first.up();
+    await second.up();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('닫기'));
+    await tester.pumpAndSettle();
+    expect(viewer, findsNothing);
+    expect(find.text('거실 정원'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('식물 사진 확대'));
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(viewer, findsNothing);
+    expect(find.text('거실 정원'), findsOneWidget);
+  });
+
+  testWidgets('전체 사진을 불러올 수 없어도 오류를 표시하고 닫을 수 있다', (tester) async {
+    await tester.pumpWidget(
+      _buildRouterApp(
+        const PlantDetailContentWidth(
+          child: PlantHero(
+            placeName: '거실 정원',
+            name: '몬테',
+            species: 'Monstera deliciosa',
+            imageAsset: 'assets/images/missing-plant-photo.jpg',
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byTooltip('식물 사진 확대'));
+    await tester.pumpAndSettle();
+    expect(find.text('사진을 불러오지 못했어요.'), findsOneWidget);
+    await tester.tap(find.byTooltip('닫기'));
+    await tester.pumpAndSettle();
+    expect(find.text('거실 정원'), findsOneWidget);
   });
 
   testWidgets('PlantCareSummary와 PlantInfoSection은 관리 정보를 표시한다', (

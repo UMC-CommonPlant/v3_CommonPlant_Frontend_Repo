@@ -77,8 +77,16 @@ class _PlantHeroImage extends StatelessWidget {
   final String? imageUrl;
   final String? imageAsset;
 
+  ImageProvider<Object>? get _photo {
+    final url = imageUrl?.trim();
+    if (url != null && url.isNotEmpty) return NetworkImage(url);
+    final asset = imageAsset;
+    return asset == null ? null : AssetImage(asset);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final photo = _photo;
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth < 335 ? constraints.maxWidth : 335.0;
@@ -94,13 +102,32 @@ class _PlantHeroImage extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 const ColoredBox(color: AppColors.surfaceMuted),
-                _buildImage(scale),
+                _buildImage(scale, photo),
                 Positioned(
                   top: AppSpacing.x8 * scale,
                   left: 0,
                   right: 0,
                   child: Center(child: _PlaceBadge(label: placeName)),
                 ),
+                if (photo != null)
+                  Positioned(
+                    right: AppSpacing.x8,
+                    bottom: AppSpacing.x8,
+                    child: IconButton.filled(
+                      tooltip: '식물 사진 확대',
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.surfaceBase,
+                        foregroundColor: AppColors.textStrong,
+                      ),
+                      icon: const Icon(Icons.zoom_in_outlined),
+                      onPressed: () => showDialog<void>(
+                        context: context,
+                        useSafeArea: false,
+                        builder: (_) =>
+                            _PlantPhotoViewer(photo: photo, plantName: name),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -109,31 +136,80 @@ class _PlantHeroImage extends StatelessWidget {
     );
   }
 
-  Widget _buildImage(double scale) {
-    if (imageUrl != null) {
-      return Image.network(
-        imageUrl!,
-        fit: BoxFit.cover,
-        semanticLabel: '$name 식물 사진',
-        errorBuilder: (context, error, stackTrace) => const _EmptyPlantImage(),
-      );
-    }
+  Widget _buildImage(double scale, ImageProvider<Object>? photo) {
+    if (photo == null) return const _EmptyPlantImage();
 
-    if (imageAsset != null) {
-      return Positioned(
-        left: 0,
-        top: -126 * scale,
-        child: Image.asset(
-          imageAsset!,
-          width: 495 * scale,
-          height: 369 * scale,
-          fit: BoxFit.cover,
-          semanticLabel: '$name 식물 사진',
+    final isAsset = photo is AssetImage;
+    final image = Image(
+      image: photo,
+      width: isAsset ? 495 * scale : null,
+      height: isAsset ? 369 * scale : null,
+      fit: BoxFit.cover,
+      semanticLabel: '$name 식물 사진',
+      errorBuilder: (context, error, stackTrace) => const _EmptyPlantImage(),
+    );
+    return isAsset
+        ? Positioned(left: 0, top: -126 * scale, child: image)
+        : image;
+  }
+}
+
+class _PlantPhotoViewer extends StatelessWidget {
+  const _PlantPhotoViewer({required this.photo, required this.plantName});
+
+  final ImageProvider<Object> photo;
+  final String plantName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog.fullscreen(
+      backgroundColor: AppColors.textHeadline,
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                tooltip: '닫기',
+                onPressed: () => Navigator.of(context).pop(),
+                color: AppColors.onBrand,
+                icon: const Icon(Icons.close),
+              ),
+            ),
+            Expanded(
+              child: InteractiveViewer(
+                maxScale: 4,
+                child: SizedBox.expand(
+                  child: Image(
+                    image: photo,
+                    fit: BoxFit.contain,
+                    semanticLabel: '$plantName 식물 사진',
+                    loadingBuilder: (context, child, progress) =>
+                        progress == null
+                        ? child
+                        : const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.onBrand,
+                              semanticsLabel: '사진 불러오는 중',
+                            ),
+                          ),
+                    errorBuilder: (context, error, stackTrace) => Center(
+                      child: Text(
+                        '사진을 불러오지 못했어요.',
+                        style: AppTextStyles.size16Medium.copyWith(
+                          color: AppColors.onBrand,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-      );
-    }
-
-    return const _EmptyPlantImage();
+      ),
+    );
   }
 }
 
