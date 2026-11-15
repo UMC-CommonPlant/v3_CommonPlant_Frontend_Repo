@@ -48,6 +48,7 @@
 
 - [Plant 등록·수정 API 폼 상태 작업 이력](work-history/plant-form-api-state-229.md)
 - [식물 상세 API 표시 모델 작업 이력 (#231)](work-history/plant-detail-api-view-231.md)
+- [식물 상세 사진 확대 보기 #329](work-history/plant-photo-viewer-329.md)
 - [원격 식물 등록 장소 상태 이력](work-history/remote-plant-places-251.md)
 - [식물 수정 장소 코드 검증 이력](work-history/plant-edit-place-code-252.md)
 
