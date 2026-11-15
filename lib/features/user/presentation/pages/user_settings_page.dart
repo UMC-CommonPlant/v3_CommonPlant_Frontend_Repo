@@ -202,22 +202,17 @@ class _NotificationSettingCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: AppSpacing.x40,
-                    height: AppSpacing.x24,
-                    child: FittedBox(
-                      fit: BoxFit.fill,
-                      child: Transform.scale(
-                        scale: _settingsSwitchScale,
-                        child: Switch(
-                          value: isEnabled,
-                          onChanged: onChanged,
-                          activeTrackColor: AppColors.brandStrong,
-                          inactiveTrackColor: AppColors.borderDefault,
-                          trackOutlineColor: const WidgetStatePropertyAll(
-                            Colors.transparent,
-                          ),
-                        ),
+                  Transform.scale(
+                    scale: _settingsSwitchScale,
+                    alignment: Alignment.centerRight,
+                    transformHitTests: false,
+                    child: Switch(
+                      value: isEnabled,
+                      onChanged: onChanged,
+                      activeTrackColor: AppColors.brandStrong,
+                      inactiveTrackColor: AppColors.borderDefault,
+                      trackOutlineColor: const WidgetStatePropertyAll(
+                        Colors.transparent,
                       ),
                     ),
                   ),
