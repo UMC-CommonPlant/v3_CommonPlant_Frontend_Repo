@@ -9,6 +9,7 @@ import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/api_client.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
 import 'package:commonplant_frontend/features/home/presentation/home_screen.dart';
+import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
 import 'package:commonplant_frontend/features/login/data/gateways/social_auth_credential_gateway.dart';
 import 'package:commonplant_frontend/features/login/domain/models/social_auth.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
@@ -19,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers/image_selection.dart';
 import '../../helpers/test_app.dart';
 
 void main() {
@@ -249,6 +251,86 @@ void main() {
     }
   }
 
+  for (final rejectsNickname in [true, false]) {
+    testWidgets(
+      rejectsNickname
+          ? '약관에서 닉네임이 거절되면 초안과 동의를 보존하고 프로필로 돌아간다'
+          : '가입 서버 장애는 약관에서 안내하고 다시 제출할 수 있다',
+      (tester) async {
+        const nicknameError = '이름은 한글, 영문, 공백만 허용됩니다.';
+        final initialName = rejectsNickname ? '초록1' : '초록';
+        final store = _TokenStore();
+        final server = _AuthAdapter()
+          ..registrationFailure = ResponseBody.fromString(
+            jsonEncode(
+              rejectsNickname
+                  ? {
+                      'errors': [
+                        {'field': 'name', 'reason': nicknameError},
+                      ],
+                    }
+                  : {'message': 'Unavailable'},
+            ),
+            rejectsNickname ? 400 : 503,
+            headers: {
+              Headers.contentTypeHeader: [Headers.jsonContentType],
+            },
+          );
+        final container = _container(
+          store,
+          server,
+          imageGateway: FakeImageSelectionGateway(
+            () async => testSelectedImage(),
+          ),
+        );
+        addTearDown(container.dispose);
+        await _pumpApp(tester, container);
+        await tester.tap(find.text('카카오로 로그인'));
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(TextField), initialName);
+        await tester.tap(find.bySemanticsLabel('사진 선택'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('완료'));
+        await tester.tap(find.text('완료'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('동의합니다'));
+        await tester.tap(find.text('확인'));
+        await tester.pumpAndSettle();
+
+        expect(store.saveCalls, 0);
+        expect(server.registration, {
+          'signupToken': 'signup-token',
+          'name': initialName,
+        });
+        server.registrationFailure = null;
+        if (rejectsNickname) {
+          expect(find.text(nicknameError).hitTestable(), findsOneWidget);
+          expect(find.text(initialName), findsOneWidget);
+          expect(find.bySemanticsLabel('사진 교체'), findsOneWidget);
+          expect(find.bySemanticsLabel('개인정보 이용약관 동의됨'), findsOneWidget);
+          await tester.enterText(find.byType(TextField), '초록');
+          await tester.tapAt(const Offset(24, 24));
+          await tester.pumpAndSettle();
+          expect(find.text(nicknameError), findsNothing);
+          await tester.ensureVisible(find.text('완료'));
+          await tester.tap(find.text('완료'));
+        } else {
+          expect(find.text('서버에 문제가 발생했어요. 잠시 후 다시 시도해 주세요.'), findsOneWidget);
+          await tester.tap(find.text('확인'));
+        }
+        await tester.pumpAndSettle();
+
+        expect(server.registration, {
+          'signupToken': 'signup-token',
+          'name': '초록',
+        });
+        expect(store.saveCalls, 1);
+        expect(find.byType(HomeScreen), findsOneWidget);
+      },
+    );
+  }
+
   for (final succeeds in [true, false]) {
     testWidgets(
       'refresh-only 확인 중 로그인하지 않고 결과에 따라 보호 route를 처리한다 ($succeeds)',
@@ -349,6 +431,7 @@ ProviderContainer _container(
   _TokenStore store,
   _AuthAdapter server, {
   SocialAuthTokenLoader? tokenLoader,
+  ImageSelectionGateway? imageGateway,
 }) {
   final dio = Dio(BaseOptions(baseUrl: 'https://test.invalid'))
     ..httpClientAdapter = server;
@@ -357,6 +440,8 @@ ProviderContainer _container(
       useRemoteApiProvider.overrideWithValue(true),
       dioProvider.overrideWithValue(dio),
       authTokenStoreProvider.overrideWithValue(store),
+      if (imageGateway != null)
+        imageSelectionGatewayProvider.overrideWithValue(imageGateway),
       onboardingLocalStoreProvider.overrideWithValue(
         TestOnboardingLocalStore(completed: true),
       ),
@@ -379,6 +464,7 @@ class _AuthAdapter implements HttpClientAdapter {
   String? failure;
   final logins = <Object?>[];
   Object? registration;
+  ResponseBody? registrationFailure;
   int refreshCalls = 0;
   Completer<ResponseBody>? refreshResponse;
 
@@ -445,6 +531,7 @@ class _AuthAdapter implements HttpClientAdapter {
           await part.clone().finalize().expand((bytes) => bytes).toList(),
         ),
       );
+      if (registrationFailure case final failure?) return failure;
       registered = true;
       body = {
         'result': {
