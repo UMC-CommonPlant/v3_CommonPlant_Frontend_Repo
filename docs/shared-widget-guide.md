@@ -148,7 +148,7 @@ CommonAddressOrPlaceField(
 
 ### CommonFormImageField
 
-#295는 네 폼에서 반복되는 단일 사진 미리보기와 선택/교체, 로딩, 선택 취소를 기존 이미지 입력 위젯으로 조합합니다. ImageProvider와 callback만 받고 SDK·파일 검증·업로드는 Controller에 둡니다. `onReset`은 저장 전 선택 초안 취소이며 서버 이미지 삭제를 뜻하지 않습니다.
+#295는 네 폼에서 반복되는 단일 사진 미리보기와 선택/교체, 로딩, 선택 취소를 기존 이미지 입력 위젯으로 조합합니다. ImageProvider와 callback만 받고 SDK·파일 검증·업로드는 Controller에 둡니다. `onReset`은 저장 전 선택 초안 취소이며 서버 이미지 삭제를 뜻하지 않습니다. 사진 입력 아래에는 선택 전에 확인할 수 있는 최대 10MB 용량 안내를 표시합니다.
 
 
 ### CommonCircleImageBox

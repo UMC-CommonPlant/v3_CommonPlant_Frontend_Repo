@@ -27,16 +27,22 @@ void main() {
     expect(find.text('완료'), findsOneWidget);
 
     expect(
-      tester.getTopLeft(find.byKey(const ValueKey('profileAvatar'))).dy,
+      tester.getTopLeft(find.bySemanticsLabel('사진 선택')).dy,
       closeTo(147, 0.01),
     );
     expect(
-      tester.getSize(find.byKey(const ValueKey('profileAvatar'))),
+      tester.getSize(find.bySemanticsLabel('사진 선택')),
       closeToSize(const Size(100, 100), 0.01),
+    );
+    final sizeHint = find.text('사진은 최대 10MB까지 업로드할 수 있어요.');
+    expect(sizeHint.hitTestable(), findsOneWidget);
+    expect(
+      tester.getTopLeft(sizeHint).dy,
+      greaterThan(tester.getBottomRight(find.bySemanticsLabel('사진 선택')).dy),
     );
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('profileNicknameField'))).dy,
-      closeTo(263, 0.01),
+      greaterThan(tester.getBottomRight(sizeHint).dy),
     );
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('profileTermsRow'))).dy,
@@ -61,7 +67,7 @@ void main() {
         child: const MaterialApp(home: ProfileSetupPage()),
       ),
     );
-    await tester.tap(find.byKey(const ValueKey('profileAvatar')));
+    await tester.tap(find.bySemanticsLabel('사진 선택'));
     await tester.pumpAndSettle();
     expect(gateway.calls, 1);
     expect(find.byType(Image), findsOneWidget);
@@ -123,10 +129,7 @@ void main() {
 
     await tester.pumpWidget(_profileSetupApp());
 
-    expect(
-      tester.getTopLeft(find.byKey(const ValueKey('profileAvatar'))).dy,
-      lessThan(147),
-    );
+    expect(tester.getTopLeft(find.bySemanticsLabel('사진 선택')).dy, lessThan(147));
     expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
     expect(find.text('완료'), findsOneWidget);
   });
@@ -147,7 +150,7 @@ void main() {
         child: const MaterialApp(home: ProfileSetupPage()),
       ),
     );
-    await tester.tap(find.byKey(const ValueKey('profileAvatar')));
+    await tester.tap(find.bySemanticsLabel('사진 선택'));
     await tester.pumpAndSettle();
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
     await tester.pumpAndSettle();

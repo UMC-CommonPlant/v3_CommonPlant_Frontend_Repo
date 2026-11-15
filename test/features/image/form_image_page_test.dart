@@ -40,6 +40,10 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expect(
+        find.text('사진은 최대 10MB까지 업로드할 수 있어요.').hitTestable(),
+        findsOneWidget,
+      );
       await tester.tap(find.bySemanticsLabel('사진 선택'));
       await tester.pumpAndSettle();
       expect(find.byType(Image), findsOneWidget);
