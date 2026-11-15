@@ -86,7 +86,7 @@ P1은 Home 화면이 실제 로그인 직후 첫 진입점이라는 점을 기�
 
 | 도메인 | 화면·route | 현재 상태 | 남은 연결 | API·선행 조건 | 판정 |
 | --- | --- | --- | --- | --- | --- |
-| Home | Home `/` | User·Place·Plant 목록·Friend 요청 수 연결, #249 계정별 캐시 격리, #271 배지 loading·오류·0건·성공 수와 재시도 구분 | 인증된 원격 smoke | Friend 요청 목록 source 계약 #241 반영 | #271 Provider·widget 회귀 검증 완료 |
+| Home | Home `/` | User·Place·Plant 목록·Friend 요청 수 연결, #249 계정별 캐시 격리, #271 배지 조회 상태 구분, #333 세 조회 새로고침 및 장소·식물 개별 재시도 | 인증된 원격 smoke | Friend 요청 목록 source 계약 #241 반영 | #271 Provider·widget 회귀 검증 완료 |
 | User | 마이페이지 `/me`, 설정 `/me/settings`, 회원 정보 수정 `/me/edit` | 조회·이름 수정·탈퇴와 세 화면 연결, #249 세션 격리·#250 제출 잠금 병합 | 실기기 이미지 QA·알림 영속화 | `GET/PUT/DELETE /users` 연결, Image·알림 API/정책 필요 | 연결·세션 격리·제출 잠금 PR 병합 |
 | Place | 장소 친구 요청 | API 목록·프로필·loading/empty/error와 수락·거절 연결, fixture 모드 유지 | 원격 인증 smoke | `GET /friends/requests`, `POST /friends/accept`, `POST /friends/decline` #241 반영 | #241 연결 |
 | Place | 장소 등록 | create API·생성 code·친구 추가 route 연결, #250 잠금 병합, #253 / PR #263 주소 결과·검증·요청 연결 | 실제 주소 검색·이미지 실기기 QA | 결과 계약은 테스트로 검증, API 모드 fixture 주소 차단 | 실제 검색 미연결로 새 주소가 필요한 생성 동선 미완료 |
