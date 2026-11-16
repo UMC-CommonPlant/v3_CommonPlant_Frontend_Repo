@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:commonplant_frontend/core/assets/app_image_assets.dart';
+import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/features/plant/presentation/models/plant_detail_view_data.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_care_summary.dart';
 import 'package:commonplant_frontend/features/plant/presentation/widgets/plant_detail_content_width.dart';
@@ -131,6 +132,14 @@ void main() {
           final retryButton = find
               .widgetWithText(OutlinedButton, '다시 시도')
               .hitTestable();
+          expect(
+            tester
+                .widget<OutlinedButton>(retryButton)
+                .style
+                ?.padding
+                ?.resolve(const <WidgetState>{}),
+            const EdgeInsets.symmetric(horizontal: AppSpacing.x16),
+          );
           await tester.tap(retryButton);
           await tester.pump();
           expect(client.requests, [url, url]);
