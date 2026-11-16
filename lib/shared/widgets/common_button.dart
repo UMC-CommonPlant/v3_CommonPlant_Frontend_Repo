@@ -18,6 +18,7 @@ class CommonButton extends StatelessWidget {
     this.size = CommonButtonSize.large,
     this.fullWidth = false,
     this.width,
+    this.horizontalPadding,
     this.backgroundColor,
     this.foregroundColor,
     this.borderColor,
@@ -33,6 +34,7 @@ class CommonButton extends StatelessWidget {
     this.size = CommonButtonSize.large,
     this.fullWidth = false,
     this.width,
+    this.horizontalPadding,
     this.backgroundColor,
     this.foregroundColor,
     this.borderColor,
@@ -48,6 +50,7 @@ class CommonButton extends StatelessWidget {
     this.size = CommonButtonSize.large,
     this.fullWidth = false,
     this.width,
+    this.horizontalPadding,
     this.backgroundColor,
     this.foregroundColor,
     this.borderColor,
@@ -63,6 +66,7 @@ class CommonButton extends StatelessWidget {
     this.size = CommonButtonSize.large,
     this.fullWidth = false,
     this.width,
+    this.horizontalPadding,
     this.backgroundColor,
     this.foregroundColor,
     this.borderColor,
@@ -78,6 +82,7 @@ class CommonButton extends StatelessWidget {
     this.size = CommonButtonSize.large,
     this.fullWidth = false,
     this.width,
+    this.horizontalPadding,
     this.backgroundColor,
     this.foregroundColor,
     this.borderColor,
@@ -92,6 +97,7 @@ class CommonButton extends StatelessWidget {
   final CommonButtonSize size;
   final bool fullWidth;
   final double? width;
+  final double? horizontalPadding;
   final Color? backgroundColor;
   final Color? foregroundColor;
   final Color? borderColor;
@@ -152,7 +158,11 @@ class CommonButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens =
         Theme.of(context).extension<AppThemeTokens>() ?? AppThemeTokens.light;
-    final metrics = _CommonButtonMetrics.resolve(size, variant);
+    final metrics = _CommonButtonMetrics.resolve(
+      size,
+      variant,
+      horizontalPadding: horizontalPadding,
+    );
     final buttonStyle = _CommonButtonStyle.resolve(
       tokens: tokens,
       variant: variant,
@@ -230,8 +240,9 @@ class _CommonButtonMetrics {
 
   static _CommonButtonMetrics resolve(
     CommonButtonSize size,
-    CommonButtonVariant variant,
-  ) {
+    CommonButtonVariant variant, {
+    double? horizontalPadding,
+  }) {
     return _CommonButtonMetrics(
       height: switch (size) {
         CommonButtonSize.large => AppSizes.buttonHeight,
@@ -243,9 +254,11 @@ class _CommonButtonMetrics {
         CommonButtonSize.medium => AppRadius.xSmall,
       },
       padding: EdgeInsets.symmetric(
-        horizontal: variant == CommonButtonVariant.text
-            ? AppSpacing.x12
-            : AppSpacing.x20,
+        horizontal:
+            horizontalPadding ??
+            (variant == CommonButtonVariant.text
+                ? AppSpacing.x12
+                : AppSpacing.x20),
       ),
       baseTextStyle: switch (size) {
         CommonButtonSize.large => AppTextStyles.size16Medium,
