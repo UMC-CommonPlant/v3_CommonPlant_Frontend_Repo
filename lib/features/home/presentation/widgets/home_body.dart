@@ -8,6 +8,7 @@ import 'package:commonplant_frontend/features/home/presentation/widgets/home_sec
 import 'package:commonplant_frontend/features/place/presentation/providers/place_invitation_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
+import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_place_card.dart';
 import 'package:commonplant_frontend/shared/widgets/common_plant_card.dart';
 import 'package:flutter/material.dart';
@@ -24,30 +25,13 @@ class HomeBody extends ConsumerWidget {
     final placesAsync = ref.watch(placeSummariesProvider);
     final plantsAsync = ref.watch(plantSummariesProvider);
     final invitationCountAsync = ref.watch(placeInvitationRequestCountProvider);
-
-    if (placesAsync.isLoading || plantsAsync.isLoading) {
-      return const _HomeStatusBody(
-        child: CircularProgressIndicator(color: AppColors.brandPrimary),
-      );
-    }
-
-    if (placesAsync.hasError || plantsAsync.hasError) {
-      return _HomeStatusBody(
-        child: Text(
-          '데이터를 불러오지 못했어요',
-          style: AppTextStyles.size16Medium.copyWith(color: AppColors.textBody),
-        ),
-      );
-    }
-
-    final places = placesAsync.value ?? const [];
-    final hasPlaces = places.isNotEmpty;
-    final plants = plantsAsync.value ?? const [];
-    final hasPlants = plants.isNotEmpty;
+    final hasPlaces = placesAsync.asData?.value.isNotEmpty ?? false;
+    final hasPlants = plantsAsync.asData?.value.isNotEmpty ?? false;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: AppSpacing.x24, bottom: 120),
-      child: _HomeContentFrame(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -70,36 +54,20 @@ class HomeBody extends ConsumerWidget {
                   : null,
             ),
             const SizedBox(height: _homeSectionContentGap),
-            SizedBox(
-              height: AppSizes.placeAddTileHeight,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  if (hasPlaces)
-                    for (final place in places) ...[
-                      CommonPlaceCard(
-                        title: place.name,
-                        imageProvider: place.imageUrl == null
-                            ? null
-                            : NetworkImage(place.imageUrl!),
-                        onTap: () => context.push(
-                          AppRoutePaths.placeDetailLocation(place.id),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.x12),
-                    ]
-                  else
-                    HomeAddTile(
-                      label: '장소 추가하기',
-                      width: AppSizes.placeAddTileWidth,
-                      height: AppSizes.placeAddTileHeight,
-                      borderColor: AppColors.brandStrong,
-                      foregroundColor: AppColors.brandPrimary,
-                      iconAsset: AppIconAssets.plusGreen,
-                      onTap: () => context.push(AppRoutePaths.placeCreate),
-                    ),
-                ],
+            placesAsync.when(
+              loading: () => const _HomeListStatus(
+                height: AppSizes.placeAddTileHeight,
+                child: CircularProgressIndicator(
+                  color: AppColors.brandPrimary,
+                  semanticsLabel: '장소 목록 불러오는 중',
+                ),
               ),
+              error: (_, _) => _HomeListError(
+                height: AppSizes.placeAddTileHeight,
+                message: '장소 목록을 불러오지 못했어요.',
+                onRetry: () => ref.invalidate(remotePlaceListProvider),
+              ),
+              data: (places) => _buildPlaces(context, places),
             ),
             const SizedBox(height: AppSpacing.x32),
             HomeSectionHeader(
@@ -110,86 +78,159 @@ class HomeBody extends ConsumerWidget {
                   : null,
             ),
             const SizedBox(height: _homeSectionContentGap),
-            if (hasPlants)
-              SizedBox(
+            plantsAsync.when(
+              loading: () => const _HomeListStatus(
                 height: AppSizes.plantCardHeight,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    for (final plant in plants) ...[
-                      Semantics(
-                        label: plant.name,
-                        button: true,
-                        child: CommonPlantCard(
-                          imageProvider: plant.imageUrl == null
-                              ? null
-                              : NetworkImage(plant.imageUrl!),
-                          onTap: () => context.push(
-                            AppRoutePaths.plantDetailLocation(
-                              plant.id,
-                              placeId: plant.placeId,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.x12),
-                    ],
-                  ],
+                child: CircularProgressIndicator(
+                  color: AppColors.brandPrimary,
+                  semanticsLabel: '식물 목록 불러오는 중',
                 ),
-              )
-            else
-              HomeAddTile(
-                label: '식물 추가하기',
-                width: AppSizes.plantAddTileWidth,
-                height: AppSizes.plantAddTileHeight,
-                borderColor: hasPlaces
-                    ? AppColors.brandStrong
-                    : AppColors.textDisabled,
-                foregroundColor: hasPlaces
-                    ? AppColors.brandPrimary
-                    : AppColors.textDisabled,
-                backgroundColor: hasPlaces
-                    ? AppColors.white
-                    : AppColors.surfaceDisabled,
-                iconAsset: hasPlaces
-                    ? AppIconAssets.plusGreen
-                    : AppIconAssets.plusGray,
-                onTap: hasPlaces
-                    ? () => context.push(AppRoutePaths.plantSearch)
-                    : null,
               ),
+              error: (_, _) => _HomeListError(
+                height: AppSizes.plantCardHeight,
+                message: '식물 목록을 불러오지 못했어요.',
+                onRetry: () => ref.invalidate(remotePlantListProvider),
+              ),
+              data: (plants) => _buildPlants(context, plants, hasPlaces),
+            ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildPlaces(BuildContext context, List<PlaceSummary> places) {
+    return SizedBox(
+      height: AppSizes.placeAddTileHeight,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          if (places.isNotEmpty)
+            for (final place in places) ...[
+              CommonPlaceCard(
+                title: place.name,
+                imageProvider: place.imageUrl == null
+                    ? null
+                    : NetworkImage(place.imageUrl!),
+                onTap: () =>
+                    context.push(AppRoutePaths.placeDetailLocation(place.id)),
+              ),
+              const SizedBox(width: AppSpacing.x12),
+            ]
+          else
+            HomeAddTile(
+              label: '장소 추가하기',
+              width: AppSizes.placeAddTileWidth,
+              height: AppSizes.placeAddTileHeight,
+              borderColor: AppColors.brandStrong,
+              foregroundColor: AppColors.brandPrimary,
+              iconAsset: AppIconAssets.plusGreen,
+              onTap: () => context.push(AppRoutePaths.placeCreate),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlants(
+    BuildContext context,
+    List<PlantSummary> plants,
+    bool hasPlaces,
+  ) {
+    if (plants.isEmpty) {
+      return HomeAddTile(
+        label: '식물 추가하기',
+        width: AppSizes.plantAddTileWidth,
+        height: AppSizes.plantAddTileHeight,
+        borderColor: hasPlaces ? AppColors.brandStrong : AppColors.textDisabled,
+        foregroundColor: hasPlaces
+            ? AppColors.brandPrimary
+            : AppColors.textDisabled,
+        backgroundColor: hasPlaces
+            ? AppColors.white
+            : AppColors.surfaceDisabled,
+        iconAsset: hasPlaces ? AppIconAssets.plusGreen : AppIconAssets.plusGray,
+        onTap: hasPlaces ? () => context.push(AppRoutePaths.plantSearch) : null,
+      );
+    }
+
+    return SizedBox(
+      height: AppSizes.plantCardHeight,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          for (final plant in plants) ...[
+            Semantics(
+              label: plant.name,
+              button: true,
+              child: CommonPlantCard(
+                imageProvider: plant.imageUrl == null
+                    ? null
+                    : NetworkImage(plant.imageUrl!),
+                onTap: () => context.push(
+                  AppRoutePaths.plantDetailLocation(
+                    plant.id,
+                    placeId: plant.placeId,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.x12),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
-class _HomeContentFrame extends StatelessWidget {
-  const _HomeContentFrame({required this.child});
+class _HomeListStatus extends StatelessWidget {
+  const _HomeListStatus({required this.height, required this.child});
 
+  final double height;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
+    return Container(
+      constraints: BoxConstraints(minHeight: height),
+      alignment: Alignment.center,
       child: child,
     );
   }
 }
 
-class _HomeStatusBody extends StatelessWidget {
-  const _HomeStatusBody({required this.child});
+class _HomeListError extends StatelessWidget {
+  const _HomeListError({
+    required this.height,
+    required this.message,
+    required this.onRetry,
+  });
 
-  final Widget child;
+  final double height;
+  final String message;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.x20),
-        child: child,
+    return _HomeListStatus(
+      height: height,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.size14Medium.copyWith(
+              color: AppColors.textBody,
+            ),
+          ),
+          CommonButton.text(
+            label: '다시 시도',
+            onPressed: onRetry,
+            size: CommonButtonSize.medium,
+            foregroundColor: AppColors.brandStrong,
+          ),
+        ],
       ),
     );
   }
