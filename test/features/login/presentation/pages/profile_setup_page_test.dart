@@ -1,6 +1,7 @@
 import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
 import 'package:commonplant_frontend/features/login/presentation/pages/profile_setup_page.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
+import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -81,7 +82,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('프로필 설정 입력 화면은 성공 상태와 활성 완료 버튼을 표시한다', (tester) async {
+  testWidgets('유효한 닉네임을 입력하면 완료 버튼을 활성화한다', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(375, 812);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -90,18 +91,18 @@ void main() {
     await tester.pumpWidget(_profileSetupApp());
 
     await tester.enterText(find.byType(TextField), '커먼');
-    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
 
     expect(find.text('커먼'), findsOneWidget);
     expect(find.textContaining('0/10', findRichText: true), findsNothing);
-    expect(find.text('사용 가능한 닉네임입니다'), findsOneWidget);
-    expect(
-      tester.getSize(find.byKey(const ValueKey('profileCompleteButton'))),
-      closeToSize(const Size(335, 48), 0.01),
-    );
+    expect(find.text('사용 가능한 닉네임입니다'), findsNothing);
+    final button = find.byKey(const ValueKey('profileCompleteButton'));
+    expect(tester.widget<CommonButton>(button).onPressed, isNotNull);
+    expect(tester.getSize(button), closeToSize(const Size(335, 48), 0.01));
   });
 
-  testWidgets('프로필 설정 화면은 짧은 닉네임에 오류 메시지를 표시한다', (tester) async {
+  testWidgets('닉네임에서 포커스가 벗어나면 오류를 표시하고 수정 시 바로 갱신한다', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(375, 812);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -109,16 +110,32 @@ void main() {
 
     await tester.pumpWidget(_profileSetupApp());
 
-    await tester.enterText(find.byType(TextField), '커');
+    final field = find.byType(TextField);
+    final button = find.byKey(const ValueKey('profileCompleteButton'));
+    final characterError = find.text('닉네임은 한글, 영문, 공백만 사용할 수 있어요');
+    final lengthError = find.text('2~10자의 닉네임으로 입력해 주세요');
+
+    await tester.enterText(field, '초록1');
     await tester.pump();
+    expect(characterError, findsNothing);
+    expect(tester.widget<CommonButton>(button).onPressed, isNull);
 
-    expect(find.text('2~10자의 닉네임으로 입력해 주세요'), findsOneWidget);
+    await tester.tapAt(const Offset(24, 24));
+    await tester.pumpAndSettle();
+    expect(characterError.hitTestable(), findsOneWidget);
+    expect(tester.widget<CommonButton>(button).onPressed, isNull);
 
-    final completeButton = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, '완료'),
-    );
+    await tester.enterText(field, '커');
+    await tester.pump();
+    expect(lengthError, findsOneWidget);
+    expect(characterError, findsNothing);
+    expect(tester.widget<CommonButton>(button).onPressed, isNull);
 
-    expect(completeButton.onPressed, isNull);
+    await tester.enterText(field, '초록 Green');
+    await tester.pump();
+    expect(lengthError, findsNothing);
+    expect(characterError, findsNothing);
+    expect(tester.widget<CommonButton>(button).onPressed, isNotNull);
   });
 
   testWidgets('프로필 설정 화면은 낮은 높이에서 주요 요소를 세로 축소 배치한다', (tester) async {

@@ -75,10 +75,14 @@ class TermsPage extends ConsumerWidget {
           return;
         }
         if (!didSubmit) {
-          final message = ref.read(profileSetupControllerProvider).errorMessage;
-          if (message != null) {
-            showCommonSnackBar(context, message);
+          final profile = ref.read(profileSetupControllerProvider);
+          final message = profile.errorMessage;
+          if (message == null) return;
+          if (profile.nicknameErrorMessage != null) {
+            _goBack(context);
+            return;
           }
+          showCommonSnackBar(context, message);
           return;
         }
         context.go(AppRoutePaths.home);

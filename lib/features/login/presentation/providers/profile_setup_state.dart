@@ -1,7 +1,21 @@
 import 'package:commonplant_frontend/features/image/data/models/selected_image.dart';
 
-const int profileNicknameMinLength = 2;
+const int _profileNicknameMinLength = 2;
 const int profileNicknameMaxLength = 10;
+
+final _unsupportedNicknameCharacter = RegExp(r'[^a-zA-Z가-힣 \t\n\x0B\f\r]');
+
+String? validateProfileNickname(String value) {
+  final nickname = value.trim();
+  if (nickname.length < _profileNicknameMinLength ||
+      nickname.length > profileNicknameMaxLength) {
+    return '$_profileNicknameMinLength~$profileNicknameMaxLength자의 닉네임으로 입력해 주세요';
+  }
+  if (_unsupportedNicknameCharacter.hasMatch(nickname)) {
+    return '닉네임은 한글, 영문, 공백만 사용할 수 있어요';
+  }
+  return null;
+}
 
 enum ProfileSetupSubmitStatus { idle, submitting, success, failure }
 
@@ -40,11 +54,7 @@ class ProfileSetupState {
   final String? errorMessage;
   final String? nicknameErrorMessage;
 
-  bool get hasValidNickname {
-    final nicknameLength = nickname.trim().length;
-    return nicknameLength >= profileNicknameMinLength &&
-        nicknameLength <= profileNicknameMaxLength;
-  }
+  bool get hasValidNickname => validateProfileNickname(nickname) == null;
 
   bool get isSubmitting => submitStatus == ProfileSetupSubmitStatus.submitting;
 
