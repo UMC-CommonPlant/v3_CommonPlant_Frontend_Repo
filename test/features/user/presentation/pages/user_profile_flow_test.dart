@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../helpers/test_app.dart';
+import '../../../../helpers/test_viewport.dart';
 
 void main() {
   testWidgets('마이페이지는 Figma 기본 회원 정보와 활성 마이 탭을 표시한다', (tester) async {
@@ -143,18 +144,29 @@ void main() {
   });
 
   testWidgets('설정 화면은 알림 토글과 계정 확인 dialog를 제공한다', (tester) async {
-    await _setPhoneViewport(tester);
+    configureTestViewport(tester, TestViewports.compactWidth);
 
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: UserSettingsPage())),
     );
     await tester.pumpAndSettle();
 
-    final switchWidget = tester.widget<Switch>(find.byType(Switch));
+    final title = tester.getRect(find.text('알림 설정'));
+    final description = tester.getRect(find.text('물주기 및 식물의 상태를 알려드려요'));
+    final notificationSwitch = find.byType(Switch);
+    final switchRect = tester.getRect(notificationSwitch);
+    expect(description.top, greaterThan(title.bottom));
+    expect(description.right, lessThan(switchRect.left));
+    expect(
+      switchRect.center.dy,
+      closeTo((title.top + description.bottom) / 2, 0.01),
+    );
+
+    final switchWidget = tester.widget<Switch>(notificationSwitch);
     expect(switchWidget.value, isTrue);
-    await tester.tap(find.byType(Switch));
+    await tester.tap(notificationSwitch);
     await tester.pump();
-    expect(tester.widget<Switch>(find.byType(Switch)).value, isFalse);
+    expect(tester.widget<Switch>(notificationSwitch).value, isFalse);
 
     await tester.tap(find.text('로그아웃'));
     await tester.pumpAndSettle();

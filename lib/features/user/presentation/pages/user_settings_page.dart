@@ -189,44 +189,42 @@ class _NotificationSettingCard extends StatelessWidget {
             horizontal: AppSpacing.x16,
             vertical: AppSpacing.x20,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       '알림 설정',
                       style: AppTextStyles.size16Medium.copyWith(
                         color: AppColors.textStrong,
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    width: AppSpacing.x40,
-                    height: AppSpacing.x24,
-                    child: FittedBox(
-                      fit: BoxFit.fill,
-                      child: Transform.scale(
-                        scale: _settingsSwitchScale,
-                        child: Switch(
-                          value: isEnabled,
-                          onChanged: onChanged,
-                          activeTrackColor: AppColors.brandStrong,
-                          inactiveTrackColor: AppColors.borderDefault,
-                          trackOutlineColor: const WidgetStatePropertyAll(
-                            Colors.transparent,
-                          ),
-                        ),
+                    const SizedBox(height: AppSpacing.x4),
+                    Text(
+                      '물주기 및 식물의 상태를 알려드려요',
+                      style: AppTextStyles.size12Medium.copyWith(
+                        color: AppColors.brandStrong,
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              Text(
-                '물주기 및 식물의 상태를 알려드려요',
-                style: AppTextStyles.size12Medium.copyWith(
-                  color: AppColors.brandStrong,
+              const SizedBox(width: AppSpacing.x12),
+              Transform.scale(
+                scale: _settingsSwitchScale,
+                alignment: Alignment.centerRight,
+                transformHitTests: false,
+                child: Switch(
+                  value: isEnabled,
+                  onChanged: onChanged,
+                  activeTrackColor: AppColors.brandStrong,
+                  inactiveTrackColor: AppColors.borderDefault,
+                  trackOutlineColor: const WidgetStatePropertyAll(
+                    Colors.transparent,
+                  ),
                 ),
               ),
             ],
