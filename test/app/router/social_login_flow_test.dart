@@ -257,8 +257,8 @@ void main() {
           ? '약관에서 닉네임이 거절되면 초안과 동의를 보존하고 프로필로 돌아간다'
           : '가입 서버 장애는 약관에서 안내하고 다시 제출할 수 있다',
       (tester) async {
-        const nicknameError = '이름은 한글, 영문, 공백만 허용됩니다.';
-        final initialName = rejectsNickname ? '초록1' : '초록';
+        const nicknameError = '이 닉네임은 사용할 수 없어요.';
+        final initialName = rejectsNickname ? '새싹' : '초록';
         final store = _TokenStore();
         final server = _AuthAdapter()
           ..registrationFailure = ResponseBody.fromString(
