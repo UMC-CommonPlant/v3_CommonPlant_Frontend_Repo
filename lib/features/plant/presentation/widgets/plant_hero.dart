@@ -306,10 +306,12 @@ class _RetryablePlantPhoto extends StatelessWidget {
                     color: foregroundColor,
                   ),
                 ),
-                CommonButton.text(
+                const SizedBox(height: AppSpacing.x12),
+                CommonButton.secondary(
                   label: '다시 시도',
                   size: CommonButtonSize.medium,
-                  foregroundColor: foregroundColor,
+                  foregroundColor: AppColors.textStrong,
+                  borderColor: AppColors.brandStrong,
                   onPressed: onRetry,
                 ),
               ],

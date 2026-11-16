@@ -128,7 +128,9 @@ void main() {
           expect(find.text('사진을 불러오지 못했어요.').hitTestable(), findsOneWidget);
           expect(find.byTooltip('식물 사진 확대'), findsNothing);
 
-          final retryButton = find.text('다시 시도').hitTestable();
+          final retryButton = find
+              .widgetWithText(OutlinedButton, '다시 시도')
+              .hitTestable();
           await tester.tap(retryButton);
           await tester.pump();
           expect(client.requests, [url, url]);
