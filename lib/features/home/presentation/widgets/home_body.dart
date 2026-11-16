@@ -1,11 +1,9 @@
 import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
-import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
-import 'package:commonplant_frontend/features/home/presentation/providers/home_refresh_provider.dart';
 import 'package:commonplant_frontend/features/home/presentation/widgets/home_sections.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_invitation_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
@@ -24,15 +22,13 @@ class HomeBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usesRemoteApi = ref.watch(useRemoteApiProvider);
     final placesAsync = ref.watch(placeSummariesProvider);
     final plantsAsync = ref.watch(plantSummariesProvider);
     final invitationCountAsync = ref.watch(placeInvitationRequestCountProvider);
     final hasPlaces = placesAsync.asData?.value.isNotEmpty ?? false;
     final hasPlants = plantsAsync.asData?.value.isNotEmpty ?? false;
 
-    final scrollView = SingleChildScrollView(
-      physics: usesRemoteApi ? const AlwaysScrollableScrollPhysics() : null,
+    return SingleChildScrollView(
       padding: const EdgeInsets.only(top: AppSpacing.x24, bottom: 120),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x20),
@@ -100,15 +96,6 @@ class HomeBody extends ConsumerWidget {
           ],
         ),
       ),
-    );
-
-    if (!usesRemoteApi) return scrollView;
-
-    return RefreshIndicator(
-      color: AppColors.brandPrimary,
-      semanticsLabel: '홈 새로고침',
-      onRefresh: () => ref.read(refreshHomeListsProvider)(),
-      child: scrollView,
     );
   }
 

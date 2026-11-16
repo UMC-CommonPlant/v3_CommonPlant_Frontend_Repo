@@ -137,81 +137,38 @@ void main() {
     });
   }
 
-  testWidgets('짧은 홈에서 아래로 당기면 세 조회를 갱신하고 부분 실패를 표시한다', (tester) async {
+  testWidgets('API 모드에서 홈을 아래로 당겨도 추가 조회하지 않는다', (tester) async {
     configureTestViewport(tester, TestViewports.reference);
     var placeCalls = 0;
     var plantCalls = 0;
     var invitationCalls = 0;
-    final refreshedPlaces = Completer<List<PlaceSummary>>();
-    final refreshedPlants = Completer<List<PlantSummary>>();
-    final refreshedInvitations = Completer<List<PlaceInvitation>>();
-
-    await tester.pumpWidget(
-      _buildRemoteHomeBody(
-        () async => ++invitationCalls == 1 ? [] : refreshedInvitations.future,
-        fetchPlaces: () =>
-            ++placeCalls == 1 ? const [] : refreshedPlaces.future,
-        fetchPlants: () =>
-            ++plantCalls == 1 ? const [] : refreshedPlants.future,
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('장소 추가하기'), findsOneWidget);
-    expect(find.text('식물 추가하기'), findsOneWidget);
-
-    await _pullToRefresh(tester);
-    expect([placeCalls, plantCalls, invitationCalls], [2, 2, 2]);
-    expect(find.byType(RefreshProgressIndicator), findsOneWidget);
-
-    refreshedPlaces.completeError(StateError('장소 실패'));
-    refreshedPlants.complete(const [_plant]);
-    await tester.pump();
-    expect(find.text('장소 목록을 불러오지 못했어요.'), findsOneWidget);
-    expect(find.bySemanticsLabel(_plant.name), findsOneWidget);
-    expect(find.byType(RefreshProgressIndicator), findsOneWidget);
-
-    refreshedInvitations.complete(const [_invitation]);
-    await tester.pumpAndSettle();
-    expect(find.text('요청 1건'), findsOneWidget);
-    expect(find.text('다시 시도'), findsOneWidget);
-    expect(find.bySemanticsLabel(_plant.name), findsOneWidget);
-    expect(find.byType(RefreshProgressIndicator), findsNothing);
-  });
-
-  testWidgets('개별 재시도가 진행 중이면 당겨서 갱신해도 같은 요청을 중복하지 않는다', (tester) async {
-    var placeCalls = 0;
-    var plantCalls = 0;
-    var invitationCalls = 0;
-    final pendingPlaces = Completer<List<PlaceSummary>>();
     await tester.pumpWidget(
       _buildRemoteHomeBody(
         () async {
           invitationCalls++;
-          return [];
+          return const [_invitation];
         },
         fetchPlaces: () {
-          if (++placeCalls == 1) throw StateError('장소 실패');
-          return pendingPlaces.future;
+          placeCalls++;
+          return const [_place];
         },
         fetchPlants: () {
           plantCalls++;
-          return const [];
+          return const [_plant];
         },
       ),
     );
     await tester.pumpAndSettle();
+    expect([placeCalls, plantCalls, invitationCalls], [1, 1, 1]);
 
-    await tester.tap(find.text('다시 시도'));
-    await tester.pump();
-    expect(placeCalls, 2);
-    await _pullToRefresh(tester);
-
-    expect([placeCalls, plantCalls, invitationCalls], [2, 2, 2]);
-    expect(find.byType(RefreshProgressIndicator), findsOneWidget);
-    pendingPlaces.complete(const [_place]);
+    await tester.drag(find.text('My place'), const Offset(0, 280));
     await tester.pumpAndSettle();
+
+    expect([placeCalls, plantCalls, invitationCalls], [1, 1, 1]);
+    expect(find.byType(RefreshIndicator), findsNothing);
     expect(find.text(_place.name), findsOneWidget);
-    expect(find.byType(RefreshProgressIndicator), findsNothing);
+    expect(find.bySemanticsLabel(_plant.name), findsOneWidget);
+    expect(find.text('요청 1건'), findsOneWidget);
   });
 }
 
@@ -224,12 +181,6 @@ const _invitation = PlaceInvitation(
   address: '테스트 주소',
   avatarAsset: '',
 );
-
-Future<void> _pullToRefresh(WidgetTester tester) async {
-  await tester.drag(find.text('My place'), const Offset(0, 280));
-  await tester.pump();
-  await tester.pump(const Duration(milliseconds: 200));
-}
 
 Widget _buildHomeBody(AsyncValue<int> invitationCount) {
   return ProviderScope(
