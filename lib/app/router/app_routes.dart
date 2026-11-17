@@ -21,6 +21,7 @@ import 'package:commonplant_frontend/features/plant/presentation/pages/plant_det
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_form_page.dart';
 import 'package:commonplant_frontend/features/plant/presentation/pages/plant_search_page.dart';
 import 'package:commonplant_frontend/features/terms/presentation/pages/terms_page.dart';
+import 'package:commonplant_frontend/features/user/presentation/pages/user_account_withdrawal_page.dart';
 import 'package:commonplant_frontend/features/user/presentation/pages/user_profile_edit_page.dart';
 import 'package:commonplant_frontend/features/user/presentation/pages/user_profile_page.dart';
 import 'package:commonplant_frontend/features/user/presentation/pages/user_settings_page.dart';
@@ -153,6 +154,12 @@ const List<AppRouteSpec> appRouteSpecs = [
     figmaFrames: ['#4-3설정'],
   ),
   AppRouteSpec(
+    name: AppRouteNames.userAccountWithdrawal,
+    path: AppRoutePaths.userAccountWithdrawal,
+    title: '회원탈퇴',
+    figmaFrames: ['#4-3-2 회원탈퇴'],
+  ),
+  AppRouteSpec(
     name: AppRouteNames.userProfileEdit,
     path: AppRoutePaths.userProfileEdit,
     title: '회원 정보 수정',
@@ -271,6 +278,7 @@ Widget _buildRoutePage(AppRouteSpec route, GoRouterState state) {
     ),
     AppRouteNames.userProfile => const UserProfilePage(),
     AppRouteNames.userSettings => const UserSettingsPage(),
+    AppRouteNames.userAccountWithdrawal => const UserAccountWithdrawalPage(),
     AppRouteNames.userProfileEdit => const UserProfileEditPage(),
     _ => RoutePlaceholderPage(
       route: route,

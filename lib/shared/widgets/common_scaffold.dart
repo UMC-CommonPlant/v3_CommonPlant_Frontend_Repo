@@ -125,6 +125,7 @@ class CommonNavigationBar extends StatelessWidget {
     super.key,
     required this.title,
     this.titleStyle,
+    this.backIcon,
     this.showBackButton = true,
     this.onBackPressed,
     this.trailing,
@@ -133,6 +134,7 @@ class CommonNavigationBar extends StatelessWidget {
 
   final String title;
   final TextStyle? titleStyle;
+  final Widget? backIcon;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
   final Widget? trailing;
@@ -163,7 +165,7 @@ class CommonNavigationBar extends StatelessWidget {
                 ? IconButton(
                     onPressed:
                         onBackPressed ?? () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Icons.arrow_back_ios_new),
+                    icon: backIcon ?? const Icon(Icons.arrow_back_ios_new),
                     iconSize: AppSizes.navigationBackIconSize,
                     color: AppColors.textStrong,
                     padding: EdgeInsets.zero,

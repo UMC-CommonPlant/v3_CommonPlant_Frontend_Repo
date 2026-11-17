@@ -9,6 +9,7 @@ class CommonSvgIcon extends StatelessWidget {
     this.height,
     this.fit = BoxFit.contain,
     this.color,
+    this.colorMapper,
     this.semanticsLabel,
   });
 
@@ -17,6 +18,7 @@ class CommonSvgIcon extends StatelessWidget {
   final double? height;
   final BoxFit fit;
   final Color? color;
+  final ColorMapper? colorMapper;
   final String? semanticsLabel;
 
   @override
@@ -27,6 +29,7 @@ class CommonSvgIcon extends StatelessWidget {
       height: height,
       fit: fit,
       semanticsLabel: semanticsLabel,
+      colorMapper: colorMapper,
       colorFilter: color == null
           ? null
           : ColorFilter.mode(color!, BlendMode.srcIn),

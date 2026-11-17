@@ -1,3 +1,4 @@
+import 'package:commonplant_frontend/app/router/route_paths.dart';
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_radius.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
@@ -9,6 +10,7 @@ import 'package:commonplant_frontend/shared/widgets/common_scaffold.dart';
 import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 const double _settingsSwitchScale = 0.78;
 
@@ -55,7 +57,8 @@ class UserSettingsPage extends ConsumerWidget {
               label: '회원탈퇴',
               onTap: accountState.isSubmitting
                   ? null
-                  : () => _confirmDeleteAccount(context, ref),
+                  : () =>
+                        context.pushNamed(AppRouteNames.userAccountWithdrawal),
             ),
           ],
         ),
@@ -86,53 +89,9 @@ class UserSettingsPage extends ConsumerWidget {
       return;
     }
 
-    await _runAccountAction(
-      context,
-      ref,
-      ref.read(userAccountControllerProvider.notifier).logout,
-    );
-  }
-
-  Future<void> _confirmDeleteAccount(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final confirmed = await showCommonDialog<bool>(
-      context: context,
-      child: CommonDialogCard(
-        title: '회원 탈퇴',
-        message: '계정과 연결된 정보를 삭제할까요?',
-        actions: [
-          CommonDialogActionButton(
-            label: '취소',
-            onPressed: () => Navigator.of(context).pop(false),
-          ),
-          CommonDialogActionButton.confirm(
-            label: '탈퇴',
-            foregroundColor: AppColors.danger,
-            onPressed: () => Navigator.of(context).pop(true),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !context.mounted) {
-      return;
-    }
-
-    await _runAccountAction(
-      context,
-      ref,
-      ref.read(userAccountControllerProvider.notifier).deleteAccount,
-    );
-  }
-
-  Future<void> _runAccountAction(
-    BuildContext context,
-    WidgetRef ref,
-    Future<bool> Function() action,
-  ) async {
-    final succeeded = await action();
+    final succeeded = await ref
+        .read(userAccountControllerProvider.notifier)
+        .logout();
 
     if (succeeded || !context.mounted) {
       return;

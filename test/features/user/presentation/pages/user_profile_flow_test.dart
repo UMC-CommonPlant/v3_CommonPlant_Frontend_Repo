@@ -1,10 +1,12 @@
 import 'package:commonplant_frontend/app/router/app_router.dart';
 import 'package:commonplant_frontend/app/router/main_tab_shell.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
+import 'package:commonplant_frontend/core/assets/app_icon_assets.dart';
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/user/presentation/pages/user_settings_page.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:commonplant_frontend/shared/widgets/common_dialog.dart';
+import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -143,7 +145,59 @@ void main() {
     expect(find.text('alwaysweave@gmail.com'), findsOneWidget);
   });
 
-  testWidgets('설정 화면은 알림 토글과 계정 확인 dialog를 제공한다', (tester) async {
+  for (final viewport in [
+    TestViewports.reference,
+    TestViewports.shortHeight,
+    TestViewports.compactWidth,
+  ]) {
+    testWidgets('회원탈퇴 화면에서 확인하고 설정으로 돌아갈 수 있다 ($viewport)', (tester) async {
+      configureTestViewport(tester, viewport);
+      final router = createAppRouter(
+        initialLocation: AppRoutePaths.userSettings,
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(_buildRouterApp(router));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('회원탈퇴'));
+      await tester.pumpAndSettle();
+      expect(find.text('커먼님 잠시만요 !'), findsOneWidget);
+      expect(find.byType(CommonDialogCard), findsNothing);
+
+      final deleteButton = find.widgetWithText(CommonButton, '계정 삭제하기');
+      await tester.ensureVisible(deleteButton);
+      await tester.pumpAndSettle();
+      expect(tester.widget<CommonButton>(deleteButton).onPressed, isNull);
+
+      final acknowledgement = find.text('유의사항을 모두 확인하였습니다.');
+      final checkIcon = find.byWidgetPredicate(
+        (widget) =>
+            widget is CommonSvgIcon &&
+            widget.assetPath == AppIconAssets.checkCircleUnselected,
+      );
+      final uncheckedRect = tester.getRect(checkIcon);
+      expect(tester.widget<CommonSvgIcon>(checkIcon).colorMapper, isNull);
+
+      await tester.tap(acknowledgement);
+      await tester.pump();
+      expect(tester.widget<CommonButton>(deleteButton).onPressed, isNotNull);
+      expect(tester.getRect(checkIcon), uncheckedRect);
+      expect(tester.widget<CommonSvgIcon>(checkIcon).colorMapper, isNotNull);
+
+      await tester.tap(acknowledgement);
+      await tester.pump();
+      expect(tester.widget<CommonButton>(deleteButton).onPressed, isNull);
+      expect(tester.getRect(checkIcon), uncheckedRect);
+      expect(tester.widget<CommonSvgIcon>(checkIcon).colorMapper, isNull);
+
+      await tester.tap(find.bySemanticsLabel('뒤로 가기'));
+      await tester.pumpAndSettle();
+      expect(find.text('설정'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('설정 화면은 알림 토글과 로그아웃 확인창을 제공한다', (tester) async {
     configureTestViewport(tester, TestViewports.compactWidth);
 
     await tester.pumpWidget(

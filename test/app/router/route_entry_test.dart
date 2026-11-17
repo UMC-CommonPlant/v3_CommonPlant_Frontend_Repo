@@ -30,6 +30,7 @@ void main() {
       AppRoutePaths.plantDetailLocation('plant-1'),
       AppRoutePaths.userProfile,
       AppRoutePaths.userSettings,
+      AppRoutePaths.userAccountWithdrawal,
       AppRoutePaths.userProfileEdit,
     ];
 
