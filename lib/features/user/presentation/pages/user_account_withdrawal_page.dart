@@ -14,6 +14,7 @@ import 'package:commonplant_frontend/shared/widgets/common_svg_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart' show ColorMapper;
 import 'package:go_router/go_router.dart';
 
 class UserAccountWithdrawalPage extends ConsumerStatefulWidget {
@@ -237,18 +238,14 @@ class _WithdrawalActions extends StatelessWidget {
                   child: Row(
                     spacing: AppSpacing.x12,
                     children: [
-                      if (acknowledged)
-                        const Icon(
-                          Icons.check_circle,
-                          size: AppSizes.iconMedium,
-                          color: AppColors.brandStrong,
-                        )
-                      else
-                        const CommonSvgIcon(
-                          AppIconAssets.checkCircleUnselected,
-                          width: AppSizes.iconMedium,
-                          height: AppSizes.iconMedium,
-                        ),
+                      CommonSvgIcon(
+                        AppIconAssets.checkCircleUnselected,
+                        width: AppSizes.iconMedium,
+                        height: AppSizes.iconMedium,
+                        colorMapper: acknowledged
+                            ? const _AcknowledgedCheckColorMapper()
+                            : null,
+                      ),
                       Expanded(
                         child: Text(
                           '유의사항을 모두 확인하였습니다.',
@@ -284,5 +281,21 @@ class _WithdrawalActions extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _AcknowledgedCheckColorMapper extends ColorMapper {
+  const _AcknowledgedCheckColorMapper();
+
+  @override
+  Color substitute(
+    String? id,
+    String elementName,
+    String attributeName,
+    Color color,
+  ) {
+    return elementName == 'circle' && attributeName == 'fill'
+        ? AppColors.brandStrong
+        : color;
   }
 }
