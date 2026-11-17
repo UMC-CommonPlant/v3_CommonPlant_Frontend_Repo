@@ -91,7 +91,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('유효한 닉네임과 연령 확인이 모두 있어야 완료 버튼을 활성화한다', (tester) async {
+  testWidgets('닉네임이 유효하고 두 체크박스를 선택해야 완료 버튼을 활성화한다', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(375, 812);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -112,10 +112,27 @@ void main() {
 
     await tester.tap(ageCheck);
     await tester.pump();
+    expect(tester.widget<CommonButton>(button).onPressed, isNull);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(ProfileSetupPage)),
+      listen: false,
+    );
+    container
+        .read(profileSetupControllerProvider.notifier)
+        .setPrivacyTermsAccepted(true);
+    await tester.pump();
     expect(tester.widget<CommonButton>(button).onPressed, isNotNull);
     expect(tester.getSize(button), closeToSize(const Size(335, 48), 0.01));
 
     await tester.tap(ageCheck);
+    await tester.pump();
+    expect(tester.widget<CommonButton>(button).onPressed, isNull);
+
+    await tester.tap(ageCheck);
+    await tester.pump();
+    expect(tester.widget<CommonButton>(button).onPressed, isNotNull);
+    await tester.tap(find.text('개인정보 이용 약관 동의'));
     await tester.pump();
     expect(tester.widget<CommonButton>(button).onPressed, isNull);
   });
@@ -130,6 +147,13 @@ void main() {
 
     final field = find.byType(TextField);
     final button = find.byKey(const ValueKey('profileCompleteButton'));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(ProfileSetupPage)),
+      listen: false,
+    );
+    container
+        .read(profileSetupControllerProvider.notifier)
+        .setPrivacyTermsAccepted(true);
     await tester.tap(find.text('만 14세 이상입니다.'));
     await tester.pump();
     final characterError = find.text('닉네임은 한글, 영문, 공백만 사용할 수 있어요');

@@ -62,7 +62,11 @@ class ProfileSetupState {
   bool get isSubmitting => submitStatus == ProfileSetupSubmitStatus.submitting;
 
   bool get canSubmit =>
-      hasValidNickname && isAgeConfirmed && !isSubmitting && !isPickingImage;
+      hasValidNickname &&
+      isAgeConfirmed &&
+      isPrivacyTermsAccepted &&
+      !isSubmitting &&
+      !isPickingImage;
 
   ProfileSetupState copyWith({
     SelectedImage? selectedImage,

@@ -61,6 +61,7 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
   }
 
   void setPrivacyTermsAccepted(bool isAccepted) {
+    if (state.isSubmitting) return;
     state = state.copyWith(isPrivacyTermsAccepted: isAccepted);
   }
 

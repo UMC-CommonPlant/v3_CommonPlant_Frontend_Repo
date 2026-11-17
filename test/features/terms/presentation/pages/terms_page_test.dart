@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
 import 'package:commonplant_frontend/features/terms/presentation/pages/terms_page.dart';
+import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +20,8 @@ void main() {
     expect(find.text('동의합니다'), findsOneWidget);
     expect(find.bySemanticsLabel('동의합니다 선택 안 됨'), findsOneWidget);
     expect(find.text('확인'), findsOneWidget);
+    final confirm = find.byKey(const ValueKey('privacyTermsConfirmButton'));
+    expect(tester.widget<CommonButton>(confirm).onPressed, isNull);
 
     expect(
       tester.getTopLeft(find.byKey(const ValueKey('privacyTermsSheet'))).dy,
@@ -63,6 +66,12 @@ void main() {
       isTrue,
     );
     expect(find.bySemanticsLabel('동의합니다 선택됨'), findsOneWidget);
+    final confirm = find.byKey(const ValueKey('privacyTermsConfirmButton'));
+    expect(tester.widget<CommonButton>(confirm).onPressed, isNotNull);
+
+    await tester.tap(find.byKey(const ValueKey('privacyTermsCheckRow')));
+    await tester.pump();
+    expect(tester.widget<CommonButton>(confirm).onPressed, isNull);
   });
 }
 

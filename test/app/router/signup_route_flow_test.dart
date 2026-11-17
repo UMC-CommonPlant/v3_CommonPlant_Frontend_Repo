@@ -32,8 +32,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('만 14세 이상입니다.'));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('완료'));
-      await tester.tap(find.text('완료'));
+      await tester.ensureVisible(find.text('보기'));
+      await tester.tap(find.text('보기'));
       await tester.pumpAndSettle();
 
       expect(find.text('개인정보 이용약관'), findsOneWidget);
@@ -42,6 +42,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('확인'));
       await tester.tap(find.text('확인'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('완료'));
+      await tester.tap(find.text('완료'));
       await tester.pumpAndSettle();
 
       expect(find.text('My place'), findsOneWidget);
@@ -81,19 +84,27 @@ void main() {
     );
   });
 
-  testWidgets('연령 확인 없이 약관에서 가입을 계속하면 프로필로 돌아온다', (tester) async {
-    final router = createAppRouter(
-      initialLocation: AppRoutePaths.termsLocation(next: 'home'),
-    );
+  testWidgets('기존 약관 경로에서도 약관을 체크해야 확인할 수 있고 가입은 완료 버튼에서 진행한다', (tester) async {
+    final router = createAppRouter(initialLocation: AppRoutePaths.profileSetup);
     addTearDown(router.dispose);
 
     await tester.pumpWidget(buildCommonPlantRouterTestApp(router));
     await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '초록');
+    await tester.tap(find.text('만 14세 이상입니다.'));
 
-    await tester.tap(find.text('확인'));
+    router.push('${AppRoutePaths.terms}?next=home');
     await tester.pumpAndSettle();
 
-    expect(find.text('만 14세 이상입니다.'), findsOneWidget);
+    final confirm = find.byKey(const ValueKey('privacyTermsConfirmButton'));
+    expect(tester.widget<CommonButton>(confirm).onPressed, isNull);
+    await tester.tap(find.text('동의합니다'));
+    await tester.pump();
+    expect(tester.widget<CommonButton>(confirm).onPressed, isNotNull);
+    await tester.tap(confirm);
+    await tester.pumpAndSettle();
+
+    expect(find.text('My place'), findsNothing);
     expect(find.bySemanticsLabel('개인정보 이용약관 동의됨'), findsOneWidget);
     expect(
       tester
@@ -101,7 +112,7 @@ void main() {
             find.byKey(const ValueKey('profileCompleteButton')),
           )
           .onPressed,
-      isNull,
+      isNotNull,
     );
   });
 }

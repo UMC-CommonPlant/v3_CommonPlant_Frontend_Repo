@@ -54,7 +54,7 @@ class ProfileSetupLayout extends StatelessWidget {
   final VoidCallback onImagePressed;
   final ValueChanged<String> onNicknameChanged;
   final VoidCallback? onAgeCheckPressed;
-  final VoidCallback onTermsPressed;
+  final VoidCallback? onTermsPressed;
   final VoidCallback onTermsViewPressed;
   final Future<void> Function() onComplete;
 

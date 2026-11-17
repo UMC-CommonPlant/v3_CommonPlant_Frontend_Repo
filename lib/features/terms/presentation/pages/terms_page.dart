@@ -7,7 +7,6 @@ import 'package:commonplant_frontend/core/theme/app_spacing.dart';
 import 'package:commonplant_frontend/core/theme/app_text_styles.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/profile_setup_controller.dart';
 import 'package:commonplant_frontend/shared/widgets/common_button.dart';
-import 'package:commonplant_frontend/shared/widgets/common_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -36,15 +35,8 @@ const String _privacyTermsBody =
     'scelerisque aliquet nisl facilisi molestie porttitor risus eget. Erat '
     'mattis gravida quis consequat. Leo';
 
-enum TermsNextDestination { profile, home }
-
 class TermsPage extends ConsumerWidget {
-  const TermsPage({
-    super.key,
-    this.nextDestination = TermsNextDestination.profile,
-  });
-
-  final TermsNextDestination nextDestination;
+  const TermsPage({super.key});
 
   void _goBack(BuildContext context) {
     if (context.canPop()) {
@@ -53,32 +45,6 @@ class TermsPage extends ConsumerWidget {
     }
 
     context.go(AppRoutePaths.profileSetup);
-  }
-
-  Future<void> _confirmAgreement(BuildContext context, WidgetRef ref) async {
-    final controller = ref.read(profileSetupControllerProvider.notifier);
-    controller.setPrivacyTermsAccepted(true);
-
-    if (nextDestination == TermsNextDestination.profile ||
-        !ref.read(profileSetupControllerProvider).isAgeConfirmed) {
-      _goBack(context);
-      return;
-    }
-
-    final didSubmit = await controller.submit();
-    if (!context.mounted) return;
-    if (!didSubmit) {
-      final profile = ref.read(profileSetupControllerProvider);
-      final message = profile.errorMessage;
-      if (message == null) return;
-      if (profile.nicknameErrorMessage != null) {
-        _goBack(context);
-        return;
-      }
-      showCommonSnackBar(context, message);
-      return;
-    }
-    context.go(AppRoutePaths.home);
   }
 
   @override
@@ -91,6 +57,8 @@ class TermsPage extends ConsumerWidget {
     final isSubmitting = ref.watch(
       profileSetupControllerProvider.select((state) => state.isSubmitting),
     );
+
+    final canConfirm = isAccepted && !isSubmitting;
 
     return Scaffold(
       backgroundColor: AppColors.textHeadline,
@@ -177,9 +145,11 @@ class TermsPage extends ConsumerWidget {
                     children: [
                       _TermsConsentRow(
                         isAccepted: isAccepted,
-                        onTap: () => ref
-                            .read(profileSetupControllerProvider.notifier)
-                            .togglePrivacyTermsAccepted(),
+                        onTap: isSubmitting
+                            ? null
+                            : ref
+                                  .read(profileSetupControllerProvider.notifier)
+                                  .togglePrivacyTermsAccepted,
                       ),
                       const SizedBox(height: AppSpacing.x16),
                       Padding(
@@ -189,12 +159,10 @@ class TermsPage extends ConsumerWidget {
                         child: CommonButton(
                           key: const ValueKey('privacyTermsConfirmButton'),
                           label: '확인',
-                          backgroundColor: AppColors.brandAccent,
-                          foregroundColor: AppColors.white,
-                          isLoading: isSubmitting,
-                          onPressed: isSubmitting
-                              ? null
-                              : () => _confirmAgreement(context, ref),
+                          backgroundColor: canConfirm
+                              ? AppColors.brandAccent
+                              : null,
+                          onPressed: canConfirm ? () => _goBack(context) : null,
                         ),
                       ),
                     ],
@@ -253,12 +221,13 @@ class _TermsConsentRow extends StatelessWidget {
   const _TermsConsentRow({required this.isAccepted, required this.onTap});
 
   final bool isAccepted;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      button: true,
+      checked: isAccepted,
+      enabled: onTap != null,
       container: true,
       label: isAccepted ? '동의합니다 선택됨' : '동의합니다 선택 안 됨',
       child: GestureDetector(
