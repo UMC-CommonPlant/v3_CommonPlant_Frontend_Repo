@@ -23,6 +23,7 @@ abstract final class AppIconAssets {
   static const String plantEmpty = 'assets/icons/plant_empty.svg';
   static const String userIllustration = 'assets/icons/user_illustration.svg';
   static const String userProfile = 'assets/icons/user_profile.svg';
+  static const String userProfileEdit = 'assets/icons/user_profile_edit.svg';
   static const String userProfileHeader =
       'assets/icons/user_profile_header.svg';
   static const String settings = 'assets/icons/settings.svg';
