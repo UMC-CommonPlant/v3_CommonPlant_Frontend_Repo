@@ -135,10 +135,7 @@ class _UserProfileContent extends StatelessWidget {
                       onPressed: () =>
                           context.push(AppRoutePaths.userProfileEdit),
                       icon: const CommonSvgIcon(
-                        AppIconAssets.edit,
-                        width: AppSizes.iconMedium,
-                        height: AppSizes.iconMedium,
-                        color: AppColors.iconInactive,
+                        AppIconAssets.userProfileEdit,
                         semanticsLabel: '수정',
                       ),
                       padding: EdgeInsets.zero,
