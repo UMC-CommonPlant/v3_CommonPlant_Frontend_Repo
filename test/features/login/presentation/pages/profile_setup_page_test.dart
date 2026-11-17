@@ -22,9 +22,18 @@ void main() {
     expect(find.bySemanticsLabel('프로필 추가'), findsOneWidget);
     expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
     expect(find.textContaining('0/10', findRichText: true), findsOneWidget);
+    expect(find.text('만 14세 이상입니다.'), findsOneWidget);
+    expect(find.bySemanticsLabel('만 14세 이상입니다.'), findsOneWidget);
     expect(find.text('개인정보 이용 약관 동의'), findsOneWidget);
     expect(find.bySemanticsLabel('개인정보 이용약관 동의 필요'), findsOneWidget);
     expect(find.text('보기'), findsOneWidget);
+    final ageRow = find.byKey(const ValueKey('profileAgeRow'));
+    final termsRow = find.byKey(const ValueKey('profileTermsRow'));
+    expect(tester.getBottomLeft(ageRow).dy, tester.getTopLeft(termsRow).dy);
+    expect(
+      find.descendant(of: ageRow, matching: find.text('보기')),
+      findsNothing,
+    );
     expect(find.text('완료'), findsOneWidget);
 
     expect(
@@ -82,7 +91,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('유효한 닉네임을 입력하면 완료 버튼을 활성화한다', (tester) async {
+  testWidgets('닉네임이 유효하고 두 체크박스를 선택해야 완료 버튼을 활성화한다', (tester) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(375, 812);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -98,8 +107,34 @@ void main() {
     expect(find.textContaining('0/10', findRichText: true), findsNothing);
     expect(find.text('사용 가능한 닉네임입니다'), findsNothing);
     final button = find.byKey(const ValueKey('profileCompleteButton'));
+    final ageCheck = find.text('만 14세 이상입니다.');
+    expect(tester.widget<CommonButton>(button).onPressed, isNull);
+
+    await tester.tap(ageCheck);
+    await tester.pump();
+    expect(tester.widget<CommonButton>(button).onPressed, isNull);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(ProfileSetupPage)),
+      listen: false,
+    );
+    container
+        .read(profileSetupControllerProvider.notifier)
+        .setPrivacyTermsAccepted(true);
+    await tester.pump();
     expect(tester.widget<CommonButton>(button).onPressed, isNotNull);
     expect(tester.getSize(button), closeToSize(const Size(335, 48), 0.01));
+
+    await tester.tap(ageCheck);
+    await tester.pump();
+    expect(tester.widget<CommonButton>(button).onPressed, isNull);
+
+    await tester.tap(ageCheck);
+    await tester.pump();
+    expect(tester.widget<CommonButton>(button).onPressed, isNotNull);
+    await tester.tap(find.text('개인정보 이용 약관 동의'));
+    await tester.pump();
+    expect(tester.widget<CommonButton>(button).onPressed, isNull);
   });
 
   testWidgets('닉네임에서 포커스가 벗어나면 오류를 표시하고 수정 시 바로 갱신한다', (tester) async {
@@ -112,6 +147,15 @@ void main() {
 
     final field = find.byType(TextField);
     final button = find.byKey(const ValueKey('profileCompleteButton'));
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(ProfileSetupPage)),
+      listen: false,
+    );
+    container
+        .read(profileSetupControllerProvider.notifier)
+        .setPrivacyTermsAccepted(true);
+    await tester.tap(find.text('만 14세 이상입니다.'));
+    await tester.pump();
     final characterError = find.text('닉네임은 한글, 영문, 공백만 사용할 수 있어요');
     final lengthError = find.text('2~10자의 닉네임으로 입력해 주세요');
 
@@ -147,6 +191,7 @@ void main() {
     await tester.pumpWidget(_profileSetupApp());
 
     expect(tester.getTopLeft(find.bySemanticsLabel('사진 선택')).dy, lessThan(147));
+    expect(find.text('만 14세 이상입니다.').hitTestable(), findsOneWidget);
     expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
     expect(find.text('완료'), findsOneWidget);
   });
@@ -186,9 +231,10 @@ void main() {
           .getBottomRight(find.byKey(const ValueKey('profileNicknameField')))
           .dy,
       lessThanOrEqualTo(
-        tester.getTopLeft(find.byKey(const ValueKey('profileTermsRow'))).dy,
+        tester.getTopLeft(find.byKey(const ValueKey('profileAgeRow'))).dy,
       ),
     );
+    expect(find.text('만 14세 이상입니다.').hitTestable(), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

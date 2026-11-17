@@ -28,8 +28,8 @@ class ProfileSetupPage extends ConsumerWidget {
     context.go(AppRoutePaths.login);
   }
 
-  void _openTerms(BuildContext context, TermsReturnDestination destination) {
-    context.push(AppRoutePaths.termsLocation(next: destination.queryValue));
+  void _openTerms(BuildContext context) {
+    context.push(AppRoutePaths.terms);
   }
 
   void _handleTermsCheck(BuildContext context, WidgetRef ref, bool isAccepted) {
@@ -40,17 +40,12 @@ class ProfileSetupPage extends ConsumerWidget {
       return;
     }
 
-    _openTerms(context, TermsReturnDestination.profile);
+    _openTerms(context);
   }
 
   Future<void> _handleComplete(BuildContext context, WidgetRef ref) async {
-    final isTermsAccepted = ref
-        .read(profileSetupControllerProvider)
-        .isPrivacyTermsAccepted;
-    if (!isTermsAccepted) {
-      _openTerms(context, TermsReturnDestination.home);
-      return;
-    }
+    final state = ref.read(profileSetupControllerProvider);
+    if (!state.canSubmit) return;
 
     final didSubmit = await ref
         .read(profileSetupControllerProvider.notifier)
@@ -104,26 +99,21 @@ class ProfileSetupPage extends ConsumerWidget {
       nicknameErrorMessage: state.nicknameErrorMessage,
       hasImage: state.hasImage,
       profileImageUrl: state.profileImageUrl,
+      isAgeConfirmed: state.isAgeConfirmed,
       isTermsAccepted: state.isPrivacyTermsAccepted,
       isCompleteEnabled: state.canSubmit,
       isSubmitting: state.isSubmitting,
       onBack: () => _goBack(context),
       onImagePressed: () => _pickImage(context, ref),
       onNicknameChanged: controller.updateNickname,
-      onTermsPressed: () =>
-          _handleTermsCheck(context, ref, state.isPrivacyTermsAccepted),
-      onTermsViewPressed: () =>
-          _openTerms(context, TermsReturnDestination.profile),
+      onAgeCheckPressed: state.isSubmitting
+          ? null
+          : controller.toggleAgeConfirmed,
+      onTermsPressed: state.isSubmitting
+          ? null
+          : () => _handleTermsCheck(context, ref, state.isPrivacyTermsAccepted),
+      onTermsViewPressed: () => _openTerms(context),
       onComplete: () => _handleComplete(context, ref),
     );
   }
-}
-
-enum TermsReturnDestination {
-  profile('profile'),
-  home('home');
-
-  const TermsReturnDestination(this.queryValue);
-
-  final String queryValue;
 }

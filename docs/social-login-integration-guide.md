@@ -59,7 +59,7 @@ Kakao / Google / Apple SDK 인증
 - 신규 응답에 access/refresh token이 함께 있어도 secure storage에 저장하지 않는다.
   가입을 끝내기 전에 앱 프로세스를 종료하면 소셜 로그인부터 다시 시작한다.
 - `suggestedName`과 `suggestedImgUrl`은 선택적인 초기 표시값이다.
-- 약관 동의와 프로필 입력 뒤 `/auth/register`에 `signupToken`과 사용자 입력을 보낸다.
+- 프로필에서 유효한 닉네임, 만 14세 이상 확인, 개인정보 이용약관 동의를 모두 충족해야 완료 버튼으로 `/auth/register`에 `signupToken`과 사용자 입력을 보낸다.
 - 가입 완료 응답의 `accessToken`과 `refreshToken`을 저장한 뒤 Home으로 이동한다.
 - 가입 완료 응답은 token 존재로 인증 성공을 판단한다. 응답에 `isNewUser: true`가 포함돼도
   로그인용 신규 사용자 분기를 다시 적용하지 않는다.

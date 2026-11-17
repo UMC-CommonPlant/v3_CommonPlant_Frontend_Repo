@@ -25,6 +25,8 @@ void main() {
     container.listen(profileSetupControllerProvider, (_, _) {});
     final controller = container.read(profileSetupControllerProvider.notifier);
     await controller.selectImage();
+    controller.toggleAgeConfirmed();
+    controller.setPrivacyTermsAccepted(true);
     expect(await controller.submit(), isTrue);
     expect(repository.images.single?.contentType.toString(), 'image/png');
   });
@@ -42,6 +44,8 @@ void main() {
           profileSetupControllerProvider.notifier,
         );
         controller.updateNickname('첫 제출');
+        controller.toggleAgeConfirmed();
+        controller.setPrivacyTermsAccepted(true);
         final barrier = Completer<void>();
         var calls = 0;
         Future<void> action() {
@@ -58,6 +62,7 @@ void main() {
           controller.resetProfileImage,
           () => controller.setPrivacyTermsAccepted(true),
           controller.togglePrivacyTermsAccepted,
+          controller.toggleAgeConfirmed,
         ]) {
           edit();
           pendingStates.add(container.read(profileSetupControllerProvider));
@@ -72,6 +77,11 @@ void main() {
 
         expect(pendingStates.every((state) => state.isSubmitting), isTrue);
         expect(pendingStates.every((state) => !state.canSubmit), isTrue);
+        expect(pendingStates.every((state) => state.isAgeConfirmed), isTrue);
+        expect(
+          pendingStates.every((state) => state.isPrivacyTermsAccepted),
+          isTrue,
+        );
         expect(pendingStates.last.nickname, '다음 제출');
         expect(calls, 1);
         expect(results.first, !fails);
@@ -108,6 +118,8 @@ void main() {
     container.listen(profileSetupControllerProvider, (_, _) {});
     final controller = container.read(profileSetupControllerProvider.notifier);
     controller.updateNickname('첫 제출');
+    controller.toggleAgeConfirmed();
+    controller.setPrivacyTermsAccepted(true);
     final first = controller.submit();
     controller.updateNickname('다음 제출');
     final duplicate = controller.submit();
@@ -122,7 +134,7 @@ void main() {
     expect(repository.latestRequest?.name, '첫 제출');
   });
 
-  test('닉네임 입력에 따라 제출 가능 상태를 계산한다', () {
+  test('닉네임이 유효하고 두 확인 항목을 모두 선택해야 제출할 수 있다', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     final controller = container.read(profileSetupControllerProvider.notifier);
@@ -134,7 +146,13 @@ void main() {
 
     controller.updateNickname('커먼');
     expect(container.read(profileSetupControllerProvider).nickname, '커먼');
+    expect(container.read(profileSetupControllerProvider).canSubmit, isFalse);
+    controller.toggleAgeConfirmed();
+    expect(container.read(profileSetupControllerProvider).canSubmit, isFalse);
+    controller.setPrivacyTermsAccepted(true);
     expect(container.read(profileSetupControllerProvider).canSubmit, isTrue);
+    controller.toggleAgeConfirmed();
+    expect(container.read(profileSetupControllerProvider).canSubmit, isFalse);
   });
 
   test('개인정보 약관 동의 상태를 설정하고 전환한다', () {
@@ -168,6 +186,8 @@ void main() {
     final completer = Completer<void>();
 
     controller.updateNickname('커먼');
+    controller.toggleAgeConfirmed();
+    controller.setPrivacyTermsAccepted(true);
     final submitFuture = controller.submit(action: () => completer.future);
     await Future<void>.delayed(Duration.zero);
 
@@ -191,6 +211,8 @@ void main() {
     final controller = container.read(profileSetupControllerProvider.notifier);
 
     controller.updateNickname('커먼');
+    controller.toggleAgeConfirmed();
+    controller.setPrivacyTermsAccepted(true);
     final didSubmit = await controller.submit(
       action: () async => throw StateError('raw failure'),
     );
@@ -212,6 +234,8 @@ void main() {
     addTearDown(container.dispose);
     final controller = container.read(profileSetupControllerProvider.notifier);
     controller.updateNickname('커먼');
+    controller.toggleAgeConfirmed();
+    controller.setPrivacyTermsAccepted(true);
 
     final didSubmit = await controller.submit(
       action: () async => throw const ApiException(
@@ -262,6 +286,19 @@ void main() {
     final controller = container.read(profileSetupControllerProvider.notifier);
 
     controller.updateNickname('커먼');
+    expect(await controller.submit(), isFalse);
+    expect(repository.registerCalls, 0);
+
+    controller.toggleAgeConfirmed();
+    expect(await controller.submit(), isFalse);
+    expect(repository.registerCalls, 0);
+    controller.toggleAgeConfirmed();
+
+    controller.setPrivacyTermsAccepted(true);
+    expect(await controller.submit(), isFalse);
+    expect(repository.registerCalls, 0);
+    controller.toggleAgeConfirmed();
+
     final didSubmit = await controller.submit();
 
     expect(didSubmit, isTrue);
@@ -282,6 +319,8 @@ void main() {
     container.listen(profileSetupControllerProvider, (_, _) {});
     final controller = container.read(profileSetupControllerProvider.notifier);
     controller.updateNickname('A 초안');
+    controller.toggleAgeConfirmed();
+    controller.setPrivacyTermsAccepted(true);
     final pending = controller.submit();
     await repository.started.future;
 
@@ -304,6 +343,10 @@ void main() {
       'signup-B',
     );
     expect(container.read(profileSetupControllerProvider).nickname, '새 계정');
+    expect(
+      container.read(profileSetupControllerProvider).isAgeConfirmed,
+      isFalse,
+    );
     expect(container.read(profileSetupControllerProvider).errorMessage, isNull);
   });
 }

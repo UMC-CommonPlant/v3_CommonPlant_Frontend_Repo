@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/app/router/app_router.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
+import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -29,8 +30,10 @@ void main() {
       await tester.enterText(find.byType(TextField), '초록');
       await tester.tapAt(const Offset(24, 24));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('완료'));
-      await tester.tap(find.text('완료'));
+      await tester.tap(find.text('만 14세 이상입니다.'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('보기'));
+      await tester.tap(find.text('보기'));
       await tester.pumpAndSettle();
 
       expect(find.text('개인정보 이용약관'), findsOneWidget);
@@ -39,6 +42,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('확인'));
       await tester.tap(find.text('확인'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('완료'));
+      await tester.tap(find.text('완료'));
       await tester.pumpAndSettle();
 
       expect(find.text('My place'), findsOneWidget);
@@ -54,6 +60,8 @@ void main() {
     await tester.pumpWidget(buildCommonPlantRouterTestApp(router));
     await tester.pumpAndSettle();
 
+    await tester.enterText(find.byType(TextField), '초록');
+    await tester.tap(find.text('만 14세 이상입니다.'));
     await tester.tap(find.text('보기'));
     await tester.pumpAndSettle();
 
@@ -66,5 +74,45 @@ void main() {
 
     expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
     expect(find.bySemanticsLabel('개인정보 이용약관 동의됨'), findsOneWidget);
+    expect(
+      tester
+          .widget<CommonButton>(
+            find.byKey(const ValueKey('profileCompleteButton')),
+          )
+          .onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('기존 약관 경로에서도 약관을 체크해야 확인할 수 있고 가입은 완료 버튼에서 진행한다', (tester) async {
+    final router = createAppRouter(initialLocation: AppRoutePaths.profileSetup);
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(buildCommonPlantRouterTestApp(router));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '초록');
+    await tester.tap(find.text('만 14세 이상입니다.'));
+
+    router.push('${AppRoutePaths.terms}?next=home');
+    await tester.pumpAndSettle();
+
+    final confirm = find.byKey(const ValueKey('privacyTermsConfirmButton'));
+    expect(tester.widget<CommonButton>(confirm).onPressed, isNull);
+    await tester.tap(find.text('동의합니다'));
+    await tester.pump();
+    expect(tester.widget<CommonButton>(confirm).onPressed, isNotNull);
+    await tester.tap(confirm);
+    await tester.pumpAndSettle();
+
+    expect(find.text('My place'), findsNothing);
+    expect(find.bySemanticsLabel('개인정보 이용약관 동의됨'), findsOneWidget);
+    expect(
+      tester
+          .widget<CommonButton>(
+            find.byKey(const ValueKey('profileCompleteButton')),
+          )
+          .onPressed,
+      isNotNull,
+    );
   });
 }

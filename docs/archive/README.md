@@ -34,6 +34,7 @@
 - [온보딩·토큰 갱신 정책 문서화 #287](work-history/onboarding-refresh-policy-287.md)
 - [온보딩 완료 상태 로컬 저장 #289](work-history/onboarding-local-state-289.md)
 - [앱 시작 refresh-only 토큰 갱신 #311](work-history/startup-token-refresh-311.md)
+- [회원가입 연령 확인 #339](work-history/signup-age-check-339.md)
 
 ## 장소·친구
 

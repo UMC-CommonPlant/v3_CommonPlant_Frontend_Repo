@@ -70,14 +70,6 @@ abstract final class AppRoutePaths {
     ).toString();
   }
 
-  static String termsLocation({String? next}) {
-    if (next == null) {
-      return terms;
-    }
-
-    return Uri(path: terms, queryParameters: {'next': next}).toString();
-  }
-
   static String placeEditLocation(String placeId) {
     return '/places/${Uri.encodeComponent(placeId)}/edit';
   }

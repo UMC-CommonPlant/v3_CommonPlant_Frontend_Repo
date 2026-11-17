@@ -64,13 +64,18 @@ void main() {
       await tester.enterText(find.byType(TextField), '초록');
       await tester.tapAt(const Offset(24, 24));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('완료'));
-      await tester.tap(find.text('완료'));
+      await tester.tap(find.text('만 14세 이상입니다.'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('보기'));
+      await tester.tap(find.text('보기'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('동의합니다'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('확인'));
       await tester.tap(find.text('확인'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('완료'));
+      await tester.tap(find.text('완료'));
       await tester.pumpAndSettle();
       expect(server.registration, {
         'signupToken': 'signup-token',
@@ -255,8 +260,8 @@ void main() {
   for (final rejectsNickname in [true, false]) {
     testWidgets(
       rejectsNickname
-          ? '약관에서 닉네임이 거절되면 초안과 동의를 보존하고 프로필로 돌아간다'
-          : '가입 서버 장애는 약관에서 안내하고 다시 제출할 수 있다',
+          ? '가입 중 닉네임이 거절되면 프로필에 초안과 동의를 보존한다'
+          : '가입 서버 장애는 프로필에서 안내하고 다시 제출할 수 있다',
       (tester) async {
         const nicknameError = '이 닉네임은 사용할 수 없어요.';
         final initialName = rejectsNickname ? '새싹' : '초록';
@@ -292,11 +297,17 @@ void main() {
         await tester.enterText(find.byType(TextField), initialName);
         await tester.tap(find.bySemanticsLabel('사진 선택'));
         await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text('완료'));
-        await tester.tap(find.text('완료'));
+        await tester.tap(find.text('만 14세 이상입니다.'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('보기'));
+        await tester.tap(find.text('보기'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('동의합니다'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('확인'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('완료'));
+        await tester.tap(find.text('완료'));
         await tester.pumpAndSettle();
 
         expect(store.saveCalls, 0);
@@ -318,7 +329,7 @@ void main() {
           await tester.tap(find.text('완료'));
         } else {
           expect(find.text('서버에 문제가 발생했어요. 잠시 후 다시 시도해 주세요.'), findsOneWidget);
-          await tester.tap(find.text('확인'));
+          await tester.tap(find.text('완료'));
         }
         await tester.pumpAndSettle();
 
