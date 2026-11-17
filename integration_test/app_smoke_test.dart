@@ -33,6 +33,8 @@ void main() {
     await tester.enterText(find.byType(TextField), '초록');
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pumpAndSettle();
+    await tester.tap(find.text('만 14세 이상입니다.'));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('완료'));
     await tester.tap(find.text('완료'));
     await tester.pumpAndSettle();

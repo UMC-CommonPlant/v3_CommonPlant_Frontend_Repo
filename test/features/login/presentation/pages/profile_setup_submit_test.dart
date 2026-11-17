@@ -64,6 +64,7 @@ void main() {
           .read(profileSetupControllerProvider.notifier)
           .setPrivacyTermsAccepted(true);
       await tester.enterText(find.byType(TextField), '첫 제출');
+      await tester.tap(find.text('만 14세 이상입니다.'));
       await tester.pump();
 
       final button = find.widgetWithText(OutlinedButton, '완료');

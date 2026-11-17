@@ -44,10 +44,10 @@ class ProfileSetupPage extends ConsumerWidget {
   }
 
   Future<void> _handleComplete(BuildContext context, WidgetRef ref) async {
-    final isTermsAccepted = ref
-        .read(profileSetupControllerProvider)
-        .isPrivacyTermsAccepted;
-    if (!isTermsAccepted) {
+    final state = ref.read(profileSetupControllerProvider);
+    if (!state.canSubmit) return;
+
+    if (!state.isPrivacyTermsAccepted) {
       _openTerms(context, TermsReturnDestination.home);
       return;
     }
@@ -104,12 +104,16 @@ class ProfileSetupPage extends ConsumerWidget {
       nicknameErrorMessage: state.nicknameErrorMessage,
       hasImage: state.hasImage,
       profileImageUrl: state.profileImageUrl,
+      isAgeConfirmed: state.isAgeConfirmed,
       isTermsAccepted: state.isPrivacyTermsAccepted,
       isCompleteEnabled: state.canSubmit,
       isSubmitting: state.isSubmitting,
       onBack: () => _goBack(context),
       onImagePressed: () => _pickImage(context, ref),
       onNicknameChanged: controller.updateNickname,
+      onAgeCheckPressed: state.isSubmitting
+          ? null
+          : controller.toggleAgeConfirmed,
       onTermsPressed: () =>
           _handleTermsCheck(context, ref, state.isPrivacyTermsAccepted),
       onTermsViewPressed: () =>

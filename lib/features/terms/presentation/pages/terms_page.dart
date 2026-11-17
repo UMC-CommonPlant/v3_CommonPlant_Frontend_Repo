@@ -56,37 +56,29 @@ class TermsPage extends ConsumerWidget {
   }
 
   Future<void> _confirmAgreement(BuildContext context, WidgetRef ref) async {
-    ref
-        .read(profileSetupControllerProvider.notifier)
-        .setPrivacyTermsAccepted(true);
+    final controller = ref.read(profileSetupControllerProvider.notifier);
+    controller.setPrivacyTermsAccepted(true);
 
-    switch (nextDestination) {
-      case TermsNextDestination.profile:
-        if (context.canPop()) {
-          context.pop();
-        } else {
-          context.go(AppRoutePaths.profileSetup);
-        }
-      case TermsNextDestination.home:
-        final didSubmit = await ref
-            .read(profileSetupControllerProvider.notifier)
-            .submit();
-        if (!context.mounted) {
-          return;
-        }
-        if (!didSubmit) {
-          final profile = ref.read(profileSetupControllerProvider);
-          final message = profile.errorMessage;
-          if (message == null) return;
-          if (profile.nicknameErrorMessage != null) {
-            _goBack(context);
-            return;
-          }
-          showCommonSnackBar(context, message);
-          return;
-        }
-        context.go(AppRoutePaths.home);
+    if (nextDestination == TermsNextDestination.profile ||
+        !ref.read(profileSetupControllerProvider).isAgeConfirmed) {
+      _goBack(context);
+      return;
     }
+
+    final didSubmit = await controller.submit();
+    if (!context.mounted) return;
+    if (!didSubmit) {
+      final profile = ref.read(profileSetupControllerProvider);
+      final message = profile.errorMessage;
+      if (message == null) return;
+      if (profile.nicknameErrorMessage != null) {
+        _goBack(context);
+        return;
+      }
+      showCommonSnackBar(context, message);
+      return;
+    }
+    context.go(AppRoutePaths.home);
   }
 
   @override

@@ -3,10 +3,10 @@ import 'dart:math' as math;
 import 'package:commonplant_frontend/core/theme/app_colors.dart';
 import 'package:commonplant_frontend/core/theme/app_sizes.dart';
 import 'package:commonplant_frontend/core/theme/app_spacing.dart';
+import 'package:commonplant_frontend/features/login/presentation/widgets/profile_agreement_row.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_avatar.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_complete_button.dart';
 import 'package:commonplant_frontend/features/login/presentation/widgets/profile_nickname_field.dart';
-import 'package:commonplant_frontend/features/login/presentation/widgets/profile_terms_agreement_row.dart';
 import 'package:flutter/material.dart';
 
 const double _figmaFrameWidth = 375;
@@ -16,8 +16,9 @@ const double _sheetTop = 50;
 const double _sheetRadius = 10;
 const double _backButtonTop = 63;
 const double _profileContentTop = 147;
-const double _bottomActionsTop = 626;
-const double _bottomActionsHeight = 56 + AppSpacing.x16 + AppSizes.buttonHeight;
+const double _privacyAgreementTop = 626;
+const double _bottomActionsHeight =
+    (2 * profileAgreementRowHeight) + AppSpacing.x16 + AppSizes.buttonHeight;
 
 class ProfileSetupLayout extends StatelessWidget {
   const ProfileSetupLayout({
@@ -26,12 +27,14 @@ class ProfileSetupLayout extends StatelessWidget {
     required this.hasImage,
     this.profileImageUrl,
     this.imageField,
+    required this.isAgeConfirmed,
     required this.isTermsAccepted,
     required this.isCompleteEnabled,
     required this.isSubmitting,
     required this.onBack,
     required this.onImagePressed,
     required this.onNicknameChanged,
+    required this.onAgeCheckPressed,
     required this.onTermsPressed,
     required this.onTermsViewPressed,
     required this.onComplete,
@@ -43,12 +46,14 @@ class ProfileSetupLayout extends StatelessWidget {
   final Widget? imageField;
   final bool hasImage;
   final String? profileImageUrl;
+  final bool isAgeConfirmed;
   final bool isTermsAccepted;
   final bool isCompleteEnabled;
   final bool isSubmitting;
   final VoidCallback onBack;
   final VoidCallback onImagePressed;
   final ValueChanged<String> onNicknameChanged;
+  final VoidCallback? onAgeCheckPressed;
   final VoidCallback onTermsPressed;
   final VoidCallback onTermsViewPressed;
   final Future<void> Function() onComplete;
@@ -63,9 +68,13 @@ class ProfileSetupLayout extends StatelessWidget {
             1.0,
             constraints.maxHeight / _figmaFrameHeight,
           );
-          final actionsTop = math.min(
-            _bottomActionsTop * verticalScale,
-            math.max(0.0, constraints.maxHeight - _bottomActionsHeight),
+          final actionsTop = math.max(
+            0.0,
+            math.min(
+              (_privacyAgreementTop * verticalScale) -
+                  profileAgreementRowHeight,
+              constraints.maxHeight - _bottomActionsHeight,
+            ),
           );
           final contentWidth = math.min(
             _figmaFrameWidth - (AppSpacing.x20 * 2),
@@ -158,7 +167,19 @@ class ProfileSetupLayout extends StatelessWidget {
                 right: 0,
                 child: Column(
                   children: [
-                    ProfileTermsAgreementRow(
+                    ProfileAgreementRow(
+                      key: const ValueKey('profileAgeRow'),
+                      label: '만 14세 이상입니다.',
+                      isAccepted: isAgeConfirmed,
+                      onCheckPressed: onAgeCheckPressed,
+                    ),
+                    ProfileAgreementRow(
+                      key: const ValueKey('profileTermsRow'),
+                      checkKey: const ValueKey('profileTermsCheckButton'),
+                      label: '개인정보 이용 약관 동의',
+                      accessibilityLabel: isTermsAccepted
+                          ? '개인정보 이용약관 동의됨'
+                          : '개인정보 이용약관 동의 필요',
                       isAccepted: isTermsAccepted,
                       onCheckPressed: onTermsPressed,
                       onViewPressed: onTermsViewPressed,

@@ -55,6 +55,11 @@ class ProfileSetupController extends Notifier<ProfileSetupState> {
 
   void resetProfileImage() => clearSelectedImage();
 
+  void toggleAgeConfirmed() {
+    if (state.isSubmitting) return;
+    state = state.copyWith(isAgeConfirmed: !state.isAgeConfirmed);
+  }
+
   void setPrivacyTermsAccepted(bool isAccepted) {
     state = state.copyWith(isPrivacyTermsAccepted: isAccepted);
   }

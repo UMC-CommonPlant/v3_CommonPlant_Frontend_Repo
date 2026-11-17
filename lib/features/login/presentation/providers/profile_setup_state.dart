@@ -24,6 +24,7 @@ class ProfileSetupState {
     required this.nickname,
     required this.hasImage,
     required this.profileImageUrl,
+    required this.isAgeConfirmed,
     required this.isPrivacyTermsAccepted,
     required this.submitStatus,
     this.selectedImage,
@@ -39,6 +40,7 @@ class ProfileSetupState {
          nickname: nickname,
          hasImage: profileImageUrl != null,
          profileImageUrl: profileImageUrl,
+         isAgeConfirmed: false,
          isPrivacyTermsAccepted: false,
          submitStatus: ProfileSetupSubmitStatus.idle,
        );
@@ -49,6 +51,7 @@ class ProfileSetupState {
   final String nickname;
   final bool hasImage;
   final String? profileImageUrl;
+  final bool isAgeConfirmed;
   final bool isPrivacyTermsAccepted;
   final ProfileSetupSubmitStatus submitStatus;
   final String? errorMessage;
@@ -58,7 +61,8 @@ class ProfileSetupState {
 
   bool get isSubmitting => submitStatus == ProfileSetupSubmitStatus.submitting;
 
-  bool get canSubmit => hasValidNickname && !isSubmitting && !isPickingImage;
+  bool get canSubmit =>
+      hasValidNickname && isAgeConfirmed && !isSubmitting && !isPickingImage;
 
   ProfileSetupState copyWith({
     SelectedImage? selectedImage,
@@ -67,6 +71,7 @@ class ProfileSetupState {
     String? nickname,
     bool? hasImage,
     String? profileImageUrl,
+    bool? isAgeConfirmed,
     bool? isPrivacyTermsAccepted,
     ProfileSetupSubmitStatus? submitStatus,
     String? errorMessage,
@@ -85,6 +90,7 @@ class ProfileSetupState {
       profileImageUrl: clearProfileImageUrl
           ? null
           : profileImageUrl ?? this.profileImageUrl,
+      isAgeConfirmed: isAgeConfirmed ?? this.isAgeConfirmed,
       isPrivacyTermsAccepted:
           isPrivacyTermsAccepted ?? this.isPrivacyTermsAccepted,
       submitStatus: submitStatus ?? this.submitStatus,

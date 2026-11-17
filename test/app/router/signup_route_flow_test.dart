@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/app/router/app_router.dart';
 import 'package:commonplant_frontend/app/router/route_paths.dart';
+import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -29,6 +30,8 @@ void main() {
       await tester.enterText(find.byType(TextField), '초록');
       await tester.tapAt(const Offset(24, 24));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('만 14세 이상입니다.'));
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('완료'));
       await tester.tap(find.text('완료'));
       await tester.pumpAndSettle();
@@ -54,6 +57,8 @@ void main() {
     await tester.pumpWidget(buildCommonPlantRouterTestApp(router));
     await tester.pumpAndSettle();
 
+    await tester.enterText(find.byType(TextField), '초록');
+    await tester.tap(find.text('만 14세 이상입니다.'));
     await tester.tap(find.text('보기'));
     await tester.pumpAndSettle();
 
@@ -66,5 +71,37 @@ void main() {
 
     expect(find.text('닉네임을 입력해 주세요'), findsOneWidget);
     expect(find.bySemanticsLabel('개인정보 이용약관 동의됨'), findsOneWidget);
+    expect(
+      tester
+          .widget<CommonButton>(
+            find.byKey(const ValueKey('profileCompleteButton')),
+          )
+          .onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('연령 확인 없이 약관에서 가입을 계속하면 프로필로 돌아온다', (tester) async {
+    final router = createAppRouter(
+      initialLocation: AppRoutePaths.termsLocation(next: 'home'),
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(buildCommonPlantRouterTestApp(router));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('확인'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('만 14세 이상입니다.'), findsOneWidget);
+    expect(find.bySemanticsLabel('개인정보 이용약관 동의됨'), findsOneWidget);
+    expect(
+      tester
+          .widget<CommonButton>(
+            find.byKey(const ValueKey('profileCompleteButton')),
+          )
+          .onPressed,
+      isNull,
+    );
   });
 }
