@@ -3,6 +3,10 @@ abstract final class AppIconAssets {
 
   static const String addPerson = 'assets/icons/add_person.svg';
   static const String addPlace = 'assets/icons/add_place.svg';
+  static const String checkCircleUnselected =
+      'assets/icons/check_circle_unselected.svg';
+  static const String withdrawalBackChevron =
+      'assets/icons/withdrawal_back_chevron.svg';
   static const String camera = 'assets/icons/camera.svg';
   static const String cameraAlt = 'assets/icons/camera_alt.svg';
   static const String logoWordmarkCommon =

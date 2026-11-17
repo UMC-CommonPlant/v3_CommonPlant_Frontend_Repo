@@ -21,6 +21,7 @@ abstract final class AppRouteNames {
   static const String memoList = 'memoList';
   static const String userProfile = 'userProfile';
   static const String userSettings = 'userSettings';
+  static const String userAccountWithdrawal = 'userAccountWithdrawal';
   static const String userProfileEdit = 'userProfileEdit';
 }
 
@@ -47,6 +48,7 @@ abstract final class AppRoutePaths {
   static const String memoList = '/plants/:plantId/memos';
   static const String userProfile = '/me';
   static const String userSettings = '/me/settings';
+  static const String userAccountWithdrawal = '/me/settings/withdrawal';
   static const String userProfileEdit = '/me/edit';
 
   static String loginLocation({String? redirect}) {

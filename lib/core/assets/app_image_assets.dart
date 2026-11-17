@@ -1,6 +1,8 @@
 abstract final class AppImageAssets {
   const AppImageAssets._();
 
+  static const String accountWithdrawalIllustration =
+      'assets/images/account_withdrawal_illustration.svg';
   static const String leafAvatarPlaceholder =
       'assets/images/leaf_avatar_placeholder.png';
   static const String placeDefaultIllustration =

@@ -15,6 +15,7 @@ import 'package:commonplant_frontend/features/login/domain/models/social_auth.da
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/login_controller.dart';
 import 'package:commonplant_frontend/features/onboarding/presentation/providers/onboarding_controller.dart';
+import 'package:commonplant_frontend/shared/widgets/common_button.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -331,6 +332,56 @@ void main() {
     );
   }
 
+  testWidgets('회원탈퇴는 확인 후 요청하며 실패 후 재시도해 로그인으로 이동한다', (tester) async {
+    final store = _TokenStore()
+      ..accessToken = 'active-access'
+      ..refreshToken = 'active-refresh';
+    final pending = Completer<ResponseBody>();
+    final server = _AuthAdapter()..accountDeletionResponse = pending.future;
+    final container = _container(store, server);
+    addTearDown(container.dispose);
+    await _pumpApp(tester, container);
+    final router = container.read(appRouterProvider);
+    router.go(AppRoutePaths.userSettings);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('회원탈퇴'));
+    await tester.pumpAndSettle();
+
+    final deleteButton = find.widgetWithText(CommonButton, '계정 삭제하기');
+    expect(tester.widget<CommonButton>(deleteButton).onPressed, isNull);
+    expect(server.accountDeletionCalls, 0);
+
+    await tester.tap(find.text('유의사항을 모두 확인하였습니다.'));
+    await tester.pump();
+    expect(tester.widget<CommonButton>(deleteButton).onPressed, isNotNull);
+    await tester.tap(deleteButton);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(tester.widget<CommonButton>(deleteButton).isLoading, isTrue);
+    expect(server.accountDeletionCalls, 1);
+    await tester.tap(deleteButton);
+    await tester.pump();
+    expect(server.accountDeletionCalls, 1);
+
+    pending.complete(ResponseBody.fromString('{}', 503));
+    await tester.pumpAndSettle();
+    expect(find.text('서버에 문제가 발생했어요. 잠시 후 다시 시도해 주세요.'), findsOneWidget);
+    expect(store.accessToken, 'active-access');
+    expect(tester.widget<CommonButton>(deleteButton).onPressed, isNotNull);
+
+    server.accountDeletionResponse = Future.value(
+      ResponseBody.fromString('', 204),
+    );
+    await tester.tap(deleteButton);
+    await tester.pumpAndSettle();
+
+    expect(server.accountDeletionCalls, 2);
+    expect(router.routeInformationProvider.value.uri.path, AppRoutePaths.login);
+    expect(store.accessToken, isNull);
+    expect(store.refreshToken, isNull);
+  });
+
   for (final succeeds in [true, false]) {
     testWidgets(
       'refresh-only 확인 중 로그인하지 않고 결과에 따라 보호 route를 처리한다 ($succeeds)',
@@ -466,6 +517,8 @@ class _AuthAdapter implements HttpClientAdapter {
   Object? registration;
   ResponseBody? registrationFailure;
   int refreshCalls = 0;
+  int accountDeletionCalls = 0;
+  Future<ResponseBody>? accountDeletionResponse;
   Completer<ResponseBody>? refreshResponse;
 
   @override
@@ -475,6 +528,10 @@ class _AuthAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     await requestStream?.drain<void>();
+    if (options.path == '/users' && options.method == 'DELETE') {
+      accountDeletionCalls++;
+      return accountDeletionResponse!;
+    }
     if (options.path == '/auth/refresh') {
       refreshCalls++;
       expect(options.data, {'refreshToken': 'saved-refresh'});

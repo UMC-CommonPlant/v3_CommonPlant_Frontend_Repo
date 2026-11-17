@@ -143,7 +143,46 @@ void main() {
     expect(find.text('alwaysweave@gmail.com'), findsOneWidget);
   });
 
-  testWidgets('설정 화면은 알림 토글과 계정 확인 dialog를 제공한다', (tester) async {
+  for (final viewport in [
+    TestViewports.reference,
+    TestViewports.shortHeight,
+    TestViewports.compactWidth,
+  ]) {
+    testWidgets('회원탈퇴 화면에서 확인하고 설정으로 돌아갈 수 있다 ($viewport)', (tester) async {
+      configureTestViewport(tester, viewport);
+      final router = createAppRouter(
+        initialLocation: AppRoutePaths.userSettings,
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(_buildRouterApp(router));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('회원탈퇴'));
+      await tester.pumpAndSettle();
+      expect(find.text('커먼님 잠시만요 !'), findsOneWidget);
+      expect(find.byType(CommonDialogCard), findsNothing);
+
+      final deleteButton = find.widgetWithText(CommonButton, '계정 삭제하기');
+      await tester.ensureVisible(deleteButton);
+      await tester.pumpAndSettle();
+      expect(tester.widget<CommonButton>(deleteButton).onPressed, isNull);
+
+      final acknowledgement = find.text('유의사항을 모두 확인하였습니다.');
+      await tester.tap(acknowledgement);
+      await tester.pump();
+      expect(tester.widget<CommonButton>(deleteButton).onPressed, isNotNull);
+      await tester.tap(acknowledgement);
+      await tester.pump();
+      expect(tester.widget<CommonButton>(deleteButton).onPressed, isNull);
+
+      await tester.tap(find.bySemanticsLabel('뒤로 가기'));
+      await tester.pumpAndSettle();
+      expect(find.text('설정'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('설정 화면은 알림 토글과 로그아웃 확인창을 제공한다', (tester) async {
     configureTestViewport(tester, TestViewports.compactWidth);
 
     await tester.pumpWidget(
