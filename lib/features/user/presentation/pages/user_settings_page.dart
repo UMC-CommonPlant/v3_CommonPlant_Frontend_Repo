@@ -69,9 +69,10 @@ class UserSettingsPage extends ConsumerWidget {
   Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
     final confirmed = await showCommonDialog<bool>(
       context: context,
+      barrierColor: AppColors.textHeadline.withValues(alpha: 0.7),
       child: CommonDialogCard(
         title: '로그아웃',
-        message: '현재 계정에서 로그아웃할까요?',
+        message: '로그아웃 하시겠어요?',
         actions: [
           CommonDialogActionButton(
             label: '취소',
