@@ -81,3 +81,4 @@
 - [미선택 정원 탭 아이콘 색상 #321](work-history/garden-tab-color-321.md)
 - [Swagger 기준 이미지 직접 업로드 정정 #297](work-history/image-upload-url-297.md)
 - [완료 문서 아카이브 정리 #318](work-history/document-archive-318.md)
+- [안드로이드 앱 아이콘 교체 #345](work-history/android-app-icon-345.md)

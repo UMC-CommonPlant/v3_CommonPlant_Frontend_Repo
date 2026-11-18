@@ -267,10 +267,12 @@ RELEASE-01은 #209에서 확정했으며, iOS Bundle ID는 #295 실기기 검증
 | Android namespace/application id | `com.plant.common` |
 | iOS Runner bundle identifier | `com.commonplant.umc` |
 | iOS RunnerTests bundle identifier | `com.commonplant.umc.RunnerTests` |
-| 앱 아이콘 | v1/v2에서 사용한 집·새싹 브랜드 아이콘 재사용 |
+| 앱 아이콘 | 집·새싹 브랜드 아이콘 |
 | Firebase | 현재 패키지와 설정 파일이 없고 MVP 요구 기능도 없어 `Not needed` |
 
-아이콘 원본은 같은 GitHub organization의 [v2 iOS appstore 아이콘](https://raw.githubusercontent.com/UMC-CommonPlant/v2_CommonPlant-iOS-refactoring/develop/CommonPlant/CommonPlant/Resource/Assets.xcassets/AppIcon.appiconset/appstore.png)을 사용합니다. 내려받은 원본의 SHA-256은 `c9248b746382f311801fac16808a68a6bd9dae68b41507ebad966df2887135c6`이고, iOS용 알파 채널을 제거한 1024px 기준 파일의 SHA-256은 `35ba51f6505f5e88be39f0019ea65fda50fe841ad299a67a759282c4397424c2`입니다.
+Android 런처는 #345에 제공된 3174×3174 검은색 집·새싹 로고를 흰색 정사각형 배경에 배치한 이미지로 표시합니다. 첨부 원본의 SHA-256은 `36283d2dd50752b0b40bbf93f6e0c2d45a214051a8a88e169a688b9aaa4ab5dc`입니다. Play 스토어 앱 아이콘은 같은 구도의 512×512 RGBA PNG를 사용합니다.
+
+iOS 아이콘 원본은 같은 GitHub organization의 [v2 iOS appstore 아이콘](https://raw.githubusercontent.com/UMC-CommonPlant/v2_CommonPlant-iOS-refactoring/develop/CommonPlant/CommonPlant/Resource/Assets.xcassets/AppIcon.appiconset/appstore.png)을 사용합니다. 내려받은 원본의 SHA-256은 `c9248b746382f311801fac16808a68a6bd9dae68b41507ebad966df2887135c6`이고, iOS용 알파 채널을 제거한 1024px 기준 파일의 SHA-256은 `35ba51f6505f5e88be39f0019ea65fda50fe841ad299a67a759282c4397424c2`입니다.
 
 dev/staging 앱명과 식별자 suffix는 미리 정하지 않습니다. 별도 설치, 별도 배포 채널, 환경별 Firebase 설정 중 하나가 실제 요구사항이 되면 Android product flavor와 iOS scheme/configuration을 같은 작업에서 도입하고 식별값을 다시 결정합니다.
 
