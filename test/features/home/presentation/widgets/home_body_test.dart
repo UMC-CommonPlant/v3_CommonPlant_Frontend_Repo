@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/features/home/presentation/widgets/home_body.dart';
+import 'package:commonplant_frontend/features/home/presentation/widgets/home_sections.dart';
 import 'package:commonplant_frontend/features/place/presentation/models/place_invitation.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_invitation_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
@@ -24,16 +25,16 @@ void main() {
     expect(find.byType(RefreshIndicator), findsNothing);
   });
 
-  testWidgets('정상 0건은 요청 0건으로 표시한다', (tester) async {
+  testWidgets('정상 0건이면 장소 요청 버튼을 숨긴다', (tester) async {
     await tester.pumpWidget(_buildHomeBody(const AsyncData(0)));
     await tester.pumpAndSettle();
 
-    expect(find.text('요청 0건'), findsOneWidget);
-    expect(find.bySemanticsLabel('장소 요청 0건'), findsOneWidget);
+    expect(find.byType(HomePlaceRequestButton), findsNothing);
+    expect(find.bySemanticsLabel('장소 요청 0건'), findsNothing);
     expect(find.text('재시도'), findsNothing);
   });
 
-  testWidgets('친구 요청 수 오류를 표시하고 재시도 후 0건으로 복구한다', (tester) async {
+  testWidgets('친구 요청 조회 오류를 재시도해 0건이면 버튼을 숨긴다', (tester) async {
     var fetchCalls = 0;
     final retryResult = Completer<List<PlaceInvitation>>();
 
@@ -61,7 +62,7 @@ void main() {
     retryResult.complete(const []);
     await tester.pumpAndSettle();
 
-    expect(find.text('요청 0건'), findsOneWidget);
+    expect(find.byType(HomePlaceRequestButton), findsNothing);
     expect(find.text('재시도'), findsNothing);
   });
 
@@ -110,7 +111,7 @@ void main() {
       final retryButton = find.text('다시 시도');
       expect(healthy, findsOneWidget);
       expect(failedStatus, findsOneWidget);
-      expect(find.text('요청 0건'), findsOneWidget);
+      expect(find.byType(HomePlaceRequestButton), findsNothing);
       expect(retryButton, findsOneWidget);
       expect(find.text('$failedList 추가하기'), findsNothing);
 
