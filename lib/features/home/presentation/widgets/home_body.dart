@@ -40,10 +40,13 @@ class HomeBody extends ConsumerWidget {
               addSemanticsLabel: '장소 추가',
               action: invitationCountAsync.when(
                 skipLoadingOnRefresh: false,
-                data: (count) => HomePlaceRequestButton(
-                  count: count,
-                  onPressed: () => context.push(AppRoutePaths.placeInvitations),
-                ),
+                data: (count) => count > 0
+                    ? HomePlaceRequestButton(
+                        count: count,
+                        onPressed: () =>
+                            context.push(AppRoutePaths.placeInvitations),
+                      )
+                    : null,
                 loading: HomePlaceRequestButton.loading,
                 error: (_, _) => HomePlaceRequestButton.error(
                   onRetry: () => ref.invalidate(remotePlaceInvitationsProvider),

@@ -25,6 +25,7 @@
 
 - [Home 사용자 실데이터 상태 연결 이력](work-history/home-user-api-state-232.md)
 - [홈 목록 재시도 #333](work-history/home-refresh-retry-333.md)
+- [홈 장소 요청 0건 숨기기 #341](work-history/home-request-count-341.md)
 - [User 프로필 화면·API 연결 이력](work-history/user-profile-flow-237.md)
 - [설정 회원탈퇴 화면 #335](work-history/account-withdrawal-335.md)
 - [알림 스위치 비율 수정 #331](work-history/notification-switch-proportion-331.md)
