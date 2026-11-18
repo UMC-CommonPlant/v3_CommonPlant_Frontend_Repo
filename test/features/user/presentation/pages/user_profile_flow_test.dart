@@ -225,8 +225,19 @@ void main() {
     await tester.tap(find.text('로그아웃'));
     await tester.pumpAndSettle();
     expect(find.byType(CommonDialogCard), findsOneWidget);
-    expect(find.text('현재 계정에서 로그아웃할까요?'), findsOneWidget);
-    expect(find.widgetWithText(CommonDialogActionButton, '취소'), findsOneWidget);
+    expect(find.text('로그아웃 하시겠어요?'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is ModalBarrier && widget.color?.toARGB32() == 0xB3000000,
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.widgetWithText(CommonDialogActionButton, '취소'));
+    await tester.pumpAndSettle();
+    expect(find.byType(CommonDialogCard), findsNothing);
+    expect(find.text('설정'), findsOneWidget);
   });
 }
 
