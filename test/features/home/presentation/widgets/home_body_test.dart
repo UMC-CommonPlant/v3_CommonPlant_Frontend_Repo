@@ -25,10 +25,23 @@ void main() {
     expect(find.byType(RefreshIndicator), findsNothing);
   });
 
-  testWidgets('정상 0건이면 장소 요청 버튼을 숨긴다', (tester) async {
+  testWidgets('장소 요청이 0건이면 버튼을 숨겨도 섹션 위치를 유지한다', (tester) async {
+    configureTestViewport(tester, TestViewports.reference);
+    final landmarks = [
+      find.text('My place'),
+      find.widgetWithText(HomeAddTile, '장소 추가하기'),
+      find.text('My plant'),
+      find.widgetWithText(HomeAddTile, '식물 추가하기'),
+    ];
+
+    await tester.pumpWidget(_buildHomeBody(const AsyncData(3)));
+    await tester.pumpAndSettle();
+    final positions = landmarks.map(tester.getTopLeft).toList();
+
     await tester.pumpWidget(_buildHomeBody(const AsyncData(0)));
     await tester.pumpAndSettle();
 
+    expect(landmarks.map(tester.getTopLeft), positions);
     expect(find.byType(HomePlaceRequestButton), findsNothing);
     expect(find.bySemanticsLabel('장소 요청 0건'), findsNothing);
     expect(find.text('재시도'), findsNothing);

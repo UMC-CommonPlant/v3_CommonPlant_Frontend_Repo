@@ -35,26 +35,32 @@ class HomeBody extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            HomeSectionHeader(
-              title: 'My place',
-              addSemanticsLabel: '장소 추가',
-              action: invitationCountAsync.when(
-                skipLoadingOnRefresh: false,
-                data: (count) => count > 0
-                    ? HomePlaceRequestButton(
-                        count: count,
-                        onPressed: () =>
-                            context.push(AppRoutePaths.placeInvitations),
-                      )
-                    : null,
-                loading: HomePlaceRequestButton.loading,
-                error: (_, _) => HomePlaceRequestButton.error(
-                  onRetry: () => ref.invalidate(remotePlaceInvitationsProvider),
-                ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppSizes.smallButtonHeight,
               ),
-              onAddPressed: hasPlaces
-                  ? () => context.push(AppRoutePaths.placeCreate)
-                  : null,
+              child: HomeSectionHeader(
+                title: 'My place',
+                addSemanticsLabel: '장소 추가',
+                action: invitationCountAsync.when(
+                  skipLoadingOnRefresh: false,
+                  data: (count) => count > 0
+                      ? HomePlaceRequestButton(
+                          count: count,
+                          onPressed: () =>
+                              context.push(AppRoutePaths.placeInvitations),
+                        )
+                      : null,
+                  loading: HomePlaceRequestButton.loading,
+                  error: (_, _) => HomePlaceRequestButton.error(
+                    onRetry: () =>
+                        ref.invalidate(remotePlaceInvitationsProvider),
+                  ),
+                ),
+                onAddPressed: hasPlaces
+                    ? () => context.push(AppRoutePaths.placeCreate)
+                    : null,
+              ),
             ),
             const SizedBox(height: _homeSectionContentGap),
             placesAsync.when(
