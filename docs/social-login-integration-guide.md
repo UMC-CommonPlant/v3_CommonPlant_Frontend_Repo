@@ -94,6 +94,16 @@ backend develop `03ece0e`·[PR #165](https://github.com/UMC-CommonPlant/v3_Commo
 명세·소스 확인과 자동 테스트는 실제 계정 갱신·휴대폰 재실행 검증과 구분한다.
 Apple 확인·검증은 사용자 요청으로 보류하며 Kakao·Google 또는 초기 세션 복원의 조건으로 삼지 않는다.
 
+## 앱 로그아웃 시 로컬 상태 정리 #348
+
+- CommonPlant access·refresh token은 secure storage의 인증 레코드 하나에 저장한다.
+  기존 버전 키는 새 레코드가 생기기 전까지 읽을 수 있으며 로그아웃에서 삭제한다.
+- 로그아웃하면 사용자 데이터 세션을 즉시 차단하고, 로그인 화면은 로컬 정리 결과를 기다린다.
+  앱 시작은 로그아웃 기록이나 Android 복원 ID가 일치하지 않는 레코드에서 토큰을 복원하지 않는다.
+  Android 복원 ID는 토큰과 별개이며 토큰 자체는 secure storage에만 보관한다.
+- 카카오 SDK의 로컬 TokenManager와 Google의 앱 로그인 상태를 정리한다.
+  Apple ID token은 앱에 별도 저장하지 않으며 CommonPlant 세션에서 로그아웃한다.
+
 ## Provider별 전달 token
 
 | Provider | 노출 플랫폼 | SDK에서 읽는 값 | `/auth/login.provider` | 백엔드 상태 |

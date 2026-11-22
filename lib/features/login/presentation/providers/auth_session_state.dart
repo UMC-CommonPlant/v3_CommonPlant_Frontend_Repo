@@ -2,7 +2,7 @@ import 'package:commonplant_frontend/core/network/api_exception.dart';
 
 enum AuthSessionStatus { unauthenticated, signupRequired, authenticated }
 
-enum AuthSessionEndReason { expired }
+enum AuthSessionEndReason { expired, logoutCleanupFailed }
 
 class AuthSessionState {
   const AuthSessionState._({
@@ -44,6 +44,8 @@ class AuthSessionState {
 
   String? get noticeMessage => switch (endReason) {
     AuthSessionEndReason.expired => sessionExpiredMessage,
+    AuthSessionEndReason.logoutCleanupFailed =>
+      '로그아웃 정보를 완전히 정리하지 못했어요. 다시 로그인해 주세요.',
     null => null,
   };
 }

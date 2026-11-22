@@ -40,16 +40,24 @@ void initializeSocialAuthSdks() {
   }
 }
 
+final _sdkSocialAuthGatewayProvider = Provider<SdkSocialAuthCredentialGateway>(
+  (ref) => SdkSocialAuthCredentialGateway(
+    kakaoNativeAppKey: AppEnvironment.kakaoNativeAppKey,
+    googleServerClientId: AppEnvironment.googleServerClientId,
+    googleIosClientId: AppEnvironment.googleIosClientId,
+    targetPlatform: defaultTargetPlatform,
+    appleSupportChecker: () => ref.read(appleLoginSupportedProvider.future),
+  ),
+);
+
 final socialAuthCredentialGatewayProvider =
     Provider<SocialAuthCredentialGateway>(
-      (ref) => SdkSocialAuthCredentialGateway(
-        kakaoNativeAppKey: AppEnvironment.kakaoNativeAppKey,
-        googleServerClientId: AppEnvironment.googleServerClientId,
-        googleIosClientId: AppEnvironment.googleIosClientId,
-        targetPlatform: defaultTargetPlatform,
-        appleSupportChecker: () => ref.read(appleLoginSupportedProvider.future),
-      ),
+      (ref) => ref.watch(_sdkSocialAuthGatewayProvider),
     );
+
+final socialAuthSessionCleanupProvider = Provider<Future<void> Function()>(
+  (ref) => ref.watch(_sdkSocialAuthGatewayProvider).clearLocalSession,
+);
 
 class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
   SdkSocialAuthCredentialGateway({
@@ -62,6 +70,8 @@ class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
     SocialAuthTokenLoader? kakaoTokenLoader,
     SocialAuthTokenLoader? googleTokenLoader,
     SocialAuthTokenLoader? appleTokenLoader,
+    Future<void> Function()? kakaoSessionCleanup,
+    Future<void> Function()? googleSessionCleanup,
   }) : _kakaoNativeAppKey = kakaoNativeAppKey.trim(),
        _googleServerClientId = googleServerClientId.trim(),
        _googleIosClientId = googleIosClientId.trim(),
@@ -75,7 +85,9 @@ class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
            )),
        _kakaoTokenLoader = kakaoTokenLoader,
        _googleTokenLoader = googleTokenLoader,
-       _appleTokenLoader = appleTokenLoader;
+       _appleTokenLoader = appleTokenLoader,
+       _kakaoSessionCleanup = kakaoSessionCleanup,
+       _googleSessionCleanup = googleSessionCleanup;
 
   final String _kakaoNativeAppKey;
   final String _googleServerClientId;
@@ -86,7 +98,44 @@ class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
   final SocialAuthTokenLoader? _kakaoTokenLoader;
   final SocialAuthTokenLoader? _googleTokenLoader;
   final SocialAuthTokenLoader? _appleTokenLoader;
+  final Future<void> Function()? _kakaoSessionCleanup;
+  final Future<void> Function()? _googleSessionCleanup;
   Future<void>? _googleInitialization;
+
+  bool get _isGoogleConfigured =>
+      _googleServerClientId.isNotEmpty &&
+      (_targetPlatform != TargetPlatform.iOS || _googleIosClientId.isNotEmpty);
+
+  Future<void> clearLocalSession() async {
+    if (_isWeb ||
+        (_targetPlatform != TargetPlatform.android &&
+            _targetPlatform != TargetPlatform.iOS)) {
+      return;
+    }
+
+    await Future.wait([
+      if (_kakaoNativeAppKey.isNotEmpty)
+        Future.sync(
+          _kakaoSessionCleanup ?? TokenManagerProvider.instance.manager.clear,
+        ),
+      if (_isGoogleConfigured)
+        Future.sync(_googleSessionCleanup ?? _signOutGoogle),
+    ]);
+  }
+
+  Future<void> _signOutGoogle() async {
+    await _initializeGoogle();
+    await GoogleSignIn.instance.signOut();
+  }
+
+  Future<void> _initializeGoogle() {
+    return _googleInitialization ??= GoogleSignIn.instance.initialize(
+      clientId: _targetPlatform == TargetPlatform.iOS
+          ? _googleIosClientId
+          : null,
+      serverClientId: _googleServerClientId,
+    );
+  }
 
   @override
   Future<SocialAuthCredential> authorize(SocialAuthProvider provider) async {
@@ -136,9 +185,7 @@ class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
   }
 
   Future<String?> _authorizeGoogle() async {
-    final requiresIosClientId = _targetPlatform == TargetPlatform.iOS;
-    if (_googleServerClientId.isEmpty ||
-        (requiresIosClientId && _googleIosClientId.isEmpty)) {
+    if (!_isGoogleConfigured) {
       throw const SocialAuthNotConfiguredException();
     }
 
@@ -146,15 +193,10 @@ class SdkSocialAuthCredentialGateway implements SocialAuthCredentialGateway {
       return loader();
     }
 
-    final googleSignIn = GoogleSignIn.instance;
-    _googleInitialization ??= googleSignIn.initialize(
-      clientId: requiresIosClientId ? _googleIosClientId : null,
-      serverClientId: _googleServerClientId,
-    );
-    await _googleInitialization;
+    await _initializeGoogle();
 
     try {
-      final account = await googleSignIn.authenticate();
+      final account = await GoogleSignIn.instance.authenticate();
       return account.authentication.idToken;
     } on GoogleSignInException catch (error) {
       if (error.code == GoogleSignInExceptionCode.canceled) {

@@ -135,6 +135,25 @@ void main() {
   }
 
   group('SdkSocialAuthCredentialGateway', () {
+    test('Kakao 정리에 실패해도 Google 앱 세션을 종료한다', () async {
+      final calls = <SocialAuthProvider>[];
+      final gateway = SdkSocialAuthCredentialGateway(
+        kakaoNativeAppKey: 'kakao-key',
+        googleServerClientId: 'google-server-client',
+        googleIosClientId: 'google-ios-client',
+        targetPlatform: TargetPlatform.iOS,
+        kakaoSessionCleanup: () async {
+          calls.add(SocialAuthProvider.kakao);
+          throw StateError('local cleanup failed');
+        },
+        googleSessionCleanup: () async => calls.add(SocialAuthProvider.google),
+        appleTokenLoader: () async => fail('Apple sign-in must not be called'),
+      );
+
+      await expectLater(gateway.clearLocalSession(), throwsStateError);
+      expect(calls, [SocialAuthProvider.kakao, SocialAuthProvider.google]);
+    });
+
     test('provider마다 백엔드가 기대하는 SDK token loader를 사용한다', () async {
       final gateway = SdkSocialAuthCredentialGateway(
         kakaoNativeAppKey: 'kakao-key',
