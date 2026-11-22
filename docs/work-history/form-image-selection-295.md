@@ -38,6 +38,8 @@
 
 [공식 image_picker 문서](https://pub.dev/packages/image_picker/versions/1.2.2)에 따라 iOS `NSPhotoLibraryUsageDescription`을 추가하고 앨범 선택에 `requestFullMetadata: false`를 사용한다. 시스템 권한 UI를 흉내 내던 가입 화면 dialog는 실제 선택 흐름에서 제거했다. Android 저장소 광범위 권한은 추가하지 않았다.
 
+[#349의 사진 정제](photo-location-metadata-349.md)는 선택한 JPG·PNG·WebP의 업로드 사본에서 촬영 위치가 포함될 수 있는 EXIF·XMP·텍스트 메타데이터를 제거한다. 방향과 압축된 이미지 데이터는 유지하고, 정제한 사본을 미리보기와 제출에 함께 사용한다.
+
 현재 폼 초안은 메모리 수명만 가진다. Android가 선택 중 프로세스를 종료하면 시작 시 `retrieveLostData()`로 남은 결과를 비우며, 원래 폼/계정 문맥 없이 다른 폼에 자동 첨부하지 않는다. 재실행 후 사용자가 폼에서 다시 선택해야 한다. 이 경우의 실제 OS 동작은 기기 QA 대상이다.
 
 ## 검증 기록

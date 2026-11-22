@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:commonplant_frontend/core/config/image_upload_limits.dart';
+import 'package:commonplant_frontend/features/image/data/gateways/image_metadata.dart';
 import 'package:commonplant_frontend/features/image/data/models/selected_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -69,8 +70,9 @@ class ImageSelectionGateway {
       throw const ImageSelectionException('JPG, PNG, WebP 사진을 선택해 주세요.');
     }
     try {
+      final uploadBytes = stripImageLocationMetadata(bytes, type);
       final codec = await ui.instantiateImageCodec(
-        bytes,
+        uploadBytes,
         targetWidth: 1,
         targetHeight: 1,
       );
@@ -80,10 +82,10 @@ class ImageSelectionGateway {
       } finally {
         codec.dispose();
       }
+      return SelectedImage(bytes: uploadBytes, contentType: type);
     } catch (_) {
       throw const ImageSelectionException('손상된 사진이에요. 다른 사진을 선택해 주세요.');
     }
-    return SelectedImage(bytes: bytes, contentType: type);
   }
 }
 
