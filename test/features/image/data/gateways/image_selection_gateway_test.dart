@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data' show Endian;
+import 'dart:ui' as ui;
 
 import 'package:commonplant_frontend/core/config/image_upload_limits.dart';
 import 'package:commonplant_frontend/features/image/data/gateways/image_selection_gateway.dart';
@@ -32,6 +35,107 @@ void main() {
       await second.finalize().expand((bytes) => bytes).toList(),
       image.bytes,
     );
+  });
+
+  test('JPEG EXIF의 GPS를 빼고 회전 정보와 압축 이미지 데이터는 유지한다', () async {
+    final fixture = await rootBundle.load(
+      'assets/images/place_edit_living_room.jpg',
+    );
+    final original = fixture.buffer.asUint8List(
+      fixture.offsetInBytes,
+      fixture.lengthInBytes,
+    );
+    final metadata = _jpegLocationMetadata();
+    final withLocation = Uint8List.fromList([
+      ...original.take(2),
+      ...metadata,
+      ...original.skip(2),
+    ]);
+
+    final upload = await _photoUpload(withLocation, 'garden.jpg');
+    expect(upload[3], 0xe1);
+    expect(ByteData.sublistView(upload).getUint16(4), 34);
+    expect(ByteData.sublistView(upload).getUint16(20), 1);
+    expect(ByteData.sublistView(upload).getUint16(22), 0x112);
+    expect(ByteData.sublistView(upload).getUint16(30), 6);
+    expect(List<int>.of(withLocation.skip(2).take(metadata.length)), metadata);
+
+    final codec = await ui.instantiateImageCodec(upload);
+    final frame = await codec.getNextFrame();
+    try {
+      expect(frame.image.width, 400);
+      expect(frame.image.height, 600);
+    } finally {
+      frame.image.dispose();
+      codec.dispose();
+    }
+  });
+
+  test('PNG 텍스트 위치 정보를 제거한 사본을 multipart에 사용한다', () async {
+    final original = testSelectedImage().bytes;
+    final textChunk = base64Decode(
+      'AAAAHHRFWHRHUFNMYXRpdHVkZQBwcml2YXRlLWxvY2F0aW9uY/yXAw==',
+    );
+    final withLocation = Uint8List.fromList([
+      ...original.take(33),
+      ...textChunk,
+      ...original.skip(33),
+    ]);
+
+    expect(await _photoUpload(withLocation, 'garden.png'), original);
+  });
+
+  test('WebP XMP와 EXIF를 제거하고 RIFF 길이와 플래그를 갱신한다', () async {
+    final original = base64Decode(
+      'UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA',
+    );
+    final header = [
+      ...ascii.encode('VP8X'),
+      10,
+      0,
+      0,
+      0,
+      0x0c,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+    ];
+    final withLocation = Uint8List.fromList([
+      ...original.take(12),
+      ...header,
+      ...original.skip(12),
+      ...ascii.encode('XMP '),
+      4,
+      0,
+      0,
+      0,
+      ...ascii.encode('GPS!'),
+      ...ascii.encode('EXIF'),
+      4,
+      0,
+      0,
+      0,
+      ...ascii.encode('GPS!'),
+    ]);
+    ByteData.sublistView(
+      withLocation,
+    ).setUint32(4, withLocation.length - 8, Endian.little);
+
+    final upload = await _photoUpload(withLocation, 'garden.webp');
+
+    expect(
+      ByteData.sublistView(upload).getUint32(4, Endian.little),
+      upload.length - 8,
+    );
+    expect(upload[20], 0);
+    expect(upload.skip(30), original.skip(12));
+    expect(withLocation[20], 0x0c);
   });
 
   test('빈 파일·10MB 초과·미지원 형식·손상된 파일은 거부한다', () async {
@@ -91,6 +195,46 @@ void main() {
       expect(picker.calls, 2);
     }
   });
+}
+
+Future<Uint8List> _photoUpload(Uint8List bytes, String name) async {
+  final photo = await ImageSelectionGateway().readImage(
+    XFile.fromData(bytes, name: name),
+  );
+  return Uint8List.fromList(
+    await photo.toMultipartFile().finalize().expand((bytes) => bytes).toList(),
+  );
+}
+
+Uint8List _jpegLocationMetadata() {
+  final tiff = ByteData(56)
+    ..setUint16(0, 0x4d4d)
+    ..setUint16(2, 42)
+    ..setUint32(4, 8)
+    ..setUint16(8, 2)
+    ..setUint16(10, 0x112)
+    ..setUint16(12, 3)
+    ..setUint32(14, 1)
+    ..setUint16(18, 6)
+    ..setUint16(22, 0x8825)
+    ..setUint16(24, 4)
+    ..setUint32(26, 1)
+    ..setUint32(30, 38)
+    ..setUint16(38, 1)
+    ..setUint16(40, 1)
+    ..setUint16(42, 2)
+    ..setUint32(44, 2)
+    ..setUint8(48, 0x4e);
+  return Uint8List.fromList([
+    0xff,
+    0xe1,
+    0,
+    64,
+    ...ascii.encode('Exif'),
+    0,
+    0,
+    ...tiff.buffer.asUint8List(),
+  ]);
 }
 
 class _Picker extends ImagePicker {
