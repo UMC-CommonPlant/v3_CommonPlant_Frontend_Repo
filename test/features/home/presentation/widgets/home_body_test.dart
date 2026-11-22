@@ -7,6 +7,8 @@ import 'package:commonplant_frontend/features/place/presentation/models/place_in
 import 'package:commonplant_frontend/features/place/presentation/providers/place_invitation_controller.dart';
 import 'package:commonplant_frontend/features/place/presentation/providers/place_list_provider.dart';
 import 'package:commonplant_frontend/features/plant/presentation/providers/plant_list_provider.dart';
+import 'package:commonplant_frontend/shared/widgets/common_place_card.dart';
+import 'package:commonplant_frontend/shared/widgets/common_plant_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,13 +27,63 @@ void main() {
     expect(find.byType(RefreshIndicator), findsNothing);
   });
 
-  testWidgets('정상 0건이면 장소 요청 버튼을 숨긴다', (tester) async {
+  testWidgets('장소 요청이 0건이면 버튼을 숨겨도 섹션 위치를 유지한다', (tester) async {
+    configureTestViewport(tester, TestViewports.reference);
+    final landmarks = [
+      find.text('My place'),
+      find.widgetWithText(HomeAddTile, '장소 추가하기'),
+      find.text('My plant'),
+      find.widgetWithText(HomeAddTile, '식물 추가하기'),
+    ];
+
+    await tester.pumpWidget(_buildHomeBody(const AsyncData(3)));
+    await tester.pumpAndSettle();
+    final positions = landmarks.map(tester.getTopLeft).toList();
+
     await tester.pumpWidget(_buildHomeBody(const AsyncData(0)));
     await tester.pumpAndSettle();
 
+    expect(landmarks.map(tester.getTopLeft), positions);
     expect(find.byType(HomePlaceRequestButton), findsNothing);
     expect(find.bySemanticsLabel('장소 요청 0건'), findsNothing);
     expect(find.text('재시도'), findsNothing);
+  });
+
+  testWidgets('장소와 식물의 추가 카드가 각각 등록 카드와 같은 모서리를 쓴다', (tester) async {
+    configureTestViewport(tester, TestViewports.reference);
+    await tester.pumpWidget(_buildHomeBody(const AsyncData(0)));
+    await tester.pumpAndSettle();
+
+    final addCardRadii = ['장소 추가하기', '식물 추가하기'].map((label) {
+      final card = find.descendant(
+        of: find.widgetWithText(HomeAddTile, label),
+        matching: find.byType(DecoratedBox),
+      );
+      final decoration = tester.widget<DecoratedBox>(card).decoration;
+      return (decoration as BoxDecoration).borderRadius;
+    }).toList();
+
+    await tester.pumpWidget(
+      _buildHomeBody(
+        const AsyncData(0),
+        places: const [_place],
+        plants: const [_plant],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final savedCardRadii = [
+      for (final card in [CommonPlaceCard, CommonPlantCard])
+        tester
+            .widget<ClipRRect>(
+              find.descendant(
+                of: find.byType(card),
+                matching: find.byType(ClipRRect),
+              ),
+            )
+            .borderRadius,
+    ];
+    expect(addCardRadii, savedCardRadii);
   });
 
   testWidgets('친구 요청 조회 오류를 재시도해 0건이면 버튼을 숨긴다', (tester) async {
@@ -183,12 +235,16 @@ const _invitation = PlaceInvitation(
   avatarAsset: '',
 );
 
-Widget _buildHomeBody(AsyncValue<int> invitationCount) {
+Widget _buildHomeBody(
+  AsyncValue<int> invitationCount, {
+  List<PlaceSummary> places = const [],
+  List<PlantSummary> plants = const [],
+}) {
   return ProviderScope(
     overrides: [
       useRemoteApiProvider.overrideWithValue(false),
-      placeSummariesProvider.overrideWithValue(const AsyncData([])),
-      plantSummariesProvider.overrideWithValue(const AsyncData([])),
+      placeSummariesProvider.overrideWithValue(AsyncData(places)),
+      plantSummariesProvider.overrideWithValue(AsyncData(plants)),
       placeInvitationRequestCountProvider.overrideWithValue(invitationCount),
     ],
     child: const MaterialApp(home: Scaffold(body: HomeBody())),

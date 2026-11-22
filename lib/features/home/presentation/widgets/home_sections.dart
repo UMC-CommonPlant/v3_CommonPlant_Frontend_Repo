@@ -128,12 +128,13 @@ class HomeAddTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const borderRadius = BorderRadius.all(Radius.circular(AppRadius.medium));
     final content = Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppRadius.small),
+        borderRadius: borderRadius,
         border: Border.all(color: borderColor),
       ),
       child: Center(
@@ -162,11 +163,7 @@ class HomeAddTile extends StatelessWidget {
       return content;
     }
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.small),
-      child: content,
-    );
+    return InkWell(onTap: onTap, borderRadius: borderRadius, child: content);
   }
 }
 
