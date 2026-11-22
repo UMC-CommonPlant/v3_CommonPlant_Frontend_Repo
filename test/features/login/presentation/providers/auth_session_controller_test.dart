@@ -309,13 +309,7 @@ void main() {
 
     final clearing = controller.clearSession();
     expect(container.read(userDataSessionProvider).isActive, isFalse);
-    expect(
-      container
-          .read(authSessionControllerProvider)
-          .requireValue
-          .isUnauthenticated,
-      isTrue,
-    );
+    expect(container.read(authSessionControllerProvider).isLoading, isTrue);
     controller.applyAuthResult(
       const AuthenticatedResult(accessToken: 'B', refreshToken: 'B'),
     );
@@ -387,6 +381,10 @@ void main() {
       isTrue,
     );
     expect(store.accessToken, 'A');
+    expect(
+      container.read(authSessionControllerProvider).requireValue.endReason,
+      AuthSessionEndReason.logoutCleanupFailed,
+    );
   });
 
   test('인증 만료는 즉시 세션을 닫고 재로그인 안내를 남긴다', () async {

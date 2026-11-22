@@ -4,6 +4,7 @@ import 'package:commonplant_frontend/core/network/auth_token_writer.dart';
 import 'package:commonplant_frontend/core/network/user_data_session.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_requests.dart';
 import 'package:commonplant_frontend/features/login/data/dtos/auth_result.dart';
+import 'package:commonplant_frontend/features/login/data/gateways/social_auth_credential_gateway.dart';
 import 'package:commonplant_frontend/features/login/data/repositories/auth_repository.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -94,10 +95,24 @@ class AuthSessionController extends AsyncNotifier<AuthSessionState> {
   }
 
   Future<void> clearSession() async {
-    // 저장소 삭제가 지연되더라도 이전 계정의 조회·후처리는 즉시 중단한다.
+    final requestRef = ref;
+    final writer = ref.read(authTokenWriterProvider);
+    final cleanupSocialSession = ref.read(socialAuthSessionCleanupProvider);
     ref.read(userDataSessionProvider.notifier).end();
-    state = const AsyncData(AuthSessionState.unauthenticated());
-    await ref.read(authTokenWriterProvider).clear();
+    final endedSession = ref.read(userDataSessionProvider);
+    state = const AsyncLoading();
+
+    AuthSessionEndReason? reason;
+    try {
+      await Future.wait([writer.clear(), Future.sync(cleanupSocialSession)]);
+    } catch (_) {
+      reason = AuthSessionEndReason.logoutCleanupFailed;
+      rethrow;
+    } finally {
+      if (isCurrentUserDataSession(requestRef, endedSession)) {
+        state = AsyncData(AuthSessionState.unauthenticated(reason: reason));
+      }
+    }
   }
 
   Future<void> expireSession(UserDataSession expectedSession) async {

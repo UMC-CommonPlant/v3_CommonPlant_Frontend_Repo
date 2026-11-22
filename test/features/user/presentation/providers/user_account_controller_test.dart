@@ -1,5 +1,6 @@
 import 'package:commonplant_frontend/core/config/app_environment.dart';
 import 'package:commonplant_frontend/core/network/auth_token_store.dart';
+import 'package:commonplant_frontend/features/login/data/gateways/social_auth_credential_gateway.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_controller.dart';
 import 'package:commonplant_frontend/features/login/presentation/providers/auth_session_state.dart';
 import 'package:commonplant_frontend/features/user/data/repositories/user_repository.dart';
@@ -12,7 +13,12 @@ void main() {
   test('로그아웃은 서버 호출 없이 로컬 token과 인증 세션을 제거한다', () async {
     final tokenStore = _MemoryAuthTokenStore();
     final repository = _RecordingUserRepository();
-    final container = _container(tokenStore, repository);
+    var socialCleanupCalls = 0;
+    final container = _container(
+      tokenStore,
+      repository,
+      cleanupSocialSession: () async => socialCleanupCalls++,
+    );
     addTearDown(container.dispose);
     final subscription = container.listen(
       userAccountControllerProvider,
@@ -28,6 +34,7 @@ void main() {
     expect(succeeded, isTrue);
     expect(repository.deleteCalls, 0);
     expect(tokenStore.clearCalls, 1);
+    expect(socialCleanupCalls, 1);
     expect(
       container.read(authSessionControllerProvider).requireValue.status,
       AuthSessionStatus.unauthenticated,
@@ -102,13 +109,18 @@ void main() {
 
 ProviderContainer _container(
   AuthTokenStore tokenStore,
-  UserRepository repository,
-) {
+  UserRepository repository, {
+  Future<void> Function()? cleanupSocialSession,
+}) {
   return ProviderContainer(
     overrides: [
       useRemoteApiProvider.overrideWithValue(true),
       authTokenStoreProvider.overrideWithValue(tokenStore),
       userRepositoryProvider.overrideWithValue(repository),
+      if (cleanupSocialSession != null)
+        socialAuthSessionCleanupProvider.overrideWithValue(
+          cleanupSocialSession,
+        ),
     ],
   );
 }
